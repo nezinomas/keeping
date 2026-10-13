@@ -1,5 +1,4 @@
 import contextlib
-from datetime import datetime
 from urllib.parse import urlencode
 
 from django import forms
@@ -13,6 +12,7 @@ from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.lib.utils import int_or_zero
+from ..core.mixins.forms import YearNotLaterMixin
 from .models import DEFAULT_QUANTITY, Expense, ExpenseName, ExpenseType
 from .services.model_services import (
     ExpenseNameModelService,
@@ -75,7 +75,12 @@ class ExpenseNameChoicesMixin:
         expense_type.widget.attrs["hx-trigger"] = "change"
 
 
-class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelForm):
+class ExpenseForm(
+    ExpenseNameChoicesMixin,
+    PriceToCentsFormMixin,
+    YearNotLaterMixin,
+    forms.ModelForm,
+):
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
     quantity = forms.IntegerField(min_value=1, initial=DEFAULT_QUANTITY)
@@ -183,23 +188,6 @@ class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelFor
                 raise ValidationError(_("Image file too large ( > 4Mb )"))
 
         return image
-
-    def clean_date(self):
-        dt = self.cleaned_data["date"]
-
-        year_user = self.user.year
-        year_instance = dt.year
-        year_now = datetime.now().year
-
-        diff = 1
-        if (year_instance - year_now) > diff:
-            year_msg = year_user + diff
-            self.add_error(
-                "date",
-                _("Year cannot be later than %(year)s") % ({"year": year_msg}),
-            )
-
-        return dt
 
     def clean(self):
         cleaned_data = super().clean()

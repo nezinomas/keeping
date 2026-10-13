@@ -5,7 +5,7 @@ import pytest
 
 from ...services.summary_savings_and_incomes import Data, Service
 
-MODULE_PATH = "project.bookkeeping.services.summary_savings_and_incomes.years"
+MODULE_PATH = "project.bookkeeping.services.summary_savings_and_incomes.years_to_date"
 
 
 @pytest.fixture(name="incomes")
@@ -27,7 +27,7 @@ def fixture_savings():
 
 
 def test_chart_data_categories(mocker, main_user):
-    mocker.patch(MODULE_PATH, return_value=[1, 2, 3])
+    mocker.patch(MODULE_PATH, return_value=[1, 2])
 
     data = cast(Data, SimpleNamespace(incomes=[], savings=[]))
     actual = Service(main_user, data).chart_data()
@@ -36,7 +36,7 @@ def test_chart_data_categories(mocker, main_user):
 
 
 def test_chart_data_incomes(mocker, incomes, main_user):
-    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3])
 
     data = cast(Data, SimpleNamespace(incomes=incomes, savings=[]))
     actual = Service(main_user, data).chart_data()
@@ -45,7 +45,7 @@ def test_chart_data_incomes(mocker, incomes, main_user):
 
 
 def test_chart_data_incomes_no_record(mocker, incomes, main_user):
-    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3])
     del incomes[1]
 
     data = cast(Data, SimpleNamespace(incomes=incomes, savings=[]))
@@ -55,7 +55,7 @@ def test_chart_data_incomes_no_record(mocker, incomes, main_user):
 
 
 def test_chart_data_savings(mocker, incomes, savings, main_user):
-    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3])
     data = cast(Data, SimpleNamespace(incomes=incomes, savings=savings))
     actual = Service(main_user, data).chart_data()
 
@@ -63,7 +63,7 @@ def test_chart_data_savings(mocker, incomes, savings, main_user):
 
 
 def test_chart_data_savings_no_record(mocker, incomes, savings, main_user):
-    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3])
     del savings[1]
 
     data = cast(Data, SimpleNamespace(incomes=incomes, savings=savings))
@@ -73,7 +73,7 @@ def test_chart_data_savings_no_record(mocker, incomes, savings, main_user):
 
 
 def test_chart_data_percents(mocker, incomes, savings, main_user):
-    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3])
     data = cast(Data, SimpleNamespace(incomes=incomes, savings=savings))
     actual = Service(main_user, data).chart_data()
 
@@ -81,7 +81,7 @@ def test_chart_data_percents(mocker, incomes, savings, main_user):
 
 
 def test_chart_data_percents_no_record(mocker, incomes, savings, main_user):
-    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3])
     del incomes[1]
     del savings[2]
 

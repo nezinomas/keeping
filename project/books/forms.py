@@ -3,7 +3,7 @@ from datetime import datetime
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib.date import set_date_with_user_year, years
+from ..core.lib.date import set_date_with_user_year, years_to_date
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from .models import Book, BookTarget
 from .services.model_services import BookTargetModelService
@@ -38,7 +38,7 @@ class BookForm(forms.ModelForm):
     def clean_started(self):
         dt = self.cleaned_data["started"]
         year_instance = dt.year
-        years_ = years(self.user)[:-1]
+        years_ = years_to_date(self.user)
         if year_instance not in years_:
             self.add_error(
                 "started",

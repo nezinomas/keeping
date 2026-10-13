@@ -25,11 +25,16 @@ def monthnames() -> list[str]:
     return [x.lower() for x in calendar.month_name[1:]]
 
 
-def years(user: User) -> list[int]:
-    now = datetime.now().year
-    start = user.journal.first_record.year
+def latest_year() -> int:
+    return datetime.now().year + 1
 
-    return list(range(start, now + 2))
+
+def years(user: User) -> list[int]:
+    return list(range(user.journal.first_record.year, latest_year() + 1))
+
+
+def years_to_date(user: User) -> list[int]:
+    return list(range(user.journal.first_record.year, datetime.now().year + 1))
 
 
 def set_date_with_user_year(user):

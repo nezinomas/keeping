@@ -1,5 +1,4 @@
 from django import forms
-from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
@@ -7,11 +6,12 @@ from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
-from ..incomes.services.model_services import IncomeTypeModelService
+from ..core.mixins.forms import YearNotLaterMixin
 from .models import Income, IncomeType
+from .services.model_services import IncomeTypeModelService
 
 
-class IncomeForm(PriceToCentsFormMixin, forms.ModelForm):
+class IncomeForm(PriceToCentsFormMixin, YearNotLaterMixin, forms.ModelForm):
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 
@@ -43,23 +43,6 @@ class IncomeForm(PriceToCentsFormMixin, forms.ModelForm):
         self.fields["price"].label = _("Amount")
         self.fields["remark"].label = _("Remark")
         self.fields["income_type"].label = _("Incomes type")
-
-    def clean_date(self):
-        dt = self.cleaned_data["date"]
-
-        year_user = self.user.year
-        year_instance = dt.year
-        year_now = timezone.now().year
-
-        diff = 1
-        if (year_instance - year_now) > diff:
-            year_msg = year_user + diff
-            self.add_error(
-                "date",
-                _("Year cannot be greater than %(year)s") % {"year": year_msg},
-            )
-
-        return dt
 
 
 class IncomeTypeForm(forms.ModelForm):
