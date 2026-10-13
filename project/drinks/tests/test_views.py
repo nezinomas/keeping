@@ -749,7 +749,27 @@ def test_typical_year_valid_post_pools_the_asked_range(client_logged):
     assert "HX-Retarget" not in response
 
 
-# TabRisk View
+@time_machine.travel("1999-06-01")
+def test_every_figure_stops_at_the_views_today(client_logged, mocker):
+    mocker.patch.object(views, "date", mocker.Mock(today=lambda: date(1999, 3, 1)))
+    DrinkFactory(date=date(1998, 1, 1), stdav=2.5)
+    DrinkFactory(date=date(1999, 1, 15), stdav=2.5)
+    DrinkFactory(date=date(1999, 3, 1), stdav=2.5)
+    DrinkFactory(date=date(1999, 4, 10), stdav=2.5)
+
+    dry = client_logged.get(reverse("drinks:tab_index")).context["cards"][0]
+    typical = client_logged.get(reverse("drinks:typical_year")).content.decode()
+    compare = client_logged.get(reverse("drinks:compare", kwargs={"qty": 1}))
+    months = chart_data(compare.content.decode(), "history")["serries"][0]["data"]
+    history = client_logged.get(reverse("drinks:tab_history")).content.decode()
+
+    assert (dry.value, dry.note) == ("0", "1999-03-01")
+    assert len(chart_data(typical, "typical-year")["layers"][0]["intensity"]) == 3
+    assert len(months) == 3
+    # 7.5 Std Av of beer over Jan 1 to Mar 1, the 60 days the view has reached
+    assert chart_data(history, "summary")["data_ml"][-1] == 25.0
+
+
 def test_tab_risk_heavy_panel_leaves_the_threshold_to_its_chart(client_logged):
     content = client_logged.get(reverse("drinks:tab_risk")).content.decode()
 

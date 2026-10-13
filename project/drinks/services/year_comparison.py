@@ -30,18 +30,24 @@ class YearComparison:
     """
 
     @classmethod
-    def build(cls, user, years: Iterable[int]) -> YearComparisonChartViewModel:
-        return cls._chart(user, cls._series(user, years))
+    def build(
+        cls, user, years: Iterable[int], today: date
+    ) -> YearComparisonChartViewModel:
+        return cls._chart(user, cls._series(user, years, today))
 
     @classmethod
-    def for_recent(cls, user, year: int, qty: int) -> YearComparisonChartViewModel:
-        return cls.build(user, range(year - qty + 1, year + 1))
+    def for_recent(
+        cls, user, year: int, qty: int, today: date
+    ) -> YearComparisonChartViewModel:
+        return cls.build(user, range(year - qty + 1, year + 1), today)
 
     @classmethod
-    def for_pair(cls, user, year1, year2) -> YearComparisonChartViewModel:
+    def for_pair(
+        cls, user, year1: int, year2: int, today: date
+    ) -> YearComparisonChartViewModel:
         """All-or-nothing, unlike a span: half a comparison answers a question
         the user did not ask."""
-        series = cls._series(user, [year1, year2])
+        series = cls._series(user, [year1, year2], today)
 
         return cls._chart(user, series if len(series) == 2 else [])
 
@@ -59,12 +65,11 @@ class YearComparison:
         )
 
     @staticmethod
-    def _series(user, years: Iterable[int]) -> list[dict]:
+    def _series(user, years: Iterable[int], today: date) -> list[dict]:
         series = []
-        today = date.today()
 
         for year in years:
-            records = ConsumptionYear(user, int(year))
+            records = ConsumptionYear(user, int(year), today)
             if not records.monthly:
                 continue
 

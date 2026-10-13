@@ -61,11 +61,13 @@ class RiskStats:
         self,
         current_daily: Sequence[DataRow] = (),
         past_daily: Sequence[DataRow] = (),
-        today: date | None = None,
+        *,
+        year: int,
+        today: date,
     ):
         self._current_daily_records = current_daily
         self._past_daily_records = past_daily
-        self._year = YearBoundary.from_records(current_daily, today)
+        self._year = YearBoundary(year=year, today=today)
         self.current_year = self._year.year
 
     @staticmethod

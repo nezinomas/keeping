@@ -2,7 +2,6 @@ from datetime import date
 from types import SimpleNamespace
 
 import pytest
-import time_machine
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
@@ -13,9 +12,11 @@ from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter, stdav_to_alcohol
 from ...lib.drinks_stats import DataRow
 from ...services.index_tab import (
+    DailyLimit,
     DryDaysViewModel,
     IndexBuilder,
     IndexTab,
+    NoDailyLimit,
     NoDryDaysViewModel,
 )
 from ..factories import DrinkFactory, DrinkTargetFactory
@@ -32,8 +33,12 @@ def _row(dt: date, stdav: float, qty: float = 0.0) -> DataRow:
     return DataRow(date=dt, stdav=stdav, qty=qty)
 
 
-def _frequency(current=(), past=(), today=date(1999, 1, 10)) -> FrequencyStats:
-    return FrequencyStats(current_daily=current, past_daily=past, today=today)
+def _frequency(
+    current=(), past=(), today=date(1999, 1, 10), year=1999
+) -> FrequencyStats:
+    return FrequencyStats(
+        current_daily=current, past_daily=past, year=year, today=today
+    )
 
 
 def _stats(drink_converter, total_quantity=0.0, avg=0.0, year=1999):
@@ -60,14 +65,14 @@ def _card_builder(
     year=1999,
     **kwargs,
 ):
-    kwargs.setdefault("today", date.today())
+    kwargs.setdefault("today", date(1999, 6, 1))
     kwargs.setdefault("frequency_stats", _frequency())
 
     return IndexBuilder(
         converter=drink_converter,
         drink_stats=_stats(drink_converter, total_quantity, avg, year=year),
         previous_stats=_stats(drink_converter, past_quantity, past_avg, year=year - 1),
-        target=target,
+        limit=DailyLimit(target) if target else NoDailyLimit(),
         **kwargs,
     )
 
@@ -88,7 +93,6 @@ def test_dry_days(latest, expect, main_user, drink_converter):
     assert actual == expect
 
 
-@time_machine.travel("2019-10-10")
 @pytest.mark.parametrize(
     "year, expect",
     [
@@ -133,7 +137,6 @@ def test_tbl_std_av_reads_the_year_in_every_drink_type(drink_converter, year, ex
     assert actual == expect
 
 
-# IndexBuilder.get_cards
 def test_get_cards_order(main_user, drink_converter):
     # six, the Daily limit last. A seventh should have to argue with this test
     cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
@@ -149,7 +152,6 @@ def test_get_cards_order(main_user, drink_converter):
     assert all(isinstance(c, Card) for c in cards)
 
 
-# IndexBuilder.get_cards: Daily limit
 @pytest.mark.parametrize(
     "drink_type, target, value, unit, amount",
     [
@@ -399,7 +401,6 @@ def test_card_pure_alcohol_reads_the_year_total(
     assert card.show_icon is show_icon
 
 
-# Drinking days card
 @pytest.mark.parametrize(
     "current_days, past_days, note, state",
     [
@@ -481,7 +482,6 @@ def test_card_drinking_days_without_a_prior_year(main_user, drink_converter):
     assert card.note == _("%(share)s%% of the year so far") % {"share": "40"}
 
 
-# IndexTab.build
 @pytest.mark.parametrize(
     "today, drinks, months",
     [
@@ -498,16 +498,14 @@ def test_index_tab_build_charts_end_at_the_month_reached(
     main_user, today, drinks, months
 ):
     # a month the year has not reached is not a month with no Drinks in it
-    with time_machine.travel(today):
-        for drink_date in drinks:
-            DrinkFactory(date=drink_date, stdav=2.5)
-        actual = IndexTab.build(main_user, 1999)
+    for drink_date in drinks:
+        DrinkFactory(date=drink_date, stdav=2.5)
+    actual = IndexTab.build(main_user, 1999, date.fromisoformat(today))
 
     assert len(actual["chart_consumption"].data) == months
     assert len(actual["chart_quantity"].data) == months
 
 
-@time_machine.travel("1999-06-01")
 def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
     # two Drinks on one day and one on another: two Drinking days, not three
     # rows — the count DrinkStats' monthly rows could not have produced
@@ -516,7 +514,7 @@ def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
     DrinkFactory(date=date(1999, 2, 20), stdav=5.0)
     DrinkFactory(date=date(1998, 1, 10), stdav=2.5)
 
-    cards = IndexTab.build(main_user, 1999)["cards"]
+    cards = IndexTab.build(main_user, 1999, date(1999, 6, 1))["cards"]
 
     assert cards[1].value == "2"
     assert cards[1].state == "worsening"  # 2 days against last year's 1
@@ -545,8 +543,7 @@ def test_index_tab_build_limit_has_data(
         user=main_user, year=year, quantity=quantity, drink_type=drink_type
     )
 
-    with time_machine.travel(today):
-        card = IndexTab.build(main_user, year)["cards"][5]
+    card = IndexTab.build(main_user, year, date.fromisoformat(today))["cards"][5]
 
     assert card.title == _("Daily limit")
     assert card.state == stat_card.NEUTRAL
@@ -556,9 +553,8 @@ def test_index_tab_build_limit_has_data(
     assert card.edit_url == reverse("drinks:target_update", kwargs={"pk": target.pk})
 
 
-@time_machine.travel("1999-06-01")
 def test_index_tab_build_limit_no_target(main_user):
-    card = IndexTab.build(main_user, 1999)["cards"][5]
+    card = IndexTab.build(main_user, 1999, date(1999, 6, 1))["cards"][5]
 
     assert card.title == _("Daily limit")
     assert card.state == stat_card.EMPTY
@@ -567,7 +563,6 @@ def test_index_tab_build_limit_no_target(main_user):
     assert card.edit_url == reverse("drinks:target_new", kwargs={"tab": "index"})
 
 
-@time_machine.travel("1999-06-01")
 def test_index_tab_build_reads_last_year_without_a_further_query(
     main_user, django_assert_num_queries
 ):
@@ -577,10 +572,9 @@ def test_index_tab_build_reads_last_year_without_a_further_query(
     DrinkFactory(date=date(1998, 1, 10), stdav=2.5)
 
     with django_assert_num_queries(6):
-        IndexTab.build(main_user, 1999)
+        IndexTab.build(main_user, 1999, date(1999, 6, 1))
 
 
-@time_machine.travel("1999-06-01")
 def test_index_tab_build_states_last_year_only_as_far_as_today(main_user):
     """A Drink last November is past this June, so it is no part of the baseline
     the cards state — the Year boundary cuts it off."""
@@ -588,12 +582,14 @@ def test_index_tab_build_states_last_year_only_as_far_as_today(main_user):
     DrinkFactory(date=date(1998, 1, 10), stdav=10.0)
     DrinkFactory(date=date(1998, 11, 20), stdav=100.0)
 
-    cards = {card.title: card for card in IndexTab.build(main_user, 1999)["cards"]}
+    cards = {
+        card.title: card
+        for card in IndexTab.build(main_user, 1999, date(1999, 6, 1))["cards"]
+    }
 
     assert cards[_("Std drinks")].note == f"{_('Last year')} 10"
 
 
-@time_machine.travel("1999-06-01")
 @pytest.mark.parametrize(
     "drink_type, total, targets, limit, decimals",
     [
@@ -627,21 +623,22 @@ def test_chart_consumption_carries_the_limit_and_the_year_average(
     for target in targets:
         DrinkTargetFactory(user=main_user, year=1999, **target)
 
-    chart = IndexTab.build(main_user, 1999)["chart_consumption"].as_dict
+    chart = IndexTab.build(main_user, 1999, date(1999, 6, 1))[
+        "chart_consumption"
+    ].as_dict
 
     assert chart["limit"] == limit
     assert chart["avg"] == pytest.approx(total / 152)  # Jan 1 to Jun 1
     assert chart["decimals"] == decimals
 
 
-@time_machine.travel("1999-06-01")
 def test_index_tab_build_counts_days_dry_from_the_last_drink_not_after_today(
     main_user,
 ):
     DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
     DrinkFactory(date=date(1999, 8, 1), stdav=2.5)
 
-    card = IndexTab.build(main_user, 1999)["cards"][0]
+    card = IndexTab.build(main_user, 1999, date(1999, 6, 1))["cards"][0]
 
     assert card.value == "142"
     assert card.note == "1999-01-10"

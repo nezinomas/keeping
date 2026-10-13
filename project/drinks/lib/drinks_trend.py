@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
 from functools import cached_property
@@ -71,23 +72,19 @@ class TrendStats:
     def __init__(
         self,
         converter: DrinkConverter,
-        current_daily: list[DataRow] | None = None,
-        past_daily: list[DataRow] | None = None,
+        current_daily: Sequence[DataRow] = (),
+        past_daily: Sequence[DataRow] = (),
         target: float = 0.0,
-        year: int | None = None,
-        today: date | None = None,
+        *,
+        year: int,
+        today: date,
     ):
         self._converter = converter
         self._target = target
 
-        self._current_year_records = current_daily or []
-        self._past_year_records = past_daily or []
-        # the selected year, not the rows' - an empty year is still that year
-        self._year = (
-            YearBoundary.for_year(year, today)
-            if year
-            else YearBoundary.from_records(self._current_year_records, today)
-        )
+        self._current_year_records = list(current_daily)
+        self._past_year_records = list(past_daily)
+        self._year = YearBoundary(year=year, today=today)
         self.current_year = self._year.year
 
     @staticmethod
