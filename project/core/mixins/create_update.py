@@ -8,6 +8,8 @@ class CreateUpdateMixin(HxResponseMixin):
     hx_trigger_form = ""
 
     modal_form_title = ""
+    form_action = ""
+    url = ""
 
     def get_hx_trigger_form(self):
         return self.hx_trigger_form
