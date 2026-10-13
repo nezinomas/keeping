@@ -1,4 +1,5 @@
 from datetime import date
+from typing import NamedTuple
 
 import pytest
 from django.db import connection
@@ -27,39 +28,54 @@ from ....transactions.tests.factories import (
     TransactionFactory,
 )
 
-# Calls a save or delete reaches, in order; the edit puts the row before the
-# journal's first record.
+# the edit puts the row before the journal's first record
 EARLIER = {"date": date(1998, 1, 1)}
+
+
+class Wiring(NamedTuple):
+    factory: type
+    edits: dict
+    on_save: list
+    on_delete: list
+
+
+# the receivers a save or delete reaches, in call order
 WIRING = {
-    "Income": (IncomeFactory, EARLIER, ["accounts", "first_record"], ["accounts"]),
-    "Expense": (ExpenseFactory, EARLIER, ["accounts", "first_record"], ["accounts"]),
-    "Saving": (SavingFactory, {}, ["accounts", "savings"], ["accounts", "savings"]),
-    "Transaction": (TransactionFactory, {}, ["accounts"], ["accounts"]),
-    "SavingClose": (
+    "Income": Wiring(
+        IncomeFactory, EARLIER, ["accounts", "first_record"], ["accounts"]
+    ),
+    "Expense": Wiring(
+        ExpenseFactory, EARLIER, ["accounts", "first_record"], ["accounts"]
+    ),
+    "Saving": Wiring(
+        SavingFactory, {}, ["accounts", "savings"], ["accounts", "savings"]
+    ),
+    "Transaction": Wiring(TransactionFactory, {}, ["accounts"], ["accounts"]),
+    "SavingClose": Wiring(
         SavingCloseFactory,
         {},
         ["accounts", "close_year", "savings"],
         ["accounts", "close_year", "savings"],
     ),
-    "SavingChange": (
+    "SavingChange": Wiring(
         SavingChangeFactory,
         {},
         ["close_year", "savings"],
         ["close_year", "savings"],
     ),
-    "Debt": (BorrowFactory, {}, ["accounts"], ["accounts"]),
-    "DebtReturn": (
+    "Debt": Wiring(BorrowFactory, {}, ["accounts"], ["accounts"]),
+    "DebtReturn": Wiring(
         BorrowReturnFactory,
         {},
         ["accounts", "debt"],
         ["accounts", "debt"],
     ),
-    "Pension": (PensionFactory, {}, ["pensions"], ["pensions"]),
-    "SavingType": (SavingTypeFactory, {}, ["accounts", "savings"], []),
-    "PensionType": (PensionTypeFactory, {}, ["pensions"], []),
-    "AccountWorth": (AccountWorthFactory, {}, ["accounts"], []),
-    "SavingWorth": (SavingWorthFactory, {}, ["savings"], []),
-    "PensionWorth": (PensionWorthFactory, {}, ["pensions"], []),
+    "Pension": Wiring(PensionFactory, {}, ["pensions"], ["pensions"]),
+    "SavingType": Wiring(SavingTypeFactory, {}, ["accounts", "savings"], []),
+    "PensionType": Wiring(PensionTypeFactory, {}, ["pensions"], []),
+    "AccountWorth": Wiring(AccountWorthFactory, {}, ["accounts"], []),
+    "SavingWorth": Wiring(SavingWorthFactory, {}, ["savings"], []),
+    "PensionWorth": Wiring(PensionWorthFactory, {}, ["pensions"], []),
 }
 
 
@@ -91,9 +107,9 @@ def listen(mocker):
 
 def created(name):
     """The row is made before the recorder listens, so only its own save counts."""
-    factory, edits = WIRING[name][:2]
-    instance = factory()
-    for field, value in edits.items():
+    wiring = WIRING[name]
+    instance = wiring.factory()
+    for field, value in wiring.edits.items():
         setattr(instance, field, value)
 
     return instance
@@ -107,7 +123,7 @@ def test_save_reaches_receivers_in_order(name, listen):
 
     instance.save()
 
-    assert reached() == WIRING[name][2]
+    assert reached() == WIRING[name].on_save
 
 
 @pytest.mark.django_db
@@ -118,7 +134,7 @@ def test_delete_reaches_receivers_in_order(name, listen):
 
     instance.delete()
 
-    assert reached() == WIRING[name][3]
+    assert reached() == WIRING[name].on_delete
 
 
 @pytest.mark.django_db

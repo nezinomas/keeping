@@ -11,6 +11,8 @@ from ....accounts.tests.factories import (
     AccountBalanceFactory,
     AccountFactory,
 )
+from ....core.lib.db_sync import ACCOUNT_FIELDS, SAVING_FIELDS, BalanceSynchronizer
+from ....core.tests.utils import count_queries
 from ....incomes.tests.factories import IncomeFactory
 from ....pensions.services.model_services import PensionBalanceModelService
 from ....pensions.tests.factories import (
@@ -24,8 +26,6 @@ from ....savings.tests.factories import (
     SavingFactory,
     SavingTypeFactory,
 )
-from ...lib.db_sync import ACCOUNT_FIELDS, SAVING_FIELDS, BalanceSynchronizer
-from ..utils import count_queries
 
 pytestmark = pytest.mark.django_db
 

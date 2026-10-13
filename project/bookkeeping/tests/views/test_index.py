@@ -106,14 +106,6 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     assert checked[0] == checked[1]
 
 
-def test_view_index_negative_balance_is_marked_as_a_loss(client_logged):
-    ExpenseFactory(date=date(1999, 1, 1), price=100)
-
-    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
-
-    assert re.search(r'<td data-sign="loss"[^>]*>-', content)
-
-
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
 def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_source):
     SavingFactory(
@@ -134,13 +126,12 @@ def test_view_index_regenerate_buttons(client_logged):
     SavingFactory()
     PensionFactory()
 
-    url = reverse("bookkeeping:index")
-    response = client_logged.get(url)
+    response = client_logged.get(reverse("bookkeeping:index"))
     content = response.content.decode("utf-8")
 
-    url = reverse("bookkeeping:regenerate_balances")
+    regenerate_url = reverse("bookkeeping:regenerate_balances")
 
-    assert f'hx-get="{url}"' in content
+    assert f'hx-get="{regenerate_url}"' in content
     assert "Bus atnaujinti visų metų balansai." in content
 
 

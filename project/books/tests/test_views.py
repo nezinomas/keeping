@@ -8,7 +8,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...users.tests.factories import UserFactory
-from .. import models, views
+from .. import models
 from ..tabs import TABS
 from .factories import Book, BookFactory, BookTargetFactory
 
@@ -79,23 +79,22 @@ def test_browser_title_names_the_open_tab(client_logged, url_name, title):
     assert f"<title>{title}</title>" in content
 
 
-def test_books_heads_the_page_where_only_a_reader_hears_it(client_logged):
+@pytest.mark.parametrize(
+    "markup",
+    [
+        pytest.param('<h1 class="visually-hidden">Knygos</h1>', id="heading"),
+        pytest.param("js/chart_paper.js", id="chart_theme"),
+        pytest.param(
+            '<h2 class="panel__title">Perskaitytos knygos</h2>', id="finished_panel"
+        ),
+    ],
+)
+def test_books_index_shows_its_heading_chart_theme_and_finished_panel(
+    client_logged, markup
+):
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
-    assert '<h1 class="visually-hidden">Knygos</h1>' in content
-
-
-def test_books_loads_the_paper_chart_theme(client_logged):
-    """The chart wears the skin because this page pulls the theme in."""
-    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
-
-    assert "js/chart_paper.js" in content
-
-
-def test_overview_titles_the_finished_books_panel(client_logged):
-    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
-
-    assert '<h2 class="panel__title">Perskaitytos knygos</h2>' in content
+    assert markup in content
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -180,7 +179,6 @@ def test_overview_cards(client_logged, open_books, finished_books, expected):
 
 
 def test_overview_goal_pencil_opens_target_new(client_logged):
-    """The pencil in the Goal card is the page's only way into the goal form."""
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     link = reverse("books:target_new")
@@ -206,7 +204,6 @@ def test_overview_goal_pencil_opens_target_update(client_logged):
 
 
 def test_data_tab_reads_search_then_table(client_logged):
-    """The table is the variable-height thing, so nothing goes under it."""
     content = client_logged.get(reverse("books:tab_data")).content.decode("utf-8")
 
     assert '<input type="search" name="search"' in content
@@ -271,16 +268,16 @@ def test_list_with_data(client_logged):
 
 @pytest.mark.parametrize(
     ("params", "expected"),
-    [({}, 1), ({"scope": "all"}, 2)],
+    [({}, ["This Year"]), ({"scope": "all"}, ["This Year", "Old Book"])],
     ids=["only_current_year", "all_books"],
 )
 def test_list_scope_picks_the_books(client_logged, params, expected):
-    BookFactory()
-    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31))
+    BookFactory(title="This Year")
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
 
-    response = client_logged.get(reverse("books:list"), params)
+    content = client_logged.get(reverse("books:list"), params).content.decode()
 
-    assert len(response.context["object_list"]) == expected
+    assert [t for t in ("This Year", "Old Book") if t in content] == expected
 
 
 @pytest.mark.parametrize(
@@ -308,7 +305,6 @@ def test_list_empty_state_names_the_year(client_logged):
 
 
 def test_list_all_books_empty_state_does_not_name_a_year(client_logged):
-    """?scope=all lists every year, so its empty state has no year to name."""
     url = reverse("books:list")
     actual = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
 
@@ -324,7 +320,6 @@ def test_load_books_form(client_logged):
 
     actual = response.content.decode()
 
-    assert response.status_code == 200
     assert '<input type="text" name="started" value="1999-01-01"' in actual
     assert url in actual
 
@@ -336,7 +331,7 @@ def test_save_book(client_logged):
 
     response = client_logged.post(url, data, follow=True)
 
-    assert response.resolver_match.func.view_class is views.Lists
+    assert response.redirect_chain == [(reverse("books:list"), 302)]
 
     obj = Book.objects.first()
 
@@ -346,38 +341,72 @@ def test_save_book(client_logged):
 
 
 @pytest.mark.parametrize(
-    ("url_name", "data"),
+    ("url_name", "has_book", "data"),
     [
-        ("books:new", {"started": "", "author": "A", "title": "T"}),
-        ("books:target_new", {"year": -2, "quantity": "x"}),
+        ("books:new", False, {"started": "", "author": "A", "title": "T"}),
+        (
+            "books:update",
+            True,
+            {
+                "started": "",
+                "ended": "2010-12-31",
+                "author": "Author",
+                "title": "Book Title",
+                "remark": "Pastaba",
+            },
+        ),
+        ("books:target_new", False, {"year": -2, "quantity": "x"}),
     ],
-    ids=["book", "goal"],
+    ids=["book", "book_update", "goal"],
 )
-def test_an_invalid_post_returns_the_form_invalid(client_logged, url_name, data):
-    response = client_logged.post(reverse(url_name), data)
+def test_an_invalid_post_returns_the_form_invalid(
+    client_logged, url_name, has_book, data
+):
+    kwargs = {}
+    if has_book:
+        kwargs = {"pk": BookFactory().pk}
+
+    response = client_logged.post(reverse(url_name, kwargs=kwargs), data)
 
     assert not response.context["form"].is_valid()
 
 
-def test_books_update(client_logged):
+@pytest.mark.parametrize(
+    ("data", "shown", "hidden"),
+    [
+        (
+            {
+                "started": "1999-01-01",
+                "ended": "1999-01-31",
+                "author": "AAA",
+                "title": "TTT",
+            },
+            ["1999-01-01", "1999-01-31", "AAA", "TTT"],
+            [],
+        ),
+        (
+            {
+                "started": "1999-12-31",
+                "ended": "2010-12-31",
+                "author": "Author",
+                "title": "Book Title",
+                "remark": "Pastaba",
+            },
+            [],
+            ["2010-12-31"],
+        ),
+    ],
+    ids=["same_year", "another_year"],
+)
+def test_books_update(client_logged, data, shown, hidden):
     book = BookFactory()
-
-    data = {
-        "started": "1999-01-01",
-        "ended": "1999-01-31",
-        "author": "AAA",
-        "title": "TTT",
-    }
     url = reverse("books:update", kwargs={"pk": book.pk})
 
     response = client_logged.post(url, data, follow=True)
 
     actual = response.content.decode("utf-8")
-
-    assert "1999-01-01" in actual
-    assert "1999-01-31" in actual
-    assert "AAA" in actual
-    assert "TTT" in actual
+    assert all(text in actual for text in shown)
+    assert not any(text in actual for text in hidden)
 
 
 def test_books_load_update_form(client_logged):
@@ -392,24 +421,6 @@ def test_books_load_update_form(client_logged):
     assert "Author" in actual
     assert "Book Title" in actual
     assert "Remark" in actual
-
-
-def test_book_update_to_another_year(client_logged):
-    book = BookFactory()
-
-    data = {
-        "started": "1999-12-31",
-        "ended": "2010-12-31",
-        "author": "Author",
-        "title": "Book Title",
-        "remark": "Pastaba",
-    }
-    url = reverse("books:update", kwargs={"pk": book.pk})
-
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
-
-    assert "2010-12-31" not in actual
 
 
 @time_machine.travel("2000-03-03")
@@ -448,24 +459,6 @@ def test_books_form_of_another_users_book_is_not_found(
     assert response.status_code == 404
 
 
-def test_book_update_invalid_start_date(client_logged):
-    book = BookFactory()
-
-    data = {
-        "started": "",
-        "ended": "2010-12-31",
-        "author": "Author",
-        "title": "Book Title",
-        "remark": "Pastaba",
-    }
-    url = reverse("books:update", kwargs={"pk": book.pk})
-
-    response = client_logged.post(url, data)
-    actual = response.context["form"]
-
-    assert not actual.is_valid()
-
-
 def test_view_books_delete_load_form(client_logged):
     p = BookFactory()
 
@@ -479,50 +472,39 @@ def test_view_books_delete_load_form(client_logged):
     assert "Ar tikrai norite ištrinti: <strong>Book Title</strong>?" in actual
 
 
-def test_view_books_delete(client_logged):
-    p = BookFactory()
+@pytest.mark.parametrize(
+    ("owned", "remaining"), [(True, 0), (False, 1)], ids=["own_book", "other_user"]
+)
+def test_books_delete(client_logged, second_user, owned, remaining):
+    book = BookFactory() if owned else BookFactory(user=second_user)
 
     assert models.Book.objects.all().count() == 1
-    url = reverse("books:delete", kwargs={"pk": p.pk})
+    url = reverse("books:delete", kwargs={"pk": book.pk})
 
     client_logged.post(url, {}, follow=True)
 
-    assert models.Book.objects.all().count() == 0
+    assert models.Book.objects.all().count() == remaining
 
 
-def test_books_delete_other_user_post_form(client_logged, second_user):
-    obj = BookFactory(user=second_user)
-
-    url = reverse("books:delete", kwargs={"pk": obj.pk})
-    client_logged.post(url)
-
-    assert models.Book.objects.all().count() == 1
-
-
-def test_search_not_found(client_logged):
+@pytest.mark.parametrize(
+    ("search", "expected"),
+    [
+        ("xxx", ["Nieko nerasta"]),
+        ("1999 title", ["1999-01-01", "Book Title", "Author"]),
+    ],
+    ids=["not_found", "found"],
+)
+def test_search(client_logged, search, expected):
     BookFactory()
 
     url = reverse("books:search")
-    response = client_logged.get(url, {"search": "xxx"})
+    response = client_logged.get(url, {"search": search})
     actual = response.content.decode("utf-8")
 
-    assert "Nieko nerasta" in actual
-
-
-def test_search_found(client_logged):
-    BookFactory()
-
-    url = reverse("books:search")
-    response = client_logged.get(url, {"search": "1999 title"})
-    actual = response.content.decode("utf-8")
-
-    assert "1999-01-01" in actual
-    assert "Book Title" in actual
-    assert "Author" in actual
+    assert all(text in actual for text in expected)
 
 
 def test_search_reset_url_restores_the_year(client_logged):
-    """Reset is what ends a search: its url is the selected year's list again."""
     BookFactory(title="This Year")
     BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
 
@@ -573,8 +555,11 @@ def test_pagination(client_logged, name, params, expected, first_number):
     assert numbers[:1] == [first_number]
 
 
-def test_target_load_form(client_logged):
+@pytest.mark.parametrize("update", [False, True], ids=["new", "update"])
+def test_target_load_form(client_logged, update):
     url = reverse("books:target_new")
+    if update:
+        url = reverse("books:target_update", kwargs={"pk": BookTargetFactory().pk})
 
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
@@ -584,33 +569,12 @@ def test_target_load_form(client_logged):
     assert '<input type="text" name="year" value="1999"' in actual
 
 
-def test_target_new(client_logged):
-    data = {"year": 1999, "quantity": 66}
+@pytest.mark.parametrize("update", [False, True], ids=["new", "update"])
+def test_target_save(client_logged, update):
     url = reverse("books:target_new")
-    client_logged.post(url, data)
+    if update:
+        url = reverse("books:target_update", kwargs={"pk": BookTargetFactory().pk})
+
+    client_logged.post(url, {"year": 1999, "quantity": 66})
 
     assert models.BookTarget.objects.first().quantity == 66
-
-
-def test_target_update(client_logged):
-    p = BookTargetFactory()
-
-    data = {"year": 1999, "quantity": 66}
-    url = reverse("books:target_update", kwargs={"pk": p.pk})
-
-    client_logged.post(url, data)
-
-    assert models.BookTarget.objects.first().quantity == 66
-
-
-def test_target_load_update_form(client_logged):
-    p = BookTargetFactory()
-
-    data = {"year": 1999, "quantity": 66}
-    url = reverse("books:target_update", kwargs={"pk": p.pk})
-
-    response = client_logged.get(url, data)
-    actual = response.content.decode("utf-8")
-
-    assert url in actual
-    assert '<input type="text" name="year" value="1999"' in actual

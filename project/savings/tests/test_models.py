@@ -57,18 +57,20 @@ def test_saving_str():
     assert str(i) == "1999-01-01: Savings"
 
 
-def test_saving_type_fee_source_defaults_to_investment():
-    actual = SavingTypeFactory()
+@pytest.mark.parametrize(
+    "fields, expect",
+    [
+        pytest.param({}, "investment", id="defaults_to_investment"),
+        pytest.param(
+            {"fee_source": SavingType.FeeSource.ACCOUNT}, "account", id="the_account"
+        ),
+    ],
+)
+def test_saving_type_fee_source(fields, expect):
+    actual = SavingTypeFactory(**fields)
 
     actual.refresh_from_db()
-    assert actual.fee_source == SavingType.FeeSource.INVESTMENT
-
-
-def test_saving_type_fee_source_can_be_the_account():
-    actual = SavingTypeFactory(fee_source=SavingType.FeeSource.ACCOUNT)
-
-    actual.refresh_from_db()
-    assert actual.fee_source == "account"
+    assert actual.fee_source == expect
 
 
 @factory.django.mute_signals(post_save)
@@ -102,15 +104,6 @@ def test_saving_type_items_filter_closed_in_future_year_from_get_user(main_user)
 
     assert actual.count() == 1
     assert actual[0].title == "T2"
-
-
-@factory.django.mute_signals(post_save, post_delete)
-def test_saving_type_day_sum_empty_month(main_user, savings):
-    expect = []
-
-    actual = list(SavingModelService(main_user).sum_by_day_and_type(1999, 2))
-
-    assert expect == actual
 
 
 @factory.django.mute_signals(post_save)
@@ -234,25 +227,35 @@ def test_saving_year_sum_count_qs(main_user, django_assert_max_num_queries):
 
 
 @factory.django.mute_signals(post_save, post_delete)
-def test_saving_month_sum(main_user, savings):
-    expect = [
-        {"date": date(1999, 1, 1), "sum": 350, "title": "Saving1"},
-        {"date": date(1999, 1, 1), "sum": 225, "title": "Saving2"},
-    ]
-
-    actual = list(SavingModelService(main_user).sum_by_month_and_type(1999))
-
-    assert expect == actual
-
-
-@factory.django.mute_signals(post_save, post_delete)
-def test_saving_type_day_sum(main_user, savings):
-    expect = [
-        {"date": date(1999, 1, 1), "sum": 350, "title": "Saving1"},
-        {"date": date(1999, 1, 1), "sum": 225, "title": "Saving2"},
-    ]
-
-    actual = list(SavingModelService(main_user).sum_by_day_and_type(1999, 1))
+@pytest.mark.parametrize(
+    "sums, expect",
+    [
+        pytest.param(
+            lambda s: s.sum_by_month_and_type(1999),
+            [
+                {"date": date(1999, 1, 1), "sum": 350, "title": "Saving1"},
+                {"date": date(1999, 1, 1), "sum": 225, "title": "Saving2"},
+            ],
+            id="month_and_type",
+        ),
+        pytest.param(
+            lambda s: s.sum_by_day_and_type(1999, 1),
+            [
+                {"date": date(1999, 1, 1), "sum": 350, "title": "Saving1"},
+                {"date": date(1999, 1, 1), "sum": 225, "title": "Saving2"},
+            ],
+            id="day_and_type",
+        ),
+        pytest.param(lambda s: s.sum_by_day_and_type(1999, 2), [], id="empty_month"),
+        pytest.param(
+            lambda s: s.sum_by_month(1999),
+            [{"date": date(1999, 1, 1), "sum": 575, "title": "savings"}],
+            id="month",
+        ),
+    ],
+)
+def test_saving_sums_of_the_fixture_savings(main_user, savings, sums, expect):
+    actual = list(sums(SavingModelService(main_user)))
 
     assert expect == actual
 
@@ -268,48 +271,29 @@ def test_saving_day_sum(main_user, savings_extra):
     assert expect == actual
 
 
-@factory.django.mute_signals(post_save)
-def test_saving_months_sum(main_user, savings):
-    expect = [{"date": date(1999, 1, 1), "sum": 575, "title": "savings"}]
-
-    actual = list(SavingModelService(main_user).sum_by_month(1999))
-
-    assert expect == actual
-
-
 def test_saving_months_sum_takes_no_month(main_user):
     with pytest.raises(TypeError):
         SavingModelService(main_user).sum_by_month(1999, 1)
 
 
-def test_saving_items_query_count(main_user, django_assert_max_num_queries):
+@pytest.mark.parametrize(
+    "query",
+    [
+        pytest.param(lambda s: s.items().values(), id="items"),
+        pytest.param(lambda s: s.year(1999).values(), id="year"),
+        pytest.param(lambda s: s.sum_by_month(1999).values(), id="month_saving"),
+        pytest.param(
+            lambda s: s.sum_by_month_and_type(1999).values(), id="month_type_sum"
+        ),
+        pytest.param(
+            lambda s: s.sum_by_day_and_type(1999, 1).values(), id="day_saving_type"
+        ),
+        pytest.param(lambda s: s.sum_by_day(1999, 1).values(), id="day_saving"),
+    ],
+)
+def test_saving_query_count(main_user, django_assert_max_num_queries, query):
     with django_assert_max_num_queries(1):
-        SavingModelService(main_user).items().values()
-
-
-def test_saving_year_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        SavingModelService(main_user).year(1999).values()
-
-
-def test_saving_month_saving_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        SavingModelService(main_user).sum_by_month(1999).values()
-
-
-def test_saving_month_type_sum_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        SavingModelService(main_user).sum_by_month_and_type(1999).values()
-
-
-def test_saving_day_saving_type_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        SavingModelService(main_user).sum_by_day_and_type(1999, 1).values()
-
-
-def test_saving_day_saving_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        SavingModelService(main_user).sum_by_day(1999, 1).values()
+        query(SavingModelService(main_user))
 
 
 @time_machine.travel("1999-06-01")
@@ -792,33 +776,22 @@ def test_saving_balance_new_post_save_saving_balance(main_user):
     assert actual.fee == 5
 
 
-def test_saving_balance_filter_by_one_type(main_user):
-    SavingFactory(saving_type=SavingTypeFactory(title="1", type="x"))
-    SavingFactory(saving_type=SavingTypeFactory(title="2", type="z"))
-
-    actual = SavingBalanceModelService(main_user).year_of_types(1999, ["x"])
-
-    assert actual.count() == 1
-
-    actual = actual[0]
-
-    assert actual.saving_type.title == "1"
-
-    assert actual.incomes == 150
-    assert actual.fee == 5
-
-
-def test_saving_balance_filter_by_few_types(main_user):
+@pytest.mark.parametrize(
+    "types, expect_titles",
+    [
+        pytest.param(["x"], ["1"], id="one_type"),
+        pytest.param(["x", "y"], ["1", "2"], id="few_types"),
+    ],
+)
+def test_saving_balance_filter_by_types(main_user, types, expect_titles):
     SavingFactory(saving_type=SavingTypeFactory(title="1", type="x"))
     SavingFactory(saving_type=SavingTypeFactory(title="2", type="y"))
     SavingFactory(saving_type=SavingTypeFactory(title="3", type="z"))
 
-    actual = SavingBalanceModelService(main_user).year_of_types(1999, ["x", "y"])
+    actual = SavingBalanceModelService(main_user).year_of_types(1999, types)
 
-    assert actual.count() == 2
-
-    assert actual[0].saving_type.title == "1"
-    assert actual[1].saving_type.title == "2"
+    assert [a.saving_type.title for a in actual] == expect_titles
+    assert [(a.incomes, a.fee) for a in actual] == [(150, 5)] * len(expect_titles)
 
 
 def test_saving_balance_year_takes_no_types(main_user):
