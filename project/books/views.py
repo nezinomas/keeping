@@ -69,18 +69,19 @@ class Lists(ListViewMixin):
         return scope
 
     def get_context_data(self, **kwargs):
-        page = int(self.request.GET.get("page", 1))
         sql = self.get_queryset()
         paginator = CountlessPaginator(
-            query=sql, total_records=len(sql), per_page=self.per_page
+            query=sql, total_records=sql.count(), per_page=self.per_page
         )
-        page_range = paginator.get_elided_page_range(page=page)
+        page_obj = paginator.get_page(self.request.GET.get("page", 1))
+        page_range = paginator.get_elided_page_range(page=page_obj.current_page)
+        first_item = paginator.count - paginator.per_page * (page_obj.current_page - 1)
 
         context = {
-            "object_list": paginator.get_page(page),
+            "object_list": page_obj,
             "url": reverse("books:list"),
             "scope": self.scope,
-            "first_item": paginator.count - paginator.per_page * (page - 1),
+            "first_item": first_item,
             "paginator_object": {
                 "total_pages": paginator.total_pages,
                 "page_range": page_range,
