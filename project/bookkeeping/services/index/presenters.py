@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.utils.translation import gettext as _
 
 from ....core.lib.translation import month_names
@@ -82,12 +84,12 @@ class IndexContextBuilder:
         }
 
 
-def load_service(user: User) -> IndexContextBuilder:
+def load_service(user: User, today: date) -> IndexContextBuilder:
     year = user.year
     provider = IndexDataProvider(user)
     dto = provider.get_data()
 
     df = MakeDataFrame.for_year(year, dto.monthly_data, INDEX_COLUMNS)
-    balance = YearBalance(data=df, amount_start=dto.amount_start)
+    balance = YearBalance(data=df, amount_start=dto.amount_start, today=today)
 
     return IndexContextBuilder(balance=balance, debts=dto.debts)

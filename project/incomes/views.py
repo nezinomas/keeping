@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
@@ -41,7 +43,7 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
     tab = IncomeTab.resolve("index")
 
     def get_context_data(self, **kwargs):
-        boundary = YearBoundary.for_year(self.request.user.year)
+        boundary = YearBoundary(self.request.user.year, date.today())
         service = IncomeModelService(self.request.user)
 
         return {
@@ -84,7 +86,7 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        boundary = YearBoundary.for_year(user.year)
+        boundary = YearBoundary(user.year, date.today())
         service = IncomeModelService(user)
         types = IncomeTypeModelService(user).items().values("id", "title")
 

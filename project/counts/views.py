@@ -1,4 +1,5 @@
 import contextlib
+from datetime import date
 
 from django.db.models import Min
 from django.shortcuts import redirect
@@ -72,7 +73,7 @@ class TabViewMixin(CoreTabViewMixin):
         }
 
     def _life(self) -> CounterLife:
-        return CounterLife.read(self.request.user, self.object.slug)
+        return CounterLife.read(self.request.user, self.object.slug, date.today())
 
 
 class TabIndex(TabViewMixin, TemplateViewMixin):

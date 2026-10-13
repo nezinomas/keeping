@@ -32,7 +32,7 @@ from .tabs import DEFAULT_TAB, TABS, DetailedTab
 class ReloadIndexContextDataMixin:
     def get_context_data(self, **kwargs):
         user = self.request.user
-        ind = services.index.load_service(user)
+        ind = services.index.load_service(user, date.today())
         exp = services.expenses.load_service(user)
 
         context = {
@@ -255,7 +255,7 @@ class Summary(TemplateViewMixin):
     template_name = "bookkeeping/summary.html"
 
     def get_context_data(self, **kwargs):
-        context = services.chart_summary.load_service(self.request.user)
+        context = services.chart_summary.load_service(self.request.user, date.today())
         return super().get_context_data(**kwargs) | context
 
 

@@ -89,7 +89,7 @@ class TypicalYearProfile:
     def _days_reached(year: int, month: int, today: date) -> int:
         """The days of one month of one year the calendar has reached: a finished
         year runs to Dec 31, the running one only to today."""
-        end = YearBoundary.for_year(year, today).end_date
+        end = YearBoundary(year, today).end_date
 
         if month > end.month:
             return 0

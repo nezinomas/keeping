@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 
 from ...core.lib.year_boundary import YearBoundary
@@ -6,7 +8,7 @@ from .balance_base import BalanceBase
 
 
 class YearBalance(BalanceBase):
-    def __init__(self, data: MakeDataFrame, amount_start: int = 0):
+    def __init__(self, data: MakeDataFrame, amount_start: int = 0, *, today: date):
         """
         data: MakeDataFrame object
 
@@ -25,6 +27,7 @@ class YearBalance(BalanceBase):
         """
         self.year = data.date_range.year
         self._amount_start = amount_start
+        self._today = today
         self._balance = self._calc_balance_and_money_flow(data.data)
 
         super().__init__(self._balance)
@@ -52,7 +55,7 @@ class YearBalance(BalanceBase):
 
     @property
     def avg_expenses(self) -> float:
-        boundary = YearBoundary.for_year(self.year)
+        boundary = YearBoundary(self.year, self._today)
 
         # a year still running averages over the months it has reached; a
         # finished one falls through to the base average over months with data

@@ -44,9 +44,9 @@ def set_date_with_user_year(user):
     return datetime(user.year, now.month, day)
 
 
-def yday(year: int) -> tuple[int, int]:
+def yday(year: int, today: date) -> tuple[int, int]:
     """Days of the year gone by, and days it holds."""
-    boundary = YearBoundary.for_year(year)
+    boundary = YearBoundary(year, today)
 
     elapsed = 0
     if year <= boundary.today.year:

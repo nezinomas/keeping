@@ -1,5 +1,6 @@
 from collections import Counter
 from dataclasses import dataclass
+from datetime import date
 from functools import cached_property
 
 from django.db.models import F
@@ -22,7 +23,7 @@ class CounterLife:
     boundary: YearBoundary
 
     @classmethod
-    def read(cls, user: User, count_type: str) -> "CounterLife":
+    def read(cls, user: User, count_type: str, today: date) -> "CounterLife":
         return cls(
             user=user,
             count_type=count_type,
@@ -31,7 +32,7 @@ class CounterLife:
                 .items(count_type=count_type)
                 .values("date", qty=F("quantity"))
             ),
-            boundary=YearBoundary.for_year(user.year),
+            boundary=YearBoundary(user.year, today),
         )
 
     @cached_property
