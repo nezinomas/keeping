@@ -38,21 +38,13 @@ class ConsumptionYear:
     @cached_property
     def earlier(self) -> PastRecord | NoPastRecord:
         """The last Drink before the year, so its first Gap reaches back."""
-        latest = self._service.latest_date_before(self.year)
-        if latest is None:
-            return NoPastRecord()
-
-        return PastRecord(latest)
+        return self._service.latest_record_before(self.year)
 
     @cached_property
     def latest(self) -> PastRecord | NoPastRecord:
         """The last Drink on or before today, none later than the year's end."""
         through = min(date.today(), date(self.year, 12, 31))
-        latest = self._service.latest_date(through)
-        if latest is None:
-            return NoPastRecord()
-
-        return PastRecord(latest)
+        return self._service.latest_record(through)
 
     @cached_property
     def previous(self) -> "ConsumptionYear":
