@@ -1,3 +1,5 @@
+from typing import NamedTuple
+
 import pytest
 from django.db import connection
 from django.forms.models import modelformset_factory
@@ -11,7 +13,11 @@ from ....pensions.tests.factories import PensionTypeFactory
 from ....savings.tests.factories import SavingTypeFactory
 from ... import views
 from ...models import AccountWorth, PensionWorth, SavingWorth
-from ..factories import AccountWorthFactory
+from ..factories import (
+    AccountWorthFactory,
+    PensionWorthFactory,
+    SavingWorthFactory,
+)
 from ..helper import post_data
 
 
@@ -32,45 +38,66 @@ def test_post_writes_all_rows_in_one_insert(client_logged, count):
     assert AccountWorth.objects.count() == count
 
 
-def worth_post_queries(client, url, factory, fund_field, count, duplicate):
-    funds = [factory(title=f"F{count}-{i}") for i in range(count)]
-    rows = [{"date": "1999-9-9", "price": "5", fund_field: f.pk} for f in funds]
+class Worth(NamedTuple):
+    url: str
+    fund_factory: type
+    worth_factory: type
+    fund_field: str
+    model: type
+
+
+WORTH_FORMSETS = [
+    pytest.param(
+        Worth(
+            "bookkeeping:accounts_worth_new",
+            AccountFactory,
+            AccountWorthFactory,
+            "account",
+            AccountWorth,
+        ),
+        id="account",
+    ),
+    pytest.param(
+        Worth(
+            "bookkeeping:savings_worth_new",
+            SavingTypeFactory,
+            SavingWorthFactory,
+            "saving_type",
+            SavingWorth,
+        ),
+        id="saving_type",
+    ),
+    pytest.param(
+        Worth(
+            "bookkeeping:pensions_worth_new",
+            PensionTypeFactory,
+            PensionWorthFactory,
+            "pension_type",
+            PensionWorth,
+        ),
+        id="pension",
+    ),
+]
+
+
+def worth_post_queries(client, worth, count, duplicate):
+    funds = [worth.fund_factory(title=f"F{count}-{i}") for i in range(count)]
+    rows = [{"date": "1999-9-9", "price": "5", worth.fund_field: f.pk} for f in funds]
     if duplicate:
-        rows[-1][fund_field] = funds[0].pk
+        rows[-1][worth.fund_field] = funds[0].pk
 
     with CaptureQueriesContext(connection) as queries:
-        client.post(reverse(url), post_data(rows))
+        client.post(reverse(worth.url), post_data(rows))
 
     return len(queries)
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("duplicate", [False, True], ids=["valid", "duplicate"])
-@pytest.mark.parametrize(
-    "url, factory, fund_field",
-    [
-        pytest.param(
-            "bookkeeping:accounts_worth_new", AccountFactory, "account", id="account"
-        ),
-        pytest.param(
-            "bookkeeping:savings_worth_new",
-            SavingTypeFactory,
-            "saving_type",
-            id="saving_type",
-        ),
-        pytest.param(
-            "bookkeeping:pensions_worth_new",
-            PensionTypeFactory,
-            "pension_type",
-            id="pension",
-        ),
-    ],
-)
-def test_post_query_count_does_not_grow_with_the_rows(
-    client_logged, url, factory, fund_field, duplicate
-):
-    two = worth_post_queries(client_logged, url, factory, fund_field, 2, duplicate)
-    six = worth_post_queries(client_logged, url, factory, fund_field, 6, duplicate)
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
+def test_post_query_count_does_not_grow_with_the_rows(client_logged, worth, duplicate):
+    two = worth_post_queries(client_logged, worth, 2, duplicate)
+    six = worth_post_queries(client_logged, worth, 6, duplicate)
 
     assert two == six
 
@@ -105,42 +132,42 @@ def test_worth_form_lists_the_users_funds(
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "url, factory, fund_field, model",
-    [
-        pytest.param(
-            "bookkeeping:accounts_worth_new",
-            AccountFactory,
-            "account",
-            AccountWorth,
-            id="account",
-        ),
-        pytest.param(
-            "bookkeeping:savings_worth_new",
-            SavingTypeFactory,
-            "saving_type",
-            SavingWorth,
-            id="saving_type",
-        ),
-        pytest.param(
-            "bookkeeping:pensions_worth_new",
-            PensionTypeFactory,
-            "pension_type",
-            PensionWorth,
-            id="pension",
-        ),
-    ],
-)
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
 def test_worth_form_rejects_a_fund_of_another_journal(
-    client_logged, second_user, url, factory, fund_field, model
+    client_logged, second_user, worth
 ):
-    foreign = factory(title="Foreign", journal=second_user.journal)
-    data = post_data([{"date": "1999-2-3", "price": "0.01", fund_field: foreign.pk}])
+    foreign = worth.fund_factory(title="Foreign", journal=second_user.journal)
+    row = {"date": "1999-2-3", "price": "0.01", worth.fund_field: foreign.pk}
 
-    actual = client_logged.post(reverse(url), data).content.decode("utf-8")
+    actual = client_logged.post(reverse(worth.url), post_data([row]))
 
-    assert f'aria-describedby="id_form-0-{fund_field}_error"' in actual
-    assert not model.objects.exists()
+    error = f'aria-describedby="id_form-0-{worth.fund_field}_error"'
+    assert error in actual.content.decode("utf-8")
+    assert not worth.model.objects.exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("posted_id", ["foreign", "missing"])
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
+def test_worth_form_ignores_a_posted_row_id(
+    client_logged, second_user, worth, posted_id
+):
+    foreign_fund = worth.fund_factory(title="Foreign", journal=second_user.journal)
+    foreign = worth.worth_factory(price=5, **{worth.fund_field: foreign_fund})
+    own = worth.fund_factory(title="Own")
+    row_id = {"foreign": foreign.pk, "missing": foreign.pk + 1}[posted_id]
+    row = {"id": row_id, "date": "1999-2-3", "price": "7", worth.fund_field: own.pk}
+
+    with CaptureQueriesContext(connection) as queries:
+        data = post_data([row]) | {"form-INITIAL_FORMS": 1}
+        client_logged.post(reverse(worth.url), data)
+
+    foreign.refresh_from_db()
+    assert (getattr(foreign, worth.fund_field), foreign.price) == (foreign_fund, 5)
+    own_rows = worth.model.objects.filter(**{worth.fund_field: own})
+    assert list(own_rows.values_list("price", flat=True)) == [700]
+    row_reads = f'SELECT "{worth.model._meta.db_table}"."id"'
+    assert not [q for q in queries if q["sql"].startswith(row_reads)]
 
 
 @pytest.mark.django_db

@@ -9,6 +9,14 @@ from ...users.models import User
 
 
 class BaseTypeFormSet(BaseModelFormSet):
+    # Only writes new rows: a posted id, any journal's or none, is never read.
+    def initial_form_count(self):
+        return 0
+
+    def add_fields(self, form, index):
+        super().add_fields(form, index)
+        del form.fields[self.model._meta.pk.name]
+
     def clean(self):
         if any(self.errors):
             return
