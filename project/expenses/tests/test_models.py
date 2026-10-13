@@ -3,7 +3,6 @@ from datetime import date
 import factory
 import pytest
 import time_machine
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, models, transaction
@@ -28,7 +27,6 @@ from .factories import (
 )
 
 pytestmark = pytest.mark.django_db
-is_sqlite = "sqlite3" in settings.DATABASES["default"]["ENGINE"]
 
 
 def test_expense_type_str():
@@ -757,21 +755,18 @@ def test_sum_by_day_and_type_ignores_other_dates(main_user):
     assert actual[0]["sum"] == 10
 
 
-@pytest.mark.skipif(
-    is_sqlite, reason="SQLite does not support MariaDB's FORMAT() function."
-)
 @pytest.mark.parametrize(
     "lang, expected",
     [
-        pytest.param("lt", "12,50", id="lt"),
-        pytest.param("en", "12.50", id="en"),
+        pytest.param("lt", "1.234,56", id="lt"),
+        pytest.param("en", "1,234.56", id="en"),
     ],
 )
 def test_expenses_list_dynamic_locale(main_user, lang, expected):
     main_user.journal.lang = lang
     main_user.journal.save()
 
-    ExpenseFactory(price=1250)
+    ExpenseFactory(price=123456)
 
     qs = ExpenseModelService(main_user).items()
     actual = list(ExpenseModelService(main_user).expenses_list(qs))
