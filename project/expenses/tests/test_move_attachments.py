@@ -3,7 +3,7 @@ from io import StringIO
 from pathlib import Path
 
 import pytest
-from django.core.files.storage import FileSystemStorage
+from django.core.files.storage import FileSystemStorage, default_storage
 from django.core.management import call_command
 from django.db import connection
 from django.db.models import QuerySet
@@ -36,9 +36,16 @@ def _pk_folder(expense):
     return f"{expense.expense_type.journal_id}/{expense.expense_type.pk}"
 
 
+def _on_disk():
+    rows = Expense.objects.exclude(attachment="")
+    return {e.pk for e in rows if default_storage.exists(e.attachment.name)}
+
+
 def _run(*args):
+    before = _on_disk()
     out = StringIO()
     call_command("move_attachments", *args, stdout=out)
+    assert before <= _on_disk(), "a row lost its file"
     return out.getvalue().splitlines()
 
 
