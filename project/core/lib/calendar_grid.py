@@ -47,6 +47,22 @@ class CalendarYearViewModel:
     legend: CalendarLegendViewModel = CalendarLegendViewModel(bounds=())
 
 
+@dataclass(frozen=True)
+class DayCell:
+    day_date: date
+    level: int
+    qty: float
+    gap: int
+    is_today: bool
+    is_future: bool
+
+
+@dataclass(frozen=True)
+class CalendarTitles:
+    quantity: str
+    empty: str
+
+
 def _fmt(bound: float) -> str:
     return f"{bound:g}"
 
@@ -57,27 +73,18 @@ def _calc_level(val: float, thresholds: Sequence[float]) -> int:
     return 1 + sum(1 for bound in thresholds if val >= bound)
 
 
-def _label(
-    day_date: date,
-    level: int,
-    qty: float,
-    gap: int,
-    quantity_title: str,
-    empty_title: str,
-    is_today: bool,
-    is_future: bool,
-) -> str:
-    stamp = f"{day_date:%Y-%m-%d}"
+def _label(cell: DayCell, titles: CalendarTitles) -> str:
+    stamp = f"{cell.day_date:%Y-%m-%d}"
     gap_title = _("Gap")
 
-    if level:
-        return f"{stamp}\n{quantity_title}: {qty:.1f}\n{gap_title}: {gap}d."
-    if is_future:
+    if cell.level:
+        return f"{stamp}\n{titles.quantity}: {cell.qty:.1f}\n{gap_title}: {cell.gap}d."
+    if cell.is_future:
         return ""
-    if is_today:
-        return f"{stamp}\n{gap_title}: {gap}d."
+    if cell.is_today:
+        return f"{stamp}\n{gap_title}: {cell.gap}d."
 
-    return "\n".join(filter(None, (stamp, empty_title)))
+    return "\n".join(filter(None, (stamp, titles.empty)))
 
 
 class CalendarGrid:
@@ -112,6 +119,7 @@ class CalendarGrid:
             latest = PastRecord(max(past_dates))
 
         today_gap = latest.days_to(today)
+        titles = CalendarTitles(quantity=quantity_title, empty=empty_title)
 
         months = [
             cls._build_month(
@@ -121,8 +129,7 @@ class CalendarGrid:
                 qty_by_date,
                 gap_by_date,
                 today_gap,
-                quantity_title,
-                empty_title,
+                titles,
                 thresholds,
             )
             for month in range(1, 13)
@@ -169,8 +176,7 @@ class CalendarGrid:
         qty_by_date: dict[date, float],
         gap_by_date: dict[date, int],
         today_gap: int,
-        quantity_title: str,
-        empty_title: str,
+        titles: CalendarTitles,
         thresholds: Sequence[float],
     ) -> CalendarMonthViewModel:
         year = boundary.year
@@ -185,8 +191,7 @@ class CalendarGrid:
                 qty_by_date,
                 gap_by_date,
                 today_gap,
-                quantity_title,
-                empty_title,
+                titles,
                 thresholds,
             )
             for day in range(1, total_days + 1)
@@ -208,8 +213,7 @@ class CalendarGrid:
         qty_by_date: dict[date, float],
         gap_by_date: dict[date, int],
         today_gap: int,
-        quantity_title: str,
-        empty_title: str,
+        titles: CalendarTitles,
         thresholds: Sequence[float],
     ) -> CalendarDayViewModel:
         level = _calc_level(val_by_date.get(day_date, 0.0), thresholds)
@@ -221,15 +225,20 @@ class CalendarGrid:
         if is_today and level == 0:
             gap = today_gap
 
-        label = _label(
-            day_date, level, qty, gap, quantity_title, empty_title, is_today, is_future
+        cell = DayCell(
+            day_date=day_date,
+            level=level,
+            qty=qty,
+            gap=gap,
+            is_today=is_today,
+            is_future=is_future,
         )
 
         return CalendarDayViewModel(
-            day=day_date.day,
-            level=level,
-            is_today=is_today,
-            is_future=is_future,
-            label=label,
-            gap=gap,
+            day=cell.day_date.day,
+            level=cell.level,
+            is_today=cell.is_today,
+            is_future=cell.is_future,
+            label=_label(cell, titles),
+            gap=cell.gap,
         )
