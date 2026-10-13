@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
 
@@ -16,9 +15,6 @@ class PlanModelService(DatedModelService):
 
     def items(self):
         return self.objects
-
-    @abstractmethod
-    def pivot_table(self, year: int): ...
 
     def generic_pivot_table(self, year: int, key_func):
         grouped = defaultdict(dict)

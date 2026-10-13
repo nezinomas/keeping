@@ -1,7 +1,7 @@
 from django_htmx.http import HttpResponseClientRedirect
 
 from ..lib.utils import http_htmx_response
-from .create_update import HxResponseMixin
+from .htmx import HxResponseMixin
 
 
 class DeleteMixin(HxResponseMixin):
