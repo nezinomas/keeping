@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from io import StringIO
 from pathlib import Path
@@ -30,6 +31,10 @@ def _legacy(media, folder, name="1999.01_x.jpg", *, on_disk=True, **kwargs):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(name.encode())
     return expense
+
+
+def _boom(*args, **kwargs):
+    raise RuntimeError
 
 
 def _pk_folder(expense):
@@ -68,7 +73,7 @@ def test_moves_into_pk_folder(media):
 
 @pytest.mark.parametrize(
     "content, named_by_a_row",
-    [(b"other", False), (b"1999.01_x.jpg", True)],
+    [(b"other", False), (b"1999.01_y.jpg", False), (b"1999.01_x.jpg", True)],
 )
 def test_taken_name_takes_the_next_number(media, content, named_by_a_row):
     e = _legacy(media, "expense-type")
@@ -110,8 +115,8 @@ def test_dry_run_reports_the_targets_the_run_uses(media):
 def test_a_rerun_after_a_crash_reuses_the_copies(media, monkeypatch):
     rows = _same_basename_to_one_folder(media)
     with monkeypatch.context() as patch:
-        patch.setattr(QuerySet, "bulk_update", lambda *args, **kwargs: 1 / 0)
-        with pytest.raises(ZeroDivisionError):
+        patch.setattr(QuerySet, "bulk_update", _boom)
+        with pytest.raises(RuntimeError):
             _run()
 
     _run()
@@ -138,6 +143,24 @@ def test_an_old_file_in_a_pk_folder_is_not_taken_for_a_copy(media):
     for expense in (misfiled, legacy):
         assert (media / _stored(expense)).read_bytes() == b"1999.01_x.jpg"
     assert _stored(legacy) == f"{_pk_folder(legacy)}/1999.01_x_2.jpg"
+
+
+@pytest.mark.parametrize("args", [(), ("--dry-run",)], ids=["run", "dry run"])
+def test_a_file_the_os_will_not_open_is_not_copied(media, monkeypatch, args):
+    e = _legacy(media, "expense-type")
+    old = _stored(e)
+    open_file = FileSystemStorage._open
+
+    def refuse(storage, name, mode="rb"):
+        if name == old:
+            raise PermissionError(13, "Access is denied")
+        return open_file(storage, name, mode)
+
+    monkeypatch.setattr(FileSystemStorage, "_open", refuse)
+    lines = _run(*args)
+
+    assert lines[0] == f"not copied: {old} (Access is denied)"
+    assert _stored(e) == old
 
 
 @pytest.mark.parametrize(
@@ -267,7 +290,7 @@ def test_old_folder_goes_only_when_emptied(media, stray, folder_stays):
 @pytest.mark.parametrize(
     ("owner", "method", "refused"),
     [
-        (Path, "rmdir", "not removed: {journal}/expense-type"),
+        (os, "rmdir", "not removed: {journal}/expense-type"),
         (
             FileSystemStorage,
             "delete",
@@ -372,10 +395,7 @@ def test_a_file_a_row_in_place_still_uses_stays(media):
 def test_a_failed_write_leaves_every_row_on_an_existing_file(media, monkeypatch):
     rows = [_legacy(media, "expense-type", f"1999.01_{i}.jpg") for i in range(2)]
 
-    def boom(*args, **kwargs):
-        raise RuntimeError
-
-    monkeypatch.setattr(QuerySet, "bulk_update", boom)
+    monkeypatch.setattr(QuerySet, "bulk_update", _boom)
     with pytest.raises(RuntimeError):
         _run()
 
