@@ -10,7 +10,7 @@ from ..core.mixins.views import (
     TemplateViewMixin,
     UpdateViewMixin,
 )
-from . import forms
+from . import forms, models
 from .services.model_services import DebtModelService, DebtReturnModelService
 
 
@@ -52,16 +52,16 @@ class Index(TemplateViewMixin):
         context.update(
             {
                 "borrow": rendered_content(
-                    self.request, DebtLists, **{"debt_type": "borrow"}
+                    self.request, DebtLists, debt_type=models.Debt.DebtType.BORROW
                 ),
                 "borrow_return": rendered_content(
-                    self.request, DebtReturnLists, **{"debt_type": "borrow"}
+                    self.request, DebtReturnLists, debt_type=models.Debt.DebtType.BORROW
                 ),
                 "lend": rendered_content(
-                    self.request, DebtLists, **{"debt_type": "lend"}
+                    self.request, DebtLists, debt_type=models.Debt.DebtType.LEND
                 ),
                 "lend_return": rendered_content(
-                    self.request, DebtReturnLists, **{"debt_type": "lend"}
+                    self.request, DebtReturnLists, debt_type=models.Debt.DebtType.LEND
                 ),
             }
         )
