@@ -59,19 +59,107 @@ def test_moves_into_pk_folder(media):
     assert not (media / old).exists()
 
 
-def test_taken_name_takes_the_storage_suffix(media):
+@pytest.mark.parametrize(
+    "content, named_by_a_row",
+    [(b"other", False), (b"1999.01_x.jpg", True)],
+)
+def test_taken_name_takes_the_next_number(media, content, named_by_a_row):
     e = _legacy(media, "expense-type")
     taken = media / _pk_folder(e) / "1999.01_x.jpg"
     taken.parent.mkdir(parents=True)
-    taken.write_bytes(b"other")
+    taken.write_bytes(content)
+    if named_by_a_row:
+        in_place = ExpenseFactory(expense_type=e.expense_type)
+        Expense.objects.filter(pk=in_place.pk).update(
+            attachment=f"{_pk_folder(e)}/1999.01_x.jpg"
+        )
 
     _run()
 
     stored = _stored(e)
-    assert stored != f"{_pk_folder(e)}/1999.01_x.jpg"
-    assert stored.startswith(f"{_pk_folder(e)}/")
+    assert stored == f"{_pk_folder(e)}/1999.01_x_2.jpg"
     assert (media / stored).read_bytes() == b"1999.01_x.jpg"
-    assert taken.read_bytes() == b"other"
+    assert taken.read_bytes() == content
+
+
+def _same_basename_to_one_folder(media):
+    first = _legacy(media, "a")
+    second = _legacy(media, "b", expense_type=first.expense_type)
+    (media / _stored(second)).write_bytes(b"second")
+    return first, second
+
+
+def test_dry_run_reports_the_targets_the_run_uses(media):
+    _same_basename_to_one_folder(media)
+
+    planned = _run("--dry-run")
+    done = _run()
+
+    assert planned[:-1] == done[:-1]
+    assert planned[1].endswith("/1999.01_x_2.jpg")
+    assert planned[-1] == "dry run: " + done[-1]
+
+
+def test_a_rerun_after_a_crash_reuses_the_copies(media, monkeypatch):
+    rows = _same_basename_to_one_folder(media)
+    with monkeypatch.context() as patch:
+        patch.setattr(QuerySet, "bulk_update", lambda *args, **kwargs: 1 / 0)
+        with pytest.raises(ZeroDivisionError):
+            _run()
+
+    _run()
+
+    folder = media / _pk_folder(rows[0])
+    assert sorted(p.name for p in folder.iterdir()) == [
+        "1999.01_x.jpg",
+        "1999.01_x_2.jpg",
+    ]
+    assert [(media / _stored(e)).read_bytes() for e in rows] == [
+        b"1999.01_x.jpg",
+        b"second",
+    ]
+
+
+def test_an_old_file_in_a_pk_folder_is_not_taken_for_a_copy(media):
+    expense_type = ExpenseTypeFactory()
+    other = ExpenseTypeFactory(title="Other", journal=expense_type.journal)
+    misfiled = _legacy(media, str(expense_type.pk), expense_type=other)
+    legacy = _legacy(media, "expense-type", expense_type=expense_type)
+
+    _run()
+
+    for expense in (misfiled, legacy):
+        assert (media / _stored(expense)).read_bytes() == b"1999.01_x.jpg"
+    assert _stored(legacy) == f"{_pk_folder(legacy)}/1999.01_x_2.jpg"
+
+
+@pytest.mark.parametrize(
+    "name", ["1999.01_y.jpg", "1999.01_x.jpg"], ids=["own file", "shared file"]
+)
+def test_a_copy_the_os_refuses_is_listed_and_the_rest_moves(media, monkeypatch, name):
+    refused = _legacy(media, "expense-type")
+    other = ExpenseTypeFactory(title="Other", journal=refused.expense_type.journal)
+    moved = _legacy(media, "expense-type", name, expense_type=other)
+    old = _stored(refused)
+    save = FileSystemStorage._save
+
+    def full(storage, target, content):
+        if target.startswith(f"{_pk_folder(refused)}/"):
+            half = media / target
+            half.parent.mkdir(parents=True, exist_ok=True)
+            half.write_bytes(b"half")
+            raise OSError("No space left on device")
+        return save(storage, target, content)
+
+    monkeypatch.setattr(FileSystemStorage, "_save", full)
+    lines = _run()
+
+    assert f"not copied: {old} (No space left on device)" in lines
+    assert lines[-1] == "moved 1, missing 0"
+    assert _stored(refused) == old
+    assert (media / old).read_bytes() == b"1999.01_x.jpg"
+    assert list((media / _pk_folder(refused)).iterdir()) == []
+    assert _stored(moved) == f"{_pk_folder(moved)}/{name}"
 
 
 def _full_length(expense_type):
@@ -180,13 +268,18 @@ def test_old_folder_goes_only_when_emptied(media, stray, folder_stays):
         ),
     ],
 )
+@pytest.mark.parametrize(
+    "error",
+    [PermissionError(13, "Access is denied"), OSError("Access is denied")],
+    ids=["errno", "no errno"],
+)
 def test_what_the_os_refuses_is_listed_and_the_run_finishes(
-    media, monkeypatch, owner, method, refused
+    media, monkeypatch, owner, method, refused, error
 ):
     e = _legacy(media, "expense-type")
 
     def refuse(*args):
-        raise PermissionError(13, "Access is denied")
+        raise error
 
     monkeypatch.setattr(owner, method, refuse)
     lines = _run()
