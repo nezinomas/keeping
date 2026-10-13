@@ -3,10 +3,11 @@ from types import SimpleNamespace
 
 import polars as pl
 import pytest
-import time_machine
 
 from ...lib.make_dataframe import YearMonths
 from ...lib.year_balance import YearBalance
+
+TODAY = date(2000, 1, 1)
 
 
 @pytest.fixture(name="data")
@@ -110,12 +111,12 @@ def fixture_expect():
 
 
 def test_months_balance(data, amount_start, expect):
-    actual = YearBalance(data=data, amount_start=amount_start).balance
+    actual = YearBalance(data=data, amount_start=amount_start, today=TODAY).balance
     assert actual == expect
 
 
 def test_months_balance_total_row(data, amount_start):
-    actual = YearBalance(data=data, amount_start=amount_start).total_row
+    actual = YearBalance(data=data, amount_start=amount_start, today=TODAY).total_row
 
     expect = {
         "incomes": 180,
@@ -134,7 +135,7 @@ def test_months_balance_total_row(data, amount_start):
 
 
 def test_months_balance_average(data, amount_start):
-    actual = YearBalance(data=data, amount_start=amount_start).average
+    actual = YearBalance(data=data, amount_start=amount_start, today=TODAY).average
 
     expect = {
         "incomes": 90,
@@ -153,20 +154,22 @@ def test_months_balance_average(data, amount_start):
 
 
 def test_amount_end(data, amount_start):
-    actual = YearBalance(data=data, amount_start=amount_start).amount_end
+    actual = YearBalance(data=data, amount_start=amount_start, today=TODAY).amount_end
 
     assert actual == 175
 
 
 def test_amount_end_no_data(data):
     data.data = pl.DataFrame()
-    actual = YearBalance(data=data, amount_start=0).amount_end
+    actual = YearBalance(data=data, amount_start=0, today=TODAY).amount_end
 
     assert actual == 0
 
 
 def test_amount_balance(data, amount_start):
-    actual = YearBalance(data=data, amount_start=amount_start).amount_balance
+    actual = YearBalance(
+        data=data, amount_start=amount_start, today=TODAY
+    ).amount_balance
 
     assert actual == 165
 
@@ -188,7 +191,7 @@ def test_amount_balance(data, amount_start):
     ],
 )
 def test_balance_series_reads_its_column(data, amount_start, expect, series, column):
-    actual = series(YearBalance(data=data, amount_start=amount_start))
+    actual = series(YearBalance(data=data, amount_start=amount_start, today=TODAY))
 
     assert actual == [x[column] for x in expect]
 
@@ -201,7 +204,7 @@ def test_balance_series_reads_its_column(data, amount_start, expect, series, col
     ],
 )
 def test_avg_is_the_mean_over_months_with_data(data, average, mean):
-    actual = average(YearBalance(data=data, amount_start=0))
+    actual = average(YearBalance(data=data, amount_start=0, today=TODAY))
 
     assert actual == mean
 
@@ -216,35 +219,36 @@ def test_avg_is_the_mean_over_months_with_data(data, average, mean):
 def test_avg_of_an_all_zero_column_is_zero(data, average, column):
     data.data = data.data.with_columns(pl.col(column) * 0)
 
-    actual = average(YearBalance(data=data, amount_start=0))
+    actual = average(YearBalance(data=data, amount_start=0, today=TODAY))
 
     assert actual == 0
 
 
 @pytest.mark.parametrize(
-    "now, expect",
+    "today, expect",
     [
-        pytest.param("1999-2-1", 1.5, id="current_year"),
-        pytest.param("2000-2-1", 2, id="not_current_year"),
+        pytest.param(date(1999, 2, 1), 1.5, id="current_year"),
+        pytest.param(date(2000, 2, 1), 2, id="not_current_year"),
     ],
 )
-def test_avg_expenses_counts_months_up_to_today(data, now, expect):
+def test_avg_expenses_counts_months_up_to_today(data, today, expect):
     data.data[0, "expenses"] = 1
     data.data[1, "expenses"] = 2
     data.data[2, "expenses"] = 3
 
-    with time_machine.travel(now):
-        actual = YearBalance(data=data, amount_start=0).avg_expenses
+    actual = YearBalance(data=data, amount_start=0, today=today).avg_expenses
 
     assert actual == expect
 
 
 def test_balance_money_flow_subtracts_account_charged_savings_fees(data, amount_start):
-    without_fee = YearBalance(data=data, amount_start=amount_start).money_flow
+    without_fee = YearBalance(
+        data=data, amount_start=amount_start, today=TODAY
+    ).money_flow
 
     fee = [4] + [0] * (len(data.data) - 1)
     data.data = data.data.with_columns(savings_account_fee=pl.Series(fee))
-    actual = YearBalance(data=data, amount_start=amount_start)
+    actual = YearBalance(data=data, amount_start=amount_start, today=TODAY)
 
     assert actual.money_flow == [flow - 4 for flow in without_fee]
     assert actual.amount_end == without_fee[-1] - 4

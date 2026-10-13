@@ -100,7 +100,7 @@ class IndexTab:
         if target.qty:
             limit = DailyLimit(target.qty)
 
-        boundary = YearBoundary.for_year(year, today)
+        boundary = YearBoundary(year, today)
 
         builder = IndexBuilder(
             converter=records.converter,
@@ -456,7 +456,7 @@ class IndexBuilder:
         )
 
     def _get_period_counts(self, year: int) -> tuple[int, int, int]:
-        boundary = YearBoundary.for_year(year, self._today)
+        boundary = YearBoundary(year, self._today)
 
         return (
             boundary.days_elapsed,

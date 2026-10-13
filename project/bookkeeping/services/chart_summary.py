@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import date
 
 from django.utils.translation import gettext as _
 
@@ -57,7 +58,7 @@ class Charts:
 
         return context
 
-    def chart_incomes(self) -> dict:
+    def chart_incomes(self, today: date) -> dict:
         # data for salary summary
         salary_years = [x["year"] for x in self._salary]
 
@@ -70,9 +71,9 @@ class Charts:
         context |= {
             "chart_title": _("Incomes"),
             "categories": salary_years,
-            "incomes": common.average(self._incomes),
+            "incomes": common.average(self._incomes, today),
             "incomes_title": _("Average incomes"),
-            "salary": common.average(self._salary),
+            "salary": common.average(self._salary, today),
             "salary_title": _("Average salary") + ", €",
         }
 
@@ -97,12 +98,12 @@ class Charts:
         }
 
 
-def load_service(user: User) -> dict:
+def load_service(user: User, today: date) -> dict:
     data = Data(user)
     obj = Charts(data)
 
     return {
         "chart_balance": obj.chart_balance(),
-        "chart_incomes": obj.chart_incomes(),
+        "chart_incomes": obj.chart_incomes(today),
         "chart_incomes_types": obj.chart_incomes_types(),
     }

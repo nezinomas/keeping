@@ -2,9 +2,10 @@ from datetime import date
 from types import SimpleNamespace
 
 import pytest
-import time_machine
 
 from ...services.chart_summary import Charts
+
+TODAY = date(1999, 1, 1)
 
 
 @pytest.fixture(name="incomes_types")
@@ -26,7 +27,7 @@ def test_chart_incomes_context():
         ],
         expenses=[],
     )
-    actual = Charts(data).chart_incomes()
+    actual = Charts(data).chart_incomes(TODAY)
 
     assert "records" in actual
     assert "chart_title" in actual
@@ -37,7 +38,6 @@ def test_chart_incomes_context():
     assert "salary_title" in actual
 
 
-@time_machine.travel("1999-1-1")
 def test_chart_incomes_salary_years():
     data = SimpleNamespace(
         incomes=[],
@@ -48,12 +48,11 @@ def test_chart_incomes_salary_years():
         incomes_types=[],
         expenses=[],
     )
-    actual = Charts(data).chart_incomes()
+    actual = Charts(data).chart_incomes(TODAY)
 
     assert actual["categories"] == [1998, 1999]
 
 
-@time_machine.travel("1999-1-1")
 def test_chart_incomes_salary():
     data = SimpleNamespace(
         incomes=[],
@@ -64,12 +63,11 @@ def test_chart_incomes_salary():
         incomes_types=[],
         expenses=[],
     )
-    actual = Charts(data).chart_incomes()
+    actual = Charts(data).chart_incomes(TODAY)
 
     assert actual["salary"] == [1, 10]
 
 
-@time_machine.travel("1999-1-1")
 def test_chart_incomes_incomes():
     data = SimpleNamespace(
         incomes=[
@@ -83,12 +81,11 @@ def test_chart_incomes_incomes():
         ],
         expenses=[],
     )
-    actual = Charts(data).chart_incomes()
+    actual = Charts(data).chart_incomes(TODAY)
 
     assert actual["incomes"] == [2, 12]
 
 
-@time_machine.travel("1999-1-1")
 def test_chart_incomes_records():
     data = SimpleNamespace(
         incomes=[
@@ -100,15 +97,14 @@ def test_chart_incomes_records():
         ],
         expenses=[],
     )
-    actual = Charts(data).chart_incomes()
+    actual = Charts(data).chart_incomes(TODAY)
 
     assert actual["records"] == 1
 
 
-@time_machine.travel("1999-1-1")
 def test_chart_incomes_records_no_data():
     data = SimpleNamespace(incomes=[], incomes_types=[], salary=[], expenses=[])
-    actual = Charts(data).chart_incomes()
+    actual = Charts(data).chart_incomes(TODAY)
 
     assert actual["records"] == 0
 

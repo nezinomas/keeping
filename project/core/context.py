@@ -11,11 +11,12 @@ def years(request):
 
 
 def yday(request):
-    year = date.today().year
+    today = date.today()
+    year = today.year
     if request.user.is_authenticated:
         year = request.user.year
 
-    _yday, _ydays = lib_date.yday(year)
+    _yday, _ydays = lib_date.yday(year, today)
 
     return {"yday": _yday, "ydays": _ydays}
 

@@ -31,22 +31,6 @@ class YearBoundary:
     year: int
     today: date
 
-    @classmethod
-    def from_records(
-        cls, records: Sequence[DatedRow] = (), today: date | None = None
-    ) -> "YearBoundary":
-        """The year the records belong to, falling back to today's year."""
-        first = records[0].date.year if records else None
-        return cls.for_year(first, today)
-
-    @classmethod
-    def for_year(
-        cls, year: int | None = None, today: date | None = None
-    ) -> "YearBoundary":
-        """The year the caller already knows, falling back to today's year."""
-        today = today or date.today()
-        return cls(year=year or today.year, today=today)
-
     @property
     def is_current(self) -> bool:
         """Whether this is the year running now, as opposed to one already

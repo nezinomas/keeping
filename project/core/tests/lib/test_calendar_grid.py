@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 from django.utils import translation
 from django.utils.translation import gettext as _
 
@@ -19,9 +18,8 @@ pytestmark = pytest.mark.django_db
 THRESHOLDS = (2.0, 4.0, 6.0)
 
 
-@time_machine.travel("1999-06-15")
 def test_build_empty_returns_full_year():
-    grid = CalendarGrid.build(YearBoundary.for_year(1999), daily_data=[])
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 6, 15)), daily_data=[])
 
     assert isinstance(grid, CalendarYearViewModel)
     assert len(grid.months) == 12

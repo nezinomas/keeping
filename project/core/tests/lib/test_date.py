@@ -73,7 +73,6 @@ def test_set_year_for_month(main_user, today, expect):
     assert actual == expect
 
 
-@time_machine.travel("2020-6-6")
 @pytest.mark.parametrize(
     "year, expect",
     [
@@ -84,7 +83,7 @@ def test_set_year_for_month(main_user, today, expect):
     ],
 )
 def test_yday(year, expect):
-    actual = lib_date.yday(year)
+    actual = lib_date.yday(year, date(2020, 6, 6))
 
     assert actual == expect
 
