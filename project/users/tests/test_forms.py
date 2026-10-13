@@ -46,10 +46,20 @@ def test_invite_form_inputs(main_user):
     [
         ("bob@bob.com", "Įvedėte savo Email."),
         ("x@x.xx", "Vartotojas su šiuo Email jau egzistuoja."),
+        ("BOB@bob.com", "Įvedėte savo Email."),
+        ("X@X.xx", "Vartotojas su šiuo Email jau egzistuoja."),
+        ("yan@y.yy", "Vartotojas su šiuo Email jau egzistuoja."),
     ],
-    ids=["same_as_admin_email", "email_exists"],
+    ids=[
+        "same_as_admin_email",
+        "email_exists",
+        "same_as_admin_email_other_case",
+        "email_exists_other_case",
+        "email_stored_in_other_case",
+    ],
 )
 def test_invite_form_refuses_an_email(main_user, second_user, email, message):
+    UserFactory(username="Yan", email="Yan@Y.yy")
     form = InviteForm(user=main_user, data={"email": email})
 
     assert not form.is_valid()
