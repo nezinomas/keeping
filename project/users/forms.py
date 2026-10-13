@@ -30,10 +30,11 @@ class InviteForm(forms.Form):
         email = self.cleaned_data["email"]
         admin_email = self.user.email
 
-        if email == admin_email:
+        if email.casefold() == admin_email.casefold():
             raise ValidationError(_("You entered your own Email."))
 
-        if email in User.objects.values_list("email", flat=True):
+        existing = {x.casefold() for x in User.objects.values_list("email", flat=True)}
+        if email.casefold() in existing:
             raise ValidationError(_("User with this Email already exists."))
 
         return email
