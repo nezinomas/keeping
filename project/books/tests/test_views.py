@@ -110,21 +110,25 @@ def test_books_adds_a_book_from_the_foot_of_every_tab(client_logged, tab):
     assert "Pridėti knygą" in content
 
 
-def _tab_queries(client, tab):
+def _page_queries(client, url_name):
     with CaptureQueriesContext(connection) as queries:
-        client.get(tab.url)
+        client.get(reverse(url_name))
     return len(queries)
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_tab_query_count_does_not_grow_with_the_books(client_logged, tab):
+@pytest.mark.parametrize(
+    "url_name",
+    ["books:tab_index", "books:tab_data", "books:list"],
+    ids=["index", "data", "list"],
+)
+def test_page_query_count_does_not_grow_with_the_books(client_logged, url_name):
     for _i in range(2):
         BookFactory()
-    two = _tab_queries(client_logged, tab)
+    two = _page_queries(client_logged, url_name)
 
     for _i in range(2, 6):
         BookFactory()
-    six = _tab_queries(client_logged, tab)
+    six = _page_queries(client_logged, url_name)
 
     assert six == two
 
@@ -532,16 +536,41 @@ def test_search_reset_url_restores_the_year(client_logged):
 
 
 @pytest.mark.parametrize(
-    ("params", "expected"),
-    [({"search": "title"}, 50), ({"page": 2, "search": "author"}, 1)],
-    ids=["first_page", "second_page"],
+    ("name", "params", "expected", "first_number"),
+    [
+        ("books:search", {"search": "title"}, 50, "1"),
+        ("books:search", {"page": 2, "search": "author"}, 1, "1"),
+        ("books:search", {"page": "x", "search": "title"}, 50, "1"),
+        ("books:search", {"page": 0, "search": "title"}, 50, "1"),
+        ("books:search", {"page": -3, "search": "title"}, 50, "1"),
+        ("books:list", {"scope": "all"}, 50, "51"),
+        ("books:list", {"scope": "all", "page": 2}, 1, "1"),
+        ("books:list", {"scope": "all", "page": "x"}, 50, "51"),
+        ("books:list", {"scope": "all", "page": 0}, 50, "51"),
+        ("books:list", {"scope": "all", "page": -3}, 50, "51"),
+    ],
+    ids=[
+        "search_first_page",
+        "search_second_page",
+        "search_page_x",
+        "search_page_0",
+        "search_page_minus_3",
+        "list_first_page",
+        "list_second_page",
+        "list_page_x",
+        "list_page_0",
+        "list_page_minus_3",
+    ],
 )
-def test_search_pagination(client_logged, params, expected):
+def test_pagination(client_logged, name, params, expected, first_number):
     Book.objects.bulk_create(BookFactory.build_batch(51, user=UserFactory()))
 
-    response = client_logged.get(reverse("books:search"), params)
+    response = client_logged.get(reverse(name), params)
+    actual = response.content.decode("utf-8")
 
-    assert response.content.decode("utf-8").count("Author") == expected
+    assert actual.count("Author") == expected
+    numbers = re.findall(r'<td class="text-left">(\d+)</td>', actual)
+    assert numbers[:1] == [first_number]
 
 
 def test_target_load_form(client_logged):

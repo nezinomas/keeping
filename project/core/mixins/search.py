@@ -32,14 +32,13 @@ class SearchMixin:
         sql = self.search_method(self.request.user, search_str)
         stats = self.search_totals(sql)
 
-        page = self.request.GET.get("page", 1)
         paginator = CountlessPaginator(
             query=sql,
             total_records=stats["count"],
             per_page=self.per_page,
         )
-        page_range = paginator.get_elided_page_range(page)
-        page_obj = paginator.get_page(page)
+        page_obj = paginator.get_page(self.request.GET.get("page", 1))
+        page_range = paginator.get_elided_page_range(page_obj.current_page)
 
         app = self.request.resolver_match.app_name
 
