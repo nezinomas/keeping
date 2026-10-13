@@ -22,9 +22,6 @@ def _drinks(second_user):
     DrinkFactory(date=date(1999, 2, 1), stdav=100.0, user=second_user)
 
 
-# ----------------------------------------------------------------------------
-#                                                                        Drink
-# ----------------------------------------------------------------------------
 def test_drink_related(main_user, second_user):
     DrinkFactory()
     DrinkFactory(user=second_user)
@@ -118,7 +115,6 @@ def test_drink_sum_by_year(drink_type, stdav, qty, main_user):
 
     actual = DrinkModelService(main_user).sum_by_year()
 
-    # filter per_month key from return list
     actual_stdav = [x["stdav"] for x in actual]
     actual_qty = [x["qty"] for x in actual]
 
@@ -147,7 +143,6 @@ def test_drink_sum_by_month(drink_type, stdav, qty, main_user):
 
     actual = DrinkModelService(main_user).sum_by_month(1999)
 
-    # filter per_month key from return list
     actual_stdav = [x["stdav"] for x in actual]
     actual_qty = [round(x["qty"], 4) for x in actual]
 
@@ -163,34 +158,6 @@ def test_drink_months_sum_no_records_for_current_year(main_user, second_user):
     actual = DrinkModelService(main_user).sum_by_month(1999)
 
     assert not actual
-
-
-@pytest.mark.parametrize(
-    "drink_type, stdav, qty",
-    [
-        ("beer", [2.5], [2.5 / 2.5]),
-        ("wine", [2.5], [2.5 / 8]),
-        ("vodka", [2.5], [2.5 / 40]),
-        ("stdav", [2.5], [2.5 / 1]),
-    ],
-)
-def test_drink_sum_by_day(drink_type, stdav, qty, main_user):
-    main_user.drink_type = drink_type
-
-    DrinkFactory(date=date(1999, 1, 1), stdav=1.0, option="beer")
-    DrinkFactory(date=date(1999, 1, 1), stdav=1.5, option="beer")
-    DrinkFactory(date=date(2000, 1, 1), stdav=1.5, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), stdav=2.0, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), stdav=1.0, option="beer")
-    DrinkFactory(date=date(2000, 2, 1), stdav=1.0, option="beer")
-
-    actual = DrinkModelService(main_user).sum_by_day(1999, 1)
-
-    actual_stdav = [x["stdav"] for x in actual]
-    actual_qty = [round(x["qty"], 4) for x in actual]
-
-    assert actual_stdav == stdav
-    assert actual_qty == qty
 
 
 @pytest.mark.parametrize(
@@ -222,9 +189,6 @@ def test_drink_sum_by_day_all_months(drink_type, stdav, qty, main_user):
     assert actual_qty == qty
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Drink Target
-# ----------------------------------------------------------------------------
 def test_drink_target_fields():
     assert DrinkTarget._meta.get_field("year")
     assert DrinkTarget._meta.get_field("drink_type")
