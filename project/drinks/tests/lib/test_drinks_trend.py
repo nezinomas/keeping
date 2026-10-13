@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow
@@ -17,12 +16,8 @@ def _row(dt: date, stdav: float) -> DataRow:
     return DataRow(date=dt, stdav=stdav, qty=0.0)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                    categories / dense
-# -------------------------------------------------------------------------------------
-@time_machine.travel("2026-03-01")
 def test_categories_span_from_jan_first_to_today(converter):
-    stats = TrendStats(converter, current_daily=[])
+    stats = TrendStats(converter, current_daily=[], year=2026, today=date(2026, 3, 1))
 
     # 2026 is not a leap year: 31 (Jan) + 28 (Feb) + 1 = 60
     assert len(stats.date_labels) == 60
@@ -30,22 +25,27 @@ def test_categories_span_from_jan_first_to_today(converter):
     assert stats.date_labels[-1] == "2026-03-01"
 
 
-@time_machine.travel("2026-06-15")
 def test_past_year_spans_full_year(converter):
-    stats = TrendStats(converter, current_daily=[_row(date(2025, 5, 5), 1)])
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2025, 5, 5), 1)],
+        year=2025,
+        today=date(2026, 6, 15),
+    )
 
     assert len(stats.date_labels) == 365
     assert stats.date_labels[0] == "2025-01-01"
     assert stats.date_labels[-1] == "2025-12-31"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       rolling average
-# -------------------------------------------------------------------------------------
-@time_machine.travel("2026-01-05")
 def test_rolling_average_divides_by_full_window(converter):
     # beer: 1 stdav -> 200 ml, so 5 stdav -> 1000 ml on the first day only
-    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 5)])
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 1), 5)],
+        year=2026,
+        today=date(2026, 1, 5),
+    )
 
     # every point divides by the FULL window (no start-of-year spike from a
     # short denominator); the 1000 ml day stays inside both windows for Jan 1-5
@@ -53,7 +53,6 @@ def test_rolling_average_divides_by_full_window(converter):
     assert stats.calculate_rolling_average(30) == pytest.approx([1000 / 30] * 5)
 
 
-@time_machine.travel("2026-01-05")
 def test_rolling_average_shows_std_av_as_typed():
     """Std Av is canonical, so it is shown as typed — never scaled into ml.
 
@@ -61,42 +60,46 @@ def test_rolling_average_shows_std_av_as_typed():
     contains, putting the series 10x above the Drink Target it is read against.
     """
     stats = TrendStats(
-        DrinkConverter("stdav"), current_daily=[_row(date(2026, 1, 1), 5)]
+        DrinkConverter("stdav"),
+        current_daily=[_row(date(2026, 1, 1), 5)],
+        year=2026,
+        today=date(2026, 1, 5),
     )
 
     assert stats.calculate_rolling_average(7)[0] == pytest.approx(5 / 7)
     assert stats.daily_volume[0] == pytest.approx(5)
 
 
-@time_machine.travel("2026-01-05")
 def test_rolling_average_still_converts_a_volume_drink_type(converter):
     # beer is read as a volume, so 5 std av is still 1000 ml
-    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 5)])
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 1), 5)],
+        year=2026,
+        today=date(2026, 1, 5),
+    )
 
     assert stats.calculate_rolling_average(7)[0] == pytest.approx(1000 / 7)
     assert stats.daily_volume[0] == pytest.approx(1000)
 
 
-@time_machine.travel("2026-01-02")
 def test_rolling_average_seeds_from_previous_december(converter):
     stats = TrendStats(
         converter,
         current_daily=[_row(date(2026, 1, 1), 5)],  # 1000 ml
         past_daily=[_row(date(2025, 12, 31), 5)],  # 1000 ml, inside the window
+        year=2026,
+        today=date(2026, 1, 2),
     )
 
     # Jan 1's 7-day mean pulls in Dec 31 -> (1000 + 1000) / 7
     assert stats.calculate_rolling_average(7)[0] == pytest.approx(2000 / 7)
 
 
-# -------------------------------------------------------------------------------------
-#                                                             period vs previous period
-# -------------------------------------------------------------------------------------
-@time_machine.travel("2026-02-01")
 def test_period_improving_when_recent_is_lower(converter):
     # last 14 days (Jan 18 - Feb 1): 3; prior 14 days (Jan 4 - Jan 18): 9
     rows = [_row(date(2026, 1, 25), 3), _row(date(2026, 1, 10), 9)]
-    stats = TrendStats(converter, current_daily=rows)
+    stats = TrendStats(converter, current_daily=rows, year=2026, today=date(2026, 2, 1))
 
     p = stats.compare_recent_period(14)
 
@@ -107,10 +110,9 @@ def test_period_improving_when_recent_is_lower(converter):
     assert p.has_data is True
 
 
-@time_machine.travel("2026-02-01")
 def test_period_worsening_when_recent_is_higher(converter):
     rows = [_row(date(2026, 1, 25), 10), _row(date(2026, 1, 10), 2)]
-    stats = TrendStats(converter, current_daily=rows)
+    stats = TrendStats(converter, current_daily=rows, year=2026, today=date(2026, 2, 1))
 
     p = stats.compare_recent_period(14)
 
@@ -119,10 +121,14 @@ def test_period_worsening_when_recent_is_higher(converter):
     assert p.improving is False
 
 
-@time_machine.travel("2026-01-20")
 def test_period_without_prior_baseline(converter):
     # only recent drinking, nothing in the previous window -> no percentage
-    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 15), 4)])
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 15), 4)],
+        year=2026,
+        today=date(2026, 1, 20),
+    )
 
     p = stats.compare_recent_period(14)
 
@@ -132,20 +138,20 @@ def test_period_without_prior_baseline(converter):
     assert p.has_data is True
 
 
-@time_machine.travel("2026-06-01")
 def test_period_no_data(converter):
-    stats = TrendStats(converter, current_daily=[])
+    stats = TrendStats(converter, current_daily=[], year=2026, today=date(2026, 6, 1))
 
     assert stats.compare_recent_period(14).has_data is False
 
 
-@time_machine.travel("2026-01-20")
 def test_period_straddles_year_boundary(converter):
     # prior window reaches into last December -> must use previous-year data
     stats = TrendStats(
         converter,
         current_daily=[_row(date(2026, 1, 10), 2)],
         past_daily=[_row(date(2025, 12, 30), 8)],
+        year=2026,
+        today=date(2026, 1, 20),
     )
 
     p = stats.compare_recent_period(14)
@@ -155,17 +161,19 @@ def test_period_straddles_year_boundary(converter):
     assert p.improving is True
 
 
-# -------------------------------------------------------------------------------------
-#                                                            YTD vs same period last yr
-# -------------------------------------------------------------------------------------
-@time_machine.travel("2026-03-01")
 def test_ytd_vs_last_year(converter):
     current = [_row(date(2026, 1, 1), 10), _row(date(2026, 2, 1), 5)]
     past = [
         _row(date(2025, 1, 1), 20),
         _row(date(2025, 4, 10), 100),  # day-of-year > today's, must be excluded
     ]
-    stats = TrendStats(converter, current_daily=current, past_daily=past)
+    stats = TrendStats(
+        converter,
+        current_daily=current,
+        past_daily=past,
+        year=2026,
+        today=date(2026, 3, 1),
+    )
 
     ytd = stats.compare_year_to_date()
 
@@ -178,9 +186,13 @@ def test_ytd_vs_last_year(converter):
     assert ytd.has_past is True
 
 
-@time_machine.travel("2026-03-01")
 def test_ytd_without_past_data(converter):
-    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 10)])
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 1), 10)],
+        year=2026,
+        today=date(2026, 3, 1),
+    )
 
     ytd = stats.compare_year_to_date()
 
@@ -189,14 +201,14 @@ def test_ytd_without_past_data(converter):
     assert ytd.percentage_change == 0.0
 
 
-# -------------------------------------------------------------------------------------
-#                                                             projection to year-end
-# -------------------------------------------------------------------------------------
-@time_machine.travel("2026-01-10")
 def test_projection_over_target(converter):
     # 10 stdav -> 2000 ml over 10 days = 200 ml/day pace
     stats = TrendStats(
-        converter, current_daily=[_row(date(2026, 1, 1), 10)], target=100
+        converter,
+        current_daily=[_row(date(2026, 1, 1), 10)],
+        target=100,
+        year=2026,
+        today=date(2026, 1, 10),
     )
 
     projection = stats.calculate_projection()
@@ -208,7 +220,6 @@ def test_projection_over_target(converter):
     assert projection.has_target is True
 
 
-@time_machine.travel("2026-01-10")
 def test_projection_counts_std_av_instead_of_bottling_it():
     """The forecast and the target it is read against share one unit.
 
@@ -220,6 +231,8 @@ def test_projection_counts_std_av_instead_of_bottling_it():
         DrinkConverter("stdav"),
         current_daily=[_row(date(2026, 1, 1), 10)],
         target=0.5,
+        year=2026,
+        today=date(2026, 1, 10),
     )
 
     projection = stats.calculate_projection()
@@ -231,9 +244,13 @@ def test_projection_counts_std_av_instead_of_bottling_it():
     assert projection.over is True
 
 
-@time_machine.travel("2026-01-10")
 def test_projection_without_target(converter):
-    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 10)])
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 1), 10)],
+        year=2026,
+        today=date(2026, 1, 10),
+    )
 
     projection = stats.calculate_projection()
 
@@ -241,21 +258,13 @@ def test_projection_without_target(converter):
     assert projection.percentage_difference == 0.0
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        selected year
-# -------------------------------------------------------------------------------------
-@time_machine.travel("2026-08-03")
-def test_year_the_caller_selected_wins_over_the_records(converter):
-    """A year picked in the header is read as itself, empty or not.
-
-    Deriving it from the rows made an empty year fall back to today's, so a 2027
-    with nothing in it yet plotted 2026 under a 2027 header.
-    """
+def test_current_year_is_the_year_the_caller_views(converter):
     stats = TrendStats(
         converter,
         year=2027,
         current_daily=[],
         past_daily=[_row(date(2026, 1, 1), 5)],
+        today=date(2026, 8, 3),
     )
 
     assert stats.current_year == 2027

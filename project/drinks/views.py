@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import date
+from functools import cached_property
 from typing import cast
 
 from django.http import Http404, HttpResponse
@@ -38,7 +39,15 @@ class HtmxFormRetargetMixin:
         return response
 
 
-class TabViewMixin(CoreTabViewMixin):
+class TodayMixin:
+    """The one today every Drinks figure of a request is computed from."""
+
+    @cached_property
+    def today(self) -> date:
+        return date.today()
+
+
+class TabViewMixin(TodayMixin, CoreTabViewMixin):
     tab = DEFAULT_TAB
     fragment_template = "drinks/tab_fragment.html"
     page_template = "drinks/index.html"
@@ -59,7 +68,7 @@ class TabViewMixin(CoreTabViewMixin):
             "tab_title": self.tab.title,
             "page_title": format_lazy("{} | {}", _("Drinks"), self.tab.title),
             "tabs": [(tab, tab.url) for tab in TABS],
-            "recent_days": services.RecentDaySelector.for_day(datetime.now().date()),
+            "recent_days": services.RecentDaySelector.for_day(self.today),
             "drink_types": services.DrinkTypeSelector(user.drink_type),
         }
 
@@ -73,7 +82,7 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **services.IndexTab.build(user, year),
+            **services.IndexTab.build(user, year, self.today),
         }
 
 
@@ -86,11 +95,11 @@ class TabHabits(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **services.HabitsTab.build(user, year),
+            **services.HabitsTab.build(user, year, self.today),
         }
 
 
-class TypicalYearChart(HtmxFormRetargetMixin, FormViewMixin):
+class TypicalYearChart(TodayMixin, HtmxFormRetargetMixin, FormViewMixin):
     form_class = forms.TypicalYearForm
     template_name = "drinks/includes/typical_year_form.html"
     retarget = "#typical-year-form"
@@ -117,7 +126,9 @@ class TypicalYearChart(HtmxFormRetargetMixin, FormViewMixin):
     def _chart(self, pooled: services.PooledRange):
         user = cast(User, self.request.user)
 
-        return services.TypicalYear.build(user, cast(int, user.year), pooled)
+        return services.TypicalYear.build(
+            user, cast(int, user.year), self.today, pooled
+        )
 
     @staticmethod
     def _initial(chart) -> dict:
@@ -143,7 +154,7 @@ class TabTrends(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **services.TrendsTab.build(user, year),
+            **services.TrendsTab.build(user, year, self.today),
         }
 
 
@@ -156,7 +167,7 @@ class TabRisk(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **services.RiskTab.build(user, year),
+            **services.RiskTab.build(user, year, self.today),
         }
 
 
@@ -176,11 +187,11 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"form": forms.DrinkCompareForm(user=self.request.user)},
-            **services.history.load_service(self.request.user),
+            **services.history.load_service(self.request.user, self.today),
         }
 
 
-class Compare(TemplateViewMixin):
+class Compare(TodayMixin, TemplateViewMixin):
     template_name = "drinks/includes/history.html"
 
     def get_context_data(self, **kwargs):
@@ -188,13 +199,13 @@ class Compare(TemplateViewMixin):
 
         return {
             "chart": services.YearComparison.for_recent(
-                user, cast(int, user.year), self.kwargs.get("qty", 0)
+                user, cast(int, user.year), self.kwargs.get("qty", 0), self.today
             ),
             "form": forms.DrinkCompareForm(user=user),
         }
 
 
-class CompareTwo(HtmxFormRetargetMixin, FormViewMixin):
+class CompareTwo(TodayMixin, HtmxFormRetargetMixin, FormViewMixin):
     form_class = forms.DrinkCompareForm
     template_name = "drinks/includes/compare_form.html"
     success_url = reverse_lazy("drinks:compare_two")
@@ -205,6 +216,7 @@ class CompareTwo(HtmxFormRetargetMixin, FormViewMixin):
             self.request.user,
             form.cleaned_data["year1"],
             form.cleaned_data["year2"],
+            self.today,
         )
 
         return render(

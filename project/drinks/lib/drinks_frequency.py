@@ -34,19 +34,19 @@ class WeekdayPoint:
 class FrequencyStats:
     """How often a user drinks, kept apart from how much on a day they do.
 
-    Intensity is read against ``HEAVY_DAY_STDAV``, so it stays in Std Av
-    whatever Drink type is selected and no conversion belongs in this module.
-    """
+    Intensity stays in Std Av whatever the Drink type: no conversion in here."""
 
     def __init__(
         self,
         current_daily: Sequence[DataRow] = (),
         past_daily: Sequence[DataRow] = (),
-        today: date | None = None,
+        *,
+        year: int,
+        today: date,
     ):
         self._current_daily_records = current_daily
         self._past_daily_records = past_daily
-        self._year = YearBoundary.from_records(current_daily, today)
+        self._year = YearBoundary(year=year, today=today)
         self.current_year = self._year.year
 
     @property
@@ -128,11 +128,7 @@ class FrequencyStats:
         return (elapsed - offset - 1) // WEEKDAYS + 1 if offset < elapsed else 0
 
     def weekday_profile(self) -> list[WeekdayPoint]:
-        """The year resolved by day of the week, Monday first.
-
-        Always seven points: a weekday nobody drank on is a finding, and a chart
-        with a missing column would read as a chart of six days.
-        """
+        """Always seven points, Monday first: a weekday nobody drank on is a finding."""
         by_weekday: list[list[DataRow]] = [[] for _ in range(WEEKDAYS)]
         for row in self._current_daily_records:
             by_weekday[row.date.weekday()].append(row)
