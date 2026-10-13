@@ -70,6 +70,7 @@ def test_income_save_htmx_answers_204_and_stores_the_row(client_logged):
 
     actual = models.Income.objects.get()
     assert response.status_code == 204
+    assert "HX-Trigger" not in response.headers
     assert actual.date == date(1999, 1, 1)
     assert actual.price == 111 * 100
     assert actual.account == a

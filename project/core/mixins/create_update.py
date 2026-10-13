@@ -1,20 +1,10 @@
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
-
-class HxResponseMixin:
-    hx_trigger_django = ""
-    hx_redirect = ""
-
-    def get_hx_trigger_django(self):
-        return self.hx_trigger_django
-
-    def get_hx_redirect(self):
-        return self.hx_redirect
+from .htmx import HxResponseMixin
 
 
 class CreateUpdateMixin(HxResponseMixin):
-    # fired on every save; the form's trigger fires once, when the modal closes
-    hx_trigger_django = ""
+    # hx_trigger_django fires on every save; this one once, when the modal closes
     hx_trigger_form = ""
 
     modal_form_title = ""
