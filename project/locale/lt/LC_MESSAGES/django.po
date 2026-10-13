@@ -1887,11 +1887,6 @@ msgstr "Suma"
 msgid "Incomes type"
 msgstr "Pajamų rūšis"
 
-#: .\project\incomes\forms.py:60
-#, python-format
-msgid "Year cannot be greater than %(year)s"
-msgstr "Metai negali būti didesni nei %(year)s"
-
 #: .\project\incomes\forms.py:81 .\project\savings\forms.py:31
 msgid "Type"
 msgstr "Tipas"

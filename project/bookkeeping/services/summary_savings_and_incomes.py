@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
-from ...core.lib.date import years
+from ...core.lib.date import years_to_date
 from ...incomes.services.model_services import IncomeModelService
 from ...savings.services.model_services import SavingModelService
 from ...users.models import User
@@ -26,7 +26,7 @@ class Service:
         self._savings = data.savings
 
     def chart_data(self):
-        _categories = years(self.user)[:-1]
+        _categories = years_to_date(self.user)
         _incomes = {x["year"]: x["sum"] for x in self._incomes}
         _savings = {x["year"]: x["sum"] for x in self._savings}
 

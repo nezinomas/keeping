@@ -155,25 +155,6 @@ def test_expense_form_valid_data(main_user, account, expense_name, posted, cents
 @pytest.mark.parametrize(
     ("posted", "errors"),
     [
-        ("1999-12-31", {}),
-        ("2000-12-31", {}),
-        ("2001-01-01", {"date": ["Metai negali būti vėlesni nei 2000"]}),
-    ],
-)
-def test_expense_insert_only_one_year_to_future(
-    main_user, account, expense_name, posted, errors
-):
-    with time_machine.travel("1999-6-15"):
-        form = ExpenseForm(
-            user=main_user,
-            data=_expense_data(account, expense_name, date=posted),
-        )
-        assert form.errors == errors
-
-
-@pytest.mark.parametrize(
-    ("posted", "errors"),
-    [
         ("1999-06-01", {}),
         ("", {"date": ["Šis laukas yra privalomas."]}),
         (

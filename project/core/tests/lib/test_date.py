@@ -33,12 +33,20 @@ def test_current_day(year, month, return_past_day, expect):
 
 @time_machine.travel("2001-01-01")
 @pytest.mark.django_db
-def test_years_user_logged(main_user):
+@pytest.mark.parametrize(
+    ("years_of", "expected"),
+    [
+        (lib_date.years, [1999, 2000, 2001, 2002]),
+        (lib_date.years_to_date, [1999, 2000, 2001]),
+    ],
+    ids=["years", "years_to_date"],
+)
+def test_years_user_logged(main_user, years_of, expected):
     main_user.journal.first_record = datetime(1999, 1, 1, tzinfo=pytz.utc)
 
-    actual = lib_date.years(main_user)
+    actual = years_of(main_user)
 
-    assert actual == [1999, 2000, 2001, 2002]
+    assert actual == expected
 
 
 def test_monthnames():
