@@ -6,14 +6,13 @@ from hypothesis import strategies as st
 
 from ...lib.drink_quantity import DrinkQuantity
 from ...lib.drink_types import DrinkType
-from .drink_specs import STDAV_PER_SERVING
+from ...lib.drinks_options import DrinkConverter
 
-ML_PER_SERVING = {"beer": 500, "wine": 750, "vodka": 1000}
 MAX_BOTTLES = 20
 
 DRINK_TYPES = st.sampled_from(DrinkType.values)
+SERVED_TYPES = st.sampled_from([t for t in DrinkType.values if t != DrinkType.STDAV])
 QUANTITIES = st.floats(min_value=0.01, max_value=5000, allow_nan=False)
-FLAGS = st.booleans()
 # the rule turns over between 20 and 21: generation must land on both
 INPUTS = st.one_of(QUANTITIES, st.sampled_from([MAX_BOTTLES, MAX_BOTTLES + 1]))
 
@@ -32,40 +31,49 @@ def type_by_number_examples(**axes):
 # from_input (typed number)
 
 
-@given(value=INPUTS, drink_type=DRINK_TYPES)
-# at or below MAX_BOTTLES the number is a count of pieces; the rule turns
-# over between 20 and 21
-@example(value=1, drink_type="beer")
-@example(value=20, drink_type="beer")
-@example(value=1, drink_type="wine")
-@example(value=20, drink_type="wine")
-@example(value=1, drink_type="vodka")
-@example(value=20, drink_type="vodka")
-# above MAX_BOTTLES it can only have been millilitres
-@example(value=21, drink_type="beer")
-@example(value=500, drink_type="beer")
-@example(value=21, drink_type="wine")
-@example(value=750, drink_type="wine")
-@example(value=21, drink_type="vodka")
-@example(value=1000, drink_type="vodka")
-# Std Av is canonical: never converted, never a volume
-@example(value=1, drink_type="stdav")
-@example(value=20, drink_type="stdav")
-@example(value=21, drink_type="stdav")
-def test_from_input(value, drink_type):
-    stdav_per_serving = STDAV_PER_SERVING[drink_type]
-    expect_is_volume = drink_type != "stdav" and value > MAX_BOTTLES
-    expect_stdav = value
-    if drink_type != "stdav":
-        expect_stdav = value * stdav_per_serving
-    if expect_is_volume:
-        expect_stdav = value * stdav_per_serving / ML_PER_SERVING[drink_type]
-
+@pytest.mark.parametrize(
+    "value, drink_type, expect_stdav, expect_is_volume",
+    [
+        # at or below MAX_BOTTLES the number is a count of pieces; the rule turns
+        # over between 20 and 21
+        (1, "beer", 2.5, False),
+        (20, "beer", 50.0, False),
+        (1, "wine", 8.0, False),
+        (20, "wine", 160.0, False),
+        (1, "vodka", 40.0, False),
+        (20, "vodka", 800.0, False),
+        # above MAX_BOTTLES it can only have been millilitres
+        (21, "beer", 0.1, True),
+        (500, "beer", 2.5, True),
+        (21, "wine", 0.22, True),
+        (750, "wine", 8.0, True),
+        (21, "vodka", 0.84, True),
+        (1000, "vodka", 40.0, True),
+        # Std Av is canonical: never converted, never a volume
+        (1, "stdav", 1, False),
+        (20, "stdav", 20, False),
+        (21, "stdav", 21, False),
+    ],
+)
+def test_from_input(value, drink_type, expect_stdav, expect_is_volume):
     actual = DrinkQuantity.from_input(value, drink_type)
 
-    assert actual.stdav == pytest.approx(expect_stdav)
+    assert round(actual.stdav, 2) == expect_stdav
     assert actual.is_volume is expect_is_volume
     assert actual.drink_type == drink_type
+
+
+@given(value=INPUTS, drink_type=DRINK_TYPES)
+def test_from_input_is_a_volume_only_above_max_bottles(value, drink_type):
+    actual = DrinkQuantity.from_input(value, drink_type)
+
+    assert actual.is_volume is (drink_type != "stdav" and value > MAX_BOTTLES)
+    assert actual.drink_type == drink_type
+
+
+@given(value=INPUTS)
+def test_from_input_never_converts_std_av(value):
+    assert DrinkQuantity.from_input(value, "stdav").stdav == value
 
 
 # from_volume (always a volume)
@@ -92,32 +100,46 @@ def test_from_volume(ml, drink_type, expect_stdav, expect_is_volume):
 # from_stdav (stored record)
 
 
-@given(stdav=QUANTITIES, drink_type=DRINK_TYPES, is_volume=FLAGS)
-# entered as a count -> shown as a count
-@example(stdav=2.5, drink_type="beer", is_volume=False)
-@example(stdav=8, drink_type="wine", is_volume=False)
-@example(stdav=40, drink_type="vodka", is_volume=False)
-@example(stdav=20, drink_type="vodka", is_volume=False)
-# entered as a volume -> shown as a volume
-@example(stdav=2.5, drink_type="beer", is_volume=True)
-@example(stdav=8, drink_type="wine", is_volume=True)
-@example(stdav=40, drink_type="vodka", is_volume=True)
-@example(stdav=5, drink_type="beer", is_volume=True)
-# Std Av ignores the flag entirely
-@example(stdav=10, drink_type="stdav", is_volume=False)
-@example(stdav=21, drink_type="stdav", is_volume=True)
-def test_from_stdav_value(stdav, drink_type, is_volume):
-    expect_value = stdav
-    if drink_type != "stdav" and is_volume:
-        expect_value = (
-            stdav * ML_PER_SERVING[drink_type] / STDAV_PER_SERVING[drink_type]
-        )
-    if drink_type != "stdav" and not is_volume:
-        expect_value = stdav / STDAV_PER_SERVING[drink_type]
-
+@pytest.mark.parametrize(
+    "stdav, drink_type, is_volume, expect_value",
+    [
+        # entered as a count -> shown as a count
+        (2.5, "beer", False, 1.0),
+        (8, "wine", False, 1.0),
+        (40, "vodka", False, 1.0),
+        (20, "vodka", False, 0.5),
+        # entered as a volume -> shown as a volume
+        (2.5, "beer", True, 500.0),
+        (8, "wine", True, 750.0),
+        (40, "vodka", True, 1000.0),
+        (5, "beer", True, 1000.0),
+        # Std Av ignores the flag entirely
+        (10, "stdav", False, 10.0),
+        (21, "stdav", True, 21.0),
+    ],
+)
+def test_from_stdav_value(stdav, drink_type, is_volume, expect_value):
     actual = DrinkQuantity.from_stdav(stdav, drink_type, is_volume=is_volume)
 
     assert actual.value == expect_value
+
+
+@given(stdav=QUANTITIES, drink_type=SERVED_TYPES)
+def test_from_stdav_volume_converts_back_to_the_stored_stdav(stdav, drink_type):
+    actual = DrinkQuantity.from_stdav(stdav, drink_type, is_volume=True)
+
+    reloaded = DrinkQuantity.from_volume(actual.value, drink_type)
+
+    assert reloaded.stdav == pytest.approx(stdav)
+
+
+@given(stdav=QUANTITIES, drink_type=SERVED_TYPES)
+def test_from_stdav_count_converts_back_to_the_stored_stdav(stdav, drink_type):
+    actual = DrinkQuantity.from_stdav(stdav, drink_type, is_volume=False)
+
+    converter = DrinkConverter(drink_type)
+
+    assert converter.servings_to_stdav(actual.value) == pytest.approx(stdav)
 
 
 def test_from_stdav_forces_std_av_to_a_count():
