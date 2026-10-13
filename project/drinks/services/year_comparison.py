@@ -68,7 +68,9 @@ class YearComparison:
             if not records.monthly:
                 continue
 
-            stats = DrinkStats(records.converter, records.monthly, today=today)
+            stats = DrinkStats(
+                records.converter, records.monthly, year=records.year, today=today
+            )
             series.append({"name": year, "data": stats.monthly.avg_daily_volume})
 
         return series
