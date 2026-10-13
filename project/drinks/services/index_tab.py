@@ -102,11 +102,12 @@ class IndexTab:
         builder = IndexBuilder(
             converter=records.converter,
             drink_stats=DrinkStats(
-                records.converter, records.monthly, today=boundary.today
+                records.converter, records.monthly, year=year, today=boundary.today
             ),
             previous_stats=DrinkStats(
                 records.converter,
                 records.previous.daily,
+                year=year - 1,
                 today=boundary.previous_end_date,
             ),
             frequency_stats=FrequencyStats(

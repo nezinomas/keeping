@@ -483,16 +483,24 @@ def test_card_drinking_days_without_a_prior_year(main_user, drink_converter):
 
 # IndexTab.build
 @pytest.mark.parametrize(
-    "today, months",
+    "today, drinks, months",
     [
-        pytest.param("1999-06-01", 6, id="running_year_ends_in_june"),
-        pytest.param("2000-03-01", 12, id="finished_year_runs_to_december"),
+        pytest.param(
+            "1999-06-01", [date(1999, 1, 10)], 6, id="running_year_ends_in_june"
+        ),
+        pytest.param(
+            "2000-03-01", [date(1999, 1, 10)], 12, id="finished_year_runs_to_december"
+        ),
+        pytest.param("2000-03-01", [], 12, id="finished_year_without_drinks"),
     ],
 )
-def test_index_tab_build_charts_end_at_the_month_reached(main_user, today, months):
+def test_index_tab_build_charts_end_at_the_month_reached(
+    main_user, today, drinks, months
+):
     # a month the year has not reached is not a month with no Drinks in it
     with time_machine.travel(today):
-        DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
+        for drink_date in drinks:
+            DrinkFactory(date=drink_date, stdav=2.5)
         actual = IndexTab.build(main_user, 1999)
 
     assert len(actual["chart_consumption"].data) == months
@@ -514,24 +522,31 @@ def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
     assert cards[1].state == "worsening"  # 2 days against last year's 1
 
 
-@time_machine.travel("1999-06-01")
 @pytest.mark.parametrize(
-    "drink_type, quantity, value, unit, amount",
+    "year, today, drink_type, quantity, value, unit, amount",
     [
-        pytest.param("beer", 100, "100", "ml", "36,5 L", id="volume"),
+        pytest.param(
+            1999, "1999-06-01", "beer", 100, "100", "ml", "36,5 L", id="volume"
+        ),
         # Std Av is read as typed: the figure keeps its decimal and carries no unit
-        pytest.param("stdav", 2.5, "2.5", "", "912,5 Std Av", id="stdav"),
+        pytest.param(
+            1999, "1999-06-01", "stdav", 2.5, "2.5", "", "912,5 Std Av", id="stdav"
+        ),
+        pytest.param(
+            2000, "2001-03-01", "beer", 100, "100", "ml", "36,6 L", id="empty_leap_year"
+        ),
     ],
 )
 def test_index_tab_build_limit_has_data(
-    main_user, drink_type, quantity, value, unit, amount
+    main_user, year, today, drink_type, quantity, value, unit, amount
 ):
     main_user.drink_type = drink_type
     target = DrinkTargetFactory(
-        user=main_user, year=1999, quantity=quantity, drink_type=drink_type
+        user=main_user, year=year, quantity=quantity, drink_type=drink_type
     )
 
-    card = IndexTab.build(main_user, 1999)["cards"][5]
+    with time_machine.travel(today):
+        card = IndexTab.build(main_user, year)["cards"][5]
 
     assert card.title == _("Daily limit")
     assert card.state == stat_card.NEUTRAL

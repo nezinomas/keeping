@@ -70,11 +70,12 @@ class DrinkStats:
         converter: DrinkConverter,
         data: Sequence[DataRow] = (),
         *,
+        year: int,
         today: date,
     ):
         self.converter = converter
         self.data = data
-        self._year = YearBoundary.from_records(data, today)
+        self._year = YearBoundary(year=year, today=today)
         self.year = self._year.year
 
     @cached_property
