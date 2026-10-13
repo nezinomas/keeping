@@ -1,3 +1,4 @@
+import re
 from datetime import date
 from io import BytesIO
 
@@ -66,6 +67,9 @@ def test_expense_init_fields(main_user):
     assert 'inputmode="decimal"' in form
     assert '<input type="number" name="quantity"' in form
     assert '<input type="text" name="price"' in form
+    price = re.search(r'<input[^>]*name="price"[^>]*>', form).group()
+    assert "readonly" in price
+    assert "class=" not in price
     assert '<textarea name="remark"' in form
 
     assert '<input type="checkbox" name="exception"' in form

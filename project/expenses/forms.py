@@ -128,9 +128,7 @@ class ExpenseForm(
 
         self.fields["date"].widget = DatePickerWidget()
 
-        self.fields["price"].widget = forms.TextInput(
-            attrs={"readonly": True, "class": "disabled"}
-        )
+        self.fields["price"].widget = forms.TextInput(attrs={"readonly": True})
         self.fields["remark"].widget.attrs["rows"] = 3
 
     def _initial_fields_values(self):
