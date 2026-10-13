@@ -17,9 +17,9 @@ def test_series_per_year_with_records(main_user):
 
     actual = YearComparison.build(main_user, [1999, 2000], TODAY)
 
-    assert [s["name"] for s in actual.serries] == [1999, 2000]
-    assert round(actual.serries[0]["data"][0], 2) == 16.13
-    assert round(actual.serries[1]["data"][0], 2) == 161.29
+    assert [s["name"] for s in actual.series] == [1999, 2000]
+    assert round(actual.series[0]["data"][0], 2) == 16.13
+    assert round(actual.series[1]["data"][0], 2) == 161.29
 
 
 def test_years_without_records_drop_out(main_user):
@@ -27,7 +27,7 @@ def test_years_without_records_drop_out(main_user):
 
     actual = YearComparison.build(main_user, [1998, 1999, 2000], TODAY)
 
-    assert [s["name"] for s in actual.serries] == [1999]
+    assert [s["name"] for s in actual.series] == [1999]
 
 
 @pytest.mark.parametrize(
@@ -46,7 +46,7 @@ def test_has_data(main_user, second_user, drinks, has_data):
     actual = YearComparison.build(main_user, [1999, 2000], TODAY)
 
     assert actual.has_data is has_data
-    assert (actual.serries == []) is (not has_data)
+    assert (actual.series == []) is (not has_data)
 
 
 @pytest.mark.parametrize(
@@ -61,7 +61,7 @@ def test_accepts(main_user, years, names):
 
     actual = YearComparison.build(main_user, years, TODAY)
 
-    assert [s["name"] for s in actual.serries] == names
+    assert [s["name"] for s in actual.series] == names
 
 
 def test_as_dict_is_json_serializable(main_user):
@@ -83,7 +83,7 @@ def test_series_data_ends_at_the_month_reached(main_user, today, months):
     DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
     actual = YearComparison.build(main_user, [1999], date.fromisoformat(today))
 
-    assert len(actual.serries[0]["data"]) == months
+    assert len(actual.series[0]["data"]) == months
 
 
 # YearComparison.for_pair
@@ -93,7 +93,7 @@ def test_a_pair_both_years_on_record(main_user):
 
     actual = YearComparison.for_pair(main_user, 1999, 2000, TODAY)
 
-    assert [s["name"] for s in actual.serries] == [1999, 2000]
+    assert [s["name"] for s in actual.series] == [1999, 2000]
     assert actual.has_data is True
 
 
@@ -125,7 +125,7 @@ def test_recent_years_end_with_the_header_year(main_user):
 
     actual = YearComparison.for_recent(main_user, 1999, 2, TODAY)
 
-    assert [s["name"] for s in actual.serries] == [1998, 1999]
+    assert [s["name"] for s in actual.series] == [1998, 1999]
 
 
 @pytest.mark.parametrize(
@@ -140,7 +140,7 @@ def test_recent_years_reach_back_only_as_far_as_the_records(main_user, qty):
 
     actual = YearComparison.for_recent(main_user, 1999, qty, TODAY)
 
-    assert [s["name"] for s in actual.serries] == [1999]
+    assert [s["name"] for s in actual.series] == [1999]
 
 
 def test_recent_years_of_none_draws_nothing(main_user):

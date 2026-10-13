@@ -760,7 +760,7 @@ def test_every_figure_stops_at_the_views_today(client_logged, mocker):
     dry = client_logged.get(reverse("drinks:tab_index")).context["cards"][0]
     typical = client_logged.get(reverse("drinks:typical_year")).content.decode()
     compare = client_logged.get(reverse("drinks:compare", kwargs={"qty": 1}))
-    months = chart_data(compare.content.decode(), "history")["serries"][0]["data"]
+    months = chart_data(compare.content.decode(), "history")["series"][0]["data"]
     history = client_logged.get(reverse("drinks:tab_history")).content.decode()
 
     assert (dry.value, dry.note) == ("0", "1999-03-01")
@@ -915,7 +915,7 @@ def test_compare_data_chart(client_logged):
 
     url = reverse("drinks:compare", kwargs={"qty": 2})
     response = client_logged.get(url)
-    first = chart_data(response.content.decode(), "history")["serries"][0]
+    first = chart_data(response.content.decode(), "history")["series"][0]
 
     assert first["name"] == 1999
     assert round(first["data"][0], 2) == 16.13
@@ -948,7 +948,7 @@ def test_comparetwo_valid_post_renders_the_pair(client_logged):
 
     url = reverse("drinks:compare_two")
     response = client_logged.post(url, {"year1": "1998", "year2": "1999"})
-    series = chart_data(response.content.decode(), "history")["serries"]
+    series = chart_data(response.content.decode(), "history")["series"]
 
     assert [serie["name"] for serie in series] == [1998, 1999]
     assert "HX-Retarget" not in response
