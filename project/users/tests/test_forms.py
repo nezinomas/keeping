@@ -3,41 +3,39 @@ import pytest
 from ..forms import InviteForm, SignUpForm
 from .factories import UserFactory
 
+SIGNUP = {
+    "username": "john",
+    "email": "john@john.com",
+    "password1": "abcdef123456",
+    "password2": "abcdef123456",
+}
 
-def test_signup_form_inputs():
-    form = SignUpForm()
 
-    expected = ["username", "email", "password1", "password2"]
-    actual = list(form.fields)
+@pytest.mark.django_db
+def test_signup_cleans_the_posted_values():
+    form = SignUpForm(data=SIGNUP)
 
-    assert expected == actual
+    assert form.is_valid()
+    # a list, not a dict: the form asks in this order
+    assert list(form.cleaned_data.items()) == list(SIGNUP.items())
 
 
 @pytest.mark.django_db
 def test_signup_unique_email():
     UserFactory()
 
-    form = SignUpForm(
-        data={
-            "username": "john",
-            "email": "bob@bob.com",
-            "password1": "abcdef123456",
-            "password2": "abcdef123456",
-        }
-    )
+    form = SignUpForm(data=SIGNUP | {"email": "bob@bob.com"})
 
     assert not form.is_valid()
-    assert "email" in form.errors
+    assert form.errors["email"] == ["Vartotojas su šiuo Email jau egzistuoja."]
 
 
 @pytest.mark.django_db
-def test_invite_form_inputs(main_user):
-    form = InviteForm(user=main_user)
+def test_invite_form_cleans_the_email(main_user):
+    form = InviteForm(user=main_user, data={"email": "New@New.com"})
 
-    expected = ["email"]
-    actual = list(form.fields)
-
-    assert expected == actual
+    assert form.is_valid()
+    assert form.cleaned_data == {"email": "New@New.com"}
 
 
 @pytest.mark.django_db
@@ -63,5 +61,4 @@ def test_invite_form_refuses_an_email(main_user, second_user, email, message):
     form = InviteForm(user=main_user, data={"email": email})
 
     assert not form.is_valid()
-    assert "email" in form.errors
     assert form.errors["email"][0] == message

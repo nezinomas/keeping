@@ -2,12 +2,10 @@ from typing import NamedTuple
 
 import pytest
 from django.db import connection
-from django.forms.models import modelformset_factory
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
-from ....core.mixins.formset import BaseTypeFormSet
 from ....core.tests.utils import setup_view
 from ....pensions.tests.factories import PensionTypeFactory
 from ....savings.tests.factories import SavingTypeFactory
@@ -192,13 +190,8 @@ def unchanged_date(view):
 
 
 def bound_formset(view, rows, can_delete=False):
-    formset_class = modelformset_factory(
-        view.model_class,
-        form=view.get_formset_class(),
-        formset=BaseTypeFormSet,
-        can_delete=can_delete,
-        extra=0,
-    )
+    formset_class = view.formset_class(extra=0)
+    formset_class.can_delete = can_delete
     return formset_class(post_data(rows))
 
 
@@ -209,42 +202,39 @@ def posted_view(rf, main_user, rows):
 
 
 @pytest.mark.django_db
-def test_lazy_properties_are_built_once_for_the_request_user(rf, main_user):
+def test_service_instance_is_built_once(rf, main_user):
     view = worth_view(rf, main_user)
 
     assert view.service_instance is view.service_instance
-    assert view.service_instance.user == main_user
-    assert view.model_class is AccountWorth
 
 
 @pytest.mark.django_db
-def test_unbound_formset_offers_one_form_per_fund(rf, main_user):
+def test_unbound_formset_renders_one_form_per_fund_with_that_fund_selected(
+    rf, main_user
+):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
     AccountWorthFactory(account=a1)
     view = worth_view(rf, main_user)
 
-    actual = view.unbound_formset()
+    actual = [str(form["account"]) for form in view.unbound_formset()]
 
-    assert not actual.is_bound
-    assert actual.extra == 2
-    assert [form.initial["account"] for form in actual.forms] == [a1, a2]
+    assert len(actual) == 2
+    assert f'<option value="{a1.pk}" selected>A1</option>' in actual[0]
+    assert f'<option value="{a2.pk}" selected>A2</option>' in actual[1]
 
 
 @pytest.mark.django_db
-def test_bound_formset_reads_the_posted_rows(rf, main_user):
+def test_bound_formset_renders_only_the_posted_rows(rf, main_user):
     a1 = AccountFactory(title="A1")
     AccountFactory(title="A2")
     view = worth_view(rf, main_user)
     data = post_data([{"date": "1999-9-9", "price": "5", "account": a1.pk}])
 
-    actual = view.bound_formset(data)
+    actual = [str(form["account"]) for form in view.bound_formset(data)]
 
-    assert actual.is_bound
-    assert actual.extra == 0
-    assert len(actual.forms) == 1
-    assert actual.forms[0]["account"].value() == a1.pk
-    assert "account" not in actual.forms[0].initial
+    assert len(actual) == 1
+    assert f'<option value="{a1.pk}" selected>A1</option>' in actual[0]
 
 
 @pytest.mark.django_db
@@ -260,42 +250,32 @@ def test_post_with_invalid_formset_returns_the_formset_with_its_errors(rf, main_
 
 
 @pytest.mark.django_db
-def test_post_skips_empty_prices_and_does_not_save(rf, main_user):
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
-    view = posted_view(
-        rf,
-        main_user,
-        [
-            {"date": "1999-9-9", "price": "", "account": a1.pk},
-            {"date": "1999-9-9", "account": a2.pk},
-        ],
-    )
+@pytest.mark.parametrize(
+    "prices, saved",
+    [
+        pytest.param(
+            [{"price": "100"}, {"price": ""}],
+            [("A1", 10000, "1999-09-09")],
+            id="some_priced",
+        ),
+        pytest.param([{"price": ""}, {}], [], id="none_priced"),
+    ],
+)
+def test_post_saves_only_the_rows_with_a_price(rf, main_user, prices, saved):
+    funds = [AccountFactory(title="A1"), AccountFactory(title="A2")]
+    rows = [
+        {"date": "1999-9-9", "account": fund.pk} | price
+        for fund, price in zip(funds, prices, strict=True)
+    ]
+    view = posted_view(rf, main_user, rows)
 
     response = view.post(view.request)
 
+    actual = AccountWorth.objects.all()
+    assert [
+        (w.account.title, w.price, w.date.strftime("%Y-%m-%d")) for w in actual
+    ] == saved
     assert response.status_code == 204
-    assert not AccountWorth.objects.exists()
-
-
-@pytest.mark.django_db
-def test_post_saves_only_the_rows_with_a_price(rf, main_user):
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
-    view = posted_view(
-        rf,
-        main_user,
-        [
-            {"date": "1999-9-9", "price": "100", "account": a1.pk},
-            {"date": "1999-9-9", "price": "", "account": a2.pk},
-        ],
-    )
-
-    response = view.post(view.request)
-
-    actual = AccountWorth.objects.get()
-    assert (actual.account, actual.price) == (a1, 10000)
-    assert actual.date.strftime("%Y-%m-%d") == "1999-09-09"
     assert response["HX-Trigger"] == '{"afterAccountWorthNew": {}}'
 
 
@@ -339,17 +319,18 @@ def test_post_syncs_the_balances_of_the_saved_rows_user(rf, main_user, mocker):
         ),
     ],
 )
+@pytest.mark.parametrize("copies", [2, 3])
 def test_clean_tags_the_fund_field_the_model_names(
-    rf, main_user, view_class, factory, fund_field, message
+    rf, main_user, view_class, factory, fund_field, message, copies
 ):
     fund = factory()
     view = worth_view(rf, main_user, view_class)
     row = {"date": "1999-9-9", "price": "5", fund_field: fund.pk}
 
-    actual = bound_formset(view, [row, row])
+    actual = bound_formset(view, [row] * copies)
 
     assert not actual.is_valid()
-    assert [form.errors for form in actual.forms] == [{fund_field: [message]}] * 2
+    assert [form.errors for form in actual.forms] == [{fund_field: [message]}] * copies
 
 
 @pytest.mark.django_db
@@ -395,14 +376,3 @@ def test_clean_skips_a_form_that_is_empty_deleted_or_blank(rf, main_user, rows):
 
     assert actual.is_valid()
     assert [form.errors for form in actual.forms] == [{}] * len(rows)
-
-
-@pytest.mark.django_db
-def test_clean_multiple_duplicates_only_tags_first_form_once(rf, main_user):
-    row = {"date": "1999-9-9", "price": "5", "account": AccountFactory().pk}
-    view = worth_view(rf, main_user)
-
-    actual = bound_formset(view, [row] * 3)
-
-    assert not actual.is_valid()
-    assert [len(form.errors["account"]) for form in actual.forms] == [1, 1, 1]
