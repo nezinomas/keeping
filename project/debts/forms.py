@@ -13,7 +13,10 @@ from .services.model_services import DebtModelService, DebtReturnModelService
 
 
 def _other_party_label(debt_type):
-    return {"lend": _("Borrower"), "borrow": _("Lender")}[debt_type]
+    return {
+        models.Debt.DebtType.LEND: _("Borrower"),
+        models.Debt.DebtType.BORROW: _("Lender"),
+    }[debt_type]
 
 
 class DebtFormMixin(PriceToCentsFormMixin, YearBetweenMixin):

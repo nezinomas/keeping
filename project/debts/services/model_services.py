@@ -7,11 +7,13 @@ from ...users.models import User
 from .. import models
 
 
-def _yearly_sums(objects):
+def _yearly_sums(objects, key):
     return (
         objects.annotate(year=ExtractYear("date"))
         .values("year", "account__title")
         .annotate(total=Sum("price"))
+        .values("year", category_id=F("account__pk"), **{key: F("total")})
+        .order_by("year", "category_id")
     )
 
 
@@ -74,18 +76,10 @@ class DebtModelService(DatedModelService):
         )
 
     def incomes(self):
-        return (
-            _yearly_sums(self.objects)
-            .values("year", incomes=F("total"), category_id=F("account__pk"))
-            .order_by("year", "account")
-        )
+        return _yearly_sums(self.objects, "incomes")
 
     def expenses(self):
-        return (
-            _yearly_sums(self.objects)
-            .values("year", expenses=F("total"), category_id=F("account__pk"))
-            .order_by("year", "account")
-        )
+        return _yearly_sums(self.objects, "expenses")
 
 
 class DebtReturnModelService(SumMixin, DatedModelService):
@@ -127,15 +121,7 @@ class DebtReturnModelService(SumMixin, DatedModelService):
         )
 
     def incomes(self):
-        return (
-            _yearly_sums(self.objects)
-            .values("year", incomes=F("total"), category_id=F("account__pk"))
-            .order_by("year", "category_id")
-        )
+        return _yearly_sums(self.objects, "incomes")
 
     def expenses(self):
-        return (
-            _yearly_sums(self.objects)
-            .values("year", expenses=F("total"), category_id=F("account__pk"))
-            .order_by("year", "category_id")
-        )
+        return _yearly_sums(self.objects, "expenses")

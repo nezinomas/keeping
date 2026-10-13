@@ -405,7 +405,7 @@ def test_debt_sum_all_not_closed(main_user, open_debts, expect):
     ],
 )
 def test_debt_yearly_sums_per_account(main_user, factory_, other, debt_type, sums, key):
-    a1 = AccountFactory(title="A1")
+    a1 = AccountFactory(title="A1", order=20)
     a2 = AccountFactory(title="A2")
 
     factory_(date=dt(1970, 1, 1), account=a1, price=1)
