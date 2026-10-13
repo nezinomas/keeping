@@ -2,15 +2,30 @@ import itertools
 import posixpath
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from pathlib import Path
 
-from django.core.exceptions import SuspiciousFileOperation
-from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import transaction
 
 from ..helpers.models_helper import attachment_folder
 from ..models import Expense
+
+
+@dataclass(frozen=True)
+class Copied:
+    name: str
+
+
+@dataclass(frozen=True)
+class TooLong:
+    pass
+
+
+@dataclass(frozen=True)
+class NotCopied:
+    reason: str
+
+
+Placement = Copied | TooLong | NotCopied
 
 
 @dataclass
@@ -35,9 +50,7 @@ class AttachmentFolders:
     def _move(self) -> AttachmentMoves:
         result = AttachmentMoves()
         changed = []
-        copies = {}
-        too_long = set()
-        not_copied = {}
+        placements = {}
         pending, in_place = self._read()
         # a file a row names, now or before the move, is never handed to another row
         self.taken |= in_place | pending.keys()
@@ -49,35 +62,33 @@ class AttachmentFolders:
 
             for expense, folder in rows:
                 key = (old, posixpath.join(folder, posixpath.basename(old)))
-                if key not in copies.keys() | too_long | not_copied.keys():
-                    try:
-                        copies[key] = self._place(*key)
-                    except SuspiciousFileOperation:
-                        too_long.add(key)
-                    except OSError as error:
-                        not_copied[key] = _reason(error)
-                if key in too_long:
-                    result.too_long.append(old)
-                    continue
-                if key in not_copied:
-                    result.not_copied.append((old, not_copied[key]))
-                    continue
+                if key not in placements:
+                    placements[key] = self._place(*key)
 
-                expense.attachment = copies[key]
-                changed.append(expense)
-                result.moved.append((old, copies[key]))
+                match placements[key]:
+                    case TooLong():
+                        result.too_long.append(old)
+                    case NotCopied(reason):
+                        result.not_copied.append((old, reason))
+                    case Copied(name):
+                        expense.attachment = name
+                        changed.append(expense)
+                        result.moved.append((old, name))
 
         if self.dry_run:
             return result
 
         with transaction.atomic():
             Expense.objects.bulk_update(changed, ["attachment"])
-        still_named = {old for old, _ in too_long | not_copied.keys()}
-        olds = {old for old, _ in copies} - in_place - still_named
-        result.not_deleted.extend(self._delete(olds))
-        result.not_removed.extend(
-            self._remove_emptied({posixpath.dirname(old) for old in olds})
-        )
+        still_named = {
+            old
+            for (old, _), placed in placements.items()
+            if not isinstance(placed, Copied)
+        }
+        olds = {old for old, _ in placements} - in_place - still_named
+        result.not_deleted.extend(_delete(olds))
+        emptied = {posixpath.dirname(old) for old in olds}
+        result.not_removed.extend(_delete({f for f in emptied if _is_empty(f)}))
         return result
 
     @staticmethod
@@ -98,63 +109,69 @@ class AttachmentFolders:
             pending.setdefault(old, []).append((expense, folder))
         return pending, in_place
 
-    def _place(self, old: str, new: str) -> str:
-        content = self._read_bytes(old)
-        name = next(name for name in self._names(new) if self._free(name, content))
+    def _place(self, old: str, new: str) -> Placement:
+        try:
+            return self._copy(old, new)
+        except OSError as error:
+            return NotCopied(_reason(error))
+
+    def _copy(self, old: str, new: str) -> Placement:
+        # opened in a dry run too, so both runs refuse a file the OS will not hand over
+        default_storage.open(old).close()
+        for name in _names(new):
+            if self._free(name, old):
+                break
+        else:
+            return TooLong()
+
         self.taken.add(name)
         if self.dry_run or default_storage.exists(name):
-            return name
+            return Copied(name)
         try:
-            return default_storage.save(name, ContentFile(content))
+            with default_storage.open(old) as file:
+                return Copied(default_storage.save(name, file))
         except OSError:
             # the storage leaves a half-written file behind
             if default_storage.exists(name):
                 default_storage.delete(name)
             raise
 
-    def _free(self, name: str, content: bytes) -> bool:
+    def _free(self, name: str, old: str) -> bool:
         if name in self.taken:
             return False
         # an equal file is the copy an earlier, crashed run left behind
-        return not default_storage.exists(name) or self._read_bytes(name) == content
+        return not default_storage.exists(name) or _same(name, old)
 
-    @staticmethod
-    def _names(new: str) -> Iterator[str]:
-        max_length = Expense._meta.get_field("attachment").max_length
-        root, ext = posixpath.splitext(new)
-        numbered = (f"{root}_{n}{ext}" for n in itertools.count(2))
-        for name in itertools.chain([new], numbered):
-            if len(name) > max_length:
-                raise SuspiciousFileOperation(f"{name} is longer than {max_length}")
-            yield name
 
-    @staticmethod
-    def _read_bytes(name: str) -> bytes:
-        with default_storage.open(name) as file:
-            return file.read()
+def _names(new: str) -> Iterator[str]:
+    max_length = Expense._meta.get_field("attachment").max_length
+    root, ext = posixpath.splitext(new)
+    numbered = (f"{root}_{n}{ext}" for n in itertools.count(2))
+    names = itertools.chain([new], numbered)
+    return itertools.takewhile(lambda name: len(name) <= max_length, names)
 
-    @staticmethod
-    def _delete(olds: set[str]) -> list[tuple[str, str]]:
-        refused = []
-        for old in sorted(olds):
-            try:
-                default_storage.delete(old)
-            except OSError as error:
-                refused.append((old, _reason(error)))
-        return refused
 
-    @staticmethod
-    def _remove_emptied(folders: set[str]) -> list[tuple[str, str]]:
-        refused = []
-        for folder in sorted(folders):
-            dirs, files = default_storage.listdir(folder)
-            if dirs or files:
-                continue
-            try:
-                Path(default_storage.path(folder)).rmdir()
-            except OSError as error:
-                refused.append((folder, _reason(error)))
-        return refused
+def _same(one: str, other: str) -> bool:
+    if default_storage.size(one) != default_storage.size(other):
+        return False
+    with default_storage.open(one) as a, default_storage.open(other) as b:
+        return all(x == y for x, y in zip(a.chunks(), b.chunks()))
+
+
+def _is_empty(folder: str) -> bool:
+    dirs, files = default_storage.listdir(folder)
+    return not dirs and not files
+
+
+def _delete(names: set[str]) -> list[tuple[str, str]]:
+    # the file system storage removes an empty folder as it removes a file
+    refused = []
+    for name in sorted(names):
+        try:
+            default_storage.delete(name)
+        except OSError as error:
+            refused.append((name, _reason(error)))
+    return refused
 
 
 def _reason(error: OSError) -> str:
