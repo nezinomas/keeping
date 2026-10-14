@@ -1,5 +1,7 @@
 import pytest
 from django.core.paginator import EmptyPage, PageNotAnInteger
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib.paginator import CountlessPage, CountlessPaginator
 
@@ -9,15 +11,15 @@ def test_page_str():
     assert str(page) == "<Page 2>"
 
 
-def test_page_has_other_pages():
-    page = CountlessPage([1, 2, 3], 3, 1, 1)
-    assert page.has_other_pages()
+@pytest.mark.parametrize(
+    "total_pages, current_page, expected",
+    [(3, 1, True), (3, 3, True), (1, 1, False)],
+    ids=["first_of_three", "last_of_three", "only_page"],
+)
+def test_page_has_other_pages(total_pages, current_page, expected):
+    page = CountlessPage([1, 2, 3], total_pages, current_page, 1)
 
-    page = CountlessPage([1, 2, 3], 3, 3, 1)
-    assert page.has_other_pages()
-
-    page = CountlessPage([1, 2, 3], 1, 1, 3)
-    assert not page.has_other_pages()
+    assert page.has_other_pages() is expected
 
 
 def test_next_page_number():
@@ -25,9 +27,9 @@ def test_next_page_number():
     assert page.next_page_number() == 2
 
 
-@pytest.mark.xfail()
 def test_next_page_number_no_next():
-    CountlessPage([1, 2, 3], 1, 3, 3).next_page_number()
+    with pytest.raises(EmptyPage):
+        CountlessPage([1, 2, 3], 1, 3, 3).next_page_number()
 
 
 def test_prev_page_number():
@@ -35,30 +37,25 @@ def test_prev_page_number():
     assert page.previous_page_number() == 1
 
 
-@pytest.mark.xfail()
 def test_prev_page_number_no_prev():
-    CountlessPage([1, 2, 3], 1, 1, 3).previous_page_number()
+    with pytest.raises(EmptyPage):
+        CountlessPage([1, 2, 3], 1, 1, 3).previous_page_number()
 
 
-@pytest.mark.parametrize(
-    "number",
-    [(1.1), ("a")],
-)
-@pytest.mark.xfail(raises=PageNotAnInteger)
+@pytest.mark.parametrize("number", [1.1, "a"])
 def test_validate_number_not_integer(number):
-    CountlessPaginator([], 0, 10).validate_number(number)
+    with pytest.raises(PageNotAnInteger):
+        CountlessPaginator([], 0, 10).validate_number(number)
 
 
-@pytest.mark.xfail(raises=EmptyPage)
 def test_validate_number_empty_page():
-    CountlessPaginator([], 0, 10).validate_number(0)
+    with pytest.raises(EmptyPage):
+        CountlessPaginator([], 0, 10).validate_number(0)
 
 
-def test_validate_number_valid():
-    paginator = CountlessPaginator([], 0, 10)
-
-    assert paginator.validate_number(1) == 1
-    assert paginator.validate_number(2) == 2
+@pytest.mark.parametrize("number", [1, 2])
+def test_validate_number_valid(number):
+    assert CountlessPaginator([], 0, 10).validate_number(number) == number
 
 
 @pytest.mark.parametrize(
@@ -78,61 +75,38 @@ def test_get_page(page_number, expected):
     assert page.current_page == expected
 
 
-def test_elided_page_range_1():
-    paginator = CountlessPaginator(list(range(1, 5)), 5, 2)
-    page_range = paginator.get_elided_page_range()
-
-    assert list(page_range) == [1, 2, 3]
+ELLIPSIS = CountlessPaginator.ELLIPSIS
 
 
-def test_elided_page_range_2():
-    paginator = CountlessPaginator(list(range(1, 22)), 22, 2)
-    page_range = paginator.get_elided_page_range(8)
+@pytest.mark.parametrize(
+    "total_records, page, expected",
+    [
+        (5, 1, [1, 2, 3]),
+        (22, 8, [1, 2, ELLIPSIS, 5, 6, 7, 8, 9, 10, 11]),
+        (22, 4, [1, 2, 3, 4, 5, 6, 7, ELLIPSIS, 10, 11]),
+        (22, 2, [1, 2, 3, 4, 5, ELLIPSIS, 10, 11]),
+        (22, 5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
+    ],
+    ids=["few_pages", "middle", "near_start", "start", "no_ellipsis"],
+)
+def test_elided_page_range(total_records, page, expected):
+    paginator = CountlessPaginator(list(range(total_records)), total_records, 2)
 
-    assert list(page_range) == [
-        1,
-        2,
-        CountlessPaginator.ELLIPSIS,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-    ]
-
-
-def test_elided_page_range_3():
-    paginator = CountlessPaginator(list(range(1, 22)), 22, 2)
-    page_range = paginator.get_elided_page_range(4)
-
-    assert list(page_range) == [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        CountlessPaginator.ELLIPSIS,
-        10,
-        11,
-    ]
+    assert list(paginator.get_elided_page_range(page)) == expected
 
 
-def test_elided_page_range_4():
-    paginator = CountlessPaginator(list(range(1, 22)), 22, 2)
-    page_range = paginator.get_elided_page_range(2)
+@given(
+    total_records=st.integers(0, 500),
+    per_page=st.integers(1, 20),
+    page=st.integers(1, 10**30),
+)
+@example(total_records=22, per_page=2, page=999)
+def test_elided_page_range_lists_only_pages_that_exist(total_records, per_page, page):
+    paginator = CountlessPaginator([], total_records, per_page)
 
-    assert list(page_range) == [1, 2, 3, 4, 5, CountlessPaginator.ELLIPSIS, 10, 11]
+    pages = [i for i in paginator.get_elided_page_range(page) if i != ELLIPSIS]
 
-
-def test_elided_page_range_5():
-    paginator = CountlessPaginator(list(range(1, 22)), 22, 2)
-    page_range = paginator.get_elided_page_range(5)
-
-    assert list(page_range) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    assert all(1 <= i <= paginator.total_pages for i in pages)
 
 
 @pytest.mark.parametrize(
