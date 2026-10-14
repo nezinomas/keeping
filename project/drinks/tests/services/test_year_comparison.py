@@ -75,13 +75,13 @@ def test_as_dict_is_json_serializable(main_user):
 @pytest.mark.parametrize(
     "today, months",
     [
-        pytest.param("1999-06-15", 6, id="running_year_ends_in_june"),
-        pytest.param("2000-03-01", 12, id="finished_year_runs_to_december"),
+        pytest.param(date(1999, 6, 15), 6, id="running_year_ends_in_june"),
+        pytest.param(date(2000, 3, 1), 12, id="finished_year_runs_to_december"),
     ],
 )
 def test_series_data_ends_at_the_month_reached(main_user, today, months):
     DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
-    actual = YearComparison.build(main_user, [1999], date.fromisoformat(today))
+    actual = YearComparison.build(main_user, [1999], today)
 
     assert len(actual.series[0]["data"]) == months
 

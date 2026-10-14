@@ -431,32 +431,30 @@ def test_tab_titles_its_panels(client_logged, tab, titles):
 
 
 @pytest.mark.parametrize(
-    "tab, charts, markup",
+    "tab, charts, markup, cards",
     [
         pytest.param(
             "index",
             ["quantity", "consumption"],
             # the Converted table's rows exist only while the breakdown has data
             ('<tr class="main__total">', "<td>0,40</td>"),
+            6,
             id="index",
         ),
-        pytest.param("habits", ["weekday"], (), id="habits"),
-        pytest.param("trends", ["trend"], (), id="trends"),
-        pytest.param("risk", ["weekly", "heavy"], (), id="risk"),
+        pytest.param("habits", ["weekday"], (), 1, id="habits"),
+        pytest.param("trends", ["trend"], (), 5, id="trends"),
+        pytest.param("risk", ["weekly", "heavy"], (), 4, id="risk"),
     ],
 )
-def test_tab_renders_its_charts_and_cards(client_logged, tab, charts, markup):
+def test_tab_renders_its_charts_and_cards(client_logged, tab, charts, markup, cards):
     DrinkFactory()
 
-    response = client_logged.get(reverse(TABS[tab]))
-    page = response.content.decode()
+    page = client_logged.get(reverse(TABS[tab])).content.decode()
 
     for chart in charts:
         assert isinstance(chart_data(page, chart), dict)
     for text in markup:
         assert text in page
-    cards = len(response.context["cards"])
-    assert cards > 0
     assert page.count('<div class="trend-card">') == cards
 
 
