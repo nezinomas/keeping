@@ -175,4 +175,4 @@ def test_book_target_year_validation(main_user):
 
     assert not form.is_valid()
 
-    assert "year" in form.errors
+    assert form.errors == {"year": ["1999 metai jau turi tikslą."]}

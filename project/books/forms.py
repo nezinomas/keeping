@@ -101,7 +101,7 @@ class BookTargetForm(forms.ModelForm):
 
         qs = BookTargetModelService(self.user).year(year)
         if qs.exists():
-            msg = _("already has a goal.")
-            raise forms.ValidationError(f"{year} {msg}")
+            msg = _("%(year)s already has a goal.") % {"year": year}
+            raise forms.ValidationError(msg)
 
         return year
