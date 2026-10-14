@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 from ..lib.date import latest_year, years
@@ -8,18 +9,35 @@ from ..lib.date import latest_year, years
 class YearBetweenMixin:
     def clean_date(self):
         dt = self.cleaned_data["date"]
-
-        year_instance = dt.year
-        years_ = years(self.user, date.today())
-
-        if year_instance not in years_:
-            self.add_error(
-                "date",
-                _("Year must be between %(year1)s and %(year2)s")
-                % ({"year1": years_[0], "year2": years_[-1]}),
-            )
+        self.add_error_unless_year_between("date", years(self.user, date.today()))
 
         return dt
+
+    def add_error_unless_year_between(self, field, years_):
+        if self.cleaned_data[field].year in years_:
+            return
+
+        self.add_error(
+            field,
+            _("Year must be between %(year1)s and %(year2)s")
+            % ({"year1": years_[0], "year2": years_[-1]}),
+        )
+
+
+class OneTargetAYearMixin:
+    # each form names its target_service: core imports no app
+
+    def clean_year(self):
+        year = self.cleaned_data["year"]
+
+        if self.instance.pk:
+            return year
+
+        if self.target_service(self.user).year(year).exists():
+            msg = _("%(year)s already has a goal.") % {"year": year}
+            raise ValidationError(msg)
+
+        return year
 
 
 class YearNotLaterMixin:

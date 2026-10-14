@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from ..core.lib.convert_price import PriceToCentsFormMixin, int_cents_to_float
 from ..core.lib.date import monthnames, set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField
+from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
 from ..expenses.services.model_services import ExpenseTypeModelService
@@ -66,7 +66,7 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        self._setup_journal_field()
+        pin(self.fields["journal"], self.user.journal)
         self._setup_year_field()
         self._translate_common_fields()
 
@@ -139,11 +139,6 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
 
         for key, val in month_names().items():
             self.fields[key.lower()].label = val
-
-    def _setup_journal_field(self):
-        self.fields["journal"].initial = self.user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
 
     def _setup_year_field(self):
         self.fields["year"].initial = set_date_with_user_year(

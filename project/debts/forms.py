@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceToCentsFormMixin, float_to_int_cents
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField
+from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from . import models
@@ -62,14 +62,9 @@ class DebtForm(DebtFormMixin, forms.ModelForm):
         if not self.instance.pk:
             self.instance.debt_type = self.debt_type
 
-        self.journal_field_settings()
+        pin(self.fields["journal"], self.user.journal)
 
         self.translations()
-
-    def journal_field_settings(self):
-        self.fields["journal"].initial = self.user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
 
     def translations(self):
         self.fields["date"].label = _("Date")

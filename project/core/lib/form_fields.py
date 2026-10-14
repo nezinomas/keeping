@@ -5,6 +5,13 @@ from django.forms.models import ModelChoiceIterator
 from .form_widgets import DecimalCommaWidget
 
 
+def pin(field, value):
+    # hidden, and a posted value is ignored
+    field.initial = value
+    field.disabled = True
+    field.widget = forms.HiddenInput()
+
+
 class CommaFloatField(forms.FloatField):
     # a Lithuanian keyboard sends the decimal separator as a comma, verbatim
     widget = DecimalCommaWidget

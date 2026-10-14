@@ -7,12 +7,13 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
+from ..core.lib.form_fields import pin
 from ..core.lib.form_widgets import (
     DatePickerWidget,
     DecimalCommaWidget,
     YearPickerWidget,
 )
-from ..core.mixins.forms import YearBetweenMixin
+from ..core.mixins.forms import OneTargetAYearMixin, YearBetweenMixin
 from .apps import App_name
 from .lib.drink_quantity import DrinkQuantity
 from .lib.drinks_options import MAX_BOTTLES
@@ -38,7 +39,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.instance.counter_type = App_name
 
         self.date_field_settings()
-        self.user_field_settings()
+        pin(self.fields["user"], self.user)
         self.translations()
 
         self.recalculate_stdav_on_opening_form()
@@ -46,11 +47,6 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     def date_field_settings(self):
         self.fields["date"].widget = DatePickerWidget()
         self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
-
-    def user_field_settings(self):
-        self.fields["user"].initial = self.user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
 
     def translations(self):
         self.fields["date"].label = _("Date")
@@ -96,7 +92,9 @@ class QuickAddForm(DrinkForm):
         )
 
 
-class DrinkTargetForm(forms.ModelForm):
+class DrinkTargetForm(OneTargetAYearMixin, forms.ModelForm):
+    target_service = DrinkTargetModelService
+
     class Meta:
         model = DrinkTarget
         fields = ["user", "year", "drink_type", "quantity"]
@@ -116,14 +114,9 @@ class DrinkTargetForm(forms.ModelForm):
             self.user, date.today()
         ).year
 
-        self.user_field_settings()
+        pin(self.fields["user"], self.user)
 
         self.translations()
-
-    def user_field_settings(self):
-        self.fields["user"].initial = self.user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
 
     def translations(self):
         self.fields["year"].label = _("Year")
@@ -133,19 +126,6 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields["quantity"].help_text = render_to_string(
             "drinks/includes/drink_target_quantity_help.html"
         )
-
-    def clean_year(self):
-        year = self.cleaned_data["year"]
-
-        if self.instance.pk:
-            return year
-
-        qs = DrinkTargetModelService(self.user).year(year)
-        if qs.exists():
-            msg = _("%(year)s already has a goal.") % {"year": year}
-            raise forms.ValidationError(msg)
-
-        return year
 
 
 class TypicalYearForm(forms.Form):
