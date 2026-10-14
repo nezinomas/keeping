@@ -27,6 +27,9 @@ def _purchase(fee_source, title="Fund", day=date(1999, 1, 1), price=200, fee=3):
     )
 
 
+TODAY = date(1999, 1, 1)
+
+
 def _queries(func, *args):
     with CaptureQueriesContext(connection) as ctx:
         func(*args)
@@ -40,7 +43,7 @@ def test_month_balance_subtracts_account_fees_only(main_user, fee_source, balanc
     IncomeFactory(price=1000)
     _purchase(fee_source)
 
-    actual = month_load_service(main_user)
+    actual = month_load_service(main_user, TODAY)
 
     assert actual["info"]["fact"]["balance"] == balance
 
@@ -50,7 +53,7 @@ def test_month_savings_stay_the_purchase_price(main_user):
     IncomeFactory(price=1000)
     _purchase(ACCOUNT)
 
-    actual = month_load_service(main_user)
+    actual = month_load_service(main_user, TODAY)
 
     assert actual["info"]["fact"]["saving"] == 200
     assert actual["month_table"]["total_row"]["savings"] == 200
@@ -61,7 +64,7 @@ def test_month_account_fee_of_another_month_is_left_out(main_user):
     IncomeFactory(price=1000)
     _purchase(ACCOUNT, day=date(1999, 2, 1))
 
-    actual = month_load_service(main_user)
+    actual = month_load_service(main_user, TODAY)
 
     assert actual["info"]["fact"]["balance"] == 1000
 
@@ -70,12 +73,12 @@ def test_month_query_count_does_not_grow(main_user):
     main_user.month = 1
     for i in range(2):
         _purchase(ACCOUNT, title=f"T{i}")
-    two = _queries(month_load_service, main_user)
+    two = _queries(month_load_service, main_user, TODAY)
 
     for i in range(2, 6):
         _purchase(ACCOUNT, title=f"T{i}")
 
-    assert _queries(month_load_service, main_user) == two
+    assert _queries(month_load_service, main_user, TODAY) == two
 
 
 # Forecast

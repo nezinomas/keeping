@@ -2,7 +2,6 @@ from datetime import date, datetime
 
 import pytest
 import pytz
-import time_machine
 
 from ...lib import date as lib_date
 
@@ -15,7 +14,6 @@ def test_year_month_list():
     assert actual[11] == date(1970, 12, 1)
 
 
-@time_machine.travel("1970-01-11")
 @pytest.mark.parametrize(
     "year, month, return_past_day, expect",
     [
@@ -28,10 +26,11 @@ def test_year_month_list():
     ],
 )
 def test_current_day(year, month, return_past_day, expect):
-    assert lib_date.current_day(year, month, return_past_day) == expect
+    actual = lib_date.current_day(year, month, date(1970, 1, 11), return_past_day)
+
+    assert actual == expect
 
 
-@time_machine.travel("2001-01-01")
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     ("years_of", "expected"),
@@ -44,7 +43,7 @@ def test_current_day(year, month, return_past_day, expect):
 def test_years_user_logged(main_user, years_of, expected):
     main_user.journal.first_record = datetime(1999, 1, 1, tzinfo=pytz.utc)
 
-    actual = years_of(main_user)
+    actual = years_of(main_user, date(2001, 1, 1))
 
     assert actual == expected
 
@@ -62,13 +61,14 @@ def test_monthnames():
 @pytest.mark.parametrize(
     "today, expect",
     [
-        pytest.param("1974-01-01", datetime(1999, 1, 1), id="same_day"),
-        pytest.param("2028-02-29", datetime(1999, 2, 28), id="leap_day_in_common_year"),
+        pytest.param(date(1974, 1, 1), datetime(1999, 1, 1), id="same_day"),
+        pytest.param(
+            date(2028, 2, 29), datetime(1999, 2, 28), id="leap_day_in_common_year"
+        ),
     ],
 )
 def test_set_year_for_month(main_user, today, expect):
-    with time_machine.travel(today):
-        actual = lib_date.set_date_with_user_year(main_user)
+    actual = lib_date.set_date_with_user_year(main_user, today)
 
     assert actual == expect
 

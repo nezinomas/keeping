@@ -70,15 +70,9 @@ class YearBoundary:
 
     @property
     def weeks_elapsed(self) -> int:
-        """ISO weeks the year has reached — this week's number today, the whole
-        year's 52 or 53 once it is over.
+        """ISO weeks the year has reached, 52 or 53 once it is over.
 
-        Dec 28 always falls in its own year's last ISO week, which is what makes
-        it the way to ask how many weeks a year has. The turn of the year is the
-        awkward part: early January can belong to the previous ISO year
-        (2027-01-01 is week 53 of 2026) and late December to the next one
-        (2024-12-30 is week 1 of 2025). Both read here as the week of *this*
-        year they fall in, so a two-day-old year is never divided by 53.
+        Days of a neighbouring ISO year read as this year's first or last week.
         """
         weeks_in_year = date(self.year, 12, 28).isocalendar()[1]
         if self.year != self.today.year:

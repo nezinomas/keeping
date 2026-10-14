@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.utils.translation import gettext as _
 
 from ..lib.date import latest_year, years
@@ -8,7 +10,7 @@ class YearBetweenMixin:
         dt = self.cleaned_data["date"]
 
         year_instance = dt.year
-        years_ = years(self.user)
+        years_ = years(self.user, date.today())
 
         if year_instance not in years_:
             self.add_error(
@@ -24,7 +26,7 @@ class YearNotLaterMixin:
     def clean_date(self):
         dt = self.cleaned_data["date"]
 
-        limit = latest_year()
+        limit = latest_year(date.today())
 
         if dt.year > limit:
             self.add_error(

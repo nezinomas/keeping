@@ -7,7 +7,7 @@ def years(request):
     if not request.user.is_authenticated:
         return {"years": []}
 
-    return {"years": lib_date.years(request.user)[::-1]}
+    return {"years": lib_date.years(request.user, date.today())[::-1]}
 
 
 def yday(request):

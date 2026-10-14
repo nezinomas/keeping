@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -27,7 +29,7 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
         self.fields["quantity"].initial = 1
 
         if self.counter_type:

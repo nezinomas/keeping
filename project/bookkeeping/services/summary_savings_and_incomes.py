@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import date
 
 from django.utils.translation import gettext as _
 
@@ -20,13 +21,14 @@ class Data:
 
 
 class Service:
-    def __init__(self, user: User, data: Data):
+    def __init__(self, user: User, data: Data, today: date):
         self.user = user
+        self._today = today
         self._incomes = data.incomes
         self._savings = data.savings
 
     def chart_data(self):
-        _categories = years_to_date(self.user)
+        _categories = years_to_date(self.user, self._today)
         _incomes = {x["year"]: x["sum"] for x in self._incomes}
         _savings = {x["year"]: x["sum"] for x in self._savings}
 
@@ -48,9 +50,9 @@ class Service:
         }
 
 
-def load_service(user: User) -> dict:
+def load_service(user: User, today: date) -> dict:
     data = Data(user)
-    obj = Service(user, data)
+    obj = Service(user, data, today)
 
     text = {
         "text": {

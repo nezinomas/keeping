@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -33,7 +35,7 @@ class IncomeForm(PriceToCentsFormMixin, YearNotLaterMixin, forms.ModelForm):
         incomes = IncomeTypeModelService(self.user)
 
         self.fields["account"].initial = accounts.items().first()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
 
         self.fields["income_type"].queryset = incomes.items()
         self.fields["account"].queryset = accounts.items()
