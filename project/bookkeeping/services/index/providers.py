@@ -1,6 +1,7 @@
 import itertools as it
 
 from django.db.models import F, QuerySet, Sum
+from django.db.models.functions import Coalesce
 
 from ....accounts.services.model_services import AccountBalanceModelService
 from ....debts.models import Debt
@@ -29,8 +30,7 @@ class IndexDataProvider:
         return (
             AccountBalanceModelService(self.user)
             .year(self.year)
-            .aggregate(Sum("past"))["past__sum"]
-            or 0
+            .aggregate(past=Coalesce(Sum("past"), 0))["past"]
         )
 
     def _get_monthly_data(self) -> list[dict]:
@@ -51,7 +51,7 @@ class IndexDataProvider:
     def _get_debt_monthly(self, debt_type: Debt.DebtType) -> QuerySet:
         return (
             DebtModelService(self.user, debt_type)
-            .sum_by_month(self.year, closed=True)
+            .sum_by_month(self.year)
             .values("date", "title", sum=F("sum_debt"))
         )
 
