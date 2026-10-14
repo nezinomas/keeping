@@ -44,7 +44,7 @@ class ChartSummaryExpensesServiceData:
 
 @dataclass
 class ChartSummaryExpensesService:
-    data: ChartSummaryExpensesServiceData = field(default_factory=list)
+    data: ChartSummaryExpensesServiceData
 
     categories: list = field(init=False, default_factory=list)
     total_col: dict = field(init=False, default_factory=dict)
@@ -69,18 +69,15 @@ class ChartSummaryExpensesService:
         _items = []
         _year_hooks = {v: k for k, v in enumerate(categories)}
 
-        # sort data by title and year
         data = sorted(data, key=operator.itemgetter("title", "year"))
 
         for title, group in itertools.groupby(data, key=operator.itemgetter("title")):
-            # make empty data list for each title
             _item = {"name": title, "data": [0] * len(categories)}
 
-            # fill data
             for x in group:
                 _year = x["year"]
                 _sum = float(x["sum"])
-                _year_idx = _year_hooks.get(_year)
+                _year_idx = _year_hooks[_year]
                 _item["data"][_year_idx] = _sum
 
             _items.append(_item)

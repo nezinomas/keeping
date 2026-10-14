@@ -1,4 +1,3 @@
-import contextlib
 from datetime import date
 
 from django.db.models import Min
@@ -43,21 +42,19 @@ class TabViewMixin(CoreTabViewMixin):
     tab = DEFAULT_TAB
     fragment_template = "counts/tab_fragment.html"
     page_template = "counts/index.html"
-    object = None
 
-    def get_object(self):
-        if count_type_slug := self.kwargs.get("slug"):
-            with contextlib.suppress(CountType.DoesNotExist):
-                self.object = CountTypeModelService(self.request.user).objects.get(
-                    slug=count_type_slug
-                )
-                self.kwargs["object"] = self.object
+    def get_object(self) -> CountType:
+        return CountTypeModelService(self.request.user).objects.get(
+            slug=self.kwargs["slug"]
+        )
 
     def dispatch(self, request, *args, **kwargs):
-        self.get_object()
-
-        if not self.object:
+        try:
+            self.object = self.get_object()
+        except CountType.DoesNotExist:
             return redirect(reverse("counts:redirect"))
+
+        self.kwargs["object"] = self.object
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -108,7 +105,7 @@ class TabData(TabViewMixin, ListViewMixin):
 
     def get_queryset(self):
         year = self.request.user.year
-        slug = self.kwargs.get("slug")
+        slug = self.kwargs["slug"]
 
         return CountModelService(self.request.user).year(year=year, count_type=slug)
 
@@ -116,7 +113,7 @@ class TabData(TabViewMixin, ListViewMixin):
         context = super().get_context_data(**self.kwargs)
         has_records = (
             CountModelService(self.request.user)
-            .items(count_type=self.kwargs.get("slug"))
+            .items(count_type=self.kwargs["slug"])
             .exists()
         )
 
@@ -148,14 +145,14 @@ class New(CountUrlMixin, CreateViewMixin):
     modal_form_title = _("Counter")
 
     def get_form(self, data=None, files=None, **kwargs):
-        kwargs["counter_type"] = self.kwargs.get("slug")
+        kwargs["counter_type"] = self.kwargs["slug"]
         return super().get_form(data, files, **kwargs)
 
     def get_hx_trigger_django(self):
         return CountTab.resolve(self.kwargs.get("tab"), default="data").reload_trigger
 
     def url(self):
-        count_type = self.kwargs.get("slug")
+        count_type = self.kwargs["slug"]
         tab = CountTab.resolve(self.kwargs.get("tab")).name
 
         return reverse_lazy("counts:new", kwargs={"slug": count_type, "tab": tab})
