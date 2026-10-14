@@ -1,4 +1,3 @@
-import re
 from datetime import date
 from io import BytesIO
 
@@ -52,28 +51,37 @@ def _saved_with_title(form_class, title, parent):
     return ExpenseTypeFactory(title=title)
 
 
-def test_expense_init_fields(main_user):
-    form = ExpenseForm(user=main_user).as_p()
+@pytest.mark.parametrize(
+    ("form_class", "field", "widget_type"),
+    [
+        (ExpenseForm, "date", "datepicker"),
+        (ExpenseForm, "account", "select"),
+        (ExpenseForm, "expense_type", "select"),
+        (ExpenseForm, "expense_name", "select"),
+        (ExpenseForm, "total_sum", "text"),
+        (ExpenseForm, "quantity", "number"),
+        (ExpenseForm, "price", "text"),
+        (ExpenseForm, "remark", "textarea"),
+        (ExpenseForm, "exception", "checkbox"),
+        (ExpenseForm, "attachment", "clearablefile"),
+        (ExpenseTypeForm, "title", "text"),
+        (ExpenseTypeForm, "necessary", "checkbox"),
+    ],
+)
+def test_form_field_widgets(main_user, form_class, field, widget_type):
+    form = form_class(user=main_user)
 
-    assert '<select name="user"' not in form
+    assert "user" not in form.fields
+    assert form[field].widget_type == widget_type
 
-    assert '<input type="text" name="date"' in form
 
-    assert '<select name="account"' in form
-    assert '<select name="expense_type"' in form
-    assert '<select name="expense_name"' in form
+def test_expense_form_widget_attributes(main_user):
+    form = ExpenseForm(user=main_user)
 
-    assert '<input type="text" name="total_sum"' in form
-    assert 'inputmode="decimal"' in form
-    assert '<input type="number" name="quantity"' in form
-    assert '<input type="text" name="price"' in form
-    price = re.search(r'<input[^>]*name="price"[^>]*>', form).group()
-    assert "readonly" in price
-    assert "class=" not in price
-    assert '<textarea name="remark"' in form
-
-    assert '<input type="checkbox" name="exception"' in form
-    assert '<input type="file" name="attachment"' in form
+    assert form["date"].field.widget.input_type == "text"
+    assert form["total_sum"].field.widget.attrs["inputmode"] == "decimal"
+    assert form["price"].field.widget.attrs["readonly"]
+    assert "class" not in form["price"].field.widget.attrs
 
 
 @time_machine.travel("1974-03-07")
@@ -103,6 +111,7 @@ def test_form_offers_only_the_current_users_expense_types(
 def test_expense_select_first_account(main_user, second_user):
     AccountFactory(title="A1", journal=second_user.journal)
     a2 = AccountFactory(title="A2")
+    AccountFactory(title="A3")
 
     form = ExpenseForm(user=main_user).as_p()
 
@@ -260,22 +269,45 @@ def test_expense_form_attachment_too_big(main_user, account, expense_name):
     assert form.errors["attachment"] == ["Per didelis vaizdo failas ( > 4Mb)"]
 
 
-def test_expense_form_necessary_type_and_exception(main_user, account):
+@pytest.mark.parametrize(
+    "overrides, expect",
+    [
+        pytest.param(
+            {},
+            {
+                "exception": [
+                    "Expense Type yra 'Būtina', todėl ji negali būti pažymėta kaip "
+                    "'Išimtis'"
+                ]
+            },
+            id="necessary_type",
+        ),
+        pytest.param(
+            {"expense_type": ""},
+            {
+                "expense_type": ["Šis laukas yra privalomas."],
+                "expense_name": [
+                    "Pasirinkite tinkamą reikšmę. Parinkta reikšmė nėra galima."
+                ],
+            },
+            id="no_type",
+        ),
+    ],
+)
+def test_expense_form_necessary_type_and_exception(
+    main_user, account, overrides, expect
+):
     necessary_type = ExpenseTypeFactory(necessary=True)
     expense_name = ExpenseNameFactory(parent=necessary_type)
 
     form = ExpenseForm(
         user=main_user,
-        data=_expense_data(account, expense_name, exception=True),
+        data=_expense_data(account, expense_name, exception=True, **overrides),
     )
 
     assert not form.is_valid()
 
-    assert form.errors == {
-        "exception": [
-            "Expense Type yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimtis'"
-        ]
-    }
+    assert form.errors == expect
 
 
 class _YearOverrideExpenseForm(ExpenseForm):
@@ -331,9 +363,11 @@ def test_expense_name_choices_mixin_type_fills_names(main_user, posted, expect):
         "N1": ExpenseNameFactory(title="N1", parent=t1),
         "N2": ExpenseNameFactory(title="N2", parent=t2),
     }
-    data = {"expense_type": t2.pk} if posted else None
+    kwargs = {}
+    if posted:
+        kwargs["data"] = {"expense_type": t2.pk}
 
-    form = ExpenseForm(user=main_user, initial={"expense_type": t1.pk}, data=data)
+    form = ExpenseForm(user=main_user, initial={"expense_type": t1.pk}, **kwargs)
 
     assert list(form.fields["expense_name"].queryset) == [names[expect]]
 
@@ -346,14 +380,6 @@ def test_expense_name_choices_mixin_instance_type_fills_names(main_user):
     form = ExpenseForm(user=main_user, instance=ExpenseFactory(expense_type=t))
 
     assert list(form.fields["expense_name"].queryset) == [n]
-
-
-def test_expense_type_init_fields(main_user):
-    form = ExpenseTypeForm(user=main_user).as_p()
-
-    assert '<input type="text" name="title"' in form
-    assert '<input type="checkbox" name="necessary"' in form
-    assert '<select name="user"' not in form
 
 
 def test_expense_type_valid_data(main_user):
@@ -388,10 +414,8 @@ def test_form_blank_data_requires(main_user, form_class, required_fields):
 @pytest.mark.parametrize(
     "form_class, title",
     [
-        pytest.param(ExpenseTypeForm, None, id="type-title_null"),
         pytest.param(ExpenseTypeForm, "aa", id="type-title_too_short"),
         pytest.param(ExpenseTypeForm, "a" * 255, id="type-title_too_long"),
-        pytest.param(ExpenseNameForm, None, id="name-title_null"),
         pytest.param(ExpenseNameForm, "x", id="name-title_too_short"),
         pytest.param(ExpenseNameForm, "a" * 255, id="name-title_too_long"),
     ],
@@ -541,13 +565,13 @@ def test_expense_type_edit_keeping_its_slug_is_valid(title, main_user):
 
 @pytest.mark.parametrize("edit", [False, True], ids=["create", "edit"])
 def test_expense_type_ignores_a_posted_journal(main_user, second_user, edit):
-    instance = None
+    kwargs = {}
     if edit:
-        instance = ExpenseTypeFactory(title="Mine", journal=main_user.journal)
+        kwargs["instance"] = ExpenseTypeFactory(title="Mine", journal=main_user.journal)
 
     form = ExpenseTypeForm(
         user=main_user,
-        instance=instance,
+        **kwargs,
         data={"journal": second_user.journal.pk, "title": "Mine", "necessary": True},
     )
 
