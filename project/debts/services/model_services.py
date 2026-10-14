@@ -17,19 +17,27 @@ def _yearly_sums(objects, key):
     )
 
 
-class DebtModelService(DatedModelService):
+class _DebtTypeService(DatedModelService):
     def __init__(self, user: User, debt_type: models.Debt.DebtType):
         self.debt_type = debt_type
 
         super().__init__(user)
 
+    def items(self):
+        return self.objects.all()
+
+    def incomes(self):
+        return _yearly_sums(self.objects, "incomes")
+
+    def expenses(self):
+        return _yearly_sums(self.objects, "expenses")
+
+
+class DebtModelService(_DebtTypeService):
     def get_queryset(self):
         return models.Debt.objects.select_related("account", "journal").filter(
             journal=self.user.journal, debt_type=self.debt_type
         )
-
-    def items(self):
-        return self.objects.all()
 
     def open_items(self):
         return self.objects.filter(closed=False)
@@ -53,11 +61,9 @@ class DebtModelService(DatedModelService):
             Q(date__year=year) | (Q(date__year__lt=year) & Q(closed=False))
         )
 
-    def sum_by_month(self, year, closed=False):
-        qs = self.objects if closed else self.open_items()
-
+    def sum_by_month(self, year):
         return (
-            qs.filter(date__year=year)
+            self.objects.filter(date__year=year)
             .annotate(month=TruncMonth("date"))
             .values("month")
             .annotate(
@@ -75,26 +81,12 @@ class DebtModelService(DatedModelService):
             debt=Coalesce(Sum("price"), 0), debt_return=Coalesce(Sum("returned"), 0)
         )
 
-    def incomes(self):
-        return _yearly_sums(self.objects, "incomes")
 
-    def expenses(self):
-        return _yearly_sums(self.objects, "expenses")
-
-
-class DebtReturnModelService(SumMixin, DatedModelService):
-    def __init__(self, user: User, debt_type: models.Debt.DebtType):
-        self.debt_type = debt_type
-
-        super().__init__(user)
-
+class DebtReturnModelService(SumMixin, _DebtTypeService):
     def get_queryset(self):
         return models.DebtReturn.objects.select_related("account", "debt").filter(
             debt__journal=self.user.journal, debt__debt_type=self.debt_type
         )
-
-    def items(self):
-        return self.objects.all()
 
     def year(self, year):
         return self.objects.filter(date__year=year)
@@ -119,9 +111,3 @@ class DebtReturnModelService(SumMixin, DatedModelService):
             .exclude(pk=leaving_out_pk)
             .aggregate(total=Coalesce(Sum("price"), 0))["total"]
         )
-
-    def incomes(self):
-        return _yearly_sums(self.objects, "incomes")
-
-    def expenses(self):
-        return _yearly_sums(self.objects, "expenses")
