@@ -561,6 +561,15 @@ def test_pagination(client_logged, name, params, expected, first_numbers):
     assert numbers[:1] == first_numbers
 
 
+@pytest.mark.parametrize("name", ["books:index", "books:list"])
+def test_a_user_with_no_reading_year_raises(client_logged, main_user, name):
+    main_user.year = None
+    main_user.save()
+
+    with pytest.raises(ValueError, match="has no year"):
+        client_logged.get(reverse(name))
+
+
 @pytest.mark.parametrize("update", [False, True], ids=["new", "update"])
 def test_target_load_form(client_logged, update):
     url = reverse("books:target_new")
