@@ -119,21 +119,19 @@ BALANCES = {
 
 
 def _owners_with_balances(kind, count):
-    b = BALANCES[kind]
-    owners = [b.owner_factory(title=f"Owner {i}") for i in range(count)]
+    balances = BALANCES[kind]
+    owners = [balances.owner_factory(title=f"Owner {i}") for i in range(count)]
     for owner in owners:
         for year in (1999, 2000):
-            b.factory(**{b.owner_field: owner, "year": year})
+            balances.factory(**{balances.owner_field: owner, "year": year})
     return owners
 
 
 def _balance_rows(kind, user):
-    b = BALANCES[kind]
-    owner_id = f"{b.owner_field}_id"
-    return {
-        (row.pop(owner_id), row.pop("year")): row
-        for row in b.service(user).objects.values(owner_id, "year", *b.fields)
-    }
+    balances = BALANCES[kind]
+    owner_id = f"{balances.owner_field}_id"
+    rows = balances.service(user).objects.values(owner_id, "year", *balances.fields)
+    return {(row.pop(owner_id), row.pop("year")): row for row in rows}
 
 
 def _frame(rows, keep):
@@ -225,12 +223,12 @@ ACCOUNT_WRITTEN = ACCOUNT_VALUES | {
     ],
 )
 def test_sync_writes_the_frame_over_the_1999_row(main_user, kind, year, values):
-    b = BALANCES[kind]
-    owner = b.owner_factory()
-    b.factory(**{b.owner_field: owner, "year": 1999})
+    balances = BALANCES[kind]
+    owner = balances.owner_factory()
+    balances.factory(**{balances.owner_field: owner, "year": 1999})
     frame = _frame({(owner.pk, year): values}, [(owner.pk, year)])
 
-    BalanceSynchronizer(b.service, main_user, frame)
+    BalanceSynchronizer(balances.service, main_user, frame)
 
     assert _balance_rows(kind, main_user) == {
         (owner.pk, year): values

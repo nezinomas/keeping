@@ -13,21 +13,12 @@ from .factories import DrinkFactory, DrinkTargetFactory
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture()
-def _drinks(second_user):
-    DrinkFactory(date=date(1999, 1, 1), stdav=1.0)
-    DrinkFactory(date=date(1999, 1, 1), stdav=1.5)
-    DrinkFactory(date=date(1999, 2, 1), stdav=2.0)
-    DrinkFactory(date=date(1999, 2, 1), stdav=1.0)
-
-    DrinkFactory(date=date(1999, 2, 1), stdav=100.0, user=second_user)
-
-
 @pytest.mark.parametrize(
     "factory, service, read, mine, theirs",
     [
         (DrinkFactory, DrinkModelService, attrgetter("objects"), {}, {}),
         (DrinkFactory, DrinkModelService, methodcaller("items"), {}, {}),
+        (DrinkFactory, DrinkModelService, methodcaller("year", 1999), {}, {}),
         (DrinkTargetFactory, DrinkTargetModelService, attrgetter("objects"), {}, {}),
         (
             DrinkTargetFactory,
@@ -50,45 +41,30 @@ def test_service_reads_only_own_rows(
     assert actual[0].user.username == "bob"
 
 
-def test_drink_year(main_user, second_user):
+def test_drink_year(main_user):
     DrinkFactory()
-    DrinkFactory(user=second_user)
 
     actual = list(DrinkModelService(main_user).year(1999))
 
     assert len(actual) == 1
     assert actual[0].date == date(1999, 1, 1)
-    assert actual[0].user.username == "bob"
 
 
 @pytest.mark.parametrize(
     "drink_type, stdav, expect",
     [
-        ("beer", 2.5, 500),
-        ("wine", 8, 750),
-        ("vodka", 40, 1000),
+        ("beer", 2.5, "500ml"),
+        ("wine", 8, "750ml"),
+        ("vodka", 40, "1000ml"),
+        ("stdav", 1.0, "1.0"),
     ],
 )
-def test_drink_str_drinks(drink_type, stdav, expect):
+def test_drink_str(drink_type, stdav, expect):
     p = DrinkFactory(stdav=stdav, option=drink_type)
 
     p.full_clean()
 
-    assert str(p) == f"1999-01-01, {drink_type}, {expect}ml"
-
-
-@pytest.mark.parametrize(
-    "drink_type, stdav, expect",
-    [
-        ("stdav", 1.0, 1.0),
-    ],
-)
-def test_drink_str_stdav(drink_type, stdav, expect):
-    p = DrinkFactory(stdav=stdav, option=drink_type)
-
-    p.full_clean()
-
-    assert str(p) == f"1999-01-01, stdav, {expect}"
+    assert str(p) == f"1999-01-01, {drink_type}, {expect}"
 
 
 def test_drink_order(main_user):

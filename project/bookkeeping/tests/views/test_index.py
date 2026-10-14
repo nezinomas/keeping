@@ -135,21 +135,25 @@ def test_view_index_regenerate_buttons(client_logged):
     assert "Bus atnaujinti visų metų balansai." in content
 
 
-def test_view_reload_swaps_the_index_blocks(client_logged):
+@pytest.mark.parametrize(
+    "shown",
+    [
+        [
+            'hx-swap-oob="innerHTML:#table-balance"',
+            'hx-swap-oob="innerHTML:#table-expenses"',
+            'hx-swap-oob="innerHTML:#chart-balance-data"',
+            'hx-swap-oob="innerHTML:#chart-expenses-data"',
+        ],
+        ["<th>1999</th>"],
+    ],
+    ids=["index_blocks", "year_header"],
+)
+def test_view_reload_renders_the_index(client_logged, shown):
     url = reverse("bookkeeping:reload_index")
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert 'hx-swap-oob="innerHTML:#table-balance"' in content
-    assert 'hx-swap-oob="innerHTML:#table-expenses"' in content
-    assert 'hx-swap-oob="innerHTML:#chart-balance-data"' in content
-    assert 'hx-swap-oob="innerHTML:#chart-expenses-data"' in content
-
-
-def test_view_reload_renders_the_year_header(client_logged):
-    url = reverse("bookkeeping:reload_index")
-    content = client_logged.get(url).content.decode("utf-8")
-
-    assert "<th>1999</th>" in content
+    for text in shown:
+        assert text in content
 
 
 def test_view_reload_anonymous(client):

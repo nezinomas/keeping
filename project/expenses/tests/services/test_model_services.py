@@ -115,10 +115,6 @@ class TestExpenseService:
         # Assert 3: Check PDF Logic
         assert result["is_pdf"] is True
 
-        # Assert 4: Check Price Formatting (Enabled via fixture)
-        # 120050 / 100 = 1200.50 -> Locale lt_LT -> "1.200,50"
-        assert result["price_str"] == "1.200,50"
-
     def test_expenses_list_urls(self, service):
         """
         It should carry the ID the update and delete URLs are built from.

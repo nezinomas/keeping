@@ -212,25 +212,6 @@ def test_data_tab_reads_search_then_table(client_logged):
     assert 'id="chart-finished-container"' not in content
 
 
-def test_data_tab_lists_this_year(client_logged):
-    BookFactory(title="This Year")
-    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
-
-    content = client_logged.get(reverse("books:tab_data")).content.decode("utf-8")
-
-    assert "This Year" in content
-    assert "Old Book" not in content
-
-
-def test_data_tab_all_records_lists_every_year(client_logged):
-    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
-
-    url = reverse("books:tab_data")
-    content = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
-
-    assert "Old Book" in content
-
-
 def test_data_tab_all_records_reloads_all_records(client_logged):
     url = reverse("books:tab_data")
     content = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
@@ -267,49 +248,45 @@ def test_list_with_data(client_logged):
 
 
 @pytest.mark.parametrize(
-    ("params", "expected"),
-    [({}, ["This Year"]), ({"scope": "all"}, ["This Year", "Old Book"])],
-    ids=["only_current_year", "all_books"],
-)
-def test_list_scope_picks_the_books(client_logged, params, expected):
-    BookFactory(title="This Year")
-    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
-
-    content = client_logged.get(reverse("books:list"), params).content.decode()
-
-    assert [t for t in ("This Year", "Old Book") if t in content] == expected
-
-
-@pytest.mark.parametrize(
-    ("url_name", "params"),
+    ("url_name", "params", "shown", "hidden"),
     [
-        ("books:list", {"scope": "all"}),
-        ("books:search", {"search": "Old Book"}),
+        ("books:tab_data", {}, ["This Year"], ["Old Book"]),
+        ("books:tab_data", {"scope": "all"}, ["This Year", "Old Book"], []),
+        ("books:list", {}, ["This Year"], ["Old Book"]),
+        ("books:list", {"scope": "all"}, ["This Year", "Old Book", "1974-01-01"], []),
+        ("books:search", {"search": "Old Book"}, ["Old Book", "1974-01-01"], []),
     ],
-    ids=["list_all", "search"],
+    ids=["data", "data_all", "list", "list_all", "search"],
 )
-def test_a_listing_that_spans_years_shows_an_old_book(client_logged, url_name, params):
+def test_a_listing_shows_the_books_of_its_scope(
+    client_logged, url_name, params, shown, hidden
+):
+    BookFactory(title="This Year")
     BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
 
     actual = client_logged.get(reverse(url_name), params).content.decode("utf-8")
 
-    assert "Old Book" in actual
-    assert "1974-01-01" in actual
+    for text in shown:
+        assert text in actual
+    for text in hidden:
+        assert text not in actual
 
 
-def test_list_empty_state_names_the_year(client_logged):
-    url = reverse("books:list")
-    actual = client_logged.get(url).content.decode("utf-8")
+@pytest.mark.parametrize(
+    ("params", "shown", "hidden"),
+    [
+        ({}, ["<b>1999</b> metais įrašų nėra"], []),
+        ({"scope": "all"}, ["Įrašų nėra"], ["1999"]),
+    ],
+    ids=["this_year_names_the_year", "all_books_names_no_year"],
+)
+def test_list_empty_state(client_logged, params, shown, hidden):
+    actual = client_logged.get(reverse("books:list"), params).content.decode("utf-8")
 
-    assert "<b>1999</b> metais įrašų nėra" in actual
-
-
-def test_list_all_books_empty_state_does_not_name_a_year(client_logged):
-    url = reverse("books:list")
-    actual = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
-
-    assert "Įrašų nėra" in actual
-    assert "1999" not in actual
+    for text in shown:
+        assert text in actual
+    for text in hidden:
+        assert text not in actual
 
 
 @time_machine.travel("2000-01-01")
@@ -341,9 +318,15 @@ def test_save_book(client_logged):
 
 
 @pytest.mark.parametrize(
-    ("url_name", "has_book", "data"),
+    ("url_name", "has_book", "data", "field", "message"),
     [
-        ("books:new", False, {"started": "", "author": "A", "title": "T"}),
+        (
+            "books:new",
+            False,
+            {"started": "", "author": "A", "title": "T"},
+            "started",
+            "Šis laukas yra privalomas.",
+        ),
         (
             "books:update",
             True,
@@ -354,13 +337,21 @@ def test_save_book(client_logged):
                 "title": "Book Title",
                 "remark": "Pastaba",
             },
+            "started",
+            "Šis laukas yra privalomas.",
         ),
-        ("books:target_new", False, {"year": -2, "quantity": "x"}),
+        (
+            "books:target_new",
+            False,
+            {"year": -2, "quantity": "x"},
+            "year",
+            "Įsitikinkite, kad reikšmė yra didesnė arba lygi 0.",
+        ),
     ],
     ids=["book", "book_update", "goal"],
 )
-def test_an_invalid_post_returns_the_form_invalid(
-    client_logged, url_name, has_book, data
+def test_an_invalid_post_returns_the_form_with_its_error(
+    client_logged, url_name, has_book, data, field, message
 ):
     kwargs = {}
     if has_book:
@@ -368,13 +359,18 @@ def test_an_invalid_post_returns_the_form_invalid(
 
     response = client_logged.post(reverse(url_name, kwargs=kwargs), data)
 
-    assert not response.context["form"].is_valid()
+    actual = response.content.decode("utf-8")
+    assert re.search(
+        rf'name="{field}" value="{data[field]}"[^>]*is-invalid[^>]*>', actual
+    )
+    assert f'<div class="invalid-feedback">{message}</div>' in actual
 
 
 @pytest.mark.parametrize(
-    ("data", "shown", "hidden"),
+    ("started", "data", "shown", "hidden"),
     [
         (
+            date(1999, 1, 1),
             {
                 "started": "1999-01-01",
                 "ended": "1999-01-31",
@@ -385,6 +381,7 @@ def test_an_invalid_post_returns_the_form_invalid(
             [],
         ),
         (
+            date(1999, 1, 1),
             {
                 "started": "1999-12-31",
                 "ended": "2010-12-31",
@@ -395,18 +392,36 @@ def test_an_invalid_post_returns_the_form_invalid(
             [],
             ["2010-12-31"],
         ),
+        (
+            date(1974, 12, 12),
+            {
+                "started": "1999-03-03",
+                "author": "XXX",
+                "title": "YYY",
+                "remark": "ZZZ",
+            },
+            ["1999-03-03", "XXX", "YYY"],
+            [],
+        ),
     ],
-    ids=["same_year", "another_year"],
+    ids=["same_year", "another_year", "past_record"],
 )
-def test_books_update(client_logged, data, shown, hidden):
-    book = BookFactory()
+def test_books_update(client_logged, started, data, shown, hidden):
+    book = BookFactory(started=started)
     url = reverse("books:update", kwargs={"pk": book.pk})
 
     response = client_logged.post(url, data, follow=True)
 
     actual = response.content.decode("utf-8")
-    assert all(text in actual for text in shown)
-    assert not any(text in actual for text in hidden)
+    for text in shown:
+        assert text in actual
+    for text in hidden:
+        assert text not in actual
+    saved = models.Book.objects.get(pk=book.pk)
+    assert saved.started == date.fromisoformat(data["started"])
+    assert saved.author == data["author"]
+    assert saved.title == data["title"]
+    assert saved.remark == data.get("remark", "")
 
 
 def test_books_load_update_form(client_logged):
@@ -421,28 +436,6 @@ def test_books_load_update_form(client_logged):
     assert "Author" in actual
     assert "Book Title" in actual
     assert "Remark" in actual
-
-
-@time_machine.travel("2000-03-03")
-def test_books_update_past_record(main_user, client_logged):
-    main_user.year = 2000
-    i = BookFactory(started=date(1974, 12, 12))
-
-    data = {
-        "started": "1999-03-03",
-        "author": "XXX",
-        "title": "YYY",
-        "remark": "ZZZ",
-    }
-    url = reverse("books:update", kwargs={"pk": i.pk})
-
-    client_logged.post(url, data)
-
-    actual = models.Book.objects.get(pk=i.pk)
-    assert actual.started == date(1999, 3, 3)
-    assert actual.author == "XXX"
-    assert actual.title == "YYY"
-    assert actual.remark == "ZZZ"
 
 
 @pytest.mark.parametrize(
@@ -501,7 +494,8 @@ def test_search(client_logged, search, expected):
     response = client_logged.get(url, {"search": search})
     actual = response.content.decode("utf-8")
 
-    assert all(text in actual for text in expected)
+    for text in expected:
+        assert text in actual
 
 
 def test_search_reset_url_restores_the_year(client_logged):
@@ -570,11 +564,22 @@ def test_a_user_with_no_reading_year_raises(client_logged, main_user, name):
         client_logged.get(reverse(name))
 
 
-@pytest.mark.parametrize("update", [False, True], ids=["new", "update"])
-def test_target_load_form(client_logged, update):
-    url = reverse("books:target_new")
-    if update:
-        url = reverse("books:target_update", kwargs={"pk": BookTargetFactory().pk})
+def _new_goal_url():
+    return reverse("books:target_new")
+
+
+def _update_goal_url():
+    return reverse("books:target_update", kwargs={"pk": BookTargetFactory().pk})
+
+
+GOAL_URL = pytest.mark.parametrize(
+    "make_url", [_new_goal_url, _update_goal_url], ids=["new", "update"]
+)
+
+
+@GOAL_URL
+def test_target_load_form(client_logged, make_url):
+    url = make_url()
 
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
@@ -584,11 +589,9 @@ def test_target_load_form(client_logged, update):
     assert '<input type="text" name="year" value="1999"' in actual
 
 
-@pytest.mark.parametrize("update", [False, True], ids=["new", "update"])
-def test_target_save(client_logged, update):
-    url = reverse("books:target_new")
-    if update:
-        url = reverse("books:target_update", kwargs={"pk": BookTargetFactory().pk})
+@GOAL_URL
+def test_target_save(client_logged, make_url):
+    url = make_url()
 
     client_logged.post(url, {"year": 1999, "quantity": 66})
 
