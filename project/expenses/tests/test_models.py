@@ -5,7 +5,7 @@ import pytest
 import time_machine
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.db import IntegrityError, models, transaction
+from django.db import IntegrityError, transaction
 from django.db.models.signals import post_save
 from override_storage import override_storage
 
@@ -195,16 +195,47 @@ def test_expense_str():
     assert str(expense) == "1999-01-01/Expense Type/Expense Name"
 
 
-def test_expense_fields_types():
-    assert isinstance(Expense._meta.get_field("date"), models.DateField)
-    assert isinstance(Expense._meta.get_field("price"), models.PositiveIntegerField)
-    assert isinstance(Expense._meta.get_field("quantity"), models.IntegerField)
-    assert isinstance(Expense._meta.get_field("expense_type"), models.ForeignKey)
-    assert isinstance(Expense._meta.get_field("expense_name"), models.ForeignKey)
-    assert isinstance(Expense._meta.get_field("remark"), models.TextField)
-    assert isinstance(Expense._meta.get_field("exception"), models.BooleanField)
-    assert isinstance(Expense._meta.get_field("account"), models.ForeignKey)
-    assert isinstance(Expense._meta.get_field("attachment"), models.FileField)
+@override_storage()
+def test_expense_stores_every_field():
+    saved = ExpenseFactory(
+        date=date(1998, 2, 3),
+        price=1234,
+        quantity=7,
+        remark="R",
+        exception=True,
+        attachment=ContentFile(b"x", name="test1.jpg"),
+    )
+
+    actual = Expense.objects.get(pk=saved.pk)
+
+    assert actual.date == date(1998, 2, 3)
+    assert actual.price == 1234
+    assert actual.quantity == 7
+    assert actual.remark == "R"
+    assert actual.exception is True
+    assert actual.expense_type == saved.expense_type
+    assert actual.expense_name == saved.expense_name
+    assert actual.account == saved.account
+    assert actual.attachment.read() == b"x"
+
+
+@pytest.mark.parametrize(
+    "fields, expect",
+    [
+        pytest.param({"price": -1}, ["price"], id="negative_price"),
+        pytest.param({"remark": "R" * 1000}, [], id="long_remark"),
+    ],
+)
+def test_expense_full_clean_accepts_only_what_its_columns_hold(fields, expect):
+    expense = ExpenseFactory.build(**fields)
+
+    errors = []
+    try:
+        expense.full_clean(exclude=["expense_type", "expense_name", "account"])
+    except ValidationError as error:
+        errors = list(error.message_dict)
+
+    assert errors == expect
 
 
 @override_storage()

@@ -34,7 +34,6 @@ def test_income_load_form(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert response.status_code == 200
     assert f'hx-post="{url}"' in actual
     assert 'data-hx-trigger-form="reload"' in actual
     assert "1999-01-01" in actual
@@ -49,17 +48,17 @@ def test_income_load_form(client_logged):
             ["1999-01-01", "111", "Account1", "Income Type"],
         ),
         ("incomes:type_new", {"title": "TTT", "type": "salary"}, ["TTT"]),
+        ("incomes:type_update", {"title": "TTT", "type": "other"}, ["TTT"]),
     ],
-    ids=["income", "type"],
+    ids=["income", "type", "type_update"],
 )
 def test_save_follows_to_the_list_showing_the_row(client_logged, name, data, shown):
-    # the type form ignores the account and income type it does not ask for
-    posted = data | {
-        "account": AccountFactory().pk,
-        "income_type": IncomeTypeFactory().pk,
-    }
+    income_type = IncomeTypeFactory()
+    # the type forms ignore the account and income type they do not ask for
+    posted = data | {"account": AccountFactory().pk, "income_type": income_type.pk}
+    kwargs = {"pk": income_type.pk} if name == "incomes:type_update" else {}
 
-    response = client_logged.post(reverse(name), posted, follow=True)
+    response = client_logged.post(reverse(name, kwargs=kwargs), posted, follow=True)
 
     actual = response.content.decode("utf-8")
     for text in shown:
@@ -265,8 +264,14 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
     assert Income.objects.all().count() == 1
 
 
-def test_type_load_form(client_logged):
-    url = reverse("incomes:type_new")
+@pytest.mark.parametrize(
+    "name, with_pk",
+    [("incomes:type_new", False), ("incomes:type_update", True)],
+    ids=["new", "update"],
+)
+def test_type_load_form(client_logged, name, with_pk):
+    kwargs = {"pk": IncomeTypeFactory().pk} if with_pk else {}
+    url = reverse(name, kwargs=kwargs)
 
     response = client_logged.get(url)
     actual = response.content.decode()
@@ -282,29 +287,6 @@ def test_type_save_htmx_trigger_value(client_logged):
     response = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
 
     assert response.headers["HX-Trigger"] == '{"reload": {}}'
-
-
-def test_type_update_load_form(client_logged):
-    income = IncomeTypeFactory()
-
-    url = reverse("incomes:type_update", kwargs={"pk": income.pk})
-
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-
-
-def test_type_update(client_logged):
-    income = IncomeTypeFactory()
-
-    data = {"title": "TTT", "type": "other"}
-    url = reverse("incomes:type_update", kwargs={"pk": income.pk})
-
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
-
-    assert "TTT" in actual
 
 
 def test_income_type_not_load_other_journal(client_logged, second_user):

@@ -16,7 +16,7 @@ def refuse_taken_email(email):
 class SignUpForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ("username", "email", "password1", "password2")
+        fields = ("username", "email", "password1")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
