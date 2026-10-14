@@ -78,9 +78,11 @@ class CountlessPaginator:
         return self.page(page)
 
     def page(self, current_page):
-        bottom = (current_page - 1) * self.per_page
-        top = bottom + self.per_page
-        query = self.query[bottom:top]
+        # a page past the end is empty without a query: its offset can overflow the DB
+        query = []
+        if current_page <= self.total_pages:
+            bottom = (current_page - 1) * self.per_page
+            query = self.query[bottom : bottom + self.per_page]
 
         return CountlessPage(query, self.total_pages, current_page, self.per_page)
 
@@ -116,7 +118,7 @@ class CountlessPaginator:
 
             1, 2, …, 40, 41, 42, 43, 44, 45, 46, …, 49, 50.
         """
-        page = self.validate_number(page)
+        page = min(self.validate_number(page), self.total_pages)
 
         if self.total_pages <= (on_each_side + on_ends) * 2:
             yield from self.page_range

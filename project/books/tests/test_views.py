@@ -518,18 +518,21 @@ def test_search_reset_url_restores_the_year(client_logged):
 
 
 @pytest.mark.parametrize(
-    ("name", "params", "expected", "first_number"),
+    ("name", "params", "expected", "first_numbers"),
     [
-        ("books:search", {"search": "title"}, 50, "1"),
-        ("books:search", {"page": 2, "search": "author"}, 1, "1"),
-        ("books:search", {"page": "x", "search": "title"}, 50, "1"),
-        ("books:search", {"page": 0, "search": "title"}, 50, "1"),
-        ("books:search", {"page": -3, "search": "title"}, 50, "1"),
-        ("books:list", {"scope": "all"}, 50, "51"),
-        ("books:list", {"scope": "all", "page": 2}, 1, "1"),
-        ("books:list", {"scope": "all", "page": "x"}, 50, "51"),
-        ("books:list", {"scope": "all", "page": 0}, 50, "51"),
-        ("books:list", {"scope": "all", "page": -3}, 50, "51"),
+        ("books:search", {"search": "title"}, 50, ["1"]),
+        ("books:search", {"page": 2, "search": "author"}, 1, ["1"]),
+        ("books:search", {"page": "x", "search": "title"}, 50, ["1"]),
+        ("books:search", {"page": 0, "search": "title"}, 50, ["1"]),
+        ("books:search", {"page": -3, "search": "title"}, 50, ["1"]),
+        ("books:search", {"page": 10**30, "search": "title"}, 0, []),
+        ("books:list", {"scope": "all"}, 50, ["51"]),
+        ("books:list", {"scope": "all", "page": 2}, 1, ["1"]),
+        ("books:list", {"scope": "all", "page": "x"}, 50, ["51"]),
+        ("books:list", {"scope": "all", "page": 0}, 50, ["51"]),
+        ("books:list", {"scope": "all", "page": -3}, 50, ["51"]),
+        ("books:list", {"scope": "all", "page": 999}, 0, []),
+        ("books:list", {"scope": "all", "page": 10**30}, 0, []),
     ],
     ids=[
         "search_first_page",
@@ -537,14 +540,17 @@ def test_search_reset_url_restores_the_year(client_logged):
         "search_page_x",
         "search_page_0",
         "search_page_minus_3",
+        "search_page_past_any_offset",
         "list_first_page",
         "list_second_page",
         "list_page_x",
         "list_page_0",
         "list_page_minus_3",
+        "list_page_past_the_end",
+        "list_page_past_any_offset",
     ],
 )
-def test_pagination(client_logged, name, params, expected, first_number):
+def test_pagination(client_logged, name, params, expected, first_numbers):
     Book.objects.bulk_create(BookFactory.build_batch(51, user=UserFactory()))
 
     response = client_logged.get(reverse(name), params)
@@ -552,7 +558,7 @@ def test_pagination(client_logged, name, params, expected, first_number):
 
     assert actual.count("Author") == expected
     numbers = re.findall(r'<td class="text-left">(\d+)</td>', actual)
-    assert numbers[:1] == [first_number]
+    assert numbers[:1] == first_numbers
 
 
 @pytest.mark.parametrize("update", [False, True], ids=["new", "update"])
