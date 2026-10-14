@@ -9,22 +9,6 @@ from .balance_base import BalanceBase
 
 class YearBalance(BalanceBase):
     def __init__(self, data: MakeDataFrame, amount_start: int = 0, *, today: date):
-        """
-        data: MakeDataFrame object
-
-        amount_start: year start worth amount
-
-        awailable keys in data:
-            incomes,
-            expenses,
-            savings,
-            savings_close,
-            savings_account_fee (optional),
-            borrow,
-            borrow_return,
-            lend,
-            lend_return
-        """
         self.year = data.date_range.year
         self._amount_start = amount_start
         self._today = today
@@ -61,7 +45,6 @@ class YearBalance(BalanceBase):
         # finished one falls through to the base average over months with data
         if boundary.is_current:
             months = boundary.end_date.month
-            # self._data is from base class
             df = self._data.select(
                 pl.col("expenses").filter(pl.col("date").dt.month() <= months).sum()
             )

@@ -19,13 +19,11 @@ class Data:
     salary: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = IncomeModelService(self.user).sum_by_year()
-        self.incomes_types = IncomeModelService(self.user).sum_by_year_and_type()
-        self.salary = (
-            IncomeModelService(self.user)
-            .sum_by_year()
-            .filter(income_type__type="salary")
-        )
+        incomes = IncomeModelService(self.user)
+
+        self.incomes = incomes.sum_by_year()
+        self.incomes_types = incomes.sum_by_year_and_type()
+        self.salary = self.incomes.filter(income_type__type="salary")
         self.expenses = ExpenseModelService(self.user).sum_by_year()
 
 
@@ -37,14 +35,13 @@ class Charts:
         self._expenses = data.expenses
 
     def chart_balance(self) -> dict:
-        # generate balance_categories
         data = self._incomes or self._expenses
         balance_years = [x["year"] for x in data]
 
         records = len(balance_years)
         context = {"records": records}
 
-        if not records or records < 1:
+        if not records:
             return context
 
         context |= {
@@ -59,13 +56,12 @@ class Charts:
         return context
 
     def chart_incomes(self, today: date) -> dict:
-        # data for salary summary
         salary_years = [x["year"] for x in self._salary]
 
         records = len(salary_years)
         context = {"records": records}
 
-        if not records or records < 1:
+        if not records:
             return context
 
         context |= {
