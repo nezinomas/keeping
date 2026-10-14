@@ -138,7 +138,8 @@ class ExpenseForm(
             return
 
         self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
-        self.fields["account"].initial = AccountModelService(self.user).items().first()
+        if account := AccountModelService(self.user).items().first():
+            self.fields["account"].initial = account
         self.fields["price"].initial = "0.00"
 
     def _overwrite_account_query(self):
@@ -167,21 +168,22 @@ class ExpenseForm(
         self.fields["attachment"].label = _("Attachment")
 
     def clean_exception(self):
-        data = self.cleaned_data
+        exception = self.cleaned_data["exception"]
 
-        _exception = data.get("exception")
-        _expense_type = data.get("expense_type")
+        if not exception or "expense_type" not in self.cleaned_data:
+            return exception
 
-        if _exception and _expense_type and _expense_type.necessary:
+        expense_type = self.cleaned_data["expense_type"]
+        if expense_type.necessary:
             msg = _(
                 "The %(title)s is 'Necessary', so it can't be marked as 'Exeption'"
-            ) % {"title": _expense_type.title}
-            raise forms.ValidationError(msg)
+            ) % {"title": expense_type.title}
+            raise ValidationError(msg)
 
-        return _exception
+        return exception
 
     def clean_attachment(self):
-        image = self.cleaned_data.get("attachment", False)
+        image = self.cleaned_data["attachment"]
 
         with contextlib.suppress(FileNotFoundError):
             if image and image.size > 4 * 1024 * 1024:
@@ -192,16 +194,19 @@ class ExpenseForm(
     def clean(self):
         cleaned_data = super().clean()
 
-        account = cleaned_data.get("account")
+        if "account" not in cleaned_data or "date" not in cleaned_data:
+            return cleaned_data
 
-        if not account or not account.closed or "date" not in cleaned_data:
+        account = cleaned_data["account"]
+        if not account.closed:
             return cleaned_data
 
         if cleaned_data["date"].year > account.closed:
             self.add_error(
                 "date",
                 _(
-                    "The date cannot be later than the account closure date. The account was closed in %(year)s."  # noqa: E501
+                    "The date cannot be later than the account closure date. "
+                    "The account was closed in %(year)s."
                 )
                 % ({"year": account.closed}),
             )
