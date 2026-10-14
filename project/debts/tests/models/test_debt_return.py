@@ -19,8 +19,8 @@ pytestmark = pytest.mark.django_db
 @pytest.mark.parametrize(
     "debt_type, expected",
     [
-        pytest.param("lend", "Grąžino 0.06", id="lend"),
-        pytest.param("borrow", "Grąžinau 0.05", id="borrow"),
+        pytest.param(Debt.DebtType.LEND, "Grąžino 0.06", id="lend"),
+        pytest.param(Debt.DebtType.BORROW, "Grąžinau 0.05", id="borrow"),
     ],
 )
 def test_debt_return_str(debt_type, expected):
@@ -33,8 +33,8 @@ def test_debt_return_str(debt_type, expected):
 @pytest.mark.parametrize(
     "debt_type, expected",
     [
-        pytest.param("lend", "Grąžino 0.01", id="lend"),
-        pytest.param("borrow", "Grąžinau 0.01", id="borrow"),
+        pytest.param(Debt.DebtType.LEND, "Grąžino 0.01", id="lend"),
+        pytest.param(Debt.DebtType.BORROW, "Grąžinau 0.01", id="borrow"),
     ],
 )
 def test_debt_return_related(main_user, second_user, debt_type, expected):
@@ -58,7 +58,7 @@ def test_lend_return_related_queries(main_user, django_assert_num_queries):
     with django_assert_num_queries(1):
         list(
             x.account.title
-            for x in list(DebtReturnModelService(main_user, "lend").objects)
+            for x in list(DebtReturnModelService(main_user, Debt.DebtType.LEND).objects)
         )
 
 
@@ -67,7 +67,7 @@ def test_lend_return_items(main_user):
     LendReturnFactory()
     LendReturnFactory()
 
-    actual = DebtReturnModelService(main_user, "lend").items()
+    actual = DebtReturnModelService(main_user, Debt.DebtType.LEND).items()
 
     assert actual.count() == 2
 
@@ -77,7 +77,7 @@ def test_lend_return_year(main_user):
     LendReturnFactory()
     LendReturnFactory(date=dt(1974, 1, 2))
 
-    actual = DebtReturnModelService(main_user, "lend").year(1999)
+    actual = DebtReturnModelService(main_user, Debt.DebtType.LEND).year(1999)
 
     assert actual.count() == 1
 
@@ -86,8 +86,8 @@ def test_lend_return_year(main_user):
 @pytest.mark.parametrize(
     "debt_type, title",
     [
-        pytest.param("lend", "lend_return", id="lend"),
-        pytest.param("borrow", "borrow_return", id="borrow"),
+        pytest.param(Debt.DebtType.LEND, "lend_return", id="lend"),
+        pytest.param(Debt.DebtType.BORROW, "borrow_return", id="borrow"),
     ],
 )
 def test_debt_return_sum_by_month(main_user, debt_type, title):
@@ -107,10 +107,14 @@ def test_debt_return_sum_by_month(main_user, debt_type, title):
     "debt_type, expected",
     [
         pytest.param(
-            "lend", {"incomes": 6, "expenses": 100, "balance": -94}, id="lend"
+            Debt.DebtType.LEND,
+            {"incomes": 6, "expenses": 100, "balance": -94},
+            id="lend",
         ),
         pytest.param(
-            "borrow", {"incomes": 100, "expenses": 5, "balance": 95}, id="borrow"
+            Debt.DebtType.BORROW,
+            {"incomes": 100, "expenses": 5, "balance": 95},
+            id="borrow",
         ),
     ],
 )
@@ -174,13 +178,13 @@ def test_lend_return_post_delete_debt_return_value(main_user):
     "debt_type, before, after",
     [
         pytest.param(
-            "lend",
+            Debt.DebtType.LEND,
             {"incomes": 6, "expenses": 100, "balance": -94},
             {"incomes": 1, "expenses": 100, "balance": -99},
             id="lend",
         ),
         pytest.param(
-            "borrow",
+            Debt.DebtType.BORROW,
             {"incomes": 100, "expenses": 5, "balance": 95},
             {"incomes": 100, "expenses": 1, "balance": 99},
             id="borrow",
@@ -202,8 +206,8 @@ def test_debt_return_post_save_update(debt_type, before, after):
 @pytest.mark.parametrize(
     "debt_type, incomes, expenses, balance, delta",
     [
-        pytest.param("lend", 2, 5, -2, 2, id="lend"),
-        pytest.param("borrow", 5, 2, 4, -4, id="borrow"),
+        pytest.param(Debt.DebtType.LEND, 2, 5, -2, 2, id="lend"),
+        pytest.param(Debt.DebtType.BORROW, 5, 2, 4, -4, id="borrow"),
     ],
 )
 def test_debt_return_post_save_first_record(
@@ -238,13 +242,13 @@ def test_debt_return_post_save_first_record(
     "debt_type, before, after",
     [
         pytest.param(
-            "lend",
+            Debt.DebtType.LEND,
             {"incomes": 6, "expenses": 100, "balance": -94},
             {"incomes": 0, "expenses": 100, "balance": -100},
             id="lend",
         ),
         pytest.param(
-            "borrow",
+            Debt.DebtType.BORROW,
             {"incomes": 100, "expenses": 5, "balance": 95},
             {"incomes": 100, "expenses": 0, "balance": 100},
             id="borrow",
@@ -267,13 +271,13 @@ def test_debt_return_post_delete(debt_type, before, after):
     "debt_type, before, after",
     [
         pytest.param(
-            "lend",
+            Debt.DebtType.LEND,
             {"incomes": 3, "expenses": 100, "balance": -97},
             {"incomes": 1, "expenses": 100, "balance": -99},
             id="lend",
         ),
         pytest.param(
-            "borrow",
+            Debt.DebtType.BORROW,
             {"incomes": 100, "expenses": 3, "balance": 97},
             {"incomes": 100, "expenses": 1, "balance": 99},
             id="borrow",
@@ -303,7 +307,7 @@ def test_debt_return_post_delete_with_updt(debt_type, before, after):
         pytest.param(
             LendReturnFactory,
             BorrowReturnFactory,
-            "lend",
+            Debt.DebtType.LEND,
             lambda s: s.incomes(),
             "incomes",
             id="incomes",
@@ -311,7 +315,7 @@ def test_debt_return_post_delete_with_updt(debt_type, before, after):
         pytest.param(
             BorrowReturnFactory,
             LendReturnFactory,
-            "borrow",
+            Debt.DebtType.BORROW,
             lambda s: s.expenses(),
             "expenses",
             id="expenses",
@@ -360,7 +364,7 @@ def test_debt_return_total_returned_for_debt(main_user, prices, expect):
     for price in prices:
         LendReturnFactory(debt=debt, price=price)
 
-    service = DebtReturnModelService(main_user, "lend")
+    service = DebtReturnModelService(main_user, Debt.DebtType.LEND)
     actual = service.total_returned_for_debt(debt)
 
     assert actual == expect

@@ -16,8 +16,8 @@ pytestmark = pytest.mark.django_db
 @pytest.mark.parametrize(
     "debt_type, other_factory",
     [
-        pytest.param("borrow", factories.LendFactory, id="borrow"),
-        pytest.param("lend", factories.BorrowFactory, id="lend"),
+        pytest.param(models.Debt.DebtType.BORROW, factories.LendFactory, id="borrow"),
+        pytest.param(models.Debt.DebtType.LEND, factories.BorrowFactory, id="lend"),
     ],
 )
 def test_debt_list_empty(client_logged, debt_type, other_factory):
@@ -34,14 +34,14 @@ def test_debt_list_empty(client_logged, debt_type, other_factory):
     "debt_type, other_factory, label, remark",
     [
         pytest.param(
-            "borrow",
+            models.Debt.DebtType.BORROW,
             factories.LendFactory,
             "Paskolos davėjas",
             "Borrow Remark",
             id="borrow",
         ),
         pytest.param(
-            "lend",
+            models.Debt.DebtType.LEND,
             factories.BorrowFactory,
             "Paskolos gavėjas",
             "Lend Remark",
@@ -136,8 +136,8 @@ def test_debt_save_invalid_data(client_logged, debt_type):
 @pytest.mark.parametrize(
     "debt_type, remark",
     [
-        pytest.param("borrow", "Borrow Remark", id="borrow"),
-        pytest.param("lend", "Lend Remark", id="lend"),
+        pytest.param(models.Debt.DebtType.BORROW, "Borrow Remark", id="borrow"),
+        pytest.param(models.Debt.DebtType.LEND, "Lend Remark", id="lend"),
     ],
 )
 def test_debt_load_update_form(client_logged, debt_type, remark):

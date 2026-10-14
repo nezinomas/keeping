@@ -25,7 +25,7 @@ def test_debt_return_list_empty(client_logged, debt_type):
     "debt_type, other_factory, price, other_price, remark",
     [
         pytest.param(
-            "borrow",
+            models.Debt.DebtType.BORROW,
             factories.LendReturnFactory,
             "0,05",
             "0,06",
@@ -33,7 +33,7 @@ def test_debt_return_list_empty(client_logged, debt_type):
             id="borrow",
         ),
         pytest.param(
-            "lend",
+            models.Debt.DebtType.LEND,
             factories.BorrowReturnFactory,
             "0,06",
             "0,05",
@@ -101,11 +101,12 @@ def test_debt_return_save(main_user, client_logged, debt_type):
     assert actual.date == date(1999, 1, 3)
     assert actual.account.title == "Account1"
     assert actual.price == 100
+    assert actual.debt == b
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
 def test_debt_return_save_invalid_data(client_logged, debt_type):
-    data = {debt_type: "A", "price": "0"}
+    data = {"debt": "A", "price": "0"}
     url = reverse("debts:return_new", kwargs={"debt_type": debt_type})
     response = client_logged.post(url, data)
     form = response.context["form"]
@@ -116,8 +117,8 @@ def test_debt_return_save_invalid_data(client_logged, debt_type):
 @pytest.mark.parametrize(
     "debt_type, remark",
     [
-        pytest.param("borrow", "Borrow Return Remark", id="borrow"),
-        pytest.param("lend", "Lend Return Remark", id="lend"),
+        pytest.param(models.Debt.DebtType.BORROW, "Borrow Return Remark", id="borrow"),
+        pytest.param(models.Debt.DebtType.LEND, "Lend Return Remark", id="lend"),
     ],
 )
 def test_debt_return_load_update_form(client_logged, debt_type, remark):
@@ -135,7 +136,10 @@ def test_debt_return_load_update_form(client_logged, debt_type, remark):
 
 @pytest.mark.parametrize(
     "debt_type, returned",
-    [pytest.param("borrow", 5, id="borrow"), pytest.param("lend", 6, id="lend")],
+    [
+        pytest.param(models.Debt.DebtType.BORROW, 5, id="borrow"),
+        pytest.param(models.Debt.DebtType.LEND, 6, id="lend"),
+    ],
 )
 def test_debt_return_update(client_logged, debt_type, returned):
     debt = DEBT_FACTORIES[debt_type](price=200)
