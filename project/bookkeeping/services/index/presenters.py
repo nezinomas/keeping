@@ -3,6 +3,7 @@ from datetime import date
 from django.utils.translation import gettext as _
 
 from ....core.lib.translation import month_names
+from ....debts.models import Debt
 from ....users.models import User
 from ...lib.make_dataframe import MakeDataFrame
 from ...lib.year_balance import YearBalance
@@ -24,9 +25,9 @@ INDEX_COLUMNS = (
 
 
 class IndexContextBuilder:
-    def __init__(self, balance: YearBalance, debts: dict | None = None):
+    def __init__(self, balance: YearBalance, debts: dict[Debt.DebtType, dict]):
         self._balance = balance
-        self._debts = debts or {}
+        self._debts = debts
 
     def balance_context(self) -> dict:
         return {
@@ -66,20 +67,24 @@ class IndexContextBuilder:
         }
 
     def borrow_context(self) -> dict:
-        return self._generic_debt_context("borrow", "Borrow", "Borrow return")
+        return self._generic_debt_context(
+            Debt.DebtType.BORROW, _("Borrow"), _("Borrow return")
+        )
 
     def lend_context(self) -> dict:
-        return self._generic_debt_context("lend", "Lend", "Lend return")
+        return self._generic_debt_context(
+            Debt.DebtType.LEND, _("Lend"), _("Lend return")
+        )
 
     def _generic_debt_context(
-        self, debt_type: str, debt_str: str, debt_return_str: str
+        self, debt_type: Debt.DebtType, debt_title: str, return_title: str
     ) -> dict:
-        debt = self._debts.get(debt_type, {})
-        if not debt.get("debt"):
+        debt = self._debts[debt_type]
+        if not debt["debt"]:
             return {}
 
         return {
-            "title": [_(debt_str), _(debt_return_str)],
+            "title": [debt_title, return_title],
             "data": [debt["debt"], debt["debt_return"]],
         }
 

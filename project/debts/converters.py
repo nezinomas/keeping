@@ -5,7 +5,7 @@ class DebtTypeConverter:
     regex = "|".join(Debt.DebtType.values)
 
     def to_python(self, value):
-        return value
+        return Debt.DebtType(value)
 
     def to_url(self, value):
         return value
