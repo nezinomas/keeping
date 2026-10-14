@@ -320,6 +320,22 @@ def test_drink_target_blank_data(main_user):
     assert "drink_type" in form.errors
 
 
+@pytest.mark.parametrize(
+    ("form_class", "data"),
+    [
+        (DrinkForm, {"date": "1999-01-01", "stdav": 1.0, "option": "beer"}),
+        (DrinkTargetForm, {"year": 2000, "quantity": 1, "drink_type": "beer"}),
+    ],
+    ids=["drink", "drink_target"],
+)
+def test_a_posted_user_is_ignored(main_user, second_user, form_class, data):
+    form = form_class(user=main_user, data={**data, "user": second_user.pk})
+
+    assert form.is_valid()
+
+    assert form.save().user == main_user
+
+
 # -------------------------------------------------------------------------------------
 #                                                                          Drink Filter
 # -------------------------------------------------------------------------------------

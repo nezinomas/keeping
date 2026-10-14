@@ -4,12 +4,14 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year, years_to_date
+from ..core.lib.form_fields import pin
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
+from ..core.mixins.forms import OneTargetAYearMixin, YearBetweenMixin
 from .models import Book, BookTarget
 from .services.model_services import BookTargetModelService
 
 
-class BookForm(forms.ModelForm):
+class BookForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Book
         fields = ["user", "started", "ended", "author", "title", "remark"]
@@ -27,9 +29,7 @@ class BookForm(forms.ModelForm):
             self.user, date.today()
         )
 
-        self.fields["user"].initial = self.user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
+        pin(self.fields["user"], self.user)
 
         self.fields["started"].label = _("Started reading")
         self.fields["ended"].label = _("Ended reading")
@@ -39,14 +39,9 @@ class BookForm(forms.ModelForm):
 
     def clean_started(self):
         dt = self.cleaned_data["started"]
-        year_instance = dt.year
-        years_ = years_to_date(self.user, date.today())
-        if year_instance not in years_:
-            self.add_error(
-                "started",
-                _("Year must be between %(year1)s and %(year2)s")
-                % ({"year1": years_[0], "year2": years_[-1]}),
-            )
+        self.add_error_unless_year_between(
+            "started", years_to_date(self.user, date.today())
+        )
 
         if dt > datetime.now().date():
             self.add_error("started", _("Date cannot be in the future"))
@@ -73,7 +68,9 @@ class BookForm(forms.ModelForm):
         return cleaned
 
 
-class BookTargetForm(forms.ModelForm):
+class BookTargetForm(OneTargetAYearMixin, forms.ModelForm):
+    target_service = BookTargetModelService
+
     class Meta:
         model = BookTarget
         fields = ["user", "year", "quantity"]
@@ -86,9 +83,7 @@ class BookTargetForm(forms.ModelForm):
         self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
-        self.fields["user"].initial = self.user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
+        pin(self.fields["user"], self.user)
 
         self.fields["year"].initial = set_date_with_user_year(
             self.user, date.today()
@@ -96,16 +91,3 @@ class BookTargetForm(forms.ModelForm):
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("How many")
-
-    def clean_year(self):
-        year = self.cleaned_data["year"]
-
-        if self.instance.pk:
-            return year
-
-        qs = BookTargetModelService(self.user).year(year)
-        if qs.exists():
-            msg = _("%(year)s already has a goal.") % {"year": year}
-            raise forms.ValidationError(msg)
-
-        return year

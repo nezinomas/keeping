@@ -11,7 +11,7 @@ from ..accounts.services.model_services import AccountModelService
 from ..core.lib import table_columns
 from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField
+from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.lib.utils import int_or_zero
 from ..core.mixins.forms import YearNotLaterMixin
@@ -223,9 +223,7 @@ class ExpenseTypeForm(forms.ModelForm):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
-        self.fields["journal"].initial = user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
+        pin(self.fields["journal"], user.journal)
 
         self.fields["title"].label = _("Title")
         self.fields["necessary"].label = _("Necessary")

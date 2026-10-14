@@ -206,3 +206,20 @@ def test_count_type_edit_keeping_its_slug_is_valid(title, main_user):
     form = CountTypeForm(user=main_user, instance=count_type, data={"title": title})
 
     assert form.is_valid()
+
+
+@pytest.mark.parametrize("form_class", [CountForm, CountTypeForm])
+def test_a_posted_user_is_ignored(main_user, second_user, form_class):
+    count_type = CountTypeFactory(title="Yyy")
+    data = {
+        "title": "Xxx",
+        "date": "1999-01-01",
+        "quantity": 1,
+        "count_type": count_type.pk,
+    }
+
+    form = form_class(user=main_user, data={**data, "user": second_user.pk})
+
+    assert form.is_valid()
+
+    assert form.save().user == main_user

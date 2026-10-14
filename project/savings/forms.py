@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceNeverEmptyFormMixin, PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField
+from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Saving, SavingType
@@ -25,9 +25,7 @@ class SavingTypeForm(forms.ModelForm):
         self.fields["closed"].widget = YearPickerWidget()
 
         # journal input
-        self.fields["journal"].initial = user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
+        pin(self.fields["journal"], user.journal)
 
         self.fields["title"].label = _("Fund")
         self.fields["closed"].label = _("Closed")

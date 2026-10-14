@@ -5,6 +5,10 @@ import pytest
 import time_machine
 
 from ....accounts.tests.factories import AccountFactory
+from ....books.forms import BookTargetForm
+from ....books.tests.factories import BookTargetFactory
+from ....drinks.forms import DrinkTargetForm
+from ....drinks.tests.factories import DrinkTargetFactory
 from ....expenses.forms import ExpenseForm
 from ....expenses.tests.factories import ExpenseNameFactory
 from ....incomes.forms import IncomeForm
@@ -68,3 +72,19 @@ def test_date_no_later_than_next_calendar_year(
 
     with time_machine.travel(today):
         assert bound_form(main_user, posted).errors == errors
+
+
+@pytest.mark.parametrize(
+    ("form_class", "factory", "data"),
+    [
+        (BookTargetForm, BookTargetFactory, {"quantity": 5}),
+        (DrinkTargetForm, DrinkTargetFactory, {"quantity": 5, "drink_type": "beer"}),
+    ],
+    ids=["books", "drinks"],
+)
+def test_a_target_keeps_its_year_when_edited(main_user, form_class, factory, data):
+    target = factory(year=1999)
+
+    form = form_class(user=main_user, instance=target, data={"year": 1999, **data})
+
+    assert form.errors == {}

@@ -176,3 +176,19 @@ def test_book_target_year_validation(main_user):
     assert not form.is_valid()
 
     assert form.errors == {"year": ["1999 metai jau turi tikslą."]}
+
+
+@pytest.mark.parametrize(
+    ("form_class", "data"),
+    [
+        (BookForm, {"started": "1999-01-01", "author": "Author", "title": "Title"}),
+        (BookTargetForm, {"year": 2000, "quantity": 1}),
+    ],
+    ids=["book", "book_target"],
+)
+def test_a_posted_user_is_ignored(main_user, second_user, form_class, data):
+    form = form_class(user=main_user, data={**data, "user": second_user.pk})
+
+    assert form.is_valid()
+
+    assert form.save().user == main_user

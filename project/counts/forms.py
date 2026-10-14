@@ -4,6 +4,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
+from ..core.lib.form_fields import pin
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Count, CountType
@@ -40,9 +41,7 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
             )
             self.fields["count_type"].initial = obj
 
-        self.fields["user"].initial = self.user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
+        pin(self.fields["user"], self.user)
 
     def _overwrite_default_queries(self):
         self.fields["count_type"].queryset = CountTypeModelService(self.user).items()
@@ -62,8 +61,6 @@ class CountTypeForm(forms.ModelForm):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        self.fields["user"].initial = user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
+        pin(self.fields["user"], user)
 
         self.fields["title"].label = _("Title")
