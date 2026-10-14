@@ -1,4 +1,5 @@
 import itertools as it
+from datetime import date
 from functools import cached_property
 
 from ....core.lib.date import current_day
@@ -13,10 +14,11 @@ from .providers import MonthDataProvider
 
 
 class MonthContextPresenter:
-    def __init__(self, year, month, dto: MonthDataDTO):
+    def __init__(self, year, month, dto: MonthDataDTO, today: date):
         self.year = year
         self.month = month
         self.dto = dto
+        self.today = today
 
     @cached_property
     def month_table(self) -> MonthTableBuilder:
@@ -48,6 +50,7 @@ class MonthContextPresenter:
             necessary=self.dto.necessary_expense_types,
             per_day=self.plans.day_input,
             free=self.plans.expenses_free,
+            today=self.today,
         )
 
     @cached_property
@@ -108,17 +111,17 @@ class MonthContextPresenter:
         return ChartBuilder(targets=self.dto.targets, totals=self.month_table.total_row)
 
 
-def load_service(user: User) -> dict:
+def load_service(user: User, today: date) -> dict:
     year = user.year
     month = user.month
 
     dto = MonthDataProvider(user).get_data()
 
-    presenter = MonthContextPresenter(year, month, dto)
+    presenter = MonthContextPresenter(year, month, dto, today)
 
     return {
         "month_table": {
-            "day": current_day(year, month, False),
+            "day": current_day(year, month, today, return_past_day=False),
             "expenses": it.zip_longest(
                 presenter.tables["main_table"], presenter.tables["spending_table"]
             ),

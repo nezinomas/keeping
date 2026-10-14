@@ -5,9 +5,9 @@ from ...users.models import User
 from .year_boundary import YearBoundary
 
 
-def current_day(year: int, month: int, return_past_day: bool = True) -> int:
-    today = date.today()
-
+def current_day(
+    year: int, month: int, today: date, return_past_day: bool = True
+) -> int:
     if today.year == year and today.month == month:
         return today.day
 
@@ -25,23 +25,22 @@ def monthnames() -> list[str]:
     return [x.lower() for x in calendar.month_name[1:]]
 
 
-def latest_year() -> int:
-    return datetime.now().year + 1
+def latest_year(today: date) -> int:
+    return today.year + 1
 
 
-def years(user: User) -> list[int]:
-    return list(range(user.journal.first_record.year, latest_year() + 1))
+def years(user: User, today: date) -> list[int]:
+    return list(range(user.journal.first_record.year, latest_year(today) + 1))
 
 
-def years_to_date(user: User) -> list[int]:
-    return list(range(user.journal.first_record.year, datetime.now().year + 1))
+def years_to_date(user: User, today: date) -> list[int]:
+    return list(range(user.journal.first_record.year, today.year + 1))
 
 
-def set_date_with_user_year(user):
-    now = datetime.now()
-    day = min(now.day, calendar.monthrange(user.year, now.month)[1])
+def set_date_with_user_year(user: User, today: date) -> datetime:
+    day = min(today.day, calendar.monthrange(user.year, today.month)[1])
 
-    return datetime(user.year, now.month, day)
+    return datetime(user.year, today.month, day)
 
 
 def yday(year: int, today: date) -> tuple[int, int]:

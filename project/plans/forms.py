@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import transaction
@@ -144,7 +146,9 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
         self.fields["journal"].widget = forms.HiddenInput()
 
     def _setup_year_field(self):
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
+        self.fields["year"].initial = set_date_with_user_year(
+            self.user, date.today()
+        ).year
 
     def _load_month_prices(self):
         """Loads tall DB rows into the wide UI inputs."""

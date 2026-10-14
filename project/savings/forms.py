@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -47,7 +49,7 @@ class SavingForm(
     field_order = ["date", "account", "saving_type", "price", "fee", "remark"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
         account_items = AccountModelService(self.user).items()
@@ -56,9 +58,8 @@ class SavingForm(
 
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        # inital values
         self.fields["account"].initial = account_items.first()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
 
         # overwrite ForeignKey saving_type and account queryset
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()

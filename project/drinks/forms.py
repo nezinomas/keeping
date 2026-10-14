@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.template.loader import render_to_string
@@ -43,7 +45,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
     def date_field_settings(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
 
     def user_field_settings(self):
         self.fields["user"].initial = self.user
@@ -85,7 +87,7 @@ class QuickAddForm(DrinkForm):
         return cls(
             data={
                 "user": user.pk,
-                "date": post.get("date") or set_date_with_user_year(user),
+                "date": post.get("date") or set_date_with_user_year(user, date.today()),
                 "option": post.get("option") or user.drink_type,
                 # the bar labels the box quantity; the model stores Std Av
                 "stdav": post.get("quantity"),
@@ -107,10 +109,12 @@ class DrinkTargetForm(forms.ModelForm):
     field_order = ["year", "drink_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
+        self.fields["year"].initial = set_date_with_user_year(
+            self.user, date.today()
+        ).year
 
         self.user_field_settings()
 

@@ -180,7 +180,7 @@ class Month(MonthMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         self.set_month()
 
-        context = services.month.load_service(self.request.user)
+        context = services.month.load_service(self.request.user, date.today())
 
         return super().get_context_data(**kwargs) | context
 
@@ -271,7 +271,9 @@ class SummarySavingsAndIncomes(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings_and_incomes.html"
 
     def get_context_data(self, **kwargs):
-        context = services.summary_savings_and_incomes.load_service(self.request.user)
+        context = services.summary_savings_and_incomes.load_service(
+            self.request.user, date.today()
+        )
         return super().get_context_data(**kwargs) | context
 
 
@@ -297,7 +299,7 @@ class ExpandDayExpenses(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         obj = services.expand_day.ExpandDayService(
-            self.request.user, self.kwargs.get("date") or date(1974, 1, 1)
+            self.request.user, self.kwargs["date"]
         )
 
         return super().get_context_data(**kwargs) | obj.context()

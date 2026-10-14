@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from django import forms
 from django.utils.translation import gettext as _
@@ -44,7 +44,9 @@ class WorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_date_with_user_year(user)
+        self.fields["date"].initial = core_date.set_date_with_user_year(
+            user, date.today()
+        )
         self.fields[self.fund_field].preload(funds)
 
     @property

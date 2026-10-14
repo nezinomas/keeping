@@ -7,9 +7,10 @@ from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 from ....plans.lib.calc_day_sum import DataDto
 from ...services.month.builders import ChartBuilder, InfoBuilder, MonthTableBuilder
 from ...services.month.dtos import InfoState, MonthDataDTO
-from ...services.month.presenters import MonthContextPresenter
+from ...services.month.presenters import MonthContextPresenter, load_service
 
 PLAN_MONTHS = range(1, 13)
+TODAY = date(2026, 4, 2)
 
 
 @pytest.fixture(name="month_dto")
@@ -219,14 +220,14 @@ def test_info_builder_delta():
 
 
 def test_plans_property(month_dto):
-    plans = MonthContextPresenter(2026, 4, month_dto).plans
+    plans = MonthContextPresenter(2026, 4, month_dto, TODAY).plans
 
     assert plans.day_input == 40
     assert plans.expenses_free == 2700
 
 
 def test_spending_property(month_dto):
-    spending = MonthContextPresenter(2026, 4, month_dto).spending
+    spending = MonthContextPresenter(2026, 4, month_dto, TODAY).spending
 
     assert spending.spending[0] == {
         "date": date(2026, 4, 1),
@@ -239,7 +240,7 @@ def test_spending_property(month_dto):
 
 
 def test_totals_property(mocker, month_dto):
-    presenter = MonthContextPresenter(2026, 4, month_dto)
+    presenter = MonthContextPresenter(2026, 4, month_dto, TODAY)
 
     mock_month_table = mocker.Mock()
     mock_month_table.total_row = {"total": 400, "savings": 50}
@@ -270,7 +271,7 @@ def test_totals_property(mocker, month_dto):
 
 
 def test_tables_property(mocker, month_dto):
-    presenter = MonthContextPresenter(2026, 4, month_dto)
+    presenter = MonthContextPresenter(2026, 4, month_dto, TODAY)
 
     mock_month_table = mocker.Mock(table=["main_data"], total_row={"total": 10})
     mock_spending = mocker.Mock(spending=["spending_data"])
@@ -296,10 +297,24 @@ def test_tables_property(mocker, month_dto):
 
 
 def test_charts_property(month_dto):
-    charts = MonthContextPresenter(2026, 4, month_dto).charts
+    charts = MonthContextPresenter(2026, 4, month_dto, TODAY).charts
 
     assert charts.build_targets()["fact"] == [
         {"y": 500, "target": 0},
         {"y": 50, "target": 0},
         {"y": 10, "target": 100},
     ]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "today, expect",
+    [
+        pytest.param(date(1999, 12, 7), 7, id="the_users_month_is_running"),
+        pytest.param(date(2000, 1, 1), 0, id="the_users_month_is_over"),
+    ],
+)
+def test_month_table_marks_todays_day(main_user, today, expect):
+    actual = load_service(main_user, today)
+
+    assert actual["month_table"]["day"] == expect

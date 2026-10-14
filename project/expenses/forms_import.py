@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -35,7 +37,7 @@ class ReceiptUploadForm(_JournalAccountChoicesMixin, forms.Form):
         super().__init__(*args, **kwargs)
 
         accounts = self._limit_account_to_journal()
-        self.fields["date"].initial = set_date_with_user_year(user)
+        self.fields["date"].initial = set_date_with_user_year(user, date.today())
         self.fields["account"].initial = accounts.first()
         self._translate_fields()
 

@@ -1,4 +1,5 @@
 import contextlib
+from datetime import date
 from urllib.parse import urlencode
 
 from django import forms
@@ -136,7 +137,7 @@ class ExpenseForm(
         if self.instance.pk:
             return
 
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
         self.fields["account"].initial = AccountModelService(self.user).items().first()
         self.fields["price"].initial = "0.00"
 

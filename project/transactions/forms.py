@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -39,7 +41,7 @@ class TransactionForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["date"].widget = DatePickerWidget()
 
         self.fields["price"].label = _("Amount")
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
 
     def _overwrite_default_queries(self):
         account = AccountModelService(self.user)
@@ -125,7 +127,7 @@ class SavingCloseForm(
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
 
     def _overwrite_default_queries(self):
         self.fields["from_account"].queryset = SavingTypeModelService(self.user).items()
@@ -179,8 +181,7 @@ class SavingChangeForm(
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
 
-        # initial values
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
 
     def _overwrite_default_queries(self):
         from_account = self.fields["from_account"]

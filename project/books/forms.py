@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from django import forms
 from django.utils.translation import gettext as _
@@ -23,7 +23,9 @@ class BookForm(forms.ModelForm):
         self.fields["started"].widget = DatePickerWidget()
         self.fields["ended"].widget = DatePickerWidget()
 
-        self.fields["started"].initial = set_date_with_user_year(self.user)
+        self.fields["started"].initial = set_date_with_user_year(
+            self.user, date.today()
+        )
 
         self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
@@ -38,7 +40,7 @@ class BookForm(forms.ModelForm):
     def clean_started(self):
         dt = self.cleaned_data["started"]
         year_instance = dt.year
-        years_ = years_to_date(self.user)
+        years_ = years_to_date(self.user, date.today())
         if year_instance not in years_:
             self.add_error(
                 "started",
@@ -88,7 +90,9 @@ class BookTargetForm(forms.ModelForm):
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
+        self.fields["year"].initial = set_date_with_user_year(
+            self.user, date.today()
+        ).year
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("How many")
