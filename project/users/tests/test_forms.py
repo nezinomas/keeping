@@ -10,6 +10,9 @@ SIGNUP = {
     "password2": "abcdef123456",
 }
 
+# a valid address one character longer than User.email holds
+EMAIL_255 = "a" * 64 + "@" + "b" * 63 + "." + "c" * 63 + "." + "d" * 59 + ".lt"
+
 
 @pytest.mark.django_db
 def test_signup_cleans_the_posted_values():
@@ -21,10 +24,16 @@ def test_signup_cleans_the_posted_values():
 
 
 @pytest.mark.django_db
-def test_signup_unique_email():
+@pytest.mark.parametrize(
+    "email",
+    ["bob@bob.com", "BOB@bob.com", "yan@y.yy"],
+    ids=["email_exists", "email_exists_other_case", "email_stored_in_other_case"],
+)
+def test_signup_unique_email(email):
     UserFactory()
+    UserFactory(username="Yan", email="Yan@Y.yy")
 
-    form = SignUpForm(data=SIGNUP | {"email": "bob@bob.com"})
+    form = SignUpForm(data=SIGNUP | {"email": email})
 
     assert not form.is_valid()
     assert form.errors["email"] == ["Vartotojas su šiuo Email jau egzistuoja."]
@@ -47,6 +56,12 @@ def test_invite_form_cleans_the_email(main_user):
         ("BOB@bob.com", "Įvedėte savo Email."),
         ("X@X.xx", "Vartotojas su šiuo Email jau egzistuoja."),
         ("yan@y.yy", "Vartotojas su šiuo Email jau egzistuoja."),
+        (
+            EMAIL_255,
+            "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 254 ženklų "
+            "(dabartinis ilgis 255).",
+        ),
+        ("", "Šis laukas yra privalomas."),
     ],
     ids=[
         "same_as_admin_email",
@@ -54,6 +69,8 @@ def test_invite_form_cleans_the_email(main_user):
         "same_as_admin_email_other_case",
         "email_exists_other_case",
         "email_stored_in_other_case",
+        "email_longer_than_a_user_email",
+        "email_missing",
     ],
 )
 def test_invite_form_refuses_an_email(main_user, second_user, email, message):
