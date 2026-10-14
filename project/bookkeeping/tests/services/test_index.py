@@ -5,36 +5,34 @@ import pytest
 
 from ....accounts.tests.factories import AccountBalanceFactory, AccountFactory
 from ....core.lib.translation import month_names
+from ....debts.models import Debt
 from ....debts.tests.factories import (
     BorrowFactory,
     BorrowReturnFactory,
     LendFactory,
     LendReturnFactory,
 )
-from ...services.index.dtos import IndexDataDTO
 from ...services.index.presenters import IndexContextBuilder
 from ...services.index.providers import IndexDataProvider
 
 MODULE_PATH = "project.bookkeeping.services.index"
 
 
-def test_balance_short_context_data():
+@pytest.mark.parametrize(
+    "end, data",
+    [
+        pytest.param(70, [5, 70, 65], id="gain"),
+        pytest.param(-20, [5, -20, -25], id="loss"),
+    ],
+)
+def test_balance_short_context_data(end, data):
     obj = IndexContextBuilder(
-        balance=MagicMock(amount_start=5, amount_end=70, year=2021), debts={}
+        balance=MagicMock(amount_start=5, amount_end=end, year=2021), debts={}
     )
     actual = obj.balance_short_context()
 
     assert actual["title"] == ["2021 pradžioje", "2021 pabaigoje", "Balansas"]
-    assert actual["data"] == [5, 70, 65]
-
-
-def test_balance_short_highlighted():
-    obj = IndexContextBuilder(
-        balance=MagicMock(amount_start=5, amount_end=-20), debts={}
-    )
-    actual = obj.balance_short_context()
-
-    assert actual["data"] == [5, -20, -25]
+    assert actual["data"] == data
     assert actual["highlight"] == [False, False, True]
 
 
@@ -52,8 +50,10 @@ def test_chart_balance_context(mock_year_balance):
 @pytest.mark.parametrize(
     "kind, context",
     [
-        pytest.param("borrow", IndexContextBuilder.borrow_context, id="borrow"),
-        pytest.param("lend", IndexContextBuilder.lend_context, id="lend"),
+        pytest.param(
+            Debt.DebtType.BORROW, IndexContextBuilder.borrow_context, id="borrow"
+        ),
+        pytest.param(Debt.DebtType.LEND, IndexContextBuilder.lend_context, id="lend"),
     ],
 )
 def test_debt_context_without_debt_is_empty(kind, context):
@@ -68,7 +68,7 @@ def test_debt_context_without_debt_is_empty(kind, context):
     "kind, context, titles, debt, debt_return",
     [
         pytest.param(
-            "borrow",
+            Debt.DebtType.BORROW,
             IndexContextBuilder.borrow_context,
             ("Pasiskolinta", "Grąžinau"),
             99,
@@ -76,7 +76,7 @@ def test_debt_context_without_debt_is_empty(kind, context):
             id="borrow_part_returned",
         ),
         pytest.param(
-            "borrow",
+            Debt.DebtType.BORROW,
             IndexContextBuilder.borrow_context,
             ("Pasiskolinta", "Grąžinau"),
             300,
@@ -84,7 +84,7 @@ def test_debt_context_without_debt_is_empty(kind, context):
             id="borrow_fully_repaid",
         ),
         pytest.param(
-            "lend",
+            Debt.DebtType.LEND,
             IndexContextBuilder.lend_context,
             ("Paskolinta", "Grąžino"),
             9,
@@ -92,7 +92,7 @@ def test_debt_context_without_debt_is_empty(kind, context):
             id="lend_part_returned",
         ),
         pytest.param(
-            "lend",
+            Debt.DebtType.LEND,
             IndexContextBuilder.lend_context,
             ("Paskolinta", "Grąžino"),
             300,
@@ -108,21 +108,8 @@ def test_debt_context(kind, context, titles, debt, debt_return):
     )
     actual = context(obj)
 
-    for title in titles:
-        assert title in actual["title"]
+    assert actual["title"] == list(titles)
     assert actual["data"] == [debt, debt_return]
-
-
-def test_index_data_dto():
-    dto = IndexDataDTO(
-        amount_start=1000,
-        monthly_data=[{"month": 1, "sum": 500}],
-        debts={"lend": {"debt": 100, "debt_return": 50}},
-    )
-
-    assert dto.amount_start == 1000
-    assert len(dto.monthly_data) == 1
-    assert dto.debts["lend"]["debt"] == 100
 
 
 @pytest.mark.django_db
@@ -152,8 +139,8 @@ def test_index_data_provider_amount_start(main_user, past_by_year, expect):
 @pytest.mark.django_db
 def test_index_data_provider_get_debts(mocker, main_user):
     sums = {
-        "lend": {"debt": 100, "debt_return": 50},
-        "borrow": {"debt": 200, "debt_return": 0},
+        Debt.DebtType.LEND: {"debt": 100, "debt_return": 50},
+        Debt.DebtType.BORROW: {"debt": 200, "debt_return": 0},
     }
     mocker.patch(
         f"{MODULE_PATH}.providers.DebtModelService",
@@ -162,8 +149,8 @@ def test_index_data_provider_get_debts(mocker, main_user):
 
     actual = IndexDataProvider(main_user).get_data().debts
 
-    assert actual["lend"] == {"debt": 100, "debt_return": 50}
-    assert actual["borrow"] == {"debt": 200, "debt_return": 0}
+    assert actual[Debt.DebtType.LEND] == {"debt": 100, "debt_return": 50}
+    assert actual[Debt.DebtType.BORROW] == {"debt": 200, "debt_return": 0}
 
 
 @pytest.mark.django_db
