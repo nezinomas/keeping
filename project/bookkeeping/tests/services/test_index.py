@@ -1,9 +1,16 @@
+from datetime import date
 from unittest.mock import MagicMock
 
 import pytest
 
 from ....accounts.tests.factories import AccountBalanceFactory, AccountFactory
 from ....core.lib.translation import month_names
+from ....debts.tests.factories import (
+    BorrowFactory,
+    BorrowReturnFactory,
+    LendFactory,
+    LendReturnFactory,
+)
 from ...services.index.dtos import IndexDataDTO
 from ...services.index.presenters import IndexContextBuilder
 from ...services.index.providers import IndexDataProvider
@@ -13,7 +20,7 @@ MODULE_PATH = "project.bookkeeping.services.index"
 
 def test_balance_short_context_data():
     obj = IndexContextBuilder(
-        balance=MagicMock(amount_start=5, amount_end=70, year=2021)
+        balance=MagicMock(amount_start=5, amount_end=70, year=2021), debts={}
     )
     actual = obj.balance_short_context()
 
@@ -22,7 +29,9 @@ def test_balance_short_context_data():
 
 
 def test_balance_short_highlighted():
-    obj = IndexContextBuilder(balance=MagicMock(amount_start=5, amount_end=-20))
+    obj = IndexContextBuilder(
+        balance=MagicMock(amount_start=5, amount_end=-20), debts={}
+    )
     actual = obj.balance_short_context()
 
     assert actual["data"] == [5, -20, -25]
@@ -30,7 +39,7 @@ def test_balance_short_highlighted():
 
 
 def test_chart_balance_context(mock_year_balance):
-    obj = IndexContextBuilder(balance=mock_year_balance)
+    obj = IndexContextBuilder(balance=mock_year_balance, debts={})
     actual = obj.chart_balance_context()
 
     assert actual["categories"] == list(month_names().values())
@@ -47,15 +56,10 @@ def test_chart_balance_context(mock_year_balance):
         pytest.param("lend", IndexContextBuilder.lend_context, id="lend"),
     ],
 )
-@pytest.mark.parametrize(
-    "debt",
-    [
-        pytest.param({"debt": None, "debt_return": None}, id="no_data"),
-        pytest.param({"debt": 0, "debt_return": 0}, id="zero_debt"),
-    ],
-)
-def test_debt_context_without_debt_is_empty(kind, context, debt):
-    obj = IndexContextBuilder(balance=MagicMock(), debts={kind: debt})
+def test_debt_context_without_debt_is_empty(kind, context):
+    obj = IndexContextBuilder(
+        balance=MagicMock(), debts={kind: {"debt": 0, "debt_return": 0}}
+    )
 
     assert context(obj) == {}
 
@@ -162,6 +166,30 @@ def test_index_data_provider_get_debts(mocker, main_user):
     assert actual["borrow"] == {"debt": 200, "debt_return": 0}
 
 
+@pytest.mark.django_db
+def test_index_data_provider_monthly_debts(main_user):
+    day = date(main_user.year, 3, 5)
+    journal = main_user.journal
+    lend = LendFactory(journal=journal, date=day, price=100)
+    borrow = BorrowFactory(journal=journal, date=day, price=200)
+    LendReturnFactory(debt=lend, date=day, price=10)
+    BorrowReturnFactory(debt=borrow, date=day, price=30)
+
+    monthly = IndexDataProvider(main_user).get_data().monthly_data
+    actual = sorted(
+        (row for row in monthly if row["title"].startswith(("lend", "borrow"))),
+        key=lambda row: row["title"],
+    )
+
+    month = date(main_user.year, 3, 1)
+    assert actual == [
+        {"date": month, "title": "borrow", "sum": 200},
+        {"date": month, "title": "borrow_return", "sum": 30},
+        {"date": month, "title": "lend", "sum": 100},
+        {"date": month, "title": "lend_return", "sum": 10},
+    ]
+
+
 @pytest.fixture
 def mock_year_balance(mocker):
     mock = mocker.Mock()
@@ -179,7 +207,7 @@ def mock_year_balance(mocker):
 
 
 def test_index_context_builder_balance_context(mock_year_balance):
-    builder = IndexContextBuilder(balance=mock_year_balance)
+    builder = IndexContextBuilder(balance=mock_year_balance, debts={})
     actual = builder.balance_context()
 
     assert actual["data"] == [100, 200, 300]
@@ -189,7 +217,7 @@ def test_index_context_builder_balance_context(mock_year_balance):
 
 
 def test_index_context_builder_averages_context(mock_year_balance):
-    builder = IndexContextBuilder(balance=mock_year_balance)
+    builder = IndexContextBuilder(balance=mock_year_balance, debts={})
     actual = builder.averages_context()
 
     assert actual["data"] == [50, 10]

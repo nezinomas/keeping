@@ -1,7 +1,7 @@
 import re
 
 import pytest
-from django.urls import reverse
+from django.urls import resolve, reverse
 
 from ...models import Debt
 from .. import factories
@@ -66,3 +66,11 @@ def test_debts_url_of_an_unknown_type_is_404(client_logged, method, path):
 
     assert response.status_code == 404
     assert not Debt.objects.exists()
+
+
+@pytest.mark.parametrize("debt_type", Debt.DebtType)
+def test_debts_url_resolves_the_type_to_the_enum(debt_type):
+    match = resolve(reverse("debts:list", kwargs={"debt_type": debt_type.value}))
+
+    assert type(match.kwargs["debt_type"]) is Debt.DebtType
+    assert match.kwargs["debt_type"] == debt_type

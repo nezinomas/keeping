@@ -18,7 +18,7 @@ def _yearly_sums(objects, key):
 
 
 class DebtModelService(DatedModelService):
-    def __init__(self, user: User, debt_type: str):
+    def __init__(self, user: User, debt_type: models.Debt.DebtType):
         self.debt_type = debt_type
 
         super().__init__(user)
@@ -35,7 +35,7 @@ class DebtModelService(DatedModelService):
         return self.objects.filter(closed=False)
 
     @classmethod
-    def sync_returned(cls, journal_id: int, debt_type: str):
+    def sync_returned(cls, journal_id: int, debt_type: models.Debt.DebtType):
         returns = (
             models.DebtReturn.objects.filter(debt=OuterRef("pk"))
             .order_by()
@@ -83,7 +83,7 @@ class DebtModelService(DatedModelService):
 
 
 class DebtReturnModelService(SumMixin, DatedModelService):
-    def __init__(self, user: User, debt_type: str):
+    def __init__(self, user: User, debt_type: models.Debt.DebtType):
         self.debt_type = debt_type
 
         super().__init__(user)
