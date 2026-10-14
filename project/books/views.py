@@ -73,20 +73,14 @@ class Lists(ListViewMixin):
         paginator = CountlessPaginator(
             query=sql, total_records=sql.count(), per_page=self.per_page
         )
-        page_obj = paginator.get_page(self.request.GET.get("page", 1))
-        page_range = paginator.get_elided_page_range(page=page_obj.current_page)
-        first_item = paginator.count - paginator.per_page * (page_obj.current_page - 1)
+        page_obj, paginator_object = paginator.paging(self.request.GET.get("page", 1))
 
         context = {
             "object_list": page_obj,
             "url": reverse("books:list"),
             "scope": self.scope,
-            "first_item": first_item,
-            "paginator_object": {
-                "total_pages": paginator.total_pages,
-                "page_range": page_range,
-                "ELLIPSIS": paginator.ELLIPSIS,
-            },
+            "first_item": paginator.count - page_obj.start_index() + 1,
+            "paginator_object": paginator_object,
         }
 
         return super().get_context_data(**kwargs) | context

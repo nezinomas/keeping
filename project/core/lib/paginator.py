@@ -45,6 +45,9 @@ class CountlessPage(collections.abc.Sequence):
             return self.current_page - 1
         raise EmptyPage(_("Previous page does not exist"))
 
+    def start_index(self):
+        return (self.current_page - 1) * self.page_size + 1
+
 
 class CountlessPaginator:
     ELLIPSIS = "…"
@@ -80,6 +83,15 @@ class CountlessPaginator:
         query = self.query[bottom:top]
 
         return CountlessPage(query, self.total_pages, current_page, self.per_page)
+
+    def paging(self, raw_page) -> tuple[CountlessPage, dict]:
+        page = self.get_page(raw_page)
+        paginator_object = {
+            "total_pages": self.total_pages,
+            "page_range": self.get_elided_page_range(page.current_page),
+            "ELLIPSIS": self.ELLIPSIS,
+        }
+        return page, paginator_object
 
     @property
     def page_range(self):
