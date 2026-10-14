@@ -580,10 +580,6 @@ msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti."
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:111
-msgid "already has a goal."
-msgstr "metai jau turi tikslą."
-
 #: .\project\books\services\cards.py:37
 msgid "Finished"
 msgstr "Perskaitytos"
@@ -1228,7 +1224,7 @@ msgstr "Trinti skolos gražinimą"
 msgid "Drink type"
 msgstr "Gėrimo tipas"
 
-#: .\project\drinks\forms.py:145
+#: .\project\books\forms.py:104 .\project\drinks\forms.py:141
 #, python-format
 msgid "%(year)s already has a goal."
 msgstr "%(year)s metai jau turi tikslą."
