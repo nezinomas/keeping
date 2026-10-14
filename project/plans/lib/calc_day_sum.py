@@ -1,6 +1,4 @@
 import calendar
-import contextlib
-import itertools as it
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -26,7 +24,7 @@ class InputRow(StrEnum):
 
     INCOMES = "incomes"
     SAVINGS = "savings"
-    PER_DAY = "day_input"
+    DAY_PLAN = "day_input"
     EXPENSES_REGULAR = "expenses_regular"
     EXPENSES_NECESSARY = "db_expenses_necessary"
     NECESSARY = "necessary"
@@ -41,7 +39,7 @@ class CalcRow(StrEnum):
     EXPENSES_FREE = "expenses_free"
     EXPENSES_FULL = "expenses_full"
     EXPENSES_REMAINS = "expenses_remains"
-    PER_DAY = "day_calced"
+    SUM_PER_DAY = "day_calced"
     REMAINS = "remains"
 
 
@@ -90,37 +88,9 @@ class PlanCalculateDaySum:
 
         self.df: pl.DataFrame = pl.DataFrame()
 
-    def __getattr__(self, name: str) -> int | dict:
-        """
-        Dynamically provide access to calculated plan rows.
-
-        Attributes like ``incomes_avg``, ``day_calced``, ``expenses_necessary``, etc.
-        are not stored as individual instance attributes. Instead, when first
-        accessed they are resolved from the internal DataFrame that is built
-        lazily in ``_calc_df()``.
-
-        The mapping is driven by the ``Row`` StrEnum: the attribute name is upper-cased
-        and used to look up the corresponding enum member. This keeps the public API
-        concise and DRY while guaranteeing a one-to-one relationship with the enum
-        that is the single source of truth for row identifiers.
-
-        If the name does not match any ``Row`` member, a standard ``AttributeError``
-        is raised so that typos are caught early and IDE tooling remains accurate.
-        """
-
-        with contextlib.suppress(ValueError):
-            CalcRow(name)
-            return self.get_row(name)
-
-        with contextlib.suppress(ValueError):
-            InputRow(name)
-            return self.get_row(name)
-
-        raise AttributeError(f"{self.__class__.__name__} has no attribute '{name}'")
-
     def day_plan_states(self) -> dict[str, str]:
-        day_plan = self.day_input
-        sum_per_day = self.day_calced
+        day_plan = self.row(InputRow.DAY_PLAN)
+        sum_per_day = self.row(CalcRow.SUM_PER_DAY)
 
         return {
             month: OVER
@@ -129,34 +99,17 @@ class PlanCalculateDaySum:
             for month in MONTH_NUMS
         }
 
-    def get_row(self, name: str) -> int | dict:
+    def row(self, name: CalcRow | InputRow) -> int | dict:
         if not self._calculated:
             df = self._create_df()
             self.df = self._calculate_df(df)
             self._calculated = True
-
-        if self.df.is_empty() or name not in self.df["name"]:
-            return {}
 
         data = self.df.filter(pl.col("name") == name)
 
         return self._return_data(data)
 
     def _return_data(self, data: pl.DataFrame) -> int | dict:
-        """
-        Convert a filtered Polars DataFrame row into the appropriate return format.
-
-        Behaviour depends on whether a specific ``month`` was requested during
-        instantiation of the class:
-
-        - If ``self.month`` is set (e.g. ``month=1`` for January):
-        Returns a single ``int`` – the value for the selected month.
-
-        - If ``self.month`` is ``None``:
-        Returns a ``dict`` mapping month names to their values:
-        ``{"1": 1500, "2": 1600, ..., "12": 1400}``.
-        """
-
         return (
             data.select(pl.first(str(self.month))).item()
             if self.month
@@ -164,23 +117,16 @@ class PlanCalculateDaySum:
         )
 
     def _create_data(self):
-        return list(
-            it.chain(
-                [{"name": InputRow.INCOMES, **d} for d in self._data.incomes],
-                [{"name": InputRow.SAVINGS, **d} for d in self._data.savings],
-                [{"name": InputRow.PER_DAY, **d} for d in self._data.per_day],
-                [
-                    {"name": InputRow.EXPENSES_NECESSARY, **d}
-                    for d in self._data.expenses_necessary
-                ],
-                [
-                    {"name": InputRow.EXPENSES_REGULAR, **d}
-                    for d in self._data.expenses_regular
-                ],
-                [{"name": InputRow.NECESSARY, **d} for d in self._data.necessary],
-                [{"name": InputRow.MONTH_LEN, **d} for d in self._data.month_len],
-            )
-        )
+        table = {
+            InputRow.INCOMES: self._data.incomes,
+            InputRow.SAVINGS: self._data.savings,
+            InputRow.DAY_PLAN: self._data.per_day,
+            InputRow.EXPENSES_NECESSARY: self._data.expenses_necessary,
+            InputRow.EXPENSES_REGULAR: self._data.expenses_regular,
+            InputRow.NECESSARY: self._data.necessary,
+            InputRow.MONTH_LEN: self._data.month_len,
+        }
+        return [{"name": name, **row} for name, rows in table.items() for row in rows]
 
     def _create_df(self) -> pl.DataFrame:
         data = self._create_data()
@@ -216,11 +162,11 @@ class PlanCalculateDaySum:
             )
             .with_columns(
                 (pl.col(CalcRow.EXPENSES_FREE) / pl.col(InputRow.MONTH_LEN)).alias(
-                    CalcRow.PER_DAY
+                    CalcRow.SUM_PER_DAY
                 ),
                 (
                     pl.col(CalcRow.EXPENSES_FREE)
-                    - (pl.col(InputRow.PER_DAY) * pl.col(InputRow.MONTH_LEN))
+                    - (pl.col(InputRow.DAY_PLAN) * pl.col(InputRow.MONTH_LEN))
                 ).alias(CalcRow.REMAINS),
                 (pl.col(CalcRow.INCOMES_AVG) - pl.col(CalcRow.EXPENSES_FULL)).alias(
                     CalcRow.EXPENSES_REMAINS

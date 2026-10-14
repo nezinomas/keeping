@@ -1,13 +1,16 @@
+from dataclasses import replace
 from datetime import date
 
 import pytest
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
-from ....plans.lib.calc_day_sum import DataDto
+from ....expenses.tests.factories import ExpenseTypeFactory
+from ....plans.lib.calc_day_sum import CalcRow, DataDto, InputRow
 from ...services.month.builders import ChartBuilder, InfoBuilder, MonthTableBuilder
 from ...services.month.dtos import InfoState, MonthDataDTO
 from ...services.month.presenters import MonthContextPresenter, load_service
+from ...services.month.providers import MonthDataProvider
 
 PLAN_MONTHS = range(1, 13)
 TODAY = date(2026, 4, 2)
@@ -222,8 +225,26 @@ def test_info_builder_delta():
 def test_plans_property(month_dto):
     plans = MonthContextPresenter(2026, 4, month_dto, TODAY).plans
 
-    assert plans.day_input == 40
-    assert plans.expenses_free == 2700
+    assert plans.row(InputRow.DAY_PLAN) == 40
+    assert plans.row(CalcRow.EXPENSES_FREE) == 2700
+
+
+def test_info_context_plan_state(month_dto):
+    plans = replace(
+        month_dto.plans_data,
+        savings=[{"month": m, "amount": 70} for m in PLAN_MONTHS],
+    )
+    dto = replace(month_dto, plans_data=plans)
+
+    actual = MonthContextPresenter(2026, 4, dto, TODAY).info_context["plan"]
+
+    assert actual == {
+        "income": 3000,
+        "saving": 70,
+        "expense": 2930,
+        "per_day": 40,
+        "balance": 2630 - 40 * 30,
+    }
 
 
 def test_spending_property(month_dto):
@@ -318,3 +339,14 @@ def test_month_table_marks_todays_day(main_user, today, expect):
     actual = load_service(main_user, today)
 
     assert actual["month_table"]["day"] == expect
+
+
+@pytest.mark.django_db
+def test_provider_reads_the_necessary_expense_types_apart(main_user):
+    ExpenseTypeFactory(title="Food")
+    ExpenseTypeFactory(title="Rent", necessary=True)
+
+    actual = MonthDataProvider(main_user).get_data()
+
+    assert sorted(actual.expense_types) == ["Food", "Rent"]
+    assert actual.necessary_expense_types == ["Rent"]

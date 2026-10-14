@@ -4,7 +4,7 @@ from functools import cached_property
 
 from ....core.lib.date import current_day
 from ....core.lib.table_columns import SAVINGS, TOTAL
-from ....plans.lib.calc_day_sum import PlanCalculateDaySum
+from ....plans.lib.calc_day_sum import CalcRow, InputRow, PlanCalculateDaySum
 from ....users.models import User
 from ...lib.day_spending import DaySpending
 from ...lib.make_dataframe import MakeDataFrame
@@ -48,8 +48,8 @@ class MonthContextPresenter:
         return DaySpending(
             expense=expense_df_object,
             necessary=self.dto.necessary_expense_types,
-            per_day=self.plans.day_input,
-            free=self.plans.expenses_free,
+            per_day=self.plans.row(InputRow.DAY_PLAN),
+            free=self.plans.row(CalcRow.EXPENSES_FREE),
             today=self.today,
         )
 
@@ -92,16 +92,17 @@ class MonthContextPresenter:
             ),
         )
 
+        savings = self.plans.row(InputRow.SAVINGS)
         plan_state = InfoState(
-            income=self.plans.incomes,
+            income=self.plans.row(InputRow.INCOMES),
             expense=(
-                self.plans.expenses_necessary
-                + self.plans.expenses_free
-                - self.plans.savings
+                self.plans.row(CalcRow.EXPENSES_NECESSARY)
+                + self.plans.row(CalcRow.EXPENSES_FREE)
+                - savings
             ),
-            saving=self.plans.savings,
-            per_day=self.plans.day_input,
-            balance=self.plans.remains,
+            saving=savings,
+            per_day=self.plans.row(InputRow.DAY_PLAN),
+            balance=self.plans.row(CalcRow.REMAINS),
         )
 
         return InfoBuilder.build(fact=fact_state, plan=plan_state)

@@ -24,9 +24,8 @@ class MonthDataProvider:
         self.month = user.month
 
     def get_data(self) -> MonthDataDTO:
-        expense_types = list(
-            ExpenseTypeModelService(self.user).objects.values_list("title", flat=True)
-        )
+        types = ExpenseTypeModelService(self.user).objects
+        expense_types = list(types.values_list("title", flat=True))
 
         return MonthDataDTO(
             incomes=(
@@ -41,9 +40,7 @@ class MonthDataProvider:
             ),
             expense_types=expense_types,
             necessary_expense_types=list(
-                ExpenseTypeModelService(self.user)
-                .objects.filter(necessary=True)
-                .values_list("title", flat=True)
+                types.filter(necessary=True).values_list("title", flat=True)
             ),
             savings=list(
                 SavingModelService(self.user).sum_by_day(self.year, self.month)
