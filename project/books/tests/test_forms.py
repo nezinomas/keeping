@@ -4,6 +4,7 @@ import pytest
 import time_machine
 
 from ..forms import BookForm, BookTargetForm
+from ..models import Book
 from .factories import BookTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -122,24 +123,63 @@ def test_book_refuses_a_date(main_user, data, field, message):
 def test_blank_data(main_user, form_class, fields):
     form = form_class(user=main_user, data={})
 
-    assert not form.is_valid()
+    assert form.errors == {field: ["Šis laukas yra privalomas."] for field in fields}
 
-    assert len(form.errors) == len(fields)
-    for field in fields:
-        assert field in form.errors
+
+def _max_length(field):
+    return Book._meta.get_field(field).max_length
+
+
+def _too_long(field, length):
+    return {
+        field: [
+            f"Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip "
+            f"{_max_length(field)} ženklų (dabartinis ilgis {length})."
+        ]
+    }
+
+
+def _too_short(field, minimum, length):
+    return {
+        field: [
+            f"Įsitikinkite, kad reikšmė sudaryta iš nemažiau kaip {minimum} ženklų "
+            f"(dabartinis ilgis {length})."
+        ]
+    }
 
 
 @pytest.mark.parametrize(
-    ("field", "value"),
+    ("field", "value", "errors"),
     [
-        ("author", "Author" * 250),
-        ("title", "Title" * 254),
-        ("author", "AA"),
-        ("title", "T"),
+        ("author", "Author" * 250, _too_long("author", 1500)),
+        ("title", "Title" * 254, _too_long("title", 1270)),
+        ("author", "AA", _too_short("author", 3, 2)),
+        ("title", "T", _too_short("title", 2, 1)),
+        ("author", "A" * _max_length("author"), {}),
+        ("title", "T" * _max_length("title"), {}),
+        (
+            "author",
+            "A" * (_max_length("author") + 1),
+            _too_long("author", _max_length("author") + 1),
+        ),
+        (
+            "title",
+            "T" * (_max_length("title") + 1),
+            _too_long("title", _max_length("title") + 1),
+        ),
     ],
-    ids=["author_too_long", "title_too_long", "author_too_short", "title_too_short"],
+    ids=[
+        "author_too_long",
+        "title_too_long",
+        "author_too_short",
+        "title_too_short",
+        "author_at_max_length",
+        "title_at_max_length",
+        "author_one_over_max_length",
+        "title_one_over_max_length",
+    ],
 )
-def test_book_refuses_a_text_out_of_length(main_user, field, value):
+def test_book_text_length(main_user, field, value, errors):
     data = {
         "started": "1999-01-01",
         "ended": "1999-01-31",
@@ -150,9 +190,7 @@ def test_book_refuses_a_text_out_of_length(main_user, field, value):
 
     form = BookForm(user=main_user, data=data)
 
-    assert not form.is_valid()
-
-    assert field in form.errors
+    assert form.errors == errors
 
 
 @pytest.mark.parametrize("year", ["2000", 2000], ids=["text", "number"])
