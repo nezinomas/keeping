@@ -37,8 +37,7 @@ class SearchMixin:
             total_records=stats["count"],
             per_page=self.per_page,
         )
-        page_obj = paginator.get_page(self.request.GET.get("page", 1))
-        page_range = paginator.get_elided_page_range(page_obj.current_page)
+        page_obj, paginator_object = paginator.paging(self.request.GET.get("page", 1))
 
         app = self.request.resolver_match.app_name
 
@@ -50,10 +49,6 @@ class SearchMixin:
             "object_list": page_obj,
             "search": search_str,
             "url": reverse(f"{app}:search"),
-            "paginator_object": {
-                "total_pages": paginator.total_pages,
-                "page_range": page_range,
-                "ELLIPSIS": paginator.ELLIPSIS,
-            },
+            "paginator_object": paginator_object,
             **stats,
         }
