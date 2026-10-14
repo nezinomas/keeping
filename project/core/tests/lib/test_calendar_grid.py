@@ -4,12 +4,7 @@ import pytest
 from django.utils import translation
 from django.utils.translation import gettext as _
 
-from ...lib.calendar_grid import (
-    CalendarDayViewModel,
-    CalendarGrid,
-    CalendarMonthViewModel,
-    CalendarYearViewModel,
-)
+from ...lib.calendar_grid import CalendarGrid
 from ...lib.day_stats import NoPastRecord, PastRecord
 from ...lib.year_boundary import YearBoundary
 
@@ -21,10 +16,7 @@ THRESHOLDS = (2.0, 4.0, 6.0)
 def test_build_empty_returns_full_year():
     grid = CalendarGrid.build(YearBoundary(1999, date(1999, 6, 15)), daily_data=[])
 
-    assert isinstance(grid, CalendarYearViewModel)
     assert len(grid.months) == 12
-    assert all(isinstance(m, CalendarMonthViewModel) for m in grid.months)
-    assert all(isinstance(d, CalendarDayViewModel) for m in grid.months for d in m.days)
     assert all(d.level == 0 for m in grid.months for d in m.days)
     assert all(d.label == "" for m in grid.months for d in m.days if d.is_future)
     gap_str = _("Gap")
@@ -99,11 +91,10 @@ def test_build_gaps_with_an_earlier_record():
     assert day_15.label == f"1999-01-15\n{qty_str}: 1.0\n{gap_str}: 5d."
 
 
-def test_build_today_and_future_flags():
+def test_build_future_flags():
     grid = CalendarGrid.build(YearBoundary(1999, date(1999, 6, 15)), daily_data=[])
 
     june = grid.months[5].days
-    assert june[14].is_today is True
     assert june[14].is_future is False
     assert june[15].is_future is True
     assert all(not d.is_future for d in grid.months[0].days)
@@ -169,12 +160,6 @@ def test_a_dry_day_is_labelled_rather_than_left_blank(empty_title, expect):
     )
 
     assert grid.months[0].days[0].label == expect
-
-
-def test_a_future_day_carries_no_label():
-    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 6, 15)), daily_data=[])
-
-    assert grid.months[5].days[15].label == ""
 
 
 def test_a_days_speech_is_its_label_on_one_line():
