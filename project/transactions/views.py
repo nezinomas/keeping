@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ..accounts import views as accounts_views
 from ..core.lib.convert_price import PriceToFloatViewMixin
-from ..core.lib.utils import rendered_content
+from ..core.lib.utils import int_or_zero, rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -38,22 +38,14 @@ class Index(TemplateViewMixin):
 
 class LoadSavingType(ListViewMixin):
     template_name = "core/dropdown.html"
-    object_list = []
 
     def get(self, request, *args, **kwargs):
-        pk = request.GET.get("from_account")
+        pk = int_or_zero(request.GET.get("from_account"))
+        if not pk:
+            return self.render_to_response({"object_list": []})
 
-        try:
-            pk = int(pk)
-        except (ValueError, TypeError):
-            pk = None
-
-        if pk:
-            self.object_list = (
-                SavingTypeModelService(request.user).items().exclude(pk=pk)
-            )
-
-        return self.render_to_response({"object_list": self.object_list})
+        items = SavingTypeModelService(request.user).items().exclude(pk=pk)
+        return self.render_to_response({"object_list": items})
 
 
 class Lists(ListViewMixin):

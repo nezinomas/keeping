@@ -537,11 +537,20 @@ def test_load_saving_type_lists_the_open_funds_except_the_source(
     assert f'<option value="{s3.pk}">S3</option>' in actual
 
 
-def test_load_saving_type_empty_parent_pk(client_logged):
+@pytest.mark.parametrize(
+    "data",
+    [
+        pytest.param({}, id="no-value"),
+        pytest.param({"from_account": ""}, id="empty"),
+        pytest.param({"from_account": "x"}, id="not-a-number"),
+        pytest.param({"from_account": "0"}, id="zero"),
+    ],
+)
+def test_load_saving_type_empty_parent_pk(client_logged, data):
     SavingTypeFactory(title="S1")
 
     url = reverse("transactions:load_saving_type")
-    response = client_logged.get(url, {"from_account": ""})
+    response = client_logged.get(url, data)
 
     assert response.status_code == 200
     assert "S1" not in response.content.decode("utf-8")

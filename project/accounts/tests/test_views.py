@@ -91,10 +91,21 @@ def test_load_to_account(tp, client_logged, second_user):
 
     tp.get("accounts:load", data={"from_account": a1.pk})
 
-    assert len(tp.get_context("object_list")) == 1
+    assert [account.title for account in tp.get_context("object_list")] == ["A2"]
 
 
-def test_load_to_account_empty_parent(tp, client_logged):
-    tp.get("accounts:load", data={"from_account": ""})
+@pytest.mark.parametrize(
+    "data",
+    [
+        pytest.param({}, id="no-value"),
+        pytest.param({"from_account": ""}, id="empty"),
+        pytest.param({"from_account": "x"}, id="not-a-number"),
+        pytest.param({"from_account": "0"}, id="zero"),
+    ],
+)
+def test_load_to_account_empty_parent(tp, client_logged, data):
+    AccountFactory(title="A1")
+
+    tp.get("accounts:load", data=data)
 
     assert tp.get_context("object_list") == []
