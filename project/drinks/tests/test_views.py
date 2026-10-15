@@ -1,6 +1,8 @@
 import json
 import re
 from datetime import date
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import pytest
 import time_machine
@@ -11,9 +13,10 @@ from django.utils.html import escape
 from django.utils.translation import gettext as _
 
 from ...core.mixins import kwargs as core_kwargs
-from ...core.tests.utils import setup_view
+from ...core.tests.utils import setup_view, view_for
 from ...users.tests.factories import User
-from .. import models, views
+from .. import forms, models, views
+from ..services.history import HistoryService
 from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -1302,35 +1305,66 @@ def test_select_drink_htmx_reloads_the_tab(client_logged, tab, trigger):
     assert User.objects.first().drink_type == "wine"
 
 
-def _post_typical_year(client):
-    # the form accepts only years the user has drinks in
-    DrinkFactory(date=date(1998, 1, 1))
-    DrinkFactory(date=date(1999, 1, 1))
-    url = reverse("drinks:typical_year")
-    return client.post(url, {"year_from": "1998", "year_to": "1999"})
+def _typical_year_last(view):
+    return view.get(view.request)
+
+
+def _typical_year_post(view):
+    form = SimpleNamespace(cleaned_data={"year_from": 1998, "year_to": 1999})
+    # render() runs the context processors, which raise on a no-year user themselves
+    with patch.object(views, "render"):
+        return view.form_valid(form)
 
 
 @pytest.mark.parametrize(
-    "send",
+    "call",
     [
-        pytest.param(lambda c: c.get(reverse("drinks:index")), id="index"),
-        pytest.param(lambda c: c.get(reverse("drinks:tab_habits")), id="habits"),
-        pytest.param(lambda c: c.get(reverse("drinks:tab_trends")), id="trends"),
-        pytest.param(lambda c: c.get(reverse("drinks:tab_risk")), id="risk"),
         pytest.param(
-            lambda c: c.get(reverse("drinks:typical_year_last", kwargs={"qty": 3})),
+            lambda rf, u: view_for(rf, u, views.TabIndex).get_context_data(), id="index"
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabHabits).get_context_data(),
+            id="habits",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabTrends).get_context_data(),
+            id="trends",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabRisk).get_context_data(), id="risk"
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabData).get_queryset(), id="data"
+        ),
+        pytest.param(
+            lambda rf, u: _typical_year_last(
+                view_for(rf, u, views.TypicalYearChart, qty=3)
+            ),
             id="typical_year_last",
         ),
-        pytest.param(_post_typical_year, id="typical_year_post"),
         pytest.param(
-            lambda c: c.get(reverse("drinks:compare", kwargs={"qty": 1})),
+            lambda rf, u: _typical_year_post(view_for(rf, u, views.TypicalYearChart)),
+            id="typical_year_post",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.Compare, qty=1).get_context_data(),
             id="compare",
+        ),
+        pytest.param(
+            lambda rf, u: HistoryService(u, [], date(2025, 1, 1)), id="history_service"
+        ),
+        pytest.param(
+            lambda rf, u: forms.DrinkTargetForm(user=u, today=date(2025, 1, 1)),
+            id="target_form",
+        ),
+        pytest.param(
+            lambda rf, u: forms.DrinkCompareForm(user=u, today=date(2025, 1, 1)),
+            id="compare_form",
         ),
     ],
 )
-def test_a_user_with_no_year_raises(client_logged, main_user, send):
+def test_a_user_with_no_year_raises(rf, main_user, call):
     main_user.year = None
-    main_user.save()
 
     with pytest.raises(ValueError, match="has no year"):
-        send(client_logged)
+        call(rf, main_user)
