@@ -83,7 +83,7 @@ class BookTargetForm(OneTargetAYearMixin, forms.ModelForm):
 
         pin(self.fields["user"], self.user)
 
-        self.fields["year"].initial = self.user.year
+        self.fields["year"].initial = self.user.selected_year()
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("How many")

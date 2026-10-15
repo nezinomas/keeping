@@ -7,8 +7,10 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
+from ...core.tests.utils import view_for
 from ...users.tests.factories import UserFactory
-from .. import models
+from .. import models, views
+from ..forms import BookTargetForm
 from ..tabs import TABS
 from .factories import Book, BookFactory, BookTargetFactory
 
@@ -575,13 +577,26 @@ def test_pagination(client_logged, name, params, expected, first_numbers):
     assert numbers[:1] == first_numbers
 
 
-@pytest.mark.parametrize("name", ["books:index", "books:list"])
-def test_a_user_with_no_reading_year_raises(client_logged, main_user, name):
+@pytest.mark.parametrize(
+    "call",
+    [
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabIndex).get_context_data(), id="index"
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.Lists).get_queryset(), id="list"
+        ),
+        pytest.param(
+            lambda rf, u: BookTargetForm(user=u, today=date(2000, 2, 2)),
+            id="goal_form",
+        ),
+    ],
+)
+def test_a_user_with_no_year_raises(rf, main_user, call):
     main_user.year = None
-    main_user.save()
 
     with pytest.raises(ValueError, match="has no year"):
-        client_logged.get(reverse(name))
+        call(rf, main_user)
 
 
 def _new_goal_url():
