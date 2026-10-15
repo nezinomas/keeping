@@ -22,24 +22,35 @@ def test_page_has_other_pages(total_pages, current_page, expected):
     assert page.has_other_pages() is expected
 
 
-def test_next_page_number():
-    page = CountlessPage([1, 2, 3], 3, 1, 1)
-    assert page.next_page_number() == 2
+@pytest.mark.parametrize(
+    ("neighbour", "current_page", "expected"),
+    [
+        (CountlessPage.next_page_number, 1, 2),
+        (CountlessPage.previous_page_number, 2, 1),
+    ],
+    ids=["next", "previous"],
+)
+def test_neighbour_page_number(neighbour, current_page, expected):
+    page = CountlessPage([1, 2, 3], 3, current_page, 1)
+
+    assert neighbour(page) == expected
 
 
-def test_next_page_number_no_next():
+@pytest.mark.parametrize(
+    ("neighbour", "current_page"),
+    [(CountlessPage.next_page_number, 3), (CountlessPage.previous_page_number, 1)],
+    ids=["no_next", "no_previous"],
+)
+def test_neighbour_page_number_past_the_edge(neighbour, current_page):
     with pytest.raises(EmptyPage):
-        CountlessPage([1, 2, 3], 1, 3, 3).next_page_number()
+        neighbour(CountlessPage([1, 2, 3], 1, current_page, 3))
 
 
-def test_prev_page_number():
-    page = CountlessPage([1, 2, 3], 3, 2, 1)
-    assert page.previous_page_number() == 1
+def test_page_with_rows_keeps_its_place():
+    page = CountlessPage([1, 2], 3, 2, 2).with_rows(["a", "b"])
 
-
-def test_prev_page_number_no_prev():
-    with pytest.raises(EmptyPage):
-        CountlessPage([1, 2, 3], 1, 1, 3).previous_page_number()
+    assert list(page) == ["a", "b"]
+    assert (page.has_previous(), page.has_next(), page.start_index()) == (True, True, 3)
 
 
 @pytest.mark.parametrize("number", [1.1, "a"])
@@ -67,6 +78,7 @@ def test_validate_number_valid(number):
         (2.0, 2),
         ("2.0", 1),
     ],
+    ids=["fraction", "letter", "int", "whole_float", "float_string"],
 )
 def test_get_page(page_number, expected):
     paginator = CountlessPaginator([1, 2, 3], 3, 1)

@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import partial
 from typing import Any, cast
 
 from django.http import HttpResponse
@@ -95,8 +96,7 @@ class Search(SearchViewMixin):
     template_name = "expenses/expense_list.html"
     search_method = staticmethod(search.search_expenses)
     search_totals = staticmethod(search.search_totals)
-    per_page = 50
-    use_fast_urls = True
+    search_rows = staticmethod(partial(add_fast_urls, app_name=App_name))
 
 
 class LoadExpenseName(ListViewMixin):

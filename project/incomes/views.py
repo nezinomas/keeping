@@ -146,4 +146,3 @@ class TypeUpdate(UpdateViewMixin):
 class Search(SearchViewMixin):
     template_name = "incomes/income_list.html"
     search_method = staticmethod(search_incomes)
-    per_page = 50
