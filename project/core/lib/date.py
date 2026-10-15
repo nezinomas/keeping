@@ -38,9 +38,10 @@ def years_to_date(user: User, today: date) -> list[int]:
 
 
 def set_date_with_user_year(user: User, today: date) -> datetime:
-    day = min(today.day, calendar.monthrange(user.year, today.month)[1])
+    year = user.selected_year()
+    day = min(today.day, calendar.monthrange(year, today.month)[1])
 
-    return datetime(user.year, today.month, day)
+    return datetime(year, today.month, day)
 
 
 def yday(year: int, today: date) -> tuple[int, int]:
