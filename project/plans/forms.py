@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 from ..core.lib.convert_price import PriceToCentsFormMixin, int_cents_to_float
 from ..core.lib.date import monthnames
-from ..core.lib.form_fields import CommaFloatField, pin
+from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
 from ..expenses.services.model_services import ExpenseTypeModelService
@@ -64,7 +64,6 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        pin(self.fields["journal"], self.user.journal)
         self._setup_year_field()
         self._translate_common_fields()
 
@@ -213,7 +212,7 @@ class IncomePlanForm(CommonPlanFormMixin):
         model = IncomePlan
         service_class = IncomePlanModelService
 
-        fields = ["journal", "year", "income_type"] + monthnames()
+        fields = ["year", "income_type"] + monthnames()
         grouping_fields = ["income_type"]
 
     field_order = ["year", "income_type"] + monthnames()
@@ -230,7 +229,7 @@ class ExpensePlanForm(CommonPlanFormMixin):
         model = ExpensePlan
         service_class = ExpensePlanModelService
 
-        fields = ["journal", "year", "expense_type"] + monthnames()
+        fields = ["year", "expense_type"] + monthnames()
         grouping_fields = ["expense_type"]
 
     field_order = ["year", "expense_type"] + monthnames()
@@ -249,7 +248,7 @@ class SavingPlanForm(CommonPlanFormMixin):
         model = SavingPlan
         service_class = SavingPlanModelService
 
-        fields = ["journal", "year", "saving_type"] + monthnames()
+        fields = ["year", "saving_type"] + monthnames()
         grouping_fields = ["saving_type"]
 
     field_order = ["year", "saving_type"] + monthnames()
@@ -266,7 +265,7 @@ class DayPlanForm(CommonPlanFormMixin):
         model = DayPlan
         service_class = DayPlanModelService
 
-        fields = ["journal", "year"] + monthnames()
+        fields = ["year"] + monthnames()
         grouping_fields = []
 
     field_order = ["year"] + monthnames()
@@ -277,7 +276,7 @@ class NecessaryPlanForm(CommonPlanFormMixin):
         model = NecessaryPlan
         service_class = NecessaryPlanModelService
 
-        fields = ["journal", "year", "expense_type", "title"] + monthnames()
+        fields = ["year", "expense_type", "title"] + monthnames()
         grouping_fields = ["expense_type", "title"]
 
     field_order = ["year", "expense_type", "title"] + monthnames()
@@ -353,8 +352,8 @@ class CopyPlanForm(forms.Form):
         self.fields["year_from"].initial = today.year
         self.fields["year_to"].initial = today.year + 1
 
-        for field in ["income", "expense", "saving", "day", "necessary"]:
-            self.fields[field].initial = True
+        for kind in COPY_PLAN_MAP:
+            self.fields[kind].initial = True
 
     def _translate_fields(self):
         self.fields["year_from"].label = _("Copy from")
@@ -366,20 +365,7 @@ class CopyPlanForm(forms.Form):
         self.fields["necessary"].label = _("Plans for additional necessary expenses")
 
     def _extract_selected_checkboxes(self, cleaned_data):
-        return {
-            "income": cleaned_data.get("income"),
-            "expense": cleaned_data.get("expense"),
-            "saving": cleaned_data.get("saving"),
-            "day": cleaned_data.get("day"),
-            "necessary": cleaned_data.get("necessary"),
-        }
-
-    def _add_error_message(self, msg, errors, key):
-        if err := errors.get(key):
-            err.append(msg)
-            errors[key] = err
-        else:
-            errors[key] = [msg]
+        return {kind: cleaned_data.get(kind) for kind in COPY_PLAN_MAP}
 
     def _validate_copy_operation(self, checkboxes, year_from, year_to):
         errors = {}
@@ -393,10 +379,10 @@ class CopyPlanForm(forms.Form):
             service = COPY_PLAN_MAP[k](self.user)
 
             if not service.year(year_from).exists():
-                self._add_error_message(msg_empty, errors, k)
+                errors.setdefault(k, []).append(msg_empty)
 
             if service.year(year_to).exists():
-                self._add_error_message(msg_exists, errors, k)
+                errors.setdefault(k, []).append(msg_exists)
 
         if errors:
             raise forms.ValidationError(errors)

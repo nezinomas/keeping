@@ -3,7 +3,6 @@ from datetime import date
 import pytest
 from django.db import IntegrityError
 from django.db.models import QuerySet
-from django.forms import HiddenInput
 from django.utils.translation import gettext as _
 
 from ...core.lib.translation import month_names
@@ -55,24 +54,6 @@ MONTHS = [
 
 
 # Income Plan Form
-
-
-def test_income_does_not_render_user_select(main_user):
-    form = IncomePlanForm(user=main_user, today=TODAY)
-    rendered_html = form.as_p()
-
-    assert '<select name="user"' not in rendered_html
-    assert 'name="user"' not in rendered_html
-
-
-@pytest.mark.parametrize("month", MONTHS)
-def test_income_initialization(main_user, month):
-    form = IncomePlanForm(user=main_user, today=TODAY)
-
-    assert month in form.fields
-
-    assert isinstance(form.fields["journal"].widget, HiddenInput)
-    assert form.fields["journal"].initial == main_user.journal
 
 
 def test_income_blank_data(main_user):
@@ -281,24 +262,6 @@ def test_income_plan_form_prevents_cross_category_pollution(main_user):
 # Expense Plan Form
 
 
-def test_expense_does_not_render_user_select(main_user):
-    form = ExpensePlanForm(user=main_user, today=TODAY)
-    rendered_html = form.as_p()
-
-    assert '<select name="user"' not in rendered_html
-    assert 'name="user"' not in rendered_html
-
-
-@pytest.mark.parametrize("month", MONTHS)
-def test_expense_initialization(main_user, month):
-    form = ExpensePlanForm(user=main_user, today=TODAY)
-
-    assert month in form.fields
-
-    assert isinstance(form.fields["journal"].widget, HiddenInput)
-    assert form.fields["journal"].initial == main_user.journal
-
-
 def test_expense_blank_data(main_user):
     form = ExpensePlanForm(user=main_user, today=TODAY, data={})
 
@@ -491,24 +454,6 @@ def test_expense_plan_form_prevents_cross_category_pollution(main_user):
 # Saving Plan Form
 
 
-def test_saving_does_not_render_user_select(main_user):
-    form = SavingPlanForm(user=main_user, today=TODAY)
-    rendered_html = form.as_p()
-
-    assert '<select name="user"' not in rendered_html
-    assert 'name="user"' not in rendered_html
-
-
-@pytest.mark.parametrize("month", MONTHS)
-def test_saving_initialization(main_user, month):
-    form = SavingPlanForm(user=main_user, today=TODAY)
-
-    assert month in form.fields
-
-    assert isinstance(form.fields["journal"].widget, HiddenInput)
-    assert form.fields["journal"].initial == main_user.journal
-
-
 def test_saving_blank_data(main_user):
     form = SavingPlanForm(user=main_user, today=TODAY, data={})
 
@@ -698,24 +643,6 @@ def test_saving_plan_form_prevents_cross_category_pollution(main_user):
 
 
 # Necessary Plan Form
-
-
-def test_necessary_does_not_render_user_select(main_user):
-    form = NecessaryPlanForm(user=main_user, today=TODAY)
-    rendered_html = form.as_p()
-
-    assert '<select name="user"' not in rendered_html
-    assert 'name="user"' not in rendered_html
-
-
-@pytest.mark.parametrize("month", MONTHS)
-def test_necessary_initialization(main_user, month):
-    form = NecessaryPlanForm(user=main_user, today=TODAY)
-
-    assert month in form.fields
-
-    assert isinstance(form.fields["journal"].widget, HiddenInput)
-    assert form.fields["journal"].initial == main_user.journal
 
 
 def test_necessary_blank_data(main_user):
@@ -1012,24 +939,6 @@ def test_necessary_plan_form_prevents_cross_category_pollution(main_user):
 
 
 # Day Plan Form
-
-
-def test_day_does_not_render_user_select(main_user):
-    form = DayPlanForm(user=main_user, today=TODAY)
-    rendered_html = form.as_p()
-
-    assert '<select name="user"' not in rendered_html
-    assert 'name="user"' not in rendered_html
-
-
-@pytest.mark.parametrize("month", MONTHS)
-def test_day_initialization(main_user, month):
-    form = DayPlanForm(user=main_user, today=TODAY)
-
-    assert month in form.fields
-
-    assert isinstance(form.fields["journal"].widget, HiddenInput)
-    assert form.fields["journal"].initial == main_user.journal
 
 
 def test_day_blank_data(main_user):
@@ -1366,6 +1275,22 @@ def _plan_data(kind, main_user, second_user):
         **kind.extra,
         **types,
     }
+
+
+@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
+def test_plan_form_renders_no_user_select(main_user, kind):
+    rendered_html = kind.form(user=main_user, today=TODAY).as_p()
+
+    assert 'name="user"' not in rendered_html
+
+
+@pytest.mark.parametrize("month", MONTHS)
+@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
+def test_plan_form_fields(main_user, kind, month):
+    form = kind.form(user=main_user, today=TODAY)
+
+    assert month in form.fields
+    assert "journal" not in form.fields
 
 
 @pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
