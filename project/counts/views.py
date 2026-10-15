@@ -103,7 +103,7 @@ class TabData(TabViewMixin, ListViewMixin):
     tab = CountTab.resolve("data")
 
     def get_queryset(self):
-        year = self.request.user.year
+        year = self.request.user.selected_year()
         slug = self.kwargs["slug"]
 
         return CountModelService(self.request.user).year(year=year, count_type=slug)
@@ -119,7 +119,7 @@ class TabData(TabViewMixin, ListViewMixin):
         return {
             **context,
             "notice": notice_state(has_records, bool(context["object_list"])),
-            "notice_year": self.request.user.year,
+            "notice_year": self.request.user.selected_year(),
         }
 
 
