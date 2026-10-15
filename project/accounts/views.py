@@ -18,7 +18,6 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Account
     form_class = forms.AccountForm
     success_url = reverse_lazy("accounts:list")
     hx_trigger_django = "afterAccount"

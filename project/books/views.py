@@ -102,7 +102,6 @@ class TabData(TabViewMixin, Lists):
 
 
 class New(CreateViewMixin):
-    service_class = BookModelService
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     modal_form_title = _("New book")
@@ -129,7 +128,6 @@ class Search(SearchViewMixin):
 
 
 class TargetNew(CreateViewMixin):
-    service_class = BookTargetModelService
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
     url_name = "target_new"

@@ -19,7 +19,7 @@ from . import services
 from .forms import CountForm, CountTypeForm
 from .lib.notices import NO_RECORDS, notice_state
 from .lib.views_helper import CountUrlMixin
-from .models import Count, CountType
+from .models import CountType
 from .services.cards import HistoryCards, OverviewCards, PeriodicityCards
 from .services.counter_life import CounterLife
 from .services.model_services import CountModelService, CountTypeModelService
@@ -101,7 +101,6 @@ class TabPeriodicity(TabViewMixin, TemplateViewMixin):
 
 class TabData(TabViewMixin, ListViewMixin):
     tab = CountTab.resolve("data")
-    model = Count
 
     def get_queryset(self):
         year = self.request.user.year
@@ -140,7 +139,6 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
 
 
 class New(CountUrlMixin, CreateViewMixin):
-    service_class = CountModelService
     form_class = CountForm
     modal_form_title = _("Counter")
 
@@ -181,7 +179,6 @@ class TypeUrlMixin:
 
 
 class TypeNew(TypeUrlMixin, CreateViewMixin):
-    service_class = CountTypeModelService
     form_class = CountTypeForm
     url_name = "type_new"
     hx_trigger_django = "afterType"

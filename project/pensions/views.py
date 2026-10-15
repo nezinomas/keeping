@@ -22,7 +22,6 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    service_class = PensionModelService
     form_class = forms.PensionForm
     hx_trigger_form = "afterPension"
     success_url = reverse_lazy("pensions:list")
@@ -50,7 +49,6 @@ class TypeLists(ListViewMixin):
 
 
 class TypeNew(CreateViewMixin):
-    service_class = PensionTypeModelService
     form_class = forms.PensionTypeForm
     hx_trigger_django = "afterPensionType"
     modal_form_title = _("Pension")

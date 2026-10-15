@@ -60,7 +60,6 @@ class TabIncomes(TabViewMixin, TemplateViewMixin):
 
 
 class IncomesNew(PlanFormMixin, CreateViewMixin):
-    service_class = IncomePlanModelService
     form_class = forms.IncomePlanForm
     url_name = "income_new"
     success_url = reverse_lazy("plans:tab_incomes")
@@ -99,7 +98,6 @@ class TabExpenses(TabViewMixin, TemplateViewMixin):
 
 
 class ExpensesNew(PlanFormMixin, CreateViewMixin):
-    service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reload"
     modal_form_title = _("Expenses plans")
@@ -137,7 +135,6 @@ class TabSavings(TabViewMixin, TemplateViewMixin):
 
 
 class SavingsNew(PlanFormMixin, CreateViewMixin):
-    service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     url_name = "saving_new"
     success_url = reverse_lazy("plans:tab_savings")
@@ -182,7 +179,6 @@ class TabDay(TabViewMixin, TemplateViewMixin):
 
 
 class DayNew(PlanFormMixin, CreateViewMixin):
-    service_class = DayPlanModelService
     form_class = forms.DayPlanForm
     url_name = "day_new"
     success_url = reverse_lazy("plans:tab_day")
@@ -208,7 +204,6 @@ class DayDelete(PlanDeleteMixin, DeleteViewMixin):
 
 
 class NecessaryNew(PlanFormMixin, CreateViewMixin):
-    service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
     url_name = "necessary_new"
     hx_trigger_django = "reload"

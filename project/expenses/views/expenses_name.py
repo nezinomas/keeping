@@ -11,8 +11,7 @@ class QuerySetMixin:
         return ExpenseNameModelService(self.request.user).items()
 
 
-class New(QuerySetMixin, CreateViewMixin):
-    service_class = ExpenseNameModelService
+class New(CreateViewMixin):
     form_class = forms.ExpenseNameForm
     hx_trigger_django = "afterName"
     modal_form_title = _("Expense name")
@@ -21,7 +20,6 @@ class New(QuerySetMixin, CreateViewMixin):
 
 
 class Update(QuerySetMixin, UpdateViewMixin):
-    service_class = ExpenseNameModelService
     form_class = forms.ExpenseNameForm
     hx_trigger_django = "afterName"
     modal_form_title = _("Expense name")

@@ -69,7 +69,6 @@ class Lists(GetMonthMixin, ListViewMixin):
 
 
 class New(CreateViewMixin):
-    service_class = ExpenseModelService
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_form = "reload"
