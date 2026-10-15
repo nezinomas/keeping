@@ -13,10 +13,6 @@ pytestmark = pytest.mark.django_db
 # -------------------------------------------------------------------------------------
 #                                                                 Summary Expenses Form
 # -------------------------------------------------------------------------------------
-def test_form_init(main_user):
-    SummaryExpensesForm(user=main_user, today=TODAY)
-
-
 def test_form_fields(main_user):
     form = SummaryExpensesForm(user=main_user, today=TODAY).as_p()
 

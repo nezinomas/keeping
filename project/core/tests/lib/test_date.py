@@ -1,7 +1,9 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pytest
 import pytz
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib import date as lib_date
 
@@ -14,21 +16,39 @@ def test_year_month_list():
     assert actual[11] == date(1970, 12, 1)
 
 
-@pytest.mark.parametrize(
-    "year, month, return_past_day, expect",
-    [
-        (1970, 1, True, 11),
-        (1970, 12, True, 31),
-        (2020, 2, True, 29),
-        (1970, 1, False, 11),
-        (1970, 12, False, 0),
-        (2020, 2, False, 0),
-    ],
-)
-def test_current_day(year, month, return_past_day, expect):
-    actual = lib_date.current_day(year, month, date(1970, 1, 11), return_past_day)
+DATES = st.dates(min_value=date(1900, 1, 1), max_value=date(2100, 12, 31))
 
+
+@given(today=DATES, other=DATES, same_month=st.booleans(), past=st.booleans())
+@example(date(1970, 1, 11), date(1970, 1, 1), True, True)
+@example(date(1970, 1, 11), date(1970, 12, 1), False, True)
+@example(date(1970, 1, 11), date(2020, 2, 1), False, True)
+@example(date(1970, 1, 11), date(1970, 1, 1), True, False)
+@example(date(1970, 1, 11), date(1970, 12, 1), False, False)
+@example(date(1970, 1, 11), date(2020, 2, 1), False, False)
+def test_current_day(today, other, same_month, past):
+    shown = today if same_month else other
+    month_end = date(shown.year + shown.month // 12, shown.month % 12 + 1, 1)
+
+    actual = lib_date.current_day(shown.year, shown.month, today, past)
+
+    expect = 0
+    if past:
+        expect = (month_end - timedelta(days=1)).day
+    if (shown.year, shown.month) == (today.year, today.month):
+        expect = today.day
     assert actual == expect
+
+
+@pytest.mark.parametrize(
+    "year, month, with_past_day, without",
+    [(1970, 1, 11, 11), (1970, 12, 31, 0), (2020, 2, 29, 0)],
+)
+def test_current_day_literals(year, month, with_past_day, without):
+    today = date(1970, 1, 11)
+
+    assert lib_date.current_day(year, month, today, True) == with_past_day
+    assert lib_date.current_day(year, month, today, False) == without
 
 
 @pytest.mark.django_db

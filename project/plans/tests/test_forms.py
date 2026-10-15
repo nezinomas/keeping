@@ -579,29 +579,17 @@ def test_plan_year_starts_at_the_users_year(main_user, kind):
     assert form.fields["year"].initial == 1999
 
 
+@pytest.mark.parametrize("editing", [False, True], ids=["create", "edit"])
 @pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
-def test_plan_create_ignores_a_posted_journal(main_user, second_user, kind):
+def test_plan_ignores_a_posted_journal(main_user, second_user, kind, editing):
     data = _plan_data(kind, main_user, second_user)
-
-    form = kind.form(user=main_user, today=TODAY, data=data)
-
-    assert form.is_valid()
-
-    form.save()
-
-    assert kind.model.objects.count() == 1
-    assert kind.model.objects.get().journal == main_user.journal
-
-
-@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
-def test_plan_edit_ignores_a_posted_journal(main_user, second_user, kind):
-    data = _plan_data(kind, main_user, second_user)
-
-    obj = kind.factory(
-        journal=main_user.journal,
-        **kind.extra,
-        **_owned_types(kind, main_user.journal),
-    )
+    obj = None
+    if editing:
+        obj = kind.factory(
+            journal=main_user.journal,
+            **kind.extra,
+            **_owned_types(kind, main_user.journal),
+        )
 
     form = kind.form(user=main_user, today=TODAY, instance=obj, data=data)
 
@@ -609,9 +597,8 @@ def test_plan_edit_ignores_a_posted_journal(main_user, second_user, kind):
 
     form.save()
 
-    assert set(kind.model.objects.values_list("journal", flat=True)) == {
-        main_user.journal.pk
-    }
+    assert kind.model.objects.count() == 1
+    assert kind.model.objects.get().journal == main_user.journal
 
 
 @pytest.fixture(params=PLAN_KINDS, ids=lambda k: k.model.__name__)

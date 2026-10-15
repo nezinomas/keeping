@@ -171,30 +171,28 @@ def test_saving_type_closed(main_user, user_year, closed_listed):
     assert ("S2" in str(form["saving_type"])) is closed_listed
 
 
-def test_saving_type_title_taken(main_user):
-    SavingType.objects.create(title="Finbee", journal=main_user.journal)
+@pytest.mark.parametrize(
+    "existing, title, message",
+    [
+        pytest.param("Finbee", "Finbee", "„Finbee“ jau yra.", id="title_taken"),
+        pytest.param(
+            "Būstas",
+            "Bustas",
+            "Pavadinimas per daug panašus į jau esantį „Būstas“.",
+            id="slug_taken",
+        ),
+    ],
+)
+def test_saving_type_title_taken(main_user, existing, title, message):
+    SavingType.objects.create(title=existing, journal=main_user.journal)
 
     form = SavingTypeForm(
-        user=main_user, today=TODAY, data={"title": "Finbee", "type": "funds"}
+        user=main_user, today=TODAY, data={"title": title, "type": "funds"}
     )
 
     assert not form.is_valid()
 
-    assert form.errors["title"] == ["„Finbee“ jau yra."]
-
-
-def test_saving_type_title_slug_taken(main_user):
-    SavingType.objects.create(title="Būstas", journal=main_user.journal)
-
-    form = SavingTypeForm(
-        user=main_user, today=TODAY, data={"title": "Bustas", "type": "funds"}
-    )
-
-    assert not form.is_valid()
-
-    assert form.errors["title"] == [
-        "Pavadinimas per daug panašus į jau esantį „Būstas“."
-    ]
+    assert form.errors["title"] == [message]
 
 
 def test_saving_type_title_taken_in_other_journal(main_user, second_user):
@@ -500,18 +498,11 @@ def _saving_type_data(second_user, title):
     }
 
 
-def test_saving_type_create_ignores_a_posted_journal(main_user, second_user):
-    form = SavingTypeForm(
-        user=main_user, today=TODAY, data=_saving_type_data(second_user, "Title")
+@pytest.mark.parametrize("editing", [False, True], ids=["create", "edit"])
+def test_saving_type_ignores_a_posted_journal(main_user, second_user, editing):
+    obj = (
+        SavingTypeFactory(title="Mine", journal=main_user.journal) if editing else None
     )
-
-    assert form.is_valid()
-
-    assert form.save().journal == main_user.journal
-
-
-def test_saving_type_edit_ignores_a_posted_journal(main_user, second_user):
-    obj = SavingTypeFactory(title="Mine", journal=main_user.journal)
 
     form = SavingTypeForm(
         user=main_user,
@@ -522,10 +513,7 @@ def test_saving_type_edit_ignores_a_posted_journal(main_user, second_user):
 
     assert form.is_valid()
 
-    form.save()
-    obj.refresh_from_db()
-
-    assert obj.journal == main_user.journal
+    assert form.save().journal == main_user.journal
 
 
 @pytest.mark.parametrize("field", ["account", "saving_type"])

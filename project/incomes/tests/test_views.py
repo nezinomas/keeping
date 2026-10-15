@@ -384,10 +384,23 @@ def test_nav_offers_every_tab(client_logged):
         assert f'hx-get="{tab.url}"' in content
 
 
-def test_browser_title_names_the_open_tab(client_logged):
-    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+@pytest.mark.parametrize(
+    "url_name, heading",
+    [
+        pytest.param(
+            "incomes:tab_types", "<title>Pajamos | Rūšys</title>", id="browser_title"
+        ),
+        pytest.param(
+            "incomes:tab_index",
+            '<h2 class="panel__title">Pajamos per mėnesį</h2>',
+            id="months_panel_title",
+        ),
+    ],
+)
+def test_tab_states_its_title(client_logged, url_name, heading):
+    content = client_logged.get(reverse(url_name)).content.decode()
 
-    assert "<title>Pajamos | Rūšys</title>" in content
+    assert heading in content
 
 
 @time_machine.travel("1999-09-15")
@@ -473,12 +486,6 @@ def test_the_add_type_pill_waits_for_the_types_tab(client_logged):
 
     assert f"x-show=\"tab === 'types'\" x-cloak {pill}" in content
     assert "Pridėti pajamų rūšį" in content
-
-
-def test_overview_titles_the_months_panel(client_logged):
-    content = client_logged.get(reverse("incomes:tab_index")).content.decode()
-
-    assert '<h2 class="panel__title">Pajamos per mėnesį</h2>' in content
 
 
 @time_machine.travel("1999-09-15")
