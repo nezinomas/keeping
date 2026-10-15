@@ -31,7 +31,6 @@ class Index(TemplateViewMixin):
 
 class Lists(ListViewMixin):
     template_name = "savings/saving_list.html"
-    service_class = SavingModelService
 
     def get_queryset(self):
         user = self.request.user
@@ -61,7 +60,6 @@ class Delete(DeleteViewMixin):
 
 class TypeLists(ListViewMixin):
     template_name = "savings/savingtype_list.html"
-    service_class = SavingTypeModelService
 
     def get_queryset(self):
         return (

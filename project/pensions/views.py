@@ -14,7 +14,6 @@ from .services.model_services import PensionModelService, PensionTypeModelServic
 
 class Lists(ListViewMixin):
     template_name = "pensions/pension_list.html"
-    service_class = PensionModelService
 
     def get_queryset(self):
         user = self.request.user

@@ -42,7 +42,6 @@ class Index(GetMonthMixin, TemplateViewMixin):
 
 class Lists(GetMonthMixin, ListViewMixin):
     template_name = "expenses/expense_list.html"
-    service_class = ExpenseModelService
 
     def calendar_month(self) -> int:
         month = self.get_month()

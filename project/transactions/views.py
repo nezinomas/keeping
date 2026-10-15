@@ -50,7 +50,6 @@ class LoadSavingType(ListViewMixin):
 
 class Lists(ListViewMixin):
     template_name = "transactions/transaction_list.html"
-    service_class = TransactionModelService
 
     def get_queryset(self):
         user = self.request.user
@@ -81,7 +80,6 @@ class Delete(DeleteViewMixin):
 
 class SavingsCloseLists(ListViewMixin):
     template_name = "transactions/savingclose_list.html"
-    service_class = SavingCloseModelService
 
     def get_queryset(self):
         user = self.request.user
@@ -118,7 +116,6 @@ class SavingsCloseDelete(DeleteViewMixin):
 
 class SavingsChangeLists(ListViewMixin):
     template_name = "transactions/savingchange_list.html"
-    service_class = SavingChangeModelService
 
     def get_queryset(self):
         user = self.request.user
