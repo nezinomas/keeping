@@ -138,7 +138,7 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
             self.fields[key.lower()].label = val
 
     def _setup_year_field(self):
-        self.fields["year"].initial = self.user.year
+        self.fields["year"].initial = self.user.selected_year()
 
     def _load_month_prices(self):
         """Loads tall DB rows into the wide UI inputs."""
