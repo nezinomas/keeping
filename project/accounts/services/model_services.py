@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db.models import Q
 
 from ...core.services.model_services import BaseModelService, DatedModelService
@@ -12,8 +10,10 @@ class AccountModelService(BaseModelService):
             journal=self.user.journal
         )
 
-    def items(self, year: Optional[int] = None):
-        year = year or self.user.selected_year()
+    def items(self):
+        return self.items_in(self.user.selected_year())
+
+    def items_in(self, year: int):
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
     def all(self):

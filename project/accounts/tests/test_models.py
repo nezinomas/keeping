@@ -26,7 +26,7 @@ def test_account_items_current_journal(main_user, second_user):
     AccountFactory(title="A1")
     AccountFactory(title="A2", journal=second_user.journal)
 
-    actual = AccountModelService(main_user).items(main_user.year)
+    actual = AccountModelService(main_user).items()
 
     assert len(actual) == 1
     assert str(actual[0]) == "A1"
@@ -48,9 +48,19 @@ def test_account_closed_in_year(main_user, year, expected):
     AccountFactory(title="A1", journal=main_user.journal)
     AccountFactory(title="A2", journal=main_user.journal, closed=2000)
 
-    actual = AccountModelService(main_user).items(year=year)
+    actual = AccountModelService(main_user).items_in(year)
 
     assert actual.count() == expected
+
+
+def test_account_items_keep_the_accounts_open_in_the_users_year(main_user):
+    AccountFactory(title="Open", journal=main_user.journal)
+    AccountFactory(title="Closed this year", journal=main_user.journal, closed=1999)
+    AccountFactory(title="Closed last year", journal=main_user.journal, closed=1998)
+
+    actual = AccountModelService(main_user).items()
+
+    assert {x.title for x in actual} == {"Open", "Closed this year"}
 
 
 def test_account_unique_for_journals():
