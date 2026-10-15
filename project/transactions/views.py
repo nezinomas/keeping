@@ -62,7 +62,7 @@ class Lists(ListViewMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return TransactionModelService(user).year(user.year)
+        return TransactionModelService(user).year(user.selected_year())
 
 
 class New(CreateViewMixin):
@@ -93,7 +93,7 @@ class SavingsCloseLists(ListViewMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return SavingCloseModelService(user).year(year=user.year)
+        return SavingCloseModelService(user).year(year=user.selected_year())
 
 
 class SavingsCloseNew(CreateViewMixin):
@@ -130,7 +130,7 @@ class SavingsChangeLists(ListViewMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return SavingChangeModelService(user).year(year=user.year)
+        return SavingChangeModelService(user).year(year=user.selected_year())
 
 
 class SavingsChangeNew(CreateViewMixin):

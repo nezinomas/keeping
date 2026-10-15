@@ -7,11 +7,11 @@ import time_machine
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.utils import clean_content
+from ...core.tests.utils import clean_content, view_for
 from ...savings.models import SavingType
 from ...savings.tests.factories import SavingTypeFactory
 from ...users.views import Login
-from .. import models
+from .. import models, views
 from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
 
 pytestmark = pytest.mark.django_db
@@ -554,3 +554,15 @@ def test_load_saving_type_must_logged(client):
 
     assert response.status_code == 200
     assert response.resolver_match.func.view_class is Login
+
+
+@pytest.mark.parametrize(
+    "view_class",
+    [views.Lists, views.SavingsCloseLists, views.SavingsChangeLists],
+    ids=["transactions", "savings_close", "savings_change"],
+)
+def test_a_user_with_no_year_raises(rf, main_user, view_class):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        view_for(rf, main_user, view_class).get_queryset()
