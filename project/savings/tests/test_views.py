@@ -5,9 +5,10 @@ import time_machine
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.utils import clean_content
+from ...core.tests.utils import clean_content, view_for
 from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
-from .. import models
+from .. import models, views
+from ..services.model_services import SavingTypeModelService
 from .factories import Saving, SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -448,3 +449,19 @@ def test_type_new_and_update_with_the_receiver_connected(client_logged):
 
     assert response.status_code == 200
     assert account.accounts_balance.get(year=1999).expenses == 203
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.Lists).get_queryset(), id="list"
+        ),
+        pytest.param(lambda rf, u: SavingTypeModelService(u).items(), id="types"),
+    ],
+)
+def test_a_user_with_no_year_raises(rf, main_user, call):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        call(rf, main_user)

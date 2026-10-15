@@ -35,7 +35,7 @@ class Lists(ListViewMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return SavingModelService(user).year(user.year)
+        return SavingModelService(user).year(user.selected_year())
 
 
 class New(CreateViewMixin):
