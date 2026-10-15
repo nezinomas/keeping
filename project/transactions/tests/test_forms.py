@@ -86,6 +86,27 @@ def test_form_selected_parent(main_user, second_user, name):
     assert f'<option value="{a_from.pk}">From</option>' not in form
 
 
+@pytest.mark.parametrize("name", ["transaction", "saving_change"])
+def test_form_edit_offers_every_parent_but_the_stored_from_account(main_user, name):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
+    saved = kind.form(user=main_user, today=TODAY, data=_post(a_from, a_to, price="1"))
+    assert saved.is_valid()
+    row = saved.save()
+
+    form = kind.form(user=main_user, today=TODAY, instance=row)
+
+    assert ">To</option>" in str(form["to_account"])
+    assert ">From</option>" not in str(form["to_account"])
+
+
+@pytest.mark.parametrize("name", FEE_KINDS)
+def test_form_close_label_marks_the_from_account(main_user, name):
+    form = KINDS[name].form(user=main_user, today=TODAY)
+
+    assert "Uždaryti <b>Iš sąskaitos</b>" in form["close"].label_tag()
+
+
 @pytest.mark.parametrize("posted, cents", [("0.01", 1), ("12,1", 1210)])
 @pytest.mark.parametrize("name", KINDS)
 def test_form_valid_data(main_user, name, posted, cents):

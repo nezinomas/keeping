@@ -353,19 +353,19 @@ def test_a_posted_user_is_ignored(main_user, second_user, form_class, data):
 # -------------------------------------------------------------------------------------
 #                                                                          Drink Filter
 # -------------------------------------------------------------------------------------
-def test_drink_filter_init():
-    DrinkCompareForm(today=TODAY)
+def test_drink_filter_init(main_user):
+    DrinkCompareForm(user=main_user, today=TODAY)
 
 
-def test_drink_filter_init_fields():
-    form = DrinkCompareForm(today=TODAY).as_p()
+def test_drink_filter_init_fields(main_user):
+    form = DrinkCompareForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="number" name="year1"' in form
     assert '<input type="number" name="year2"' in form
 
 
-def test_drink_filter_initial_values():
-    form = DrinkCompareForm(today=TODAY).as_p()
+def test_drink_filter_initial_values(main_user):
+    form = DrinkCompareForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="number" name="year2" value="1999"' in form
 
@@ -426,12 +426,12 @@ def test_drink_filter_clean_years_fields(main_user, year1, year2, valid):
 # -------------------------------------------------------------------------------------
 #                                                                          Typical Year
 # -------------------------------------------------------------------------------------
-def test_typical_year_init():
-    TypicalYearForm(today=TODAY)
+def test_typical_year_init(main_user):
+    TypicalYearForm(user=main_user, today=TODAY)
 
 
-def test_typical_year_init_fields():
-    form = TypicalYearForm(today=TODAY).as_p()
+def test_typical_year_init_fields(main_user):
+    form = TypicalYearForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="number" name="year_from"' in form
     assert '<input type="number" name="year_to"' in form

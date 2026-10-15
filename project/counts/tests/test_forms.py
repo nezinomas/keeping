@@ -83,8 +83,8 @@ def test_form_no_count_type(main_user):
     assert "Šis laukas yra privalomas." in form.errors["count_type"]
 
 
-def test_count_type_init_fields():
-    form = CountTypeForm(today=TODAY).as_p()
+def test_count_type_init_fields(main_user):
+    form = CountTypeForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<select name="user"' not in form

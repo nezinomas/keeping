@@ -17,13 +17,12 @@ class SavingTypeForm(forms.ModelForm):
         fields = ["journal", "title", "type", "fee_source", "closed"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
+        user = kwargs.pop("user")
         kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["closed"].widget = YearPickerWidget()
 
-        # journal input
         pin(self.fields["journal"], user.journal)
 
         self.fields["title"].label = _("Fund")
@@ -59,7 +58,6 @@ class SavingForm(
         self.fields["account"].initial = account_items.first()
         self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
-        # overwrite ForeignKey saving_type and account queryset
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
         self.fields["account"].queryset = account_items
 

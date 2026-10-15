@@ -17,9 +17,9 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "count_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         self.today = kwargs.pop("today")
-        self.counter_type = kwargs.pop("counter_type", None)
+        self.counter_type = kwargs.pop("counter_type", "")
 
         super().__init__(*args, **kwargs)
 
@@ -57,7 +57,7 @@ class CountTypeForm(forms.ModelForm):
         fields = ["user", "title"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
+        user = kwargs.pop("user")
         kwargs.pop("today")
         super().__init__(*args, **kwargs)
 

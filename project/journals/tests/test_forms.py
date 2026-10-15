@@ -84,7 +84,7 @@ def test_form_save_checked_none(main_user):
     form.save()
 
     actual = Journal.objects.first()
-    assert not actual.unnecessary_expenses
+    assert actual.unnecessary_expenses == "[]"
     assert not actual.unnecessary_savings
 
 
@@ -103,7 +103,7 @@ def test_form_save_unchecked_expenses(main_user):
     form.save()
 
     actual = Journal.objects.first()
-    assert not actual.unnecessary_expenses
+    assert actual.unnecessary_expenses == "[]"
     assert not actual.unnecessary_savings
 
 
