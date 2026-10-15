@@ -1,6 +1,8 @@
+from datetime import UTC, datetime
 from typing import NamedTuple
 
 import pytest
+import time_machine
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
@@ -88,6 +90,20 @@ def worth_post_queries(client, worth, count, duplicate):
         client.post(reverse(worth.url), post_data(rows))
 
     return len(queries)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
+def test_post_stamps_the_time_of_day_in_utc(client_logged, worth):
+    fund = worth.fund_factory()
+    row = {"date": "1999-9-9", "price": "5", worth.fund_field: fund.pk}
+
+    with time_machine.travel(datetime(1999, 1, 1, 13, 14, 15, tzinfo=UTC), tick=False):
+        client_logged.post(reverse(worth.url), post_data([row]))
+
+    assert worth.model.objects.get().date == datetime(
+        1999, 9, 9, 13, 14, 15, tzinfo=UTC
+    )
 
 
 @pytest.mark.django_db
