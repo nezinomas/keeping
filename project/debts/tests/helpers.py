@@ -1,3 +1,6 @@
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+
 from ..models import Debt
 from .factories import (
     BorrowFactory,
@@ -20,3 +23,10 @@ def assert_balance(actual, *, incomes, expenses, balance, title="Account1"):
     assert actual.incomes == incomes
     assert actual.expenses == expenses
     assert actual.balance == balance
+
+
+def account_read_queries(service):
+    with CaptureQueriesContext(connection) as captured:
+        for row in service.objects:
+            row.account.title
+    return len(captured)
