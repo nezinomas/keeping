@@ -72,6 +72,19 @@ def test_form_save_checked_all(main_user):
     assert actual.unnecessary_savings
 
 
+def test_form_refuses_more_expenses_than_the_column_holds(main_user):
+    ticked = [ExpenseTypeFactory(title=f"T{i}").pk for i in range(100)]
+    max_length = Journal._meta.get_field("unnecessary_expenses").max_length
+    assert len(json.dumps(ticked)) > max_length
+
+    form = UnnecessaryForm(
+        user=main_user, today=TODAY, data={"savings": True, "choices": ticked}
+    )
+
+    assert not form.is_valid()
+    assert form.errors["choices"] == ["Pažymėta per daug išlaidų rūšių."]
+
+
 def test_form_save_checked_none(main_user):
     ExpenseTypeFactory(title="X")
     ExpenseTypeFactory(title="Y")
@@ -107,11 +120,19 @@ def test_form_save_unchecked_expenses(main_user):
     assert not actual.unnecessary_savings
 
 
-def test_settings_form_fields(main_user):
+@pytest.mark.parametrize(
+    "expected",
+    [
+        ('<select name="lang"', '<input type="text" name="title"'),
+        ("Svetainės kalba:", "Svetainės pavadinimas:"),
+    ],
+    ids=["fields", "translation"],
+)
+def test_settings_form_fields(expected, main_user):
     form = SettingsForm(user=main_user, today=TODAY).as_p()
 
-    assert '<select name="lang"' in form
-    assert '<input type="text" name="title"' in form
+    for substring in expected:
+        assert substring in form
 
 
 def test_settings_form_languages(main_user):
@@ -132,13 +153,6 @@ def test_settings_form_title_initial(main_user):
     form = SettingsForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="title" value="bob Journal"' in form
-
-
-def test_settings_form_translation(main_user):
-    form = SettingsForm(user=main_user, today=TODAY).as_p()
-
-    assert "Svetainės kalba:" in form
-    assert "Svetainės pavadinimas:" in form
 
 
 def test_settings_form_save(main_user):

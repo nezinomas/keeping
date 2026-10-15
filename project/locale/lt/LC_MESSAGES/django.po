@@ -1921,6 +1921,10 @@ msgstr "Svetainės kalba"
 msgid "Journal title"
 msgstr "Svetainės pavadinimas"
 
+#: .\project\journals\forms.py:30
+msgid "Too many expense types selected."
+msgstr "Pažymėta per daug išlaidų rūšių."
+
 #: .\project\pensions\forms.py:42
 msgid "Fee"
 msgstr "Mokestis"
