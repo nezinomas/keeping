@@ -12,7 +12,12 @@ from ....journals.tests.factories import JournalFactory
 from ...models import Debt
 from ...services.model_services import DebtModelService
 from ..factories import BorrowFactory, LendFactory
-from ..helpers import DEBT_FACTORIES, DEBT_TYPES, assert_balance
+from ..helpers import (
+    DEBT_FACTORIES,
+    DEBT_TYPES,
+    account_read_queries,
+    assert_balance,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -36,59 +41,61 @@ def test_debt_related(main_user, second_user, debt_type):
         account=AccountFactory(journal=second_user.journal, title="a2"),
     )
 
+    actual = DebtModelService(main_user, debt_type).objects.get()
+
+    assert actual == o
+
+
+@factory.django.mute_signals(post_save)
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_related_queries_do_not_grow(main_user, debt_type):
+    service = DebtModelService(main_user, debt_type)
+
+    for _ in range(2):
+        DEBT_FACTORIES[debt_type]()
+    two = account_read_queries(service)
+
+    for _ in range(4):
+        DEBT_FACTORIES[debt_type]()
+    six = account_read_queries(service)
+
+    assert two == six
+
+
+@factory.django.mute_signals(post_save)
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_sort(main_user, debt_type):
+    o1 = DEBT_FACTORIES[debt_type](date=dt(1999, 1, 2))
+    o2 = DEBT_FACTORIES[debt_type](date=dt(1999, 12, 13))
+
     actual = DebtModelService(main_user, debt_type).objects
 
-    assert len(actual) == 1
-    assert str(actual[0]) == str(o)
+    assert [o.date for o in actual] == [o2.date, o1.date]
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_related_queries(main_user, django_assert_num_queries):
-    LendFactory()
-    LendFactory()
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_items(main_user, second_user, debt_type):
+    o1 = DEBT_FACTORIES[debt_type]()
+    o2 = DEBT_FACTORIES[debt_type](closed=True)
+    DEBT_FACTORIES[debt_type](name="X1", journal=second_user.journal)
 
-    with django_assert_num_queries(1):
-        list(
-            x.account.title
-            for x in list(DebtModelService(main_user, Debt.DebtType.LEND).objects)
-        )
+    actual = DebtModelService(main_user, debt_type).items()
 
-
-@factory.django.mute_signals(post_save)
-def test_debt_sort(main_user):
-    o1 = LendFactory(date=dt(1999, 1, 2))
-    o2 = LendFactory(date=dt(1999, 12, 13))
-
-    actual = DebtModelService(main_user, Debt.DebtType.LEND).objects
-
-    assert actual[0].date == o2.date
-    assert actual[1].date == o1.date
+    assert list(actual) == [o1, o2]
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_items(main_user, second_user):
-    o1 = LendFactory()
-    o2 = LendFactory(closed=True)
-    LendFactory(name="X1", journal=second_user.journal)
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_open_items(main_user, second_user, debt_type):
+    o1 = DEBT_FACTORIES[debt_type](closed=False)
+    DEBT_FACTORIES[debt_type](closed=True)
 
-    actual = DebtModelService(main_user, Debt.DebtType.LEND).items()
+    DEBT_FACTORIES[debt_type](closed=False, journal=second_user.journal)
 
-    assert actual.count() == 2
-    assert str(actual[0]) == str(o1)
-    assert str(actual[1]) == str(o2)
+    actual = DebtModelService(main_user, debt_type).open_items()
 
-
-@factory.django.mute_signals(post_save)
-def test_debt_open_items(main_user, second_user):
-    o1 = LendFactory(closed=False)
-    LendFactory(closed=True)
-
-    LendFactory(closed=False, journal=second_user.journal)
-
-    actual = DebtModelService(main_user, Debt.DebtType.LEND).open_items()
-
-    assert actual.count() == 1
-    assert actual[0].pk == o1.pk
+    assert list(actual) == [o1]
 
 
 @factory.django.mute_signals(post_save)
@@ -119,11 +126,12 @@ def test_debt_open_items(main_user, second_user):
         ),
     ],
 )
-def test_debt_year(main_user, debts, expect):
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_year(main_user, debt_type, debts, expect):
     for debt in debts:
-        LendFactory(**debt)
+        DEBT_FACTORIES[debt_type](**debt)
 
-    actual = DebtModelService(main_user, Debt.DebtType.LEND).year(1999)
+    actual = DebtModelService(main_user, debt_type).year(1999)
 
     assert [(o.name, o.date, o.price) for o in actual] == expect
 
@@ -148,10 +156,9 @@ def test_debt_post_save_new_or_resaved(
     if resaved:
         Debt.objects.get(pk=obj.pk).save()
 
-    actual = AccountBalanceModelService(main_user).year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999).get()
 
-    assert actual.count() == 1
-    assert_balance(actual[0], incomes=incomes, expenses=expenses, balance=balance)
+    assert_balance(actual, incomes=incomes, expenses=expenses, balance=balance)
 
 
 @pytest.mark.parametrize(
@@ -174,13 +181,15 @@ def test_debt_post_save_new_or_resaved(
 def test_debt_post_save_update(debt_type, before, after):
     obj = DEBT_FACTORIES[debt_type](price=1)
 
-    assert_balance(AccountBalance.objects.first(), **before)
+    actual = AccountBalance.objects.get(account_id=obj.account_id, year=1999)
+    assert_balance(actual, **before)
 
     obj_update = Debt.objects.get(pk=obj.pk)
     obj_update.price = 2
     obj_update.save()
 
-    assert_balance(AccountBalance.objects.first(), **after)
+    actual = AccountBalance.objects.get(account_id=obj.account_id, year=1999)
+    assert_balance(actual, **after)
 
 
 @pytest.mark.parametrize(
@@ -202,11 +211,7 @@ def test_debt_post_save_first_record(main_user, debt_type, incomes, expenses, ba
         date=dt(1999, 1, 1), price=1, account=a, journal=j, debt_type=debt_type
     )
 
-    actual = AccountBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 1
-
-    actual = actual[0]
+    actual = AccountBalanceModelService(main_user).year(1999).get()
 
     assert actual.past == 5.0
     assert_balance(actual, incomes=incomes, expenses=expenses, balance=balance)
@@ -251,7 +256,7 @@ def test_debt_post_save_change_account(debt_type, incomes, expenses, balance):
 def test_debt_post_delete(debt_type, incomes, expenses, balance):
     obj = DEBT_FACTORIES[debt_type](price=10)
 
-    actual = AccountBalance.objects.first()
+    actual = AccountBalance.objects.get(account_id=obj.account_id, year=1999)
     assert_balance(actual, incomes=incomes, expenses=expenses, balance=balance)
 
     Debt.objects.get(pk=obj.pk).delete()
@@ -292,9 +297,10 @@ def test_debt_post_delete_with_updt(debt_type, before, after):
     assert_balance(actual, **after)
 
 
-def test_debt_unique_users(second_user):
-    LendFactory(name="T1")
-    LendFactory(
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_name_repeats_in_another_journal(second_user, debt_type):
+    DEBT_FACTORIES[debt_type](name="T1")
+    DEBT_FACTORIES[debt_type](
         name="T1",
         journal=second_user.journal,
         account=AccountFactory(journal=second_user.journal, title="a2"),
@@ -304,35 +310,22 @@ def test_debt_unique_users(second_user):
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_sum_all_months(main_user):
-    LendFactory(date=dt(1999, 1, 1), price=1, returned=1)
-    LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
-    LendFactory(date=dt(1999, 2, 1), price=4, returned=1)
-    LendFactory(date=dt(1999, 2, 2), price=1, returned=1)
-    LendFactory(date=dt(1999, 1, 1), price=2, returned=2, closed=True)
-    LendFactory(date=dt(1974, 1, 1))
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_sum_all_months(main_user, debt_type):
+    debt_factory = DEBT_FACTORIES[debt_type]
+    debt_factory(date=dt(1999, 1, 1), price=1, returned=1)
+    debt_factory(date=dt(1999, 1, 2), price=2, returned=1)
+    debt_factory(date=dt(1999, 2, 1), price=4, returned=1)
+    debt_factory(date=dt(1999, 2, 2), price=1, returned=1)
+    debt_factory(date=dt(1999, 1, 1), price=2, returned=2, closed=True)
+    debt_factory(date=dt(1974, 1, 1))
 
-    actual = list(DebtModelService(main_user, Debt.DebtType.LEND).sum_by_month(1999))
+    actual = list(DebtModelService(main_user, debt_type).sum_by_month(1999))
 
     assert actual == [
-        {"date": dt(1999, 1, 1), "title": "lend", "sum_debt": 5, "sum_return": 4},
-        {"date": dt(1999, 2, 1), "title": "lend", "sum_debt": 5, "sum_return": 2},
+        {"date": dt(1999, 1, 1), "title": debt_type, "sum_debt": 5, "sum_return": 4},
+        {"date": dt(1999, 2, 1), "title": debt_type, "sum_debt": 5, "sum_return": 2},
     ]
-
-
-@factory.django.mute_signals(post_save)
-def test_debt_sum_all_months_ordering(main_user, second_user):
-    LendFactory(date=dt(1999, 1, 1), price=1)
-    LendFactory(date=dt(1999, 1, 2), price=2)
-    LendFactory(date=dt(1999, 1, 2), price=2, journal=second_user.journal)
-    LendFactory(date=dt(1999, 2, 1), price=4)
-    LendFactory(date=dt(1999, 2, 2), price=1)
-    LendFactory(date=dt(1999, 2, 2), price=6, journal=second_user.journal)
-
-    actual = list(DebtModelService(main_user, Debt.DebtType.LEND).sum_by_month(1999))
-
-    assert actual[0]["date"] == dt(1999, 1, 1)
-    assert actual[1]["date"] == dt(1999, 2, 1)
 
 
 @factory.django.mute_signals(post_save)
@@ -351,12 +344,13 @@ def test_debt_sum_all_months_ordering(main_user, second_user):
         pytest.param([], {"debt": 0, "debt_return": 0}, id="none_open"),
     ],
 )
-def test_debt_sum_all_not_closed(main_user, open_debts, expect):
-    LendFactory(date=dt(1999, 1, 1), price=12, closed=True)
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_sum_all_not_closed(main_user, debt_type, open_debts, expect):
+    DEBT_FACTORIES[debt_type](date=dt(1999, 1, 1), price=12, closed=True)
     for date, price, returned in open_debts:
-        LendFactory(date=date, price=price, returned=returned)
+        DEBT_FACTORIES[debt_type](date=date, price=price, returned=returned)
 
-    actual = DebtModelService(main_user, Debt.DebtType.LEND).sum_all()
+    actual = DebtModelService(main_user, debt_type).sum_all()
 
     assert actual == expect
 

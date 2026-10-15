@@ -1,6 +1,7 @@
 from datetime import date
 
 import pytest
+import time_machine
 from django.test import Client
 from django.urls import reverse
 
@@ -23,47 +24,41 @@ def test_debt_return_list_empty(client_logged, debt_type):
 
 
 @pytest.mark.parametrize(
-    "debt_type, other_factory, price, other_price, remark",
+    "debt_type, other_factory, remark",
     [
         pytest.param(
             models.Debt.DebtType.BORROW,
             factories.LendReturnFactory,
-            "0,05",
-            "0,06",
             "Borrow Return Remark",
             id="borrow",
         ),
         pytest.param(
             models.Debt.DebtType.LEND,
             factories.BorrowReturnFactory,
-            "0,06",
-            "0,05",
             "Lend Return Remark",
             id="lend",
         ),
     ],
 )
-def test_debt_return_list_with_data(
-    client_logged, debt_type, other_factory, price, other_price, remark
-):
-    RETURN_FACTORIES[debt_type]()
-    other_factory(price=6.6)
+def test_debt_return_list_with_data(client_logged, debt_type, other_factory, remark):
+    RETURN_FACTORIES[debt_type](price=543_210)
+    other_factory(price=666_666)
 
     url = reverse("debts:return_list", kwargs={"debt_type": debt_type})
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert "Data" in content
-    assert "Suma" in content
-    assert "Sąskaita" in content
-    assert "Pastaba" in content
+    assert '">Data</th>' in content
+    assert '">Suma</th>' in content
+    assert '">Sąskaita</th>' in content
+    assert '">Pastaba</th>' in content
 
     assert "1999-01-02" in content
-    assert price in content
-    assert "Account1" in content
+    assert "5.432,10" in content
+    assert '<td class="text-left cell-padding">Account1</td>' in content
     assert remark in content
 
-    assert other_price not in content
+    assert "6.666,66" not in content
 
 
 @pytest.mark.parametrize("url_name", ["debts:return_update", "debts:return_delete"])
@@ -81,12 +76,14 @@ def test_debt_return_list_links_each_row_button(client_logged, debt_type, url_na
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
+@time_machine.travel("2000-01-01")
 def test_debt_return_load_form(client_logged, debt_type):
     url = reverse("debts:return_new", kwargs={"debt_type": debt_type})
     response = client_logged.get(url)
-    content = response.content.decode("utf-8")
+    actual = response.context["form"].as_p()
 
-    assert f'hx-post="{url}"' in content
+    assert '<input type="text" name="date" value="1999-01-01"' in actual
+    assert f'hx-post="{url}"' in response.content.decode()
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
@@ -96,12 +93,12 @@ def test_debt_return_save(main_user, client_logged, debt_type):
 
     data = {"date": "1999-1-3", "debt": b.pk, "price": "1", "account": a.pk}
     url = reverse("debts:return_new", kwargs={"debt_type": debt_type})
-    client_logged.post(url, data, follow=True)
+    client_logged.post(url, data)
 
-    actual = DebtReturnModelService(main_user, debt_type).items()[0]
+    actual = DebtReturnModelService(main_user, debt_type).items().get()
     assert actual.date == date(1999, 1, 3)
     assert actual.account.title == "Account1"
-    assert actual.price == 100
+    assert actual.price == 1_00
     assert actual.debt == b
 
 
@@ -143,7 +140,7 @@ def test_debt_return_load_update_form(client_logged, debt_type, remark):
     ],
 )
 def test_debt_return_update(client_logged, debt_type, returned):
-    debt = DEBT_FACTORIES[debt_type](price=200)
+    debt = DEBT_FACTORIES[debt_type](price=2_00)
     e = RETURN_FACTORIES[debt_type](debt=debt)
     a = AccountFactory(title="AAA")
 
@@ -157,23 +154,23 @@ def test_debt_return_update(client_logged, debt_type, returned):
         "debt": debt.pk,
     }
     url = reverse("debts:return_update", kwargs={"pk": e.pk, "debt_type": debt_type})
-    client_logged.post(url, data, follow=True)
+    client_logged.post(url, data)
 
     actual = models.DebtReturn.objects.get(pk=e.pk)
     assert actual.debt == debt
     assert actual.date == date(1999, 1, 2)
-    assert actual.price == 100
+    assert actual.price == 1_00
     assert actual.account.title == "AAA"
     assert actual.remark == "Pastaba"
-    assert models.Debt.objects.get(pk=debt.pk).returned == 100
+    assert models.Debt.objects.get(pk=debt.pk).returned == 1_00
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
 def test_debt_return_update_with_returns(client_logged, debt_type):
-    debt = DEBT_FACTORIES[debt_type](price=100 * 100)
-    RETURN_FACTORIES[debt_type](debt=debt, price=40 * 100)
-    RETURN_FACTORIES[debt_type](debt=debt, price=50 * 100)
-    e = RETURN_FACTORIES[debt_type](debt=debt, price=5 * 100)
+    debt = DEBT_FACTORIES[debt_type](price=100_00)
+    RETURN_FACTORIES[debt_type](debt=debt, price=40_00)
+    RETURN_FACTORIES[debt_type](debt=debt, price=50_00)
+    e = RETURN_FACTORIES[debt_type](debt=debt, price=5_00)
     a = AccountFactory(title="AAA")
 
     data = {
@@ -184,9 +181,10 @@ def test_debt_return_update_with_returns(client_logged, debt_type):
         "debt": debt.pk,
     }
     url = reverse("debts:return_update", kwargs={"pk": e.pk, "debt_type": debt_type})
-    client_logged.post(url, data, follow=True)
+    client_logged.post(url, data)
 
-    assert models.DebtReturn.objects.get(pk=e.pk).price == 600
+    assert models.DebtReturn.objects.get(pk=e.pk).price == 6_00
+    assert models.Debt.objects.get(pk=debt.pk).returned == 96_00
 
 
 @pytest.mark.parametrize(
@@ -226,7 +224,6 @@ def test_debt_return_delete_load_form(client_logged, debt_type):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert response.status_code == 200
     assert '<form method="POST"' in actual
     assert f'hx-post="{url}"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
@@ -236,10 +233,8 @@ def test_debt_return_delete_load_form(client_logged, debt_type):
 def test_debt_return_delete(client_logged, debt_type):
     p = RETURN_FACTORIES[debt_type]()
 
-    assert models.DebtReturn.objects.all().count() == 1
-
     url = reverse("debts:return_delete", kwargs={"pk": p.pk, "debt_type": debt_type})
     response = client_logged.post(url)
 
     assert response.status_code == 204
-    assert models.DebtReturn.objects.all().count() == 0
+    assert not models.DebtReturn.objects.filter(pk=p.pk).exists()
