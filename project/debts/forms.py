@@ -41,7 +41,8 @@ class DebtFormMixin(PriceToCentsFormMixin, YearBetweenMixin):
     def account_field_settings(self):
         accounts = AccountModelService(self.user).items()
 
-        self.fields["account"].initial = accounts.first()
+        if account := accounts.first():
+            self.fields["account"].initial = account
         self.fields["account"].queryset = accounts
 
 

@@ -36,7 +36,8 @@ class ReceiptUploadForm(_JournalAccountChoicesMixin, forms.Form):
 
         accounts = self._limit_account_to_journal()
         self.fields["date"].initial = set_date_with_user_year(user, today)
-        self.fields["account"].initial = accounts.first()
+        if account := accounts.first():
+            self.fields["account"].initial = account
         self._translate_fields()
 
     def _translate_fields(self):
