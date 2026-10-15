@@ -17,21 +17,21 @@
     <div>
         <!-- Transactions -->
         <div class="button-row">
-            <h6>{% translate 'Account &hArr; Account' %}</h6>
+            <h6>{% translate 'Account ⇔ Account' %}</h6>
             <c-new-button url="{% url 'transactions:new' %}" title="{{ record_button_title }}" css_class="flex-right" />
         </div>
         <div id="transactions_list" class="margin-bottom" hx-trigger="afterTransaction from:body, afterAccount from:body" hx-get="{% url 'transactions:list' %}" hx-target="this" hx-indicator:inherited="#indicator">{{transaction}}</div>
 
         <!-- Close savings -->
         <div class="button-row">
-            <h6>{% translate 'Fund &rArr; Account' %}</h6>
+            <h6>{% translate 'Fund ⇒ Account' %}</h6>
             <c-new-button url="{% url 'transactions:savings_close_new' %}" title="{{ record_button_title }}" css_class="flex-right" />
         </div>
         <div id="savings_close_list" class="margin-bottom" hx-trigger="afterClose from:body, afterAccount from:body" hx-get="{% url 'transactions:savings_close_list' %}" hx-target="this">{{saving_close}}</div>
 
         <!-- Change savings -->
         <div class="button-row">
-            <h6>{% translate 'Fund &hArr; Fund' %}</h6>
+            <h6>{% translate 'Fund ⇔ Fund' %}</h6>
             <c-new-button url="{% url 'transactions:savings_change_new' %}" title="{{ record_button_title }}" css_class="flex-right" />
         </div>
         <div id="savings_change_list" class="margin-bottom" hx-trigger="afterChange from:body, afterAccount from:body" hx-get="{% url 'transactions:savings_change_list' %}" hx-target="this">{{saving_change}}</div>

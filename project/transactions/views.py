@@ -92,7 +92,7 @@ class SavingsCloseNew(CreateViewMixin):
     url_name = "savings_close_new"
 
     success_url = reverse_lazy("transactions:savings_close_list")
-    modal_form_title = _("Fund &rArr; Account")
+    modal_form_title = _("Fund ⇒ Account")
 
 
 class SavingsCloseUpdate(PriceToFloatViewMixin, UpdateViewMixin):
@@ -102,7 +102,7 @@ class SavingsCloseUpdate(PriceToFloatViewMixin, UpdateViewMixin):
     url_name = "savings_close_update"
 
     success_url = reverse_lazy("transactions:savings_close_list")
-    modal_form_title = _("Fund &rArr; Account")
+    modal_form_title = _("Fund ⇒ Account")
 
 
 class SavingsCloseDelete(DeleteViewMixin):
@@ -128,7 +128,7 @@ class SavingsChangeNew(CreateViewMixin):
     url_name = "savings_change_new"
 
     success_url = reverse_lazy("transactions:savings_change_list")
-    modal_form_title = _("Fund &hArr; Fund")
+    modal_form_title = _("Fund ⇔ Fund")
 
 
 class SavingsChangeUpdate(PriceToFloatViewMixin, UpdateViewMixin):
@@ -138,7 +138,7 @@ class SavingsChangeUpdate(PriceToFloatViewMixin, UpdateViewMixin):
     url_name = "savings_change_update"
 
     success_url = reverse_lazy("transactions:savings_change_list")
-    modal_form_title = _("Fund &hArr; Fund")
+    modal_form_title = _("Fund ⇔ Fund")
 
 
 class SavingsChangeDelete(DeleteViewMixin):
