@@ -98,7 +98,7 @@ class ImportSave(View):
         receipt_form = ReviewReceiptForm(user=request.user, data=request.POST)
         receipt_valid = receipt_form.is_valid()
 
-        year = request.user.year
+        year = request.user.selected_year()
         if receipt_valid:
             year = receipt_form.cleaned_data["date"].year
 

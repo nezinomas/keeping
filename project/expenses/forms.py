@@ -25,7 +25,7 @@ class ExpenseNameChoicesMixin:
     """Needs self.user set by the form before its methods are called."""
 
     def names_year(self):
-        return self.user.year
+        return self.user.selected_year()
 
     def _posted_expense_type_pk(self):
         return int_or_zero(self.data.get(self.add_prefix("expense_type")))
@@ -62,8 +62,9 @@ class ExpenseNameChoicesMixin:
         params = {}
         if self.prefix:
             params["prefix"] = self.prefix
-        if self.names_year() != self.user.year:
-            params["year"] = self.names_year()
+        names_year = self.names_year()
+        if names_year != self.user.selected_year():
+            params["year"] = names_year
 
         if params:
             url = f"{url}?{urlencode(params)}"

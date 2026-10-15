@@ -1,13 +1,18 @@
 from datetime import date
+from unittest.mock import patch
 
 import pytest
 import time_machine
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.utils import change_profile_year, clean_content
+from ...core.tests.utils import change_profile_year, clean_content, view_for
 from ...users.views import Login
 from .. import models
+from ..forms import ExpenseNameChoicesMixin
+from ..forms_import import ReviewLineForm
+from ..views import expenses_import
+from ..views.expenses import Lists, LoadExpenseName
 from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -764,9 +769,41 @@ def test_search_statistic_not_found(client_logged):
     assert "search-statistic" not in actual
 
 
-def test_a_user_with_no_year_raises(client_logged, main_user):
+def _get(view):
+    return view.get(view.request)
+
+
+def _import_save(rf, user):
+    request = rf.post("/")
+    request.user = user
+
+    # the receipt form's account read raises first
+    with patch.object(expenses_import, "ReviewReceiptForm"):
+        return expenses_import.ImportSave().post(request)
+
+
+class _Names(ExpenseNameChoicesMixin):
+    def __init__(self, user):
+        self.user = user
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        pytest.param(lambda rf, u: view_for(rf, u, Lists).get_queryset(), id="list"),
+        pytest.param(
+            lambda rf, u: _get(view_for(rf, u, LoadExpenseName, "/?expense_type=1")),
+            id="load_expense_name",
+        ),
+        pytest.param(lambda rf, u: _Names(u).names_year(), id="names_year"),
+        pytest.param(lambda rf, u: _import_save(rf, u), id="import_save"),
+        pytest.param(
+            lambda rf, u: ReviewLineForm(user=u, year=1999), id="review_line_form"
+        ),
+    ],
+)
+def test_a_user_with_no_year_raises(rf, main_user, call):
     main_user.year = None
-    main_user.save()
 
     with pytest.raises(ValueError, match="has no year"):
-        client_logged.get(reverse("expenses:list"))
+        call(rf, main_user)
