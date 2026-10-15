@@ -4,6 +4,7 @@ from json.decoder import JSONDecodeError
 
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 from ..expenses.services.model_services import ExpenseTypeModelService
@@ -34,12 +35,20 @@ class UnnecessaryForm(forms.Form):
         self.fields["savings"].label = _("Savings")
         self.fields["choices"].label = False
 
+    def clean_choices(self):
+        pks = self.cleaned_data["choices"].values_list("pk", flat=True)
+        expenses = json.dumps(list(pks))
+
+        column = Journal._meta.get_field("unnecessary_expenses")
+        if len(expenses) > column.max_length:
+            raise ValidationError(_("Too many expense types selected."))
+
+        return expenses
+
     def save(self):
         journal = self.user.journal
 
-        choices = self.cleaned_data["choices"].values_list("pk", flat=True)
-
-        journal.unnecessary_expenses = json.dumps(list(choices))
+        journal.unnecessary_expenses = self.cleaned_data["choices"]
         journal.unnecessary_savings = self.cleaned_data["savings"]
 
         journal.save()
