@@ -2,7 +2,7 @@ import re
 from datetime import date
 
 import pytest
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 
 from ....expenses.tests.factories import ExpenseFactory
 from ....plans.tests.factories import DayPlanFactory
@@ -79,20 +79,16 @@ def test_view_month_200_set_user_month_value(month, expect, client_logged):
     assert response.wsgi_request.user.month == expect
 
 
-@pytest.mark.parametrize(
-    "dt, expect",
-    [
-        ("xx", "1974-01-01 dieną įrašų nėra"),
-        ("1970-13-01", "1974-01-01 dieną įrašų nėra"),
-        ("1970-12-32", "1974-01-01 dieną įrašų nėra"),
-    ],
-)
-def test_view_expand_day_expenses_wrong_dates(dt, expect, client_logged):
-    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": dt})
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+@pytest.mark.parametrize("dt", ["xx", "1970-13-01", "1970-12-32"])
+def test_view_expand_day_expenses_wrong_dates(dt, client_logged):
+    response = client_logged.get(f"/month/{dt}/")
 
-    assert expect in actual
+    assert response.status_code == 404
+
+
+def test_view_expand_day_expenses_reverses_no_url_for_a_non_date():
+    with pytest.raises(NoReverseMatch):
+        reverse("bookkeeping:expand_day_expenses", kwargs={"date": "xx"})
 
 
 def test_view_expand_day_expenses_ajax(client_logged):
