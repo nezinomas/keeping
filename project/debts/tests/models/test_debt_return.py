@@ -118,29 +118,6 @@ def test_debt_return_sum_by_month(main_user, debt_type, title):
 
 
 @pytest.mark.parametrize(
-    "debt_type, expected",
-    [
-        pytest.param(
-            Debt.DebtType.LEND,
-            {"incomes": 6, "expenses": 100, "balance": -94},
-            id="lend",
-        ),
-        pytest.param(
-            Debt.DebtType.BORROW,
-            {"incomes": 100, "expenses": 5, "balance": 95},
-            id="borrow",
-        ),
-    ],
-)
-def test_debt_return_post_save_new(main_user, debt_type, expected):
-    RETURN_FACTORIES[debt_type]()
-
-    actual = AccountBalanceModelService(main_user).year(1999).get()
-
-    assert_balance(actual, **expected)
-
-
-@pytest.mark.parametrize(
     "returned, prices, expect",
     [
         pytest.param(0, (10,), 10, id="one_return"),
@@ -263,8 +240,12 @@ def test_debt_return_post_save_first_record(
         (row.year, row.past, row.incomes, row.expenses, row.balance, row.delta)
         for row in actual
     ]
-    assert rows[0] == (1998, 0, 1, 0, 1, -1)
-    assert rows[1] == (1999, 1, incomes, expenses, balance, delta)
+    assert rows == [
+        (1998, 0, 1, 0, 1, -1),
+        (1999, 1, incomes, expenses, balance, delta),
+        # the sync writes a next-year row carrying the balance forward
+        (2000, balance, 0, 0, balance, delta),
+    ]
 
 
 @pytest.mark.parametrize(
@@ -284,7 +265,7 @@ def test_debt_return_post_save_first_record(
         ),
     ],
 )
-def test_debt_return_post_delete_with_updt(debt_type, before, after):
+def test_debt_return_post_delete_with_update(debt_type, before, after):
     return_factory = RETURN_FACTORIES[debt_type]
     b = DEBT_FACTORIES[debt_type]()
     return_factory(debt=b, price=1)
