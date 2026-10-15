@@ -341,10 +341,6 @@ def test_a_posted_user_is_ignored(main_user, second_user, form_class, data):
     assert form.save().user == main_user
 
 
-def test_drink_filter_init(main_user):
-    DrinkCompareForm(user=main_user, today=TODAY)
-
-
 def test_drink_filter_init_fields(main_user):
     form = DrinkCompareForm(user=main_user, today=TODAY).as_p()
 
@@ -409,10 +405,6 @@ def test_drink_filter_clean_years_fields(main_user, year1, year2, valid):
     )
 
     assert form.is_valid() == valid
-
-
-def test_typical_year_init(main_user):
-    TypicalYearForm(user=main_user, today=TODAY)
 
 
 def test_typical_year_init_fields(main_user):

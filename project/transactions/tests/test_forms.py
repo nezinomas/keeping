@@ -2,7 +2,6 @@ from datetime import date
 from typing import Callable, NamedTuple
 
 import pytest
-import time_machine
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
@@ -215,7 +214,6 @@ def test_form_lists_a_fund_closed_only_up_to_the_year(
     assert "S2" not in str(form["to_account"])
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("name", FEE_KINDS)
 def test_form_save_and_close_from_account(main_user, name):
     kind = KINDS[name]
@@ -353,7 +351,6 @@ def _saved_move(main_user, move, fund, receiver, day, close, instance=None):
     return form.save()
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_unticked_close_does_not_write_an_open_fund(
     main_user, move, fund, receiver
@@ -364,7 +361,6 @@ def test_form_unticked_close_does_not_write_an_open_fund(
     assert _fund_updates(queries.captured_queries) == []
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_edit_with_close_ticked_moves_the_close_year(
     main_user, move, fund, receiver
@@ -377,7 +373,6 @@ def test_form_edit_with_close_ticked_moves_the_close_year(
     assert SavingType.objects.get(pk=fund.pk).closed == 2000
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_edit_of_an_earlier_sell_keeps_the_close_year(
     main_user, move, fund, receiver
@@ -390,7 +385,6 @@ def test_form_edit_of_an_earlier_sell_keeps_the_close_year(
     assert SavingType.objects.get(pk=fund.pk).closed == 2000
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_new_sell_before_the_close_year_keeps_it(main_user, move, fund, receiver):
     _saved_move(main_user, move, fund, receiver, "2000-01-01", True)
@@ -400,7 +394,6 @@ def test_form_new_sell_before_the_close_year_keeps_it(main_user, move, fund, rec
     assert SavingType.objects.get(pk=fund.pk).closed == 2000
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_edit_with_close_unticked_reopens_the_fund(
     main_user, move, fund, receiver
@@ -413,7 +406,6 @@ def test_form_edit_with_close_unticked_reopens_the_fund(
 
 
 # a fund's close year follows its last move
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 @pytest.mark.parametrize(
     "earlier_day, edited_day, edited_close",
@@ -437,7 +429,6 @@ def test_form_earlier_move_edited_keeps_the_fund_closed_in_its_last_year(
     assert fund.closed == 2000
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(
     main_user, move, fund, receiver
@@ -450,7 +441,6 @@ def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(
     assert fund.closed == 1999
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_new_unticked_move_after_the_last_reopens_the_fund(
     main_user, move, fund, receiver
@@ -463,7 +453,6 @@ def test_form_new_unticked_move_after_the_last_reopens_the_fund(
     assert fund.closed is None
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_closing_move_moved_to_another_fund_reopens_the_first(
     main_user, move, receiver
@@ -480,7 +469,6 @@ def test_form_closing_move_moved_to_another_fund_reopens_the_first(
     assert second.closed == 1999
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_move_moved_away_leaves_the_first_closed_at_its_last_move(
     main_user, move, receiver
@@ -498,7 +486,6 @@ def test_form_move_moved_away_leaves_the_first_closed_at_its_last_move(
     assert second.closed is None
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_edit_of_an_earlier_move_does_not_write_a_closed_fund(
     main_user, move, fund, receiver
@@ -514,7 +501,6 @@ def test_form_edit_of_an_earlier_move_does_not_write_a_closed_fund(
     assert fund.closed == 1999
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_closing_move_writes_the_fund_once(main_user, move, fund, receiver):
     with CaptureQueriesContext(connection) as queries:
@@ -523,7 +509,6 @@ def test_form_closing_move_writes_the_fund_once(main_user, move, fund, receiver)
     assert len(_fund_updates(queries.captured_queries)) == 1
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_closing_move_edited_earlier_and_unticked_reopens_the_fund(
     main_user, move, fund, receiver
@@ -537,7 +522,6 @@ def test_form_closing_move_edited_earlier_and_unticked_reopens_the_fund(
     assert fund.closed is None
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_unticked_earlier_move_leaves_an_open_fund_open(
     main_user, move, fund, receiver
