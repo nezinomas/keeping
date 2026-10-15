@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import cast
 
 from ....users.models import User
 from .calculators import ForecastCalculator
@@ -16,7 +15,7 @@ def get_month(year: int) -> int:
 
 
 def load_service(user: User) -> dict:
-    year = cast(int, user.year)
+    year = user.selected_year()
     month = get_month(year)
 
     provider = ForecastDataProvider(user)

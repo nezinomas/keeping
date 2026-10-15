@@ -47,7 +47,7 @@ class Lists(GetMonthMixin, ListViewMixin):
     def get_queryset(self):
         month = self.get_month()
         user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = user.selected_year()
         service = ExpenseModelService(user)
         qs = service.year(year)
         if month in range(1, 13):

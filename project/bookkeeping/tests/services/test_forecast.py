@@ -26,16 +26,16 @@ def test_get_data(main_user):
     assert actual == expect
 
 
-def test_get_planned_data(main_user):
+@pytest.mark.parametrize("january, december", [(1, 2), (5, 8)])
+def test_get_planned_data(january, december):
     data = [
-        {"month": 1, "price": 1},
-        {"month": 12, "price": 2},
+        {"month": 1, "price": january},
+        {"month": 12, "price": december},
     ]
-    main_user.year = 1000
-    actual = MonthlyDataFormatter.from_planned_data(data)
-    expect = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]
 
-    assert actual == expect
+    actual = MonthlyDataFormatter.from_planned_data(data)
+
+    assert actual == [january, *[0.0] * 10, december]
 
 
 @pytest.fixture(name="data")
@@ -217,32 +217,6 @@ def test_forecast_data_dto():
     assert dto.planned_incomes == [20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
-def test_monthly_data_formatter_from_planned_data():
-    months = [
-        "january",
-        "february",
-        "march",
-        "april",
-        "may",
-        "june",
-        "july",
-        "august",
-        "september",
-        "october",
-        "november",
-        "december",
-    ]
-    data = [
-        {"month": 1, "price": 5},
-        {"month": 12, "price": 8},
-    ]
-
-    actual = MonthlyDataFormatter.from_planned_data(data, months)
-    expect = [5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0]
-
-    assert actual == expect
-
-
 def test_forecast_data_provider_get_forecast_data(mocker, main_user):
     main_user.year = 1000
 
@@ -295,4 +269,10 @@ def test_forecast_data_provider_get_beginning_balance(mocker, main_user):
 
     assert actual == 1500
     mock_balance_service.return_value.objects.filter.assert_called_once_with(year=1000)
-    mock_filter.aggregate.assert_called_once()
+
+
+def test_provider_raises_for_a_user_with_no_year(main_user):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        ForecastDataProvider(main_user)

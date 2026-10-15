@@ -762,3 +762,11 @@ def test_search_statistic_not_found(client_logged):
 
     assert "Nieko nerasta" in actual
     assert "search-statistic" not in actual
+
+
+def test_a_user_with_no_year_raises(client_logged, main_user):
+    main_user.year = None
+    main_user.save()
+
+    with pytest.raises(ValueError, match="has no year"):
+        client_logged.get(reverse("expenses:list"))
