@@ -13,7 +13,7 @@ class AccountModelService(BaseModelService):
         )
 
     def items(self, year: Optional[int] = None):
-        year = year or self.user.year
+        year = year or self.user.selected_year()
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
     def all(self):
