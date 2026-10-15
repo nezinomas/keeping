@@ -37,8 +37,7 @@ def test_service_reads_only_own_rows(
 
     actual = read(service(main_user))
 
-    assert len(actual) == 1
-    assert actual[0].user.username == "bob"
+    assert [row.user.username for row in actual] == ["bob"]
 
 
 def test_drink_year(main_user):
@@ -46,8 +45,7 @@ def test_drink_year(main_user):
 
     actual = list(DrinkModelService(main_user).year(1999))
 
-    assert len(actual) == 1
-    assert actual[0].date == date(1999, 1, 1)
+    assert [row.date for row in actual] == [date(1999, 1, 1)]
 
 
 @pytest.mark.parametrize(
@@ -73,8 +71,7 @@ def test_drink_order(main_user):
 
     actual = DrinkModelService(main_user).year(1999)
 
-    assert actual[0].date == date(1999, 12, 1)
-    assert actual[1].date == date(1999, 1, 1)
+    assert [row.date for row in actual] == [date(1999, 12, 1), date(1999, 1, 1)]
 
 
 @pytest.mark.parametrize(
@@ -128,15 +125,13 @@ def test_drink_target_year(main_user):
 
     actual = DrinkTargetModelService(main_user).year(1999)
 
-    assert len(actual) == 1
-    assert actual[0].year == 1999
-    assert round(actual[0].quantity, 3) == 0.005
-    assert actual[0].user.username == "bob"
+    assert [
+        (row.year, round(row.quantity, 3), row.user.username) for row in actual
+    ] == [(1999, 0.005, "bob")]
 
 
 def test_drink_target_year_positive(main_user):
-    # a saved user, so year is the only invalid field - an unsaved one makes
-    # full_clean report `user` too and masks a year rule that stopped firing
+    # a saved user: an unsaved one makes full_clean report `user` too, masking `year`
     actual = DrinkTargetFactory.build(year=-2000, user=main_user)
 
     with pytest.raises(ValidationError) as error:
@@ -146,8 +141,7 @@ def test_drink_target_year_positive(main_user):
 
 
 def test_drink_target_year_unique(main_user):
-    # one target per year per user; the constraint holding is the passing
-    # behaviour, so assert it rather than marking the test xfail
+    # one target per year per user; assert the constraint rather than xfail it
     DrinkTargetFactory(year=1999, user=main_user)
 
     with pytest.raises(IntegrityError), transaction.atomic():
@@ -160,8 +154,7 @@ def test_drink_target_ordering():
 
     actual = DrinkTarget.objects.all()
 
-    assert str(actual[0]) == "1999: 100.0"
-    assert str(actual[1]) == "1970: 100.0"
+    assert [str(row) for row in actual] == ["1999: 100.0", "1970: 100.0"]
 
 
 @pytest.mark.parametrize(

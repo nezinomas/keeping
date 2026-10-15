@@ -27,16 +27,35 @@ def _update_data(income, on="1999-12-31"):
 
 
 @time_machine.travel("2000-01-01")
-def test_income_load_form(client_logged):
-    url = reverse("incomes:new")
+@pytest.mark.parametrize(
+    "url_of, expected_of",
+    [
+        (
+            lambda i: reverse("incomes:new"),
+            lambda i: ['data-hx-trigger-form="reload"', "1999-01-01"],
+        ),
+        (
+            lambda i: reverse("incomes:update", kwargs={"pk": i.pk}),
+            lambda i: [
+                '<input type="text" name="date" value="1999-01-01"',
+                '<input type="text" name="price" value="77.77"',
+                f'<option value="{i.account.pk}" selected>Account1</option>',
+                f'<option value="{i.income_type.pk}" selected>Income Type</option>',
+                "Pastaba</textarea>",
+            ],
+        ),
+    ],
+    ids=["new", "update"],
+)
+def test_income_load_form(client_logged, url_of, expected_of):
+    income = IncomeFactory(price=7777, remark="Pastaba")
+    url = url_of(income)
 
-    response = client_logged.get(url)
-
-    actual = response.content.decode("utf-8")
+    actual = client_logged.get(url).content.decode("utf-8")
 
     assert f'hx-post="{url}"' in actual
-    assert 'data-hx-trigger-form="reload"' in actual
-    assert "1999-01-01" in actual
+    for text in expected_of(income):
+        assert text in actual
 
 
 @pytest.mark.parametrize(
@@ -109,22 +128,6 @@ def test_invalid_data_shows_the_error_and_saves_nothing(
 
     assert error in response.content.decode()
     assert model.objects.count() == 0
-
-
-def test_income_load_update_form(client_logged):
-    i = IncomeFactory(price=7777, remark="Pastaba")
-    url = reverse("incomes:update", kwargs={"pk": i.pk})
-
-    response = client_logged.get(url)
-
-    actual = response.content.decode()
-
-    assert f'hx-post="{url}"' in actual
-    assert '<input type="text" name="date" value="1999-01-01"' in actual
-    assert '<input type="text" name="price" value="77.77"' in actual
-    assert f'<option value="{i.account.pk}" selected>Account1</option>' in actual
-    assert f'<option value="{i.income_type.pk}" selected>Income Type</option>' in actual
-    assert "Pastaba</textarea>" in actual
 
 
 def test_income_not_load_other_journal(client_logged, second_user):
