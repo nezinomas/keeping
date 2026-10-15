@@ -2197,18 +2197,18 @@ msgid "Amount left after fee"
 msgstr "Suma kuri lieka atskaičius mokesčius"
 
 #: .\project\transactions\templates\transactions\index.html:20
-msgid "Account &hArr; Account"
-msgstr "Sąskaita &rArr; Sąskaita"
+msgid "Account ⇔ Account"
+msgstr "Sąskaita ⇔ Sąskaita"
 
 #: .\project\transactions\templates\transactions\index.html:27
 #: .\project\transactions\views.py:107 .\project\transactions\views.py:117
-msgid "Fund &rArr; Account"
-msgstr "Fondas &rArr; Sąskaita"
+msgid "Fund ⇒ Account"
+msgstr "Fondas ⇒ Sąskaita"
 
 #: .\project\transactions\templates\transactions\index.html:34
 #: .\project\transactions\views.py:145 .\project\transactions\views.py:155
-msgid "Fund &hArr; Fund"
-msgstr "Fondas &hArr; Fondas"
+msgid "Fund ⇔ Fund"
+msgstr "Fondas ⇔ Fondas"
 
 #: .\project\transactions\views.py:73 .\project\transactions\views.py:81
 msgid "Transaction"

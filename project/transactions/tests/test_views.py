@@ -28,6 +28,7 @@ class Kind(NamedTuple):
     to_title: str
     delete_text: str
     from_title: str
+    modal_title: str
 
 
 KINDS = {
@@ -42,6 +43,7 @@ KINDS = {
         "Account2",
         "1999-01-01 Account1 -&gt; Account2: 2,00",
         "Account1",
+        "Pinigų pervedimas",
     ),
     "savings_close": Kind(
         SavingCloseFactory,
@@ -54,6 +56,7 @@ KINDS = {
         "Account To",
         "1999-01-01 Savings From -&gt; Account To: 0,10",
         "Savings From",
+        "Fondas ⇒ Sąskaita",
     ),
     "savings_change": Kind(
         SavingChangeFactory,
@@ -66,6 +69,7 @@ KINDS = {
         "Savings To",
         "1999-01-01 Savings From -&gt; Savings To: 0,10",
         "Savings From",
+        "Fondas ⇔ Fondas",
     ),
 }
 by_kind = pytest.mark.parametrize("kind", KINDS.values(), ids=KINDS.keys())
@@ -98,9 +102,12 @@ by_fund_move_follow = pytest.mark.parametrize(
         pytest.param("2.222,00", id="saving_close"),
         pytest.param("3.333,00", id="saving_change"),
         pytest.param("Lonely", id="account"),
+        pytest.param("<h6>Sąskaita ⇔ Sąskaita</h6>", id="account_heading"),
+        pytest.param("<h6>Fondas ⇒ Sąskaita</h6>", id="saving_close_heading"),
+        pytest.param("<h6>Fondas ⇔ Fondas</h6>", id="saving_change_heading"),
     ],
 )
-def test_index_renders_its_four_lists(client_logged, rendered):
+def test_index_renders_its_lists_and_headings(client_logged, rendered):
     TransactionFactory(price=111_100)
     SavingCloseFactory(price=222_200)
     SavingChangeFactory(price=333_300)
@@ -120,6 +127,7 @@ def test_load_form(client_logged, kind):
 
     assert "1999-01-01" in actual
     assert url in actual
+    assert f'<h5 class="modal-title">{kind.modal_title}</h5>' in actual
 
 
 def _post_new(client_logged, kind, **extra):
