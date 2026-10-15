@@ -16,6 +16,17 @@ from .close_rules import CloseBox
 from .models import SavingChange, SavingClose, Transaction
 
 
+def set_to_account_choices(form, service):
+    """Every item of the service but the move's from_account."""
+    to_account = form.fields["to_account"]
+    to_account.queryset = service.none()
+
+    if from_account_pk := (
+        form.data.get("from_account") or form.instance.from_account_id
+    ):
+        to_account.queryset = service.items().exclude(pk=from_account_pk)
+
+
 class TransactionForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
@@ -45,16 +56,8 @@ class TransactionForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
     def _overwrite_default_queries(self):
         account = AccountModelService(self.user)
 
-        from_account = self.fields["from_account"]
-        to_account = self.fields["to_account"]
-
-        from_account.queryset = account.items()
-        to_account.queryset = account.none()
-
-        if from_account_pk := (
-            self.data.get("from_account") or self.instance.from_account_id
-        ):
-            to_account.queryset = account.items().exclude(pk=from_account_pk)
+        self.fields["from_account"].queryset = account.items()
+        set_to_account_choices(self, account)
 
     def _set_htmx_attributes(self):
         url = reverse("accounts:load")
@@ -79,6 +82,8 @@ class CloseFromAccountMixin:
         self.fields["close"].label = render_to_string(
             "transactions/includes/close_label.html"
         )
+        if self.instance.from_account_id and self.instance.from_account.closed:
+            self.fields["close"].initial = True
 
     def save(self, *args, **kwargs):
         previous_fund, previous_date = self._previous_move()
@@ -128,9 +133,6 @@ class SavingCloseForm(
         self._overwrite_default_queries()
         self._translate_fields()
 
-        if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
-            self.fields["close"].initial = True
-
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
         self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
@@ -178,27 +180,16 @@ class SavingChangeForm(
         self._set_htmx_attributes()
         self._translate_fields()
 
-        if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
-            self.fields["close"].initial = True
-
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
 
         self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
     def _overwrite_default_queries(self):
-        from_account = self.fields["from_account"]
-        to_account = self.fields["to_account"]
-
         saving_model = SavingTypeModelService(self.user)
 
-        from_account.queryset = saving_model.items()
-        to_account.queryset = saving_model.none()
-
-        if from_account_pk := (
-            self.data.get("from_account") or self.instance.from_account_id
-        ):
-            to_account.queryset = saving_model.items().exclude(pk=from_account_pk)
+        self.fields["from_account"].queryset = saving_model.items()
+        set_to_account_choices(self, saving_model)
 
     def _set_htmx_attributes(self):
         url = reverse("transactions:load_saving_type")
