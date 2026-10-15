@@ -1,6 +1,7 @@
 import json
 import re
 from collections.abc import Callable
+from datetime import date
 from typing import NamedTuple
 
 import pytest
@@ -10,9 +11,11 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils.html import escape
 
+from ...core.tests.utils import view_for
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
 from ...savings.tests.factories import SavingTypeFactory
+from .. import forms, views
 from ..services.model_services import IncomePlanModelService
 from ..tabs import TABS
 from .factories import (
@@ -1148,3 +1151,49 @@ def test_expenses_tab_reads_no_income_saving_or_day_plans(client_logged):
     sql = " ".join(query["sql"] for query in queries.captured_queries)
     for table in ("plans_incomeplan", "plans_savingplan", "plans_dayplan"):
         assert table not in sql
+
+
+PLAN_DATA = (views.TabViewMixin, "plan_data")
+DAY_SUM = (views, "PlanCalculateDaySum")
+
+
+@pytest.mark.parametrize(
+    "call, patched",
+    [
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabIncomes).get_context_data(),
+            [PLAN_DATA],
+            id="tab_incomes",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabExpenses).get_context_data(),
+            [PLAN_DATA],
+            id="tab_expenses",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabSavings).get_context_data(),
+            [PLAN_DATA],
+            id="tab_savings",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabDay).get_context_data(),
+            [PLAN_DATA, DAY_SUM],
+            id="tab_day",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabDay).plan_data(), [], id="plan_data"
+        ),
+        pytest.param(
+            lambda rf, u: forms.DayPlanForm(user=u, today=date(1999, 1, 1)),
+            [],
+            id="plan_form",
+        ),
+    ],
+)
+def test_a_user_with_no_year_raises(rf, main_user, mocker, call, patched):
+    main_user.year = None
+    for owner, attr in patched:
+        mocker.patch.object(owner, attr)
+
+    with pytest.raises(ValueError, match="has no year"):
+        call(rf, main_user)

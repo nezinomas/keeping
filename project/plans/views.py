@@ -44,7 +44,7 @@ class TabViewMixin(CoreTabViewMixin):
 
     def plan_data(self) -> DataDto:
         user = self.request.user
-        return PlanCollectData(user, user.year).get_data()
+        return PlanCollectData(user, user.selected_year()).get_data()
 
 
 class TabIncomes(TabViewMixin, TemplateViewMixin):
@@ -54,7 +54,9 @@ class TabIncomes(TabViewMixin, TemplateViewMixin):
         user = self.request.user
         return {
             **super().get_context_data(**kwargs),
-            "income_plans": IncomePlanModelService(user).pivot_table(user.year),
+            "income_plans": IncomePlanModelService(user).pivot_table(
+                user.selected_year()
+            ),
             "cards": IncomeCards.build(self.plan_data()),
         }
 
@@ -89,10 +91,11 @@ class TabExpenses(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
+        year = user.selected_year()
         return {
             **super().get_context_data(**kwargs),
-            "expense_plans": ExpensePlanModelService(user).pivot_tables(user.year),
-            "necessary_plans": NecessaryPlanModelService(user).pivot_table(user.year),
+            "expense_plans": ExpensePlanModelService(user).pivot_tables(year),
+            "necessary_plans": NecessaryPlanModelService(user).pivot_table(year),
             "cards": ExpenseCards.build(self.plan_data()),
         }
 
@@ -129,7 +132,9 @@ class TabSavings(TabViewMixin, TemplateViewMixin):
         user = self.request.user
         return {
             **super().get_context_data(**kwargs),
-            "saving_plans": SavingPlanModelService(user).pivot_table(user.year),
+            "saving_plans": SavingPlanModelService(user).pivot_table(
+                user.selected_year()
+            ),
             "cards": SavingCards.build(self.plan_data()),
         }
 
@@ -171,7 +176,7 @@ class TabDay(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            "day_plans": DayPlanModelService(user).pivot_table(user.year),
+            "day_plans": DayPlanModelService(user).pivot_table(user.selected_year()),
             "calculations": Calculations.build(calc),
             "cards": DayCards.build(data, month),
             "day_states": calc.day_plan_states(),
