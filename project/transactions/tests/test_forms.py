@@ -464,7 +464,7 @@ def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(
         pytest.param("2000-12-01", False, "2000-06-01", id="unticked_before_the_last"),
     ],
 )
-def test_form_new_unticked_move_leaves_the_fund_open_unless_it_is_the_last(
+def test_form_new_unticked_move_leaves_the_fund_open(
     main_user, move, fund, receiver, first_day, first_close, second_day
 ):
     _saved_move(main_user, move, fund, receiver, first_day, first_close)
