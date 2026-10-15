@@ -13,7 +13,7 @@ from ..services.model_services import DrinkModelService
 class HistoryService:
     def __init__(self, user: User, data: Iterable[dict], today: date):
         self.converter: DrinkConverter = DrinkConverter(user.drink_type)
-        self._header_year: int = user.year
+        self._header_year: int = user.selected_year()
         self._today = today
         self._days_elapsed = today.timetuple().tm_yday
 

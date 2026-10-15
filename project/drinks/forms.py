@@ -110,7 +110,7 @@ class DrinkTargetForm(OneTargetAYearMixin, forms.ModelForm):
         kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["year"].initial = self.user.year
+        self.fields["year"].initial = self.user.selected_year()
 
         pin(self.fields["user"], self.user)
 
@@ -192,9 +192,8 @@ class DrinkCompareForm(forms.Form):
         self.fields["year1"].label = ""
         self.fields["year2"].label = ""
 
-        # initial values: the year in the header, which is not always the calendar
-        # one — the user can be looking at a year that has not started yet
-        self.fields["year2"].initial = self.user.year
+        # the header's year, which can be one that has not started yet
+        self.fields["year2"].initial = self.user.selected_year()
 
     def clean(self):
         cleaned = super().clean()
