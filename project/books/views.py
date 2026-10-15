@@ -56,11 +56,10 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
 
 class Lists(ListViewMixin):
     template_name = "books/book_list.html"
-    service_class = BookModelService
 
     def get_queryset(self):
         user = cast(User, self.request.user)
-        service = self.service_class(user)
+        service = BookModelService(user)
         if self.all_records:
             return service.objects
         return service.year(user.selected_year())

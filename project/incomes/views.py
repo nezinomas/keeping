@@ -63,7 +63,6 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
 
 class Lists(ListViewMixin):
     template_name = "incomes/income_list.html"
-    service_class = IncomeModelService
 
     def get_queryset(self):
         user = self.request.user
