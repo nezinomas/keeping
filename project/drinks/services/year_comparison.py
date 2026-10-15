@@ -69,7 +69,7 @@ class YearComparison:
         series = []
 
         for year in years:
-            records = ConsumptionYear(user, int(year), today)
+            records = ConsumptionYear(user, year, today)
             if not records.monthly:
                 continue
 

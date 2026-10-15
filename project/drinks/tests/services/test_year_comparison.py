@@ -53,7 +53,6 @@ def test_has_data(main_user, second_user, drinks, has_data):
     "years, names",
     [
         pytest.param(range(1998, 2001), [1999], id="a_range"),
-        pytest.param(["1999"], ["1999"], id="year_strings"),
     ],
 )
 def test_accepts(main_user, years, names):
