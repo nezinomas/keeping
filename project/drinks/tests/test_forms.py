@@ -19,10 +19,6 @@ pytestmark = pytest.mark.django_db
 TODAY = date(1999, 1, 1)
 
 
-def test_drink_init(main_user):
-    DrinkForm(user=main_user, today=TODAY)
-
-
 def test_drink_init_fields(main_user):
     form = DrinkForm(user=main_user, today=TODAY).as_p()
 
@@ -222,10 +218,6 @@ def test_quick_add_saves_a_drink(main_user):
     form.save()
 
     assert Drink.objects.count() == 1
-
-
-def test_drink_target_init(main_user):
-    DrinkTargetForm(user=main_user, today=TODAY)
 
 
 def test_drink_target_init_fields(main_user):

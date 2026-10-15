@@ -125,25 +125,9 @@ def test_account_title_empty_slug(main_user):
     ]
 
 
-def test_account_create_ignores_a_posted_journal(main_user, second_user):
-    form = AccountForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "journal": second_user.journal.pk,
-            "title": "Title",
-            "order": "1",
-            "closed": "",
-        },
-    )
-
-    assert form.is_valid()
-
-    assert form.save().journal == main_user.journal
-
-
-def test_account_edit_ignores_a_posted_journal(main_user, second_user):
-    obj = AccountFactory(title="Mine", journal=main_user.journal)
+@pytest.mark.parametrize("editing", [False, True], ids=["create", "edit"])
+def test_account_ignores_a_posted_journal(main_user, second_user, editing):
+    obj = AccountFactory(title="Mine", journal=main_user.journal) if editing else None
 
     form = AccountForm(
         user=main_user,
@@ -159,7 +143,4 @@ def test_account_edit_ignores_a_posted_journal(main_user, second_user):
 
     assert form.is_valid()
 
-    form.save()
-    obj.refresh_from_db()
-
-    assert obj.journal == main_user.journal
+    assert form.save().journal == main_user.journal
