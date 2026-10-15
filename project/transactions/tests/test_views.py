@@ -78,21 +78,7 @@ by_fund_move = pytest.mark.parametrize(
     [KINDS["savings_close"], KINDS["savings_change"]],
     ids=["savings_close", "savings_change"],
 )
-by_kind_follow = pytest.mark.parametrize(
-    "kind, follow",
-    [
-        pytest.param(KINDS["transactions"], True, id="transactions"),
-        pytest.param(KINDS["savings_close"], False, id="savings_close"),
-        pytest.param(KINDS["savings_change"], True, id="savings_change"),
-    ],
-)
-by_fund_move_follow = pytest.mark.parametrize(
-    "kind, follow",
-    [
-        pytest.param(KINDS["savings_close"], False, id="savings_close"),
-        pytest.param(KINDS["savings_change"], True, id="savings_change"),
-    ],
-)
+CHECKED_BOX = re.compile(r'<input type="checkbox" .*? checked>')
 
 
 @pytest.mark.parametrize(
@@ -169,15 +155,8 @@ def test_save_fee(client_logged, kind, posted, cents):
     assert actual.fee == cents
 
 
-@pytest.mark.parametrize(
-    "kind, follow",
-    [
-        pytest.param(KINDS["transactions"], False, id="transactions"),
-        pytest.param(KINDS["savings_close"], False, id="savings_close"),
-        pytest.param(KINDS["savings_change"], True, id="savings_change"),
-    ],
-)
-def test_save_invalid_data(client_logged, kind, follow):
+@by_kind
+def test_save_invalid_data(client_logged, kind):
     data = {
         "date": "x",
         "price": "x",
@@ -185,32 +164,11 @@ def test_save_invalid_data(client_logged, kind, follow):
         "to_account": 0,
     }
 
-    client_logged.post(reverse(kind.new_url), data, follow=follow)
+    response = client_logged.post(reverse(kind.new_url), data)
+    actual = response.content.decode("utf-8")
 
     assert kind.model.objects.count() == 0
-
-
-@pytest.mark.parametrize(
-    "kind, kwargs",
-    [
-        pytest.param(KINDS["transactions"], {}, id="transactions"),
-        pytest.param(
-            KINDS["savings_close"], {"price": 1, "fee": 1}, id="savings_close"
-        ),
-        pytest.param(
-            KINDS["savings_change"], {"price": 1, "fee": 1}, id="savings_change"
-        ),
-    ],
-)
-def test_load_update_form(client_logged, kind, kwargs):
-    obj = kind.factory(**kwargs)
-
-    url = reverse(kind.update_url, kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-    actual = clean_content(response.content.decode("utf-8"))
-
-    assert "Atnaujinti ir uždaryti</button>" in actual
-    assert url in actual
+    assert actual.count('aria-invalid="true"') == 4
 
 
 @pytest.mark.parametrize(
@@ -236,24 +194,28 @@ def test_load_update_form(client_logged, kind, kwargs):
         ),
     ],
 )
-def test_load_update_form_field_values(client_logged, kind, kwargs, more):
+def test_load_update_form(client_logged, kind, kwargs, more):
     obj = kind.factory(**kwargs)
 
     url = reverse(kind.update_url, kwargs={"pk": obj.pk})
     response = client_logged.get(url)
-    form = response.context["form"].as_p()
+    actual = clean_content(response.content.decode("utf-8"))
 
-    assert 'name="date" value="1999-01-01"' in form
-    assert 'name="price" value="0.01"' in form
+    assert "Atnaujinti ir uždaryti</button>" in actual
+    assert url in actual
+    assert f'<h5 class="modal-title">{kind.modal_title}</h5>' in actual
+    assert 'name="date" value="1999-01-01"' in actual
+    assert 'name="price" value="0.01"' in actual
     assert (
         f'<option value="{obj.from_account.pk}" selected>{kind.from_title}</option>'
-        in form
+        in actual
     )
     assert (
-        f'<option value="{obj.to_account.pk}" selected>{kind.to_title}</option>' in form
+        f'<option value="{obj.to_account.pk}" selected>{kind.to_title}</option>'
+        in actual
     )
     for snippet in more:
-        assert snippet.format(to=obj.to_account.pk) in form
+        assert snippet.format(to=obj.to_account.pk) in actual
 
 
 @pytest.mark.parametrize(
@@ -317,10 +279,17 @@ def _foreign_move(kind, journal):
 
 
 @by_kind
-def test_not_load_other_journal(client_logged, second_user, kind):
+@pytest.mark.parametrize(
+    "url_name_of",
+    [
+        pytest.param(lambda kind: kind.update_url, id="update"),
+        pytest.param(lambda kind: kind.delete_url, id="delete"),
+    ],
+)
+def test_other_journal_form_not_found(client_logged, second_user, kind, url_name_of):
     obj = _foreign_move(kind, second_user.journal)
 
-    url = reverse(kind.update_url, kwargs={"pk": obj.pk})
+    url = reverse(url_name_of(kind), kwargs={"pk": obj.pk})
     response = client_logged.get(url)
 
     assert response.status_code == 404
@@ -388,16 +357,6 @@ def test_delete(client_logged, kind):
 
 
 @by_kind
-def test_delete_other_journal_get_form(client_logged, second_user, kind):
-    obj = _foreign_move(kind, second_user.journal)
-
-    url = reverse(kind.delete_url, kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
-@by_kind
 def test_delete_other_journal_post_form(client_logged, second_user, kind):
     obj = _foreign_move(kind, second_user.journal)
 
@@ -407,7 +366,7 @@ def test_delete_other_journal_post_form(client_logged, second_user, kind):
     assert kind.model.objects.count() == 1
 
 
-def _post_update(client_logged, kind, follow, **extra):
+def _post_update(client_logged, kind, follow=False, **extra):
     obj = kind.factory()
     data = {
         "price": "0.01",
@@ -417,9 +376,7 @@ def _post_update(client_logged, kind, follow, **extra):
     } | extra
 
     url = reverse(kind.update_url, kwargs={"pk": obj.pk})
-    response = client_logged.post(url, data, follow=follow)
-
-    return kind.model.objects.get(pk=obj.pk), response.content.decode("utf-8")
+    return client_logged.post(url, data, follow=follow)
 
 
 def _assert_updated(actual, kind):
@@ -429,55 +386,59 @@ def _assert_updated(actual, kind):
     assert actual.from_account.title == kind.from_title
 
 
-@by_kind_follow
-def test_update(client_logged, kind, follow):
-    actual, page = _post_update(client_logged, kind, follow)
+@by_kind
+def test_update(client_logged, kind):
+    _post_update(client_logged, kind)
 
-    _assert_updated(actual, kind)
-
-    if follow:
-        assert "1999-12-31" in page
-        assert kind.from_title in page
-        assert kind.to_title in page
+    _assert_updated(kind.model.objects.get(), kind)
 
 
-@by_fund_move_follow
+@by_kind
+def test_update_lands_on_its_list(client_logged, kind):
+    response = _post_update(client_logged, kind, follow=True)
+    page = response.content.decode("utf-8")
+
+    assert "1999-12-31" in page
+    assert kind.from_title in page
+    assert kind.to_title in page
+
+
+@by_fund_move
 @pytest.mark.parametrize(
     "posted, cents",
     [pytest.param({"fee": "0.01"}, 1, id="fee"), pytest.param({}, 0, id="no_fee")],
 )
-def test_update_fee(client_logged, kind, follow, posted, cents):
-    actual, _page = _post_update(client_logged, kind, follow, **posted)
+def test_update_fee(client_logged, kind, posted, cents):
+    _post_update(client_logged, kind, **posted)
+    actual = kind.model.objects.get()
 
     _assert_updated(actual, kind)
     assert actual.fee == cents
 
 
-@by_fund_move
-def test_new_form_close_checkbox_is_unchecked(client_logged, kind):
-    response = client_logged.get(reverse(kind.new_url))
-    actual = response.content.decode("utf-8")
+def _new_url(kind):
+    return reverse(kind.new_url)
 
-    reqex = re.compile(r'<input type="checkbox" .*? checked>')
-    find = re.findall(reqex, actual)
 
-    assert not find
+def _closed_fund_update_url(kind):
+    obj = kind.factory(from_account=SavingTypeFactory(closed=1999))
+    return reverse(kind.update_url, kwargs={"pk": obj.pk})
 
 
 @by_fund_move
+@pytest.mark.parametrize(
+    "url_of, checked",
+    [
+        pytest.param(_new_url, 0, id="new"),
+        pytest.param(_closed_fund_update_url, 1, id="update_of_a_closed_fund"),
+    ],
+)
 @time_machine.travel("1999-1-1")
-def test_load_for_update_checkbox_initial_value(client_logged, kind):
-    a = SavingTypeFactory(closed=1999)
-    obj = kind.factory(from_account=a)
-
-    url = reverse(kind.update_url, kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
+def test_close_checkbox_initial_value(client_logged, kind, url_of, checked):
+    response = client_logged.get(url_of(kind))
     actual = response.content.decode("utf-8")
 
-    reqex = re.compile(r'<input type="checkbox" .*? checked>')
-    find = re.findall(reqex, actual)
-
-    assert len(find) == 1
+    assert len(CHECKED_BOX.findall(actual)) == checked
 
 
 @by_fund_move
@@ -513,6 +474,7 @@ def test_update_in_future_checkbox_value(client_logged, kind, closed, close, exp
 
 def test_savings_change_not_show_other_journal_types(client_logged, second_user):
     a_from = SavingTypeFactory()
+    SavingTypeFactory(title="Own")
     SavingTypeFactory(title="XXX", journal=second_user.journal)
 
     data = {
@@ -521,10 +483,10 @@ def test_savings_change_not_show_other_journal_types(client_logged, second_user)
     }
     url = reverse("transactions:savings_change_new")
     response = client_logged.post(url, data, follow=True)
-    form = response.context["form"]
+    actual = response.content.decode("utf-8")
 
-    assert not form.is_valid()
-    assert "XXX" not in form.as_p()
+    assert actual.count(">Own</option>") == 2
+    assert "XXX" not in actual
 
 
 def test_load_saving_type_lists_the_open_funds_except_the_source(
