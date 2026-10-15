@@ -44,13 +44,20 @@ class Lists(GetMonthMixin, ListViewMixin):
     template_name = "expenses/expense_list.html"
     service_class = ExpenseModelService
 
-    def get_queryset(self):
+    def calendar_month(self) -> int:
         month = self.get_month()
+        # tab 13 lists every month
+        if month not in range(1, 13):
+            return 0
+        return month
+
+    def get_queryset(self):
+        month = self.calendar_month()
         user = cast(User, self.request.user)
         year = user.selected_year()
         service = ExpenseModelService(user)
         qs = service.year(year)
-        if month in range(1, 13):
+        if month:
             qs = qs.filter(date__month=month)
 
         data = service.expenses_list(qs)
@@ -58,13 +65,7 @@ class Lists(GetMonthMixin, ListViewMixin):
         return add_fast_urls(data=data, app_name=App_name)
 
     def get_context_data(self, **kwargs):
-        month = self.get_month()
-
-        notice_month = 0
-        if month in range(1, 13):
-            notice_month = month
-
-        context = {"notice_month": notice_month}
+        context = {"notice_month": self.calendar_month()}
         return super().get_context_data(**kwargs) | context | get_action_buttons_html()
 
 

@@ -103,6 +103,7 @@ def test_expenses_list_filters_by_month(client_logged, today, dates, kwargs, exp
     "month, expected",
     [
         pytest.param(1, "<b>1</b> mėnesį įrašų nėra", id="month"),
+        pytest.param(12, "<b>12</b> mėnesį įrašų nėra", id="december"),
         pytest.param(13, "<b>1999</b> metais įrašų nėra", id="all_year"),
         pytest.param(14, "<b>1999</b> metais įrašų nėra", id="above_all_year"),
     ],
