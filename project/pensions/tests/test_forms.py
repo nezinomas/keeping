@@ -136,10 +136,12 @@ def test_pension_invalid_date(main_user, year):
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
-def test_pension_date_starts_at_today(main_user):
-    form = PensionForm(user=main_user, today=date(2005, 3, 4))
+def test_pension_initial_date_is_today_in_the_users_year(main_user):
+    assert main_user.year == 1999
 
-    assert form["date"].value() == date(2005, 3, 4)
+    form = PensionForm(user=main_user, today=date(2005, 3, 4)).as_p()
+
+    assert '<input type="text" name="date" value="1999-03-04"' in form
 
 
 def test_pension_blank_data(main_user):

@@ -2,6 +2,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib.convert_price import PriceNeverEmptyFormMixin, PriceToCentsFormMixin
+from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
@@ -31,7 +32,7 @@ class PensionForm(
 
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        self.fields["date"].initial = self.today
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
         self.fields["pension_type"].queryset = PensionTypeModelService(
             self.user

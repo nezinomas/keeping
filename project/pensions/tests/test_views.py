@@ -19,7 +19,7 @@ def test_types_list_shows_the_title(client_logged):
     assert "Fondas" in response.content.decode("utf-8")
 
 
-@time_machine.travel("2000-01-01")
+@time_machine.travel("2000-03-04")
 def test_pensions_load_form(client_logged):
     url = reverse("pensions:new")
 
@@ -27,7 +27,7 @@ def test_pensions_load_form(client_logged):
     actual = response.content.decode()
 
     assert f'hx-post="{url}"' in actual
-    assert "2000-01-01" in actual
+    assert 'name="date" value="1999-03-04"' in actual
 
 
 def test_pensions_save(client_logged):
