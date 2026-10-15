@@ -43,7 +43,7 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
     tab = IncomeTab.resolve("index")
 
     def get_context_data(self, **kwargs):
-        boundary = YearBoundary(self.request.user.year, date.today())
+        boundary = YearBoundary(self.request.user.selected_year(), date.today())
         service = IncomeModelService(self.request.user)
 
         return {
@@ -69,7 +69,7 @@ class Lists(ListViewMixin):
         user = self.request.user
         return (
             IncomeModelService(user)
-            .year(user.year)
+            .year(user.selected_year())
             .order_by("-date", "price")
             .values(
                 "id", "date", "income_type__title", "account__title", "price", "remark"
@@ -86,7 +86,7 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        boundary = YearBoundary(user.year, date.today())
+        boundary = YearBoundary(user.selected_year(), date.today())
         service = IncomeModelService(user)
         types = IncomeTypeModelService(user).items().values("id", "title")
 
