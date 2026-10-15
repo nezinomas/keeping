@@ -11,12 +11,12 @@ from vanilla import (
 
 from .create_update import CreateUpdateMixin
 from .delete import DeleteMixin
-from .kwargs import AddUserToKwargsMixin
+from .kwargs import FormKwargsMixin
 from .queryset import GetQuerysetMixin
 from .search import SearchMixin
 
 
-class CreateViewMixin(AddUserToKwargsMixin, CreateUpdateMixin, CreateView):
+class CreateViewMixin(FormKwargsMixin, CreateUpdateMixin, CreateView):
     template_name = "core/generic_form.html"
     form_action = "insert"
     url_name = "new"
@@ -26,9 +26,7 @@ class CreateViewMixin(AddUserToKwargsMixin, CreateUpdateMixin, CreateView):
         return reverse_lazy(f"{app}:{self.url_name}")
 
 
-class UpdateViewMixin(
-    AddUserToKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
-):
+class UpdateViewMixin(FormKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView):
     template_name = "core/generic_form.html"
     form_action = "update"
     url_name = "update"
@@ -38,7 +36,7 @@ class UpdateViewMixin(
         return reverse_lazy(f"{app}:{self.url_name}", kwargs={"pk": self.object.pk})
 
 
-class DeleteViewMixin(AddUserToKwargsMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
+class DeleteViewMixin(FormKwargsMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
     template_name = "core/generic_delete_form.html"
     url_name = "delete"
 
@@ -59,9 +57,9 @@ class ListViewMixin(GetQuerysetMixin, ListView):
     pass
 
 
-class FormViewMixin(AddUserToKwargsMixin, FormView):
+class FormViewMixin(FormKwargsMixin, FormView):
     template_name = "core/generic_form.html"
 
 
-class SearchViewMixin(AddUserToKwargsMixin, SearchMixin, TemplateView):
+class SearchViewMixin(FormKwargsMixin, SearchMixin, TemplateView):
     pass

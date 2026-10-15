@@ -1,5 +1,4 @@
 import contextlib
-from datetime import date
 from urllib.parse import urlencode
 
 from django import forms
@@ -119,6 +118,7 @@ class ExpenseForm(
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -137,7 +137,7 @@ class ExpenseForm(
         if self.instance.pk:
             return
 
-        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
         if account := AccountModelService(self.user).items().first():
             self.fields["account"].initial = account
         self.fields["price"].initial = "0.00"
@@ -221,6 +221,7 @@ class ExpenseTypeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         pin(self.fields["journal"], user.journal)
@@ -250,6 +251,7 @@ class ExpenseNameForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["parent"].queryset = ExpenseTypeModelService(user).items()

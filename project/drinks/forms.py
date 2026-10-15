@@ -1,9 +1,6 @@
-from datetime import date
-
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.template.loader import render_to_string
-from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
@@ -34,6 +31,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.instance.counter_type = App_name
@@ -46,7 +44,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
     def date_field_settings(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
     def translations(self):
         self.fields["date"].label = _("Date")
@@ -79,16 +77,17 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
 class QuickAddForm(DrinkForm):
     @classmethod
-    def from_post(cls, post, user) -> "QuickAddForm":
+    def from_post(cls, post, user, today) -> "QuickAddForm":
         return cls(
             data={
                 "user": user.pk,
-                "date": post.get("date") or set_date_with_user_year(user, date.today()),
+                "date": post.get("date") or set_date_with_user_year(user, today),
                 "option": post.get("option") or user.drink_type,
                 # the bar labels the box quantity; the model stores Std Av
                 "stdav": post.get("quantity"),
             },
             user=user,
+            today=today,
         )
 
 
@@ -108,11 +107,10 @@ class DrinkTargetForm(OneTargetAYearMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["year"].initial = set_date_with_user_year(
-            self.user, date.today()
-        ).year
+        self.fields["year"].initial = self.user.year
 
         pin(self.fields["user"], self.user)
 
@@ -140,6 +138,7 @@ class TypicalYearForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         # one query, read twice: the years propose the defaults here and decide
@@ -187,6 +186,7 @@ class DrinkCompareForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
+        today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["year1"].label = ""
@@ -194,9 +194,7 @@ class DrinkCompareForm(forms.Form):
 
         # initial values: the year in the header, which is not always the calendar
         # one — the user can be looking at a year that has not started yet
-        self.fields["year2"].initial = (
-            getattr(self.user, "year", None) or timezone.now().year
-        )
+        self.fields["year2"].initial = getattr(self.user, "year", None) or today.year
 
     def clean(self):
         cleaned = super().clean()

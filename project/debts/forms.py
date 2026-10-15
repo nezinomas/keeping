@@ -1,5 +1,3 @@
-from datetime import date
-
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -26,6 +24,7 @@ class DebtFormMixin(PriceToCentsFormMixin, YearBetweenMixin):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         self.debt_type = kwargs.pop("debt_type")
 
         super().__init__(*args, **kwargs)
@@ -37,7 +36,7 @@ class DebtFormMixin(PriceToCentsFormMixin, YearBetweenMixin):
 
     def date_field_settings(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
     def account_field_settings(self):
         accounts = AccountModelService(self.user).items()

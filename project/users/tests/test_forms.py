@@ -1,7 +1,11 @@
+from datetime import date
+
 import pytest
 
 from ..forms import InviteForm, SignUpForm
 from .factories import UserFactory
+
+TODAY = date(1999, 2, 2)
 
 SIGNUP = {
     "username": "john",
@@ -41,7 +45,7 @@ def test_signup_unique_email(email):
 
 @pytest.mark.django_db
 def test_invite_form_cleans_the_email(main_user):
-    form = InviteForm(user=main_user, data={"email": "New@New.com"})
+    form = InviteForm(user=main_user, today=TODAY, data={"email": "New@New.com"})
 
     assert form.is_valid()
     assert form.cleaned_data == {"email": "New@New.com"}
@@ -75,7 +79,7 @@ def test_invite_form_cleans_the_email(main_user):
 )
 def test_invite_form_refuses_an_email(main_user, second_user, email, message):
     UserFactory(username="Yan", email="Yan@Y.yy")
-    form = InviteForm(user=main_user, data={"email": email})
+    form = InviteForm(user=main_user, today=TODAY, data={"email": email})
 
     assert not form.is_valid()
     assert form.errors["email"][0] == message

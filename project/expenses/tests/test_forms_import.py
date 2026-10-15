@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
@@ -18,6 +17,8 @@ from .factories import ExpenseKeywordFactory, ExpenseNameFactory, ExpenseTypeFac
 
 pytestmark = pytest.mark.django_db
 
+TODAY = date(2000, 1, 1)
+
 
 def _pdf(name="lydrastis.pdf"):
     return SimpleUploadedFile(name, b"%PDF-1.4", content_type="application/pdf")
@@ -32,6 +33,7 @@ def test_upload_form_non_pdf_refused(main_user):
 
     form = ReceiptUploadForm(
         user=main_user,
+        today=TODAY,
         data={"date": "1999-01-01", "account": a.pk},
         files={"pdf": f},
     )
@@ -46,6 +48,7 @@ def test_upload_form_uppercase_pdf_accepted(main_user):
 
     form = ReceiptUploadForm(
         user=main_user,
+        today=TODAY,
         data={"date": "1999-01-01", "account": a.pk},
         files={"pdf": f},
     )
@@ -53,9 +56,8 @@ def test_upload_form_uppercase_pdf_accepted(main_user):
     assert form.is_valid(), form.errors
 
 
-@time_machine.travel("1974-01-01")
 def test_upload_form_date_initial(main_user):
-    form = ReceiptUploadForm(user=main_user).as_p()
+    form = ReceiptUploadForm(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
@@ -64,7 +66,7 @@ def test_upload_form_account_initial_first(main_user, second_user):
     AccountFactory(title="A1", journal=second_user.journal)
     a2 = AccountFactory(title="A2")
 
-    form = ReceiptUploadForm(user=main_user).as_p()
+    form = ReceiptUploadForm(user=main_user, today=TODAY).as_p()
 
     assert f'<option value="{a2.pk}" selected>{a2}</option>' in form
 
@@ -74,6 +76,7 @@ def test_upload_form_another_journal_account_refused(main_user, second_user):
 
     form = ReceiptUploadForm(
         user=main_user,
+        today=TODAY,
         data={"date": "1999-01-01", "account": a.pk},
         files={"pdf": _pdf()},
     )

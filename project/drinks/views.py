@@ -1,5 +1,3 @@
-from datetime import date
-from functools import cached_property
 from typing import cast
 
 from django.http import Http404, HttpResponse
@@ -9,6 +7,7 @@ from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 
+from ..core.mixins.kwargs import TodayMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -37,14 +36,6 @@ class HtmxFormRetargetMixin:
         response["HX-Reswap"] = "outerHTML"
 
         return response
-
-
-class TodayMixin:
-    """The one today every Drinks figure of a request is computed from."""
-
-    @cached_property
-    def today(self) -> date:
-        return date.today()
 
 
 class TabViewMixin(TodayMixin, CoreTabViewMixin):
@@ -99,7 +90,7 @@ class TabHabits(TabViewMixin, TemplateViewMixin):
         }
 
 
-class TypicalYearChart(TodayMixin, HtmxFormRetargetMixin, FormViewMixin):
+class TypicalYearChart(HtmxFormRetargetMixin, FormViewMixin):
     form_class = forms.TypicalYearForm
     template_name = "drinks/includes/typical_year_form.html"
     retarget = "#typical-year-form"
@@ -187,7 +178,7 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            "form": forms.DrinkCompareForm(user=user),
+            "form": forms.DrinkCompareForm(user=user, today=self.today),
             **services.history.load_service(user, self.today),
         }
 
@@ -202,11 +193,11 @@ class Compare(TodayMixin, TemplateViewMixin):
             "chart": services.YearComparison.for_recent(
                 user, user.selected_year(), self.kwargs.get("qty", 0), self.today
             ),
-            "form": forms.DrinkCompareForm(user=user),
+            "form": forms.DrinkCompareForm(user=user, today=self.today),
         }
 
 
-class CompareTwo(TodayMixin, HtmxFormRetargetMixin, FormViewMixin):
+class CompareTwo(HtmxFormRetargetMixin, FormViewMixin):
     form_class = forms.DrinkCompareForm
     template_name = "drinks/includes/compare_form.html"
     success_url = reverse_lazy("drinks:compare_two")
@@ -304,9 +295,11 @@ class SelectDrink(RedirectViewMixin):
         return reverse_lazy("drinks:index")
 
 
-class QuickAdd(View):
+class QuickAdd(TodayMixin, View):
     def post(self, request, *args, **kwargs):
-        form = forms.QuickAddForm.from_post(request.POST, cast(User, request.user))
+        form = forms.QuickAddForm.from_post(
+            request.POST, cast(User, request.user), self.today
+        )
 
         if not form.is_valid():
             return HttpResponse(status=422)

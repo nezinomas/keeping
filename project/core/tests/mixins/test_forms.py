@@ -1,8 +1,6 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from datetime import date
 
 import pytest
-import time_machine
 
 from ....accounts.tests.factories import AccountFactory
 from ....books.forms import BookTargetForm
@@ -16,12 +14,11 @@ from ....incomes.tests.factories import IncomeTypeFactory
 
 pytestmark = pytest.mark.django_db
 
-_VILNIUS = ZoneInfo("Europe/Vilnius")
-_OCTOBER_2026 = datetime(2026, 10, 12, 12, 0, tzinfo=_VILNIUS)
-_NEW_YEAR_2027 = datetime(2027, 1, 1, 1, 0, tzinfo=_VILNIUS)
+_OCTOBER_2026 = date(2026, 10, 12)
+_NEW_YEAR_2027 = date(2027, 1, 1)
 
 
-def _expense_form(user, posted):
+def _expense_form(user, today, posted):
     name = ExpenseNameFactory()
     data = {
         "date": posted,
@@ -31,17 +28,17 @@ def _expense_form(user, posted):
         "expense_name": name.pk,
         "account": AccountFactory().pk,
     }
-    return ExpenseForm(user=user, data=data)
+    return ExpenseForm(user=user, today=today, data=data)
 
 
-def _income_form(user, posted):
+def _income_form(user, today, posted):
     data = {
         "date": posted,
         "price": "1.0",
         "account": AccountFactory().pk,
         "income_type": IncomeTypeFactory().pk,
     }
-    return IncomeForm(user=user, data=data)
+    return IncomeForm(user=user, today=today, data=data)
 
 
 @pytest.mark.parametrize("bound_form", [_expense_form, _income_form])
@@ -62,7 +59,7 @@ def _income_form(user, posted):
             {"date": ["Metai negali būti vėlesni nei 2028"]},
         ),
     ],
-    ids=["past", "next_year", "year_after_next", "new_year_local", "new_year_after"],
+    ids=["past", "next_year", "year_after_next", "new_year", "new_year_after"],
 )
 def test_date_no_later_than_next_calendar_year(
     main_user, bound_form, today, posted, errors
@@ -70,8 +67,7 @@ def test_date_no_later_than_next_calendar_year(
     # a selected year apart from today's: the old message named it + 1
     main_user.year = 2024
 
-    with time_machine.travel(today):
-        assert bound_form(main_user, posted).errors == errors
+    assert bound_form(main_user, today, posted).errors == errors
 
 
 @pytest.mark.parametrize(
@@ -85,6 +81,11 @@ def test_date_no_later_than_next_calendar_year(
 def test_a_target_keeps_its_year_when_edited(main_user, form_class, factory, data):
     target = factory(year=1999)
 
-    form = form_class(user=main_user, instance=target, data={"year": 1999, **data})
+    form = form_class(
+        user=main_user,
+        today=_OCTOBER_2026,
+        instance=target,
+        data={"year": 1999, **data},
+    )
 
     assert form.errors == {}

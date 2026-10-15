@@ -1,13 +1,10 @@
-from datetime import date
-
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import transaction
-from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..core.lib.convert_price import PriceToCentsFormMixin, int_cents_to_float
-from ..core.lib.date import monthnames, set_date_with_user_year
+from ..core.lib.date import monthnames
 from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
@@ -63,6 +60,7 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        kwargs.pop("today")
 
         super().__init__(*args, **kwargs)
 
@@ -141,9 +139,7 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
             self.fields[key.lower()].label = val
 
     def _setup_year_field(self):
-        self.fields["year"].initial = set_date_with_user_year(
-            self.user, date.today()
-        ).year
+        self.fields["year"].initial = self.user.year
 
     def _load_month_prices(self):
         """Loads tall DB rows into the wide UI inputs."""
@@ -324,9 +320,10 @@ class CopyPlanForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self._setup_initial_values()
+        self._setup_initial_values(today)
         self._translate_fields()
 
     def clean(self):
@@ -364,11 +361,9 @@ class CopyPlanForm(forms.Form):
                 obj.year = year_to
                 obj.save()
 
-    def _setup_initial_values(self):
-        current_year = timezone.now().year
-
-        self.fields["year_from"].initial = current_year
-        self.fields["year_to"].initial = current_year + 1
+    def _setup_initial_values(self, today):
+        self.fields["year_from"].initial = today.year
+        self.fields["year_to"].initial = today.year + 1
 
         for field in ["income", "expense", "saving", "day", "necessary"]:
             self.fields[field].initial = True

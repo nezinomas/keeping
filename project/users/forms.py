@@ -34,6 +34,7 @@ class InviteForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")

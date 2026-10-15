@@ -1,16 +1,17 @@
 from datetime import date
 
 import pytest
-import time_machine
 
 from ..forms import CountForm, CountTypeForm
 from .factories import CountTypeFactory
+
+TODAY = date(2000, 2, 2)
 
 pytestmark = pytest.mark.django_db
 
 
 def test_form_init_fields(main_user):
-    form = CountForm(user=main_user).as_p()
+    form = CountForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<input type="number" name="quantity"' in form
@@ -18,9 +19,8 @@ def test_form_init_fields(main_user):
     assert '<select name="count_type"' in form
 
 
-@time_machine.travel("1974-01-01")
 def test_form_year_initial_value(main_user):
-    form = CountForm(user=main_user).as_p()
+    form = CountForm(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
     assert '<input type="number" name="quantity" value="1"' in form
@@ -30,7 +30,9 @@ def test_form_valid_data(main_user):
     obj = CountTypeFactory(title="Xxx")
 
     form = CountForm(
-        user=main_user, data={"date": "1999-01-01", "count_type": obj, "quantity": 1.0}
+        user=main_user,
+        today=TODAY,
+        data={"date": "1999-01-01", "count_type": obj, "quantity": 1.0},
     )
 
     assert form.is_valid()
@@ -44,13 +46,13 @@ def test_form_valid_data(main_user):
     assert data.count_type.slug == "xxx"
 
 
-@time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
 def test_form_invalid_date(year, main_user):
     obj = CountTypeFactory(title="xxx")
 
     form = CountForm(
         user=main_user,
+        today=date(1999, 2, 2),
         data={"date": f"{year}-01-01", "count_type": obj, "quantity": 1.0},
     )
 
@@ -60,7 +62,7 @@ def test_form_invalid_date(year, main_user):
 
 
 def test_form_blank_data(main_user):
-    form = CountForm(user=main_user, data={})
+    form = CountForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -71,7 +73,9 @@ def test_form_blank_data(main_user):
 
 
 def test_form_no_count_type(main_user):
-    form = CountForm(user=main_user, data={"date": "1999-01-01", "quantity": 1.0})
+    form = CountForm(
+        user=main_user, today=TODAY, data={"date": "1999-01-01", "quantity": 1.0}
+    )
 
     assert not form.is_valid()
     assert len(form.errors) == 1
@@ -80,14 +84,14 @@ def test_form_no_count_type(main_user):
 
 
 def test_count_type_init_fields():
-    form = CountTypeForm().as_p()
+    form = CountTypeForm(today=TODAY).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<select name="user"' not in form
 
 
 def test_count_type_valid_data(main_user):
-    form = CountTypeForm(user=main_user, data={"title": "XXXXX"})
+    form = CountTypeForm(user=main_user, today=TODAY, data={"title": "XXXXX"})
 
     assert form.is_valid()
 
@@ -98,7 +102,7 @@ def test_count_type_valid_data(main_user):
 
 
 def test_count_type_blank_data(main_user):
-    form = CountTypeForm(user=main_user, data={})
+    form = CountTypeForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -139,7 +143,7 @@ def test_count_type_title_rejected(existing, title, errors, main_user):
     for existing_title in existing:
         CountTypeFactory(title=existing_title, user=main_user)
 
-    form = CountTypeForm(user=main_user, data={"title": title})
+    form = CountTypeForm(user=main_user, today=TODAY, data={"title": title})
 
     assert not form.is_valid()
     assert form.errors["title"] == errors
@@ -167,7 +171,7 @@ def test_count_type_title_rejected(existing, title, errors, main_user):
     ],
 )
 def test_count_type_title_no_longer_collides_with_a_route(title, main_user):
-    form = CountTypeForm(user=main_user, data={"title": title})
+    form = CountTypeForm(user=main_user, today=TODAY, data={"title": title})
 
     assert form.is_valid()
 
@@ -176,7 +180,7 @@ def test_form_count_type_and_second_user(main_user, second_user):
     own = CountTypeFactory(title="T1")
     other = CountTypeFactory(title="T2", user=second_user)
 
-    form = CountForm(user=main_user, data={}).as_p()
+    form = CountForm(user=main_user, today=TODAY, data={}).as_p()
 
     assert f'<option value="{own.pk}">T1</option>' in form
     assert f'<option value="{other.pk}">T2</option>' not in form
@@ -186,7 +190,7 @@ def test_form_load_select_count_type(main_user):
     selected = CountTypeFactory(title="T1")
     CountTypeFactory(title="T2")
 
-    form = CountForm(user=main_user, counter_type="t1").as_p()
+    form = CountForm(user=main_user, today=TODAY, counter_type="t1").as_p()
 
     assert f'<option value="{selected.pk}" selected>T1</option>' in form
 
@@ -194,7 +198,7 @@ def test_form_load_select_count_type(main_user):
 def test_count_type_same_slug_for_second_user_is_valid(main_user, second_user):
     CountTypeFactory(title="Būstas", user=second_user)
 
-    form = CountTypeForm(user=main_user, data={"title": "Bustas"})
+    form = CountTypeForm(user=main_user, today=TODAY, data={"title": "Bustas"})
 
     assert form.is_valid()
 
@@ -203,7 +207,9 @@ def test_count_type_same_slug_for_second_user_is_valid(main_user, second_user):
 def test_count_type_edit_keeping_its_slug_is_valid(title, main_user):
     count_type = CountTypeFactory(title="Būstas", user=main_user)
 
-    form = CountTypeForm(user=main_user, instance=count_type, data={"title": title})
+    form = CountTypeForm(
+        user=main_user, today=TODAY, instance=count_type, data={"title": title}
+    )
 
     assert form.is_valid()
 
@@ -218,7 +224,9 @@ def test_a_posted_user_is_ignored(main_user, second_user, form_class):
         "count_type": count_type.pk,
     }
 
-    form = form_class(user=main_user, data={**data, "user": second_user.pk})
+    form = form_class(
+        user=main_user, today=TODAY, data={**data, "user": second_user.pk}
+    )
 
     assert form.is_valid()
 

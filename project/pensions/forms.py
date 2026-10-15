@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -26,13 +24,14 @@ class PensionForm(
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
 
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        self.fields["date"].initial = datetime.now()
+        self.fields["date"].initial = self.today
 
         self.fields["pension_type"].queryset = PensionTypeModelService(
             self.user
@@ -52,6 +51,7 @@ class PensionTypeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         pin(self.fields["journal"], user.journal)
