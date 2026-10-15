@@ -4,6 +4,7 @@ from typing import cast
 
 import pytest
 
+from ....core.lib.date import years_to_date
 from ...services.summary_savings_and_incomes import Data, Service
 
 TODAY = date(2001, 1, 1)
@@ -22,7 +23,7 @@ S99, S00, S01 = (
 
 def _chart_data(user, incomes, savings):
     data = cast(Data, SimpleNamespace(incomes=incomes, savings=savings))
-    return Service(user, data, TODAY).chart_data()
+    return Service(data, years_to_date(user, TODAY)).chart_data()
 
 
 @pytest.mark.django_db

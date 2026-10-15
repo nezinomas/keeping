@@ -21,19 +21,17 @@ class Data:
 
 
 class Service:
-    def __init__(self, user: User, data: Data, today: date):
-        self.user = user
-        self._today = today
+    def __init__(self, data: Data, years: list[int]):
+        self._years = years
         self._incomes = data.incomes
         self._savings = data.savings
 
     def chart_data(self):
-        _categories = years_to_date(self.user, self._today)
         _incomes = {x["year"]: x["sum"] for x in self._incomes}
         _savings = {x["year"]: x["sum"] for x in self._savings}
 
         _income_values, _saving_values, _percent_values = [], [], []
-        for year in _categories:
+        for year in self._years:
             _income = _incomes.get(year, 0)
             _saving = _savings.get(year, 0)
             _percent = (_saving * 100) / _income if _income else 0
@@ -43,7 +41,7 @@ class Service:
             _percent_values.append(_percent)
 
         return {
-            "categories": _categories,
+            "categories": self._years,
             "incomes": _income_values,
             "savings": _saving_values,
             "percents": _percent_values,
@@ -52,7 +50,7 @@ class Service:
 
 def load_service(user: User, today: date) -> dict:
     data = Data(user)
-    obj = Service(user, data, today)
+    obj = Service(data, years_to_date(user, today))
 
     text = {
         "text": {
