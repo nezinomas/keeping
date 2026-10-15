@@ -15,22 +15,7 @@ from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
-class DateFieldMixin:
-    def clean_date(self):
-        dt = self.cleaned_data["date"]
-        now = datetime.now()
-        return datetime(
-            dt.year,
-            dt.month,
-            dt.day,
-            now.hour,
-            now.minute,
-            now.second,
-            tzinfo=timezone.utc,
-        )
-
-
-class WorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
+class WorthForm(PriceToCentsFormMixin, forms.ModelForm):
     # the fund field is declared, not in Meta.fields: model validation would
     # query it once per form; the formset hands every form the same funds
     price_fields = ("price",)
@@ -40,8 +25,9 @@ class WorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
         fields = ["date", "price"]
         labels = {"date": ""}
 
-    def __init__(self, *args, user, funds, today, **kwargs):
+    def __init__(self, *args, user, funds, today, now, **kwargs):
         super().__init__(*args, **kwargs)
+        self.now = now
 
         self.fields["date"].widget = DatePickerWidget()
         self.fields["date"].initial = core_date.set_date_with_user_year(user, today)
@@ -50,6 +36,13 @@ class WorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
     @property
     def fund_field(self):
         return self._meta.model.fund_field
+
+    def clean_date(self):
+        return datetime.combine(
+            self.cleaned_data["date"],
+            self.now.time().replace(microsecond=0),
+            tzinfo=timezone.utc,
+        )
 
     def clean(self):
         cleaned = super().clean()
