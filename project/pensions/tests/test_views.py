@@ -4,8 +4,8 @@ import pytest
 import time_machine
 from django.urls import reverse
 
-from ...core.tests.utils import clean_content
-from .. import models
+from ...core.tests.utils import clean_content, view_for
+from .. import models, views
 from .factories import Pension, PensionFactory, PensionTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -295,3 +295,10 @@ def test_pension_type_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_a_user_with_no_year_raises(rf, main_user):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        view_for(rf, main_user, views.Lists).get_queryset()

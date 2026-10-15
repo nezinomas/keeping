@@ -18,7 +18,7 @@ class Lists(ListViewMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return PensionModelService(user).year(user.year)
+        return PensionModelService(user).year(user.selected_year())
 
 
 class New(CreateViewMixin):
