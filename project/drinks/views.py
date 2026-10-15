@@ -78,7 +78,7 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = user.selected_year()
 
         return {
             **super().get_context_data(**kwargs),
@@ -91,7 +91,7 @@ class TabHabits(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = user.selected_year()
 
         return {
             **super().get_context_data(**kwargs),
@@ -105,7 +105,7 @@ class TypicalYearChart(TodayMixin, HtmxFormRetargetMixin, FormViewMixin):
     retarget = "#typical-year-form"
 
     def get(self, request, *args, **kwargs):
-        year = cast(int, cast(User, request.user).year)
+        year = cast(User, request.user).selected_year()
         pooled = services.NoPooledRange()
         if "qty" in self.kwargs:
             pooled = services.PooledRange.resolve(year, self.kwargs["qty"])
@@ -127,7 +127,7 @@ class TypicalYearChart(TodayMixin, HtmxFormRetargetMixin, FormViewMixin):
         user = cast(User, self.request.user)
 
         return services.TypicalYear.build(
-            user, cast(int, user.year), self.today, pooled
+            user, user.selected_year(), self.today, pooled
         )
 
     @staticmethod
@@ -150,7 +150,7 @@ class TabTrends(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = user.selected_year()
 
         return {
             **super().get_context_data(**kwargs),
@@ -163,7 +163,7 @@ class TabRisk(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = user.selected_year()
 
         return {
             **super().get_context_data(**kwargs),
@@ -184,10 +184,12 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
     tab = DrinkTab.resolve("history")
 
     def get_context_data(self, **kwargs):
+        user = cast(User, self.request.user)
+
         return {
             **super().get_context_data(**kwargs),
-            **{"form": forms.DrinkCompareForm(user=self.request.user)},
-            **services.history.load_service(self.request.user, self.today),
+            "form": forms.DrinkCompareForm(user=user),
+            **services.history.load_service(user, self.today),
         }
 
 
@@ -199,7 +201,7 @@ class Compare(TodayMixin, TemplateViewMixin):
 
         return {
             "chart": services.YearComparison.for_recent(
-                user, cast(int, user.year), self.kwargs.get("qty", 0), self.today
+                user, user.selected_year(), self.kwargs.get("qty", 0), self.today
             ),
             "form": forms.DrinkCompareForm(user=user),
         }
@@ -213,7 +215,7 @@ class CompareTwo(TodayMixin, HtmxFormRetargetMixin, FormViewMixin):
 
     def form_valid(self, form):
         chart = services.YearComparison.for_pair(
-            self.request.user,
+            cast(User, self.request.user),
             form.cleaned_data["year1"],
             form.cleaned_data["year2"],
             self.today,

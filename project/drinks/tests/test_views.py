@@ -878,6 +878,8 @@ def test_tab_history_has_unified_compare_panel(client_logged):
     assert "All years" not in content
 
     assert 'id="compare-form"' in content
+    assert 'name="year1"' in content
+    assert 'name="year2"' in content
     assert f'hx-post="{reverse("drinks:compare_two")}"' in content
     assert 'hx-target="#chart-history-container"' in content
 
@@ -1307,3 +1309,37 @@ def test_select_drink_htmx_reloads_the_tab(client_logged, tab, trigger):
     assert response.status_code == 204
     assert trigger in response.headers.get("HX-Trigger", "")
     assert User.objects.first().drink_type == "wine"
+
+
+def _post_typical_year(client):
+    # the form accepts only years the user has drinks in
+    DrinkFactory(date=date(1998, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+    url = reverse("drinks:typical_year")
+    return client.post(url, {"year_from": "1998", "year_to": "1999"})
+
+
+@pytest.mark.parametrize(
+    "send",
+    [
+        pytest.param(lambda c: c.get(reverse("drinks:index")), id="index"),
+        pytest.param(lambda c: c.get(reverse("drinks:tab_habits")), id="habits"),
+        pytest.param(lambda c: c.get(reverse("drinks:tab_trends")), id="trends"),
+        pytest.param(lambda c: c.get(reverse("drinks:tab_risk")), id="risk"),
+        pytest.param(
+            lambda c: c.get(reverse("drinks:typical_year_last", kwargs={"qty": 3})),
+            id="typical_year_last",
+        ),
+        pytest.param(_post_typical_year, id="typical_year_post"),
+        pytest.param(
+            lambda c: c.get(reverse("drinks:compare", kwargs={"qty": 1})),
+            id="compare",
+        ),
+    ],
+)
+def test_a_user_with_no_year_raises(client_logged, main_user, send):
+    main_user.year = None
+    main_user.save()
+
+    with pytest.raises(ValueError, match="has no year"):
+        send(client_logged)

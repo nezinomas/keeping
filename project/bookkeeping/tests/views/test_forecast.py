@@ -18,3 +18,11 @@ def test_302(client):
     response = client.get(url)
 
     assert response.status_code == 302
+
+
+def test_a_user_with_no_year_raises(client_logged, main_user):
+    main_user.year = None
+    main_user.save()
+
+    with pytest.raises(ValueError, match="has no year"):
+        client_logged.get(reverse("bookkeeping:forecast"))

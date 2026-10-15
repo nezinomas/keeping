@@ -47,3 +47,8 @@ def test_signup_with_long_username_gives_journal_a_valid_title():
 
     user.journal.full_clean()
     assert len(user.journal.title) <= max_length
+
+
+def test_selected_year_raises_for_a_user_with_no_year():
+    with pytest.raises(ValueError, match="has no year"):
+        UserFactory.build(year=None).selected_year()

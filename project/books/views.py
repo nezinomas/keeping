@@ -25,13 +25,6 @@ from .tabs import DEFAULT_TAB, TABS, BookTab
 ALL_RECORDS = "all"
 
 
-def _reading_year(user: User) -> int:
-    # User.year is NULL until the first login sets it (Avoid None 3, 5)
-    if user.year is None:
-        raise ValueError(f"{user} has no year")
-    return user.year
-
-
 class TabViewMixin(CoreTabViewMixin):
     tab = DEFAULT_TAB
     fragment_template = "books/tab_fragment.html"
@@ -56,7 +49,7 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            "cards": services.Cards.build(user, _reading_year(user)),
+            "cards": services.Cards.build(user, user.selected_year()),
             "chart": chart.context(),
         }
 
@@ -70,7 +63,7 @@ class Lists(ListViewMixin):
         service = self.service_class(user)
         if self.all_records:
             return service.objects
-        return service.year(_reading_year(user))
+        return service.year(user.selected_year())
 
     @property
     def all_records(self) -> bool:
