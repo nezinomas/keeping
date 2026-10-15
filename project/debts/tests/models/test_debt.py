@@ -281,7 +281,7 @@ def test_debt_post_delete(debt_type, incomes, expenses, balance):
         ),
     ],
 )
-def test_debt_post_delete_with_updt(debt_type, before, after):
+def test_debt_post_delete_with_update(debt_type, before, after):
     obj = DEBT_FACTORIES[debt_type](price=1)
     obj_delete = DEBT_FACTORIES[debt_type](price=10)
 
