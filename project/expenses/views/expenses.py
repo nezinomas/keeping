@@ -100,7 +100,6 @@ class Search(SearchViewMixin):
 
 class LoadExpenseName(ListViewMixin):
     template_name = "core/dropdown.html"
-    object_list = []
 
     def get(self, request, *args, **kwargs) -> HttpResponse:
         field = "expense_type"
@@ -108,15 +107,13 @@ class LoadExpenseName(ListViewMixin):
             field = f"{prefix}-expense_type"
 
         expense_type_pk = int_or_zero(request.GET.get(field))
-        if not expense_type_pk:
-            return self.render_to_response({"object_list": self.object_list})
-
-        year = int_or_zero(request.GET.get("year")) or request.user.year
-
-        self.object_list = (
-            ExpenseNameModelService(request.user)
-            .year(year)
-            .filter(parent=expense_type_pk)
-        )
+        self.object_list = []
+        if expense_type_pk:
+            year = int_or_zero(request.GET.get("year")) or request.user.selected_year()
+            self.object_list = (
+                ExpenseNameModelService(request.user)
+                .year(year)
+                .filter(parent=expense_type_pk)
+            )
 
         return self.render_to_response({"object_list": self.object_list})
