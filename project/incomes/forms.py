@@ -30,14 +30,15 @@ class IncomeForm(PriceToCentsFormMixin, YearNotLaterMixin, forms.ModelForm):
 
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        accounts = AccountModelService(self.user)
+        account_items = AccountModelService(self.user).items()
         incomes = IncomeTypeModelService(self.user)
 
-        self.fields["account"].initial = accounts.items().first()
+        if account := account_items.first():
+            self.fields["account"].initial = account
         self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
         self.fields["income_type"].queryset = incomes.items()
-        self.fields["account"].queryset = accounts.items()
+        self.fields["account"].queryset = account_items
 
         self.fields["date"].label = _("Date")
         self.fields["account"].label = _("Account")

@@ -55,7 +55,8 @@ class SavingForm(
 
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        self.fields["account"].initial = account_items.first()
+        if account := account_items.first():
+            self.fields["account"].initial = account
         self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
