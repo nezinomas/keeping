@@ -32,7 +32,6 @@ TABS = {
 
 
 def chart_data(content: str, chart: str) -> dict:
-    """The JSON a chart script carries; a chart the page lacks fails here."""
     match = re.search(
         rf'<script id="chart-{chart}-data" type="application/json">(.*?)</script>',
         content,
@@ -103,17 +102,17 @@ def test_index_quick_add(client_logged):
     assert '<select name="option" class="form-select"' in content
 
 
-def test_index_has_no_inline_separator_script(client_logged):
+@pytest.mark.parametrize(
+    "absent",
+    [
+        pytest.param("input.value.replace(/,/g, '.')", id="inline_separator_script"),
+        pytest.param("hx-swap-oob", id="switcher_swapped_out_of_band"),
+    ],
+)
+def test_index_carries_no(client_logged, absent):
     response = client_logged.get(reverse("drinks:index"))
 
-    assert "input.value.replace(/,/g, '.')" not in response.content.decode()
-
-
-def test_index_switcher_is_not_swapped_out_of_band(client_logged):
-    """The page draws the control itself; only a tab reload replaces it."""
-    response = client_logged.get(reverse("drinks:index"))
-
-    assert "hx-swap-oob" not in response.content.decode()
+    assert absent not in response.content.decode()
 
 
 def test_index_quick_add_prefilled_and_esc_close(client_logged, main_user):
@@ -265,7 +264,6 @@ def test_index_drink_type_press_closes_the_menu(client_logged):
 def test_tab_reload_swaps_the_switcher_out_of_band(
     url_name, expect, main_user, client_logged
 ):
-    """A tab arrives with the control its own readings are in."""
     main_user.drink_type = "wine"
     main_user.save()
 
@@ -289,7 +287,6 @@ def test_tab_reading_std_av_names_the_unit_and_offers_no_choice(
 
 @pytest.mark.parametrize("url_name", ["drinks:tab_habits", "drinks:tab_risk"])
 def test_tab_reading_std_av_says_the_whole_tab_is_in_it(url_name, client_logged):
-    """The caption is part of the one control, not a label sitting next to it."""
     response = client_logged.get(reverse(url_name), HTTP_HX_REQUEST="true")
     content = response.content.decode()
 
@@ -305,7 +302,6 @@ def test_tab_reading_std_av_says_the_whole_tab_is_in_it(url_name, client_logged)
     "url_name", ["drinks:tab_index", "drinks:tab_trends", "drinks:tab_history"]
 )
 def test_tab_choosing_the_unit_carries_no_caption(url_name, client_logged):
-    """The switcher says what it is by being pressable."""
     response = client_logged.get(reverse(url_name), HTTP_HX_REQUEST="true")
 
     assert _("Data shown as") not in response.content.decode()
@@ -320,7 +316,7 @@ def test_tab_reading_no_amount_empties_the_control(client_logged):
 
 # Tab urls
 def tab_button(content: str, name: str) -> str:
-    """The attributes of one tab button, so a test does not pin their order."""
+    # the attributes alone, so a test does not pin their order
     match = re.search(rf'<button\s+id="tab-{name}"(.*?)>', content, re.S)
 
     assert match, f"no button rendered for the {name} tab"
@@ -329,7 +325,6 @@ def tab_button(content: str, name: str) -> str:
 
 @pytest.mark.parametrize("url_name", list(TABS.values()))
 def test_tab_url_opens_the_whole_page(url_name, client_logged):
-    """A pushed url has to answer a bookmark and a reload, not just a swap."""
     response = client_logged.get(reverse(url_name))
     content = response.content.decode()
 
@@ -357,7 +352,6 @@ def test_tab_url_over_htmx_is_only_the_fragment(url_name, client_logged):
 
 
 def test_tab_url_restoring_history_is_the_whole_page(client_logged):
-    """Back asks over htmx too, and swaps what comes back into the whole body."""
     response = client_logged.get(
         reverse("drinks:tab_risk"),
         HTTP_HX_REQUEST="true",
@@ -462,7 +456,7 @@ def test_tab_renders_its_charts_and_cards(client_logged, tab, charts, markup, ca
 
 
 def test_back_reloads_the_page_rather_than_restoring_a_snapshot(client_logged):
-    """htmx 4 has no ajax history restore, so Back is a plain page load."""
+    # htmx 4 has no ajax history restore, so Back is a plain page load
     content = client_logged.get(reverse("drinks:index")).content.decode()
 
     assert 'hx-history="false"' not in content
@@ -543,7 +537,6 @@ def test_tab_index_daily_limit_edit_link_uses_target_update(client_logged):
     response = client_logged.get(url)
     content = response.content.decode()
 
-    # with a saved target the pencil points at target_update
     edit_url = reverse("drinks:target_update", kwargs={"pk": target.pk})
     assert (
         f'<button type="button" class="trend-card__edit" hx-get="{edit_url}"' in content
@@ -582,7 +575,7 @@ def test_tab_index_info_icon_sits_above_the_unit(client_logged):
 
 @time_machine.travel("1999-06-01")
 def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged):
-    """The arrow is set below the figure's size, so it needs its own element."""
+    # the arrow is set below the figure's size, so it needs its own element;
     # Drinking days has a direction only with a year to compare against
     DrinkFactory(date=date(1999, 1, 10), stdav=7)
     DrinkFactory(date=date(1998, 1, 10), stdav=8)
@@ -595,7 +588,6 @@ def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged)
 
 @time_machine.travel("1999-06-01")
 def test_tab_index_renders_the_state_modifier_for_a_compared_card(client_logged):
-    """The state is resolved from the direction, so the template reaches a property."""
     DrinkFactory(date=date(1999, 1, 10), stdav=7)
     DrinkFactory(date=date(1998, 1, 10), stdav=8)
 
@@ -607,7 +599,7 @@ def test_tab_index_renders_the_state_modifier_for_a_compared_card(client_logged)
 
 
 def test_tab_index_renders_the_unit_apart_from_the_figure(client_logged):
-    """The skin sets a unit at a third of the figure's size, so it needs an element."""
+    # the skin sets a unit at a third of the figure's size, so it needs an element
     DrinkFactory()
 
     response = client_logged.get(reverse("drinks:tab_index"))
