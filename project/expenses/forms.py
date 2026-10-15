@@ -144,10 +144,11 @@ class ExpenseForm(
         self.fields["price"].initial = "0.00"
 
     def _overwrite_account_query(self):
-        qs = AccountModelService(self.user).items()
+        service = AccountModelService(self.user)
+        qs = service.items()
 
         if self.instance.pk:
-            qs = AccountModelService(self.user).items(self.instance.date.year)
+            qs = service.items_in(self.instance.date.year)
 
         self.fields["account"].queryset = qs
 
