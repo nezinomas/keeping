@@ -14,13 +14,12 @@ class AccountForm(forms.ModelForm):
     field_order = ["title", "order", "closed"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
+        user = kwargs.pop("user")
         kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["closed"].widget = YearPickerWidget()
 
-        # journal input
         pin(self.fields["journal"], user.journal)
 
         self.fields["title"].label = _("Account title")

@@ -19,9 +19,6 @@ pytestmark = pytest.mark.django_db
 TODAY = date(1999, 1, 1)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                                 Drink
-# -------------------------------------------------------------------------------------
 def test_drink_init(main_user):
     DrinkForm(user=main_user, today=TODAY)
 
@@ -180,9 +177,6 @@ def test_drink_blank_data(main_user):
     assert "option" in form.errors
 
 
-# -------------------------------------------------------------------------------------
-#                                                                             Quick Add
-# -------------------------------------------------------------------------------------
 def test_quick_add_reads_the_quantity_the_bar_posts(main_user):
     form = QuickAddForm.from_post(
         {"quantity": "2.5", "option": "beer", "date": "1999-01-01"}, main_user, TODAY
@@ -230,9 +224,6 @@ def test_quick_add_saves_a_drink(main_user):
     assert Drink.objects.count() == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Drink Target
-# -------------------------------------------------------------------------------------
 def test_drink_target_init(main_user):
     DrinkTargetForm(user=main_user, today=TODAY)
 
@@ -350,9 +341,6 @@ def test_a_posted_user_is_ignored(main_user, second_user, form_class, data):
     assert form.save().user == main_user
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Drink Filter
-# -------------------------------------------------------------------------------------
 def test_drink_filter_init(main_user):
     DrinkCompareForm(user=main_user, today=TODAY)
 
@@ -423,9 +411,6 @@ def test_drink_filter_clean_years_fields(main_user, year1, year2, valid):
     assert form.is_valid() == valid
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Typical Year
-# -------------------------------------------------------------------------------------
 def test_typical_year_init(main_user):
     TypicalYearForm(user=main_user, today=TODAY)
 
