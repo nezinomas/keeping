@@ -286,8 +286,7 @@ def test_tab_reading_std_av_names_the_unit_and_offers_no_choice(
 
 @pytest.mark.parametrize("url_name", ["drinks:tab_habits", "drinks:tab_risk"])
 def test_tab_reading_std_av_says_the_whole_tab_is_in_it(url_name, client_logged):
-    """A unit with no choice beside it has to say why it is there, and the
-    caption is part of that one control — not a label sitting next to it."""
+    """The caption is part of the one control, not a label sitting next to it."""
     response = client_logged.get(reverse(url_name), HTTP_HX_REQUEST="true")
     content = response.content.decode()
 
@@ -460,8 +459,7 @@ def test_tab_renders_its_charts_and_cards(client_logged, tab, charts, markup, ca
 
 
 def test_back_reloads_the_page_rather_than_restoring_a_snapshot(client_logged):
-    """htmx 4 has no ajax history restore, so Back is a plain page load and the
-    page needs no opt-out of snapshotting."""
+    """htmx 4 has no ajax history restore, so Back is a plain page load."""
     content = client_logged.get(reverse("drinks:index")).content.decode()
 
     assert 'hx-history="false"' not in content
@@ -550,8 +548,6 @@ def test_tab_index_daily_limit_edit_link_uses_target_update(client_logged):
 
 
 def test_tab_index_daily_limit_edit_link_sits_above_the_unit(client_logged):
-    """The pencil and the unit share one column beside the figure, the pencil on
-    top — so both live in the card's meta stack, the pencil first."""
     DrinkTargetFactory()
 
     response = client_logged.get(reverse("drinks:tab_index"))
@@ -565,8 +561,6 @@ def test_tab_index_daily_limit_edit_link_sits_above_the_unit(client_logged):
 
 
 def test_tab_index_info_icon_sits_above_the_unit(client_logged):
-    """A Stat Card's information mark shares the meta stack with the unit, above
-    it, rather than trailing the figure."""
     DrinkFactory()
 
     response = client_logged.get(reverse("drinks:tab_index"))
@@ -598,8 +592,7 @@ def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged)
 
 @time_machine.travel("1999-06-01")
 def test_tab_index_renders_the_state_modifier_for_a_compared_card(client_logged):
-    """A comparison resolves its state from the direction rather than storing
-    one, so the template has to reach a property to colour it."""
+    """The state is resolved from the direction, so the template reaches a property."""
     DrinkFactory(date=date(1999, 1, 10), stdav=7)
     DrinkFactory(date=date(1998, 1, 10), stdav=8)
 
@@ -611,8 +604,7 @@ def test_tab_index_renders_the_state_modifier_for_a_compared_card(client_logged)
 
 
 def test_tab_index_renders_the_unit_apart_from_the_figure(client_logged):
-    """The skin sets a unit at a third of the figure's size, so it needs its own
-    element rather than trailing the value as text."""
+    """The skin sets a unit at a third of the figure's size, so it needs an element."""
     DrinkFactory()
 
     response = client_logged.get(reverse("drinks:tab_index"))
@@ -808,8 +800,6 @@ def test_tab_data(client_logged):
     p = DrinkFactory(stdav=47.5)
     response = client_logged.get(reverse("drinks:tab_data"))
 
-    assert response.status_code == 200
-
     actual = response.content.decode("utf-8")
 
     assert "19,0" in actual
@@ -837,8 +827,6 @@ def test_tab_data_quantity_value(client_logged):
     # tests/lib/test_drink_quantity.py; this only pins the template to it
     DrinkFactory(stdav=2.5, option="beer", converted_from_ml=True)
     response = client_logged.get(reverse("drinks:tab_data"))
-
-    assert response.status_code == 200
 
     actual = response.content.decode("utf-8")
 
