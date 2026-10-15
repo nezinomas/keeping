@@ -8,6 +8,7 @@ from ..core.lib.convert_price import NeverEmptyFormMixin, PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
+from ..core.lib.utils import int_or_zero
 from ..core.mixins.forms import YearBetweenMixin
 from ..savings.services.model_services import (
     SavingTypeModelService,
@@ -22,7 +23,7 @@ def set_to_account_choices(form, service):
     to_account.queryset = service.none()
 
     if from_account_pk := (
-        form.data.get("from_account") or form.instance.from_account_id
+        int_or_zero(form.data.get("from_account")) or form.instance.from_account_id
     ):
         to_account.queryset = service.items().exclude(pk=from_account_pk)
 

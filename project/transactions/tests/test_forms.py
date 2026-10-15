@@ -86,6 +86,21 @@ def test_form_selected_parent(main_user, second_user, name):
 
 
 @pytest.mark.parametrize("name", ["transaction", "saving_change"])
+def test_form_non_numeric_from_account_is_invalid(main_user, name):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
+
+    form = kind.form(
+        user=main_user,
+        today=TODAY,
+        data=_post(a_from, a_to, price="1", from_account="x"),
+    )
+
+    assert not form.is_valid()
+    assert "from_account" in form.errors
+
+
+@pytest.mark.parametrize("name", ["transaction", "saving_change"])
 def test_form_edit_offers_every_parent_but_the_stored_from_account(main_user, name):
     kind = KINDS[name]
     a_from, a_to = _parents(kind)
@@ -442,12 +457,19 @@ def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_new_unticked_move_after_the_last_reopens_the_fund(
-    main_user, move, fund, receiver
+@pytest.mark.parametrize(
+    "first_day, first_close, second_day",
+    [
+        pytest.param("1999-06-01", True, "1999-12-01", id="unticked_after_the_last"),
+        pytest.param("2000-12-01", False, "2000-06-01", id="unticked_before_the_last"),
+    ],
+)
+def test_form_new_unticked_move_leaves_the_fund_open_unless_it_is_the_last(
+    main_user, move, fund, receiver, first_day, first_close, second_day
 ):
-    _saved_move(main_user, move, fund, receiver, "1999-06-01", True)
+    _saved_move(main_user, move, fund, receiver, first_day, first_close)
 
-    _saved_move(main_user, move, fund, receiver, "1999-12-01", False)
+    _saved_move(main_user, move, fund, receiver, second_day, False)
 
     fund.refresh_from_db()
     assert fund.closed is None
@@ -517,18 +539,6 @@ def test_form_closing_move_edited_earlier_and_unticked_reopens_the_fund(
     closing = _saved_move(main_user, move, fund, receiver, "2000-12-01", True)
 
     _saved_move(main_user, move, fund, receiver, "2000-06-01", False, closing)
-
-    fund.refresh_from_db()
-    assert fund.closed is None
-
-
-@pytest.mark.parametrize("move", MOVES)
-def test_form_unticked_earlier_move_leaves_an_open_fund_open(
-    main_user, move, fund, receiver
-):
-    _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
-
-    _saved_move(main_user, move, fund, receiver, "2000-06-01", False)
 
     fund.refresh_from_db()
     assert fund.closed is None
