@@ -85,6 +85,23 @@ def test_form_refuses_more_expenses_than_the_column_holds(main_user):
     assert form.errors["choices"] == ["Pažymėta per daug išlaidų rūšių."]
 
 
+@pytest.mark.parametrize(
+    "room, valid", [(0, True), (-1, False)], ids=["at_the_limit", "one_over"]
+)
+def test_form_takes_choices_up_to_the_column_length(
+    main_user, monkeypatch, room, valid
+):
+    ticked = [ExpenseTypeFactory(title=f"T{i}").pk for i in range(3)]
+    column = Journal._meta.get_field("unnecessary_expenses")
+    monkeypatch.setattr(column, "max_length", len(json.dumps(ticked)) + room)
+
+    form = UnnecessaryForm(
+        user=main_user, today=TODAY, data={"savings": True, "choices": ticked}
+    )
+
+    assert form.is_valid() is valid
+
+
 def test_form_save_checked_none(main_user):
     ExpenseTypeFactory(title="X")
     ExpenseTypeFactory(title="Y")
