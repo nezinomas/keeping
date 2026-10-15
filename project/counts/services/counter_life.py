@@ -32,7 +32,7 @@ class CounterLife:
                 .items(count_type=count_type)
                 .values("date", qty=F("quantity"))
             ),
-            boundary=YearBoundary(user.year, today),
+            boundary=YearBoundary(user.selected_year(), today),
         )
 
     @cached_property
