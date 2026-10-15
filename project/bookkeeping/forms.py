@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 from django import forms
 from django.utils.translation import gettext as _
@@ -40,13 +40,11 @@ class WorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
         fields = ["date", "price"]
         labels = {"date": ""}
 
-    def __init__(self, *args, user, funds, **kwargs):
+    def __init__(self, *args, user, funds, today, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_date_with_user_year(
-            user, date.today()
-        )
+        self.fields["date"].initial = core_date.set_date_with_user_year(user, today)
         self.fields[self.fund_field].preload(funds)
 
     @property
@@ -109,7 +107,7 @@ class PensionWorthForm(WorthForm):
 class SummaryExpensesForm(forms.Form):
     types = forms.MultipleChoiceField(required=False)
 
-    def __init__(self, *args, user, **kwargs):
+    def __init__(self, *args, user, today, **kwargs):
         super().__init__(*args, **kwargs)
 
         choices = []

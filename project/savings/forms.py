@@ -1,5 +1,3 @@
-from datetime import date
-
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -20,6 +18,7 @@ class SavingTypeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["closed"].widget = YearPickerWidget()
@@ -48,6 +47,7 @@ class SavingForm(
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         account_items = AccountModelService(self.user).items()
@@ -57,7 +57,7 @@ class SavingForm(
         self.fields["remark"].widget.attrs["rows"] = 3
 
         self.fields["account"].initial = account_items.first()
-        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
         # overwrite ForeignKey saving_type and account queryset
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()

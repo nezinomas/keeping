@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 from django.forms.models import model_to_dict
 
 from ....accounts.tests.factories import AccountFactory
@@ -9,11 +8,13 @@ from ....users.tests.factories import UserFactory
 from ... import forms
 from .. import factories
 
+TODAY = date(2000, 2, 2)
+
 pytestmark = pytest.mark.django_db
 
 
 def test_debt_init_fields(main_user):
-    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
+    form = forms.DebtForm(user=main_user, today=TODAY, debt_type="lend").as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<select name="account"' in form
@@ -34,16 +35,17 @@ def test_debt_init_fields(main_user):
     ],
 )
 def test_debt_name_field_label(main_user, debt_type, label):
-    form = forms.DebtForm(user=main_user, debt_type=debt_type).as_p()
+    form = forms.DebtForm(user=main_user, today=TODAY, debt_type=debt_type).as_p()
 
     assert f'<label for="id_name">{label}:</label>' in form
 
 
-@time_machine.travel("1974-01-01")
 def test_debt_initial_values(main_user):
     UserFactory()
 
-    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
+    form = forms.DebtForm(
+        user=main_user, today=date(1974, 1, 1), debt_type="lend"
+    ).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
@@ -53,7 +55,7 @@ def test_debt_select_first_account(main_user, second_user):
 
     a2 = AccountFactory(title="A2")
 
-    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
+    form = forms.DebtForm(user=main_user, today=TODAY, debt_type="lend").as_p()
 
     expect = f'<option value="{a2.pk}" selected>{a2}</option>'
     assert expect in form
@@ -80,6 +82,7 @@ def test_debt_select_first_account(main_user, second_user):
 def test_debt_name_length_rejected(main_user, name, error):
     form = forms.DebtForm(
         user=main_user,
+        today=TODAY,
         debt_type="lend",
         data={
             "date": "1999-01-01",
@@ -104,6 +107,7 @@ def test_debt_valid_data(main_user, price, cents):
 
     form = forms.DebtForm(
         user=main_user,
+        today=TODAY,
         debt_type="lend",
         data={
             "date": "1999-01-01",
@@ -127,13 +131,13 @@ def test_debt_valid_data(main_user, price, cents):
     assert not e.closed
 
 
-@time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
 def test_debt_invalid_date(year, main_user):
     a = AccountFactory()
 
     form = forms.DebtForm(
         user=main_user,
+        today=date(1999, 2, 2),
         debt_type="lend",
         data={
             "date": f"{year}-01-01",
@@ -151,7 +155,7 @@ def test_debt_invalid_date(year, main_user):
 
 
 def test_debt_blank_data(main_user):
-    form = forms.DebtForm(user=main_user, debt_type="lend", data={})
+    form = forms.DebtForm(user=main_user, today=TODAY, debt_type="lend", data={})
 
     assert not form.is_valid()
 
@@ -171,6 +175,7 @@ def test_debt_same_name_for_diff_journal(main_user, second_user):
 
     form = forms.DebtForm(
         user=main_user,
+        today=TODAY,
         debt_type="lend",
         data={
             "date": "1999-01-04",
@@ -190,7 +195,7 @@ def test_debt_unique_name(main_user):
     d = model_to_dict(obj)
     d["name"] = "XXX"
 
-    form = forms.DebtForm(user=main_user, debt_type="lend", data=d)
+    form = forms.DebtForm(user=main_user, today=TODAY, debt_type="lend", data=d)
 
     assert not form.is_valid()
     assert "name" in form.errors
@@ -203,7 +208,9 @@ def test_debt_unique_name_unclose_with_same_name(main_user):
     obj = factories.LendFactory(name="XXX", closed=True)
     obj.closed = False
 
-    form = forms.DebtForm(user=main_user, debt_type="lend", data=model_to_dict(obj))
+    form = forms.DebtForm(
+        user=main_user, today=TODAY, debt_type="lend", data=model_to_dict(obj)
+    )
 
     assert form.is_bound
     assert not form.is_valid()
@@ -213,7 +220,9 @@ def test_debt_unique_name_unclose_with_same_name(main_user):
 
 def test_debt_cant_close(main_user):
     obj = factories.LendFactory(name="Xxx", closed=True)
-    form = forms.DebtForm(user=main_user, debt_type="lend", data=model_to_dict(obj))
+    form = forms.DebtForm(
+        user=main_user, today=TODAY, debt_type="lend", data=model_to_dict(obj)
+    )
 
     assert not form.is_valid()
     assert len(form.errors) == 1
@@ -226,7 +235,9 @@ def test_debt_edit_with_an_invalid_price_is_a_field_error(main_user, price):
     obj = factories.LendFactory(price=10000, returned=5000)
     data = model_to_dict(obj) | {"price": price}
 
-    form = forms.DebtForm(user=main_user, debt_type="lend", instance=obj, data=data)
+    form = forms.DebtForm(
+        user=main_user, today=TODAY, debt_type="lend", instance=obj, data=data
+    )
 
     assert list(form.errors) == ["price"]
 
@@ -246,7 +257,9 @@ def test_debt_price_not_below_what_is_returned(main_user, price, errors):
     obj = factories.LendFactory(price=10000, returned=5000)
     data = model_to_dict(obj) | {"price": price}
 
-    form = forms.DebtForm(user=main_user, debt_type="lend", instance=obj, data=data)
+    form = forms.DebtForm(
+        user=main_user, today=TODAY, debt_type="lend", instance=obj, data=data
+    )
 
     assert form.errors == errors
 
@@ -280,6 +293,7 @@ def test_debt_ignores_a_posted_journal(main_user, second_user, instance_of):
 
     form = forms.DebtForm(
         user=main_user,
+        today=TODAY,
         debt_type="lend",
         instance=instance_of(main_user, a),
         data=_debt_data(a, second_user),

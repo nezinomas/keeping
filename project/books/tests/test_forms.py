@@ -1,11 +1,12 @@
 from datetime import date
 
 import pytest
-import time_machine
 
 from ..forms import BookForm, BookTargetForm
 from ..models import Book
 from .factories import BookTargetFactory
+
+TODAY = date(2000, 2, 2)
 
 pytestmark = pytest.mark.django_db
 
@@ -30,14 +31,13 @@ pytestmark = pytest.mark.django_db
     ids=["book", "book_target"],
 )
 def test_form_init_fields(main_user, form_class, inputs):
-    form = form_class(user=main_user).as_p()
+    form = form_class(user=main_user, today=TODAY).as_p()
 
     for expected in inputs:
         assert expected in form
     assert '<select name="user"' not in form
 
 
-@time_machine.travel("1974-01-01")
 @pytest.mark.parametrize(
     ("form_class", "expected"),
     [
@@ -47,7 +47,7 @@ def test_form_init_fields(main_user, form_class, inputs):
     ids=["book_year", "book_target_year"],
 )
 def test_form_year_initial_value(main_user, form_class, expected):
-    form = form_class(user=main_user).as_p()
+    form = form_class(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert expected in form
 
@@ -60,6 +60,7 @@ def test_form_year_initial_value(main_user, form_class, expected):
 def test_book_valid_data(main_user, ended):
     form = BookForm(
         user=main_user,
+        today=TODAY,
         data={
             "started": "1999-01-01",
             "ended": ended,
@@ -79,7 +80,6 @@ def test_book_valid_data(main_user, ended):
     assert data.user.username == "bob"
 
 
-@time_machine.travel("2000-2-2")
 @pytest.mark.parametrize(
     ("data", "field", "message"),
     [
@@ -106,7 +106,9 @@ def test_book_valid_data(main_user, ended):
     ],
 )
 def test_book_refuses_a_date(main_user, data, field, message):
-    form = BookForm(user=main_user, data={"author": "Author", "title": "Title", **data})
+    form = BookForm(
+        user=main_user, today=TODAY, data={"author": "Author", "title": "Title", **data}
+    )
 
     assert not form.is_valid()
     assert message in form.errors[field]
@@ -121,7 +123,7 @@ def test_book_refuses_a_date(main_user, data, field, message):
     ids=["book", "book_target"],
 )
 def test_blank_data(main_user, form_class, fields):
-    form = form_class(user=main_user, data={})
+    form = form_class(user=main_user, today=TODAY, data={})
 
     assert form.errors == {field: ["Šis laukas yra privalomas."] for field in fields}
 
@@ -188,14 +190,16 @@ def test_book_text_length(main_user, field, value, errors):
         field: value,
     }
 
-    form = BookForm(user=main_user, data=data)
+    form = BookForm(user=main_user, today=TODAY, data=data)
 
     assert form.errors == errors
 
 
 @pytest.mark.parametrize("year", ["2000", 2000], ids=["text", "number"])
 def test_book_target_valid_data(year, main_user):
-    form = BookTargetForm(user=main_user, data={"year": year, "quantity": 1.0})
+    form = BookTargetForm(
+        user=main_user, today=TODAY, data={"year": year, "quantity": 1.0}
+    )
 
     assert form.is_valid()
 
@@ -209,7 +213,9 @@ def test_book_target_valid_data(year, main_user):
 def test_book_target_year_validation(main_user):
     BookTargetFactory()
 
-    form = BookTargetForm(user=main_user, data={"year": 1999, "quantity": 200})
+    form = BookTargetForm(
+        user=main_user, today=TODAY, data={"year": 1999, "quantity": 200}
+    )
 
     assert not form.is_valid()
 
@@ -225,7 +231,9 @@ def test_book_target_year_validation(main_user):
     ids=["book", "book_target"],
 )
 def test_a_posted_user_is_ignored(main_user, second_user, form_class, data):
-    form = form_class(user=main_user, data={**data, "user": second_user.pk})
+    form = form_class(
+        user=main_user, today=TODAY, data={**data, "user": second_user.pk}
+    )
 
     assert form.is_valid()
 

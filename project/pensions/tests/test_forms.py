@@ -1,16 +1,17 @@
 from datetime import date
 
 import pytest
-import time_machine
 
 from ..forms import PensionForm, PensionTypeForm
 from .factories import PensionTypeFactory
+
+TODAY = date(1999, 2, 2)
 
 pytestmark = pytest.mark.django_db
 
 
 def test_pension_type_init_fields(main_user):
-    form = PensionTypeForm(user=main_user).as_p()
+    form = PensionTypeForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<select name="user"' not in form
@@ -19,6 +20,7 @@ def test_pension_type_init_fields(main_user):
 def test_pension_type_valid_data(main_user):
     form = PensionTypeForm(
         user=main_user,
+        today=TODAY,
         data={
             "title": "Title",
         },
@@ -38,7 +40,7 @@ def test_pension_type_valid_data(main_user):
     ids=["blank", "null", "too_long", "too_short"],
 )
 def test_pension_type_invalid_title(main_user, data):
-    form = PensionTypeForm(user=main_user, data=data)
+    form = PensionTypeForm(user=main_user, today=TODAY, data=data)
 
     assert not form.is_valid()
 
@@ -61,14 +63,14 @@ def test_pension_type_title_error(main_user, title, existing, message):
     for existing_title in existing:
         PensionTypeFactory(title=existing_title)
 
-    form = PensionTypeForm(user=main_user, data={"title": title})
+    form = PensionTypeForm(user=main_user, today=TODAY, data={"title": title})
 
     assert not form.is_valid()
     assert form.errors["title"] == [message]
 
 
 def test_pension_init_fields(main_user):
-    form = PensionForm(user=main_user).as_p()
+    form = PensionForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<select name="pension_type"' in form
@@ -94,6 +96,7 @@ def test_pension_saves_price_and_fee_in_cents(main_user, posted, price, fee):
 
     form = PensionForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "2000-01-01",
             "remark": "remark",
@@ -113,13 +116,13 @@ def test_pension_saves_price_and_fee_in_cents(main_user, posted, price, fee):
     assert data.pension_type.title == t.title
 
 
-@time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
 def test_pension_invalid_date(main_user, year):
     t = PensionTypeFactory()
 
     form = PensionForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": f"{year}-01-01",
             "price": "1.0",
@@ -133,8 +136,14 @@ def test_pension_invalid_date(main_user, year):
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
+def test_pension_date_starts_at_today(main_user):
+    form = PensionForm(user=main_user, today=date(2005, 3, 4))
+
+    assert form["date"].value() == date(2005, 3, 4)
+
+
 def test_pension_blank_data(main_user):
-    form = PensionForm(user=main_user, data={})
+    form = PensionForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -154,6 +163,7 @@ def test_pension_price_and_fee_need_a_positive_one(main_user, posted):
 
     form = PensionForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "2000-01-01",
             "remark": "remark",
@@ -175,6 +185,7 @@ def test_pension_type_ignores_a_posted_journal(main_user, second_user, editing):
 
     form = PensionTypeForm(
         user=main_user,
+        today=TODAY,
         instance=obj,
         data={"journal": second_user.journal.pk, "title": "Mine"},
     )
@@ -187,6 +198,7 @@ def test_pension_type_ignores_a_posted_journal(main_user, second_user, editing):
 def test_pension_rejects_a_type_of_another_journal(main_user, second_user):
     form = PensionForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "1999-01-01",
             "price": 0.01,

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -59,6 +59,15 @@ def test_worth_form_valid_data(main_user, form_class, factory, field, price, cen
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
     assert data.price == cents
     assert data.serializable_value(field) == related.pk
+
+
+@WORTH_FORMS
+def test_worth_form_date_starts_at_today_in_the_users_year(
+    main_user, form_class, factory, field
+):
+    form = worth_form(form_class, main_user, today=date(2005, 3, 4))
+
+    assert form["date"].value() == datetime(main_user.year, 3, 4)
 
 
 @WORTH_FORMS

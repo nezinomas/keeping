@@ -1,5 +1,3 @@
-from datetime import date
-
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -25,6 +23,7 @@ class IncomeForm(PriceToCentsFormMixin, YearNotLaterMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -35,7 +34,7 @@ class IncomeForm(PriceToCentsFormMixin, YearNotLaterMixin, forms.ModelForm):
         incomes = IncomeTypeModelService(self.user)
 
         self.fields["account"].initial = accounts.items().first()
-        self.fields["date"].initial = set_date_with_user_year(self.user, date.today())
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
         self.fields["income_type"].queryset = incomes.items()
         self.fields["account"].queryset = accounts.items()
@@ -54,6 +53,7 @@ class IncomeTypeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         pin(self.fields["journal"], user.journal)

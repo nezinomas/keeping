@@ -15,6 +15,8 @@ from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 
 pytestmark = pytest.mark.django_db
 
+TODAY = date(1999, 1, 1)
+
 
 class _Kind(NamedTuple):
     form: type
@@ -57,16 +59,15 @@ def _post(a_from, a_to, **fields):
 
 @pytest.mark.parametrize("name", KINDS)
 def test_form_fields(main_user, name):
-    form = KINDS[name].form(user=main_user).as_p()
+    form = KINDS[name].form(user=main_user, today=TODAY).as_p()
 
     for field in KINDS[name].fields:
         assert field in form
 
 
-@time_machine.travel("1974-01-01")
 @pytest.mark.parametrize("name", KINDS)
 def test_form_year_initial_value(main_user, name):
-    form = KINDS[name].form(user=main_user).as_p()
+    form = KINDS[name].form(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
@@ -77,7 +78,9 @@ def test_form_selected_parent(main_user, second_user, name):
     a_from = kind.source(title="From")
     kind.source(title="Theirs", journal=second_user.journal)
 
-    form = kind.form(user=main_user, data={"from_account": a_from.pk}).as_p()
+    form = kind.form(
+        user=main_user, today=TODAY, data={"from_account": a_from.pk}
+    ).as_p()
 
     assert f'<option value="{a_from.pk}" selected>From</option>' in form
     assert f'<option value="{a_from.pk}">From</option>' not in form
@@ -89,7 +92,9 @@ def test_form_valid_data(main_user, name, posted, cents):
     kind = KINDS[name]
     a_from, a_to = _parents(kind)
 
-    form = kind.form(user=main_user, data=_post(a_from, a_to, price=posted))
+    form = kind.form(
+        user=main_user, today=TODAY, data=_post(a_from, a_to, price=posted)
+    )
 
     assert form.is_valid(), form.errors
 
@@ -114,13 +119,14 @@ def test_form_fee_is_stored_in_cents(main_user, name, fields, cents):
     kind = KINDS[name]
     a_from, a_to = _parents(kind)
 
-    form = kind.form(user=main_user, data=_post(a_from, a_to, price="0.01", **fields))
+    form = kind.form(
+        user=main_user, today=TODAY, data=_post(a_from, a_to, price="0.01", **fields)
+    )
 
     assert form.is_valid(), form.errors
     assert form.save().fee == cents
 
 
-@time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
 @pytest.mark.parametrize("name", KINDS)
 def test_form_invalid_date(main_user, name, year):
@@ -129,6 +135,7 @@ def test_form_invalid_date(main_user, name, year):
 
     form = kind.form(
         user=main_user,
+        today=TODAY,
         data=_post(a_from, a_to, date=f"{year}-01-01", price="1.0"),
     )
 
@@ -139,7 +146,7 @@ def test_form_invalid_date(main_user, name, year):
 
 @pytest.mark.parametrize("name", KINDS)
 def test_form_blank_data(main_user, name):
-    form = KINDS[name].form(user=main_user, data={})
+    form = KINDS[name].form(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -154,7 +161,7 @@ def test_form_price_null(main_user, name):
     kind = KINDS[name]
     a_from, a_to = _parents(kind)
 
-    form = kind.form(user=main_user, data=_post(a_from, a_to, price="0"))
+    form = kind.form(user=main_user, today=TODAY, data=_post(a_from, a_to, price="0"))
 
     assert not form.is_valid()
 
@@ -178,7 +185,7 @@ def test_form_lists_a_fund_closed_only_up_to_the_year(
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = KINDS[name].form(user=main_user, data={})
+    form = KINDS[name].form(user=main_user, today=TODAY, data={})
 
     assert "S1" in str(form["from_account"])
     assert ("S2" in str(form["from_account"])) is closed_listed
@@ -195,6 +202,7 @@ def test_form_save_and_close_from_account(main_user, name):
 
     form = kind.form(
         user=main_user,
+        today=TODAY,
         data=_post(a_from, a_to, price="0.01", fee="0.01", close=True),
     )
     assert form.is_valid()
@@ -283,7 +291,7 @@ def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
         "close": close,
     }
 
-    form = MOVES[move].form(user=main_user, data=data)
+    form = MOVES[move].form(user=main_user, today=TODAY, data=data)
     assert form.is_valid()
     form.save()
     after_form = _balances()
@@ -316,6 +324,7 @@ def _move_data(fund, receiver, day, close):
 def _saved_move(main_user, move, fund, receiver, day, close, instance=None):
     form = MOVES[move].form(
         user=main_user,
+        today=TODAY,
         instance=instance,
         data=_move_data(fund, receiver, day, close),
     )
@@ -523,7 +532,7 @@ def test_form_unticked_earlier_move_leaves_an_open_fund_open(
 # a stored fee of 0 is read as nothing entered
 def _fee_less_move(main_user, move, fund, receiver):
     data = _move_data(fund, receiver, "1999-01-01", False) | {"fee": ""}
-    form = MOVES[move].form(user=main_user, data=data)
+    form = MOVES[move].form(user=main_user, today=TODAY, data=data)
     assert form.is_valid()
     return form.save(), data
 
@@ -534,7 +543,7 @@ def test_form_edit_shows_a_stored_zero_fee_as_an_empty_field(
 ):
     row, _data = _fee_less_move(main_user, move, fund, receiver)
 
-    form = MOVES[move].form(user=main_user, instance=row)
+    form = MOVES[move].form(user=main_user, today=TODAY, instance=row)
 
     assert " value=" not in form["fee"].as_widget()
 
@@ -544,10 +553,13 @@ def test_form_edit_posts_its_own_empty_fee_back_and_saves_zero(
     main_user, move, fund, receiver
 ):
     row, data = _fee_less_move(main_user, move, fund, receiver)
-    shown = MOVES[move].form(user=main_user, instance=row)
+    shown = MOVES[move].form(user=main_user, today=TODAY, instance=row)
 
     edit = MOVES[move].form(
-        user=main_user, instance=row, data=data | {"fee": shown["fee"].value()}
+        user=main_user,
+        today=TODAY,
+        instance=row,
+        data=data | {"fee": shown["fee"].value()},
     )
 
     assert edit.is_valid(), edit.errors
@@ -558,7 +570,7 @@ def test_form_edit_posts_its_own_empty_fee_back_and_saves_zero(
 def test_form_edit_shows_a_stored_fee_as_it_is(main_user, move, fund, receiver):
     row = _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
 
-    edit = MOVES[move].form(user=main_user, instance=row)
+    edit = MOVES[move].form(user=main_user, today=TODAY, instance=row)
 
     assert edit["fee"].value() == row.fee
 
@@ -573,7 +585,7 @@ def test_form_rejects_a_parent_of_another_journal(main_user, second_user, name, 
     foreign = {"from_account": kind.source, "to_account": kind.target}[field]
     data[field] = foreign(title="Theirs", journal=second_user.journal).pk
 
-    form = kind.form(user=main_user, data=data)
+    form = kind.form(user=main_user, today=TODAY, data=data)
 
     assert not form.is_valid()
     assert field in form.errors

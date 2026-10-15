@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils.html import escape
 from django.utils.translation import gettext as _
 
+from ...core.mixins import kwargs as core_kwargs
 from ...core.tests.utils import setup_view
 from ...users.tests.factories import User
 from .. import models, views
@@ -749,7 +750,9 @@ def test_typical_year_valid_post_pools_the_asked_range(client_logged):
 
 @time_machine.travel("1999-06-01")
 def test_every_figure_stops_at_the_views_today(client_logged, mocker):
-    mocker.patch.object(views, "date", mocker.Mock(today=lambda: date(1999, 3, 1)))
+    mocker.patch.object(
+        core_kwargs, "date", mocker.Mock(today=lambda: date(1999, 3, 1))
+    )
     DrinkFactory(date=date(1998, 1, 1), stdav=2.5)
     DrinkFactory(date=date(1999, 1, 15), stdav=2.5)
     DrinkFactory(date=date(1999, 3, 1), stdav=2.5)
