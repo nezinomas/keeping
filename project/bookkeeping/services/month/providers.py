@@ -20,7 +20,7 @@ from .dtos import MonthDataDTO
 class MonthDataProvider:
     def __init__(self, user: User):
         self.user = user
-        self.year = user.year
+        self.year = user.selected_year()
         self.month = user.month
 
     def get_data(self) -> MonthDataDTO:

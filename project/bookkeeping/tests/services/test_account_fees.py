@@ -28,6 +28,7 @@ def _purchase(fee_source, title="Fund", day=date(1999, 1, 1), price=200, fee=3):
 
 
 TODAY = date(1999, 1, 1)
+FORECAST_TODAY = date(1999, 1, 15)
 
 
 def _queries(func, *args):
@@ -36,7 +37,6 @@ def _queries(func, *args):
     return len(ctx)
 
 
-# Month view
 @pytest.mark.parametrize("fee_source, balance", [(ACCOUNT, 797), (INVESTMENT, 800)])
 def test_month_balance_subtracts_account_fees_only(main_user, fee_source, balance):
     main_user.month = 1
@@ -81,41 +81,36 @@ def test_month_query_count_does_not_grow(main_user):
     assert _queries(month_load_service, main_user, TODAY) == two
 
 
-# Forecast
-@time_machine.travel("1999-01-15")
 @pytest.mark.parametrize("fee_source, end", [(ACCOUNT, 797), (INVESTMENT, 800)])
 def test_forecast_end_balance_subtracts_account_fees_only(main_user, fee_source, end):
     IncomeFactory(price=1000)
     _purchase(fee_source)
 
-    actual = forecast_load_service(main_user)
+    actual = forecast_load_service(main_user, FORECAST_TODAY)
 
     assert actual["data"][1] == end
 
 
-@time_machine.travel("1999-01-15")
 def test_forecast_counts_a_fee_paid_with_no_price(main_user):
     IncomeFactory(price=1000)
     _purchase(ACCOUNT, price=0)
 
-    actual = forecast_load_service(main_user)
+    actual = forecast_load_service(main_user, FORECAST_TODAY)
 
     assert actual["data"][1] == 997
 
 
-@time_machine.travel("1999-01-15")
 def test_forecast_query_count_does_not_grow(main_user):
     for i in range(2):
         _purchase(ACCOUNT, title=f"T{i}")
-    two = _queries(forecast_load_service, main_user)
+    two = _queries(forecast_load_service, main_user, FORECAST_TODAY)
 
     for i in range(2, 6):
         _purchase(ACCOUNT, title=f"T{i}")
 
-    assert _queries(forecast_load_service, main_user) == two
+    assert _queries(forecast_load_service, main_user, FORECAST_TODAY) == two
 
 
-# No incomes
 @pytest.fixture(name="savings_are_spending")
 def fixture_savings_are_spending(main_user):
     main_user.journal.unnecessary_savings = True
