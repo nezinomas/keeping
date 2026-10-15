@@ -9,7 +9,8 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from .. import models
+from ...core.tests.utils import view_for
+from .. import models, views
 from ..tabs import TABS
 from .factories import Income, IncomeFactory, IncomeTypeFactory
 
@@ -545,3 +546,26 @@ def test_tab_query_count_does_not_grow_with_the_incomes(client_logged, tab):
     six = _tab_queries(client_logged, tab)
 
     assert six == two
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabIndex).get_context_data(),
+            id="tab_index",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.Lists).get_queryset(), id="list"
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabTypes).get_context_data(),
+            id="tab_types",
+        ),
+    ],
+)
+def test_a_user_with_no_year_raises(rf, main_user, call):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        call(rf, main_user)
