@@ -30,7 +30,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "option", "stdav"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
@@ -137,13 +137,13 @@ class TypicalYearForm(forms.Form):
     field_order = ["year_from", "year_to"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         # one query, read twice: the years propose the defaults here and decide
         # what is a real year in clean()
-        self._years = DrinkModelService(self.user).years() if self.user else []
+        self._years = DrinkModelService(self.user).years()
 
         self.fields["year_from"].label = ""
         self.fields["year_to"].label = ""
@@ -185,8 +185,8 @@ class DrinkCompareForm(forms.Form):
     field_order = ["year1", "year2"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
-        today = kwargs.pop("today")
+        self.user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["year1"].label = ""
@@ -194,7 +194,7 @@ class DrinkCompareForm(forms.Form):
 
         # initial values: the year in the header, which is not always the calendar
         # one — the user can be looking at a year that has not started yet
-        self.fields["year2"].initial = getattr(self.user, "year", None) or today.year
+        self.fields["year2"].initial = self.user.year
 
     def clean(self):
         cleaned = super().clean()

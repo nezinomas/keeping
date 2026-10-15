@@ -17,7 +17,7 @@ class UnnecessaryForm(forms.Form):
     savings = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
@@ -37,13 +37,10 @@ class UnnecessaryForm(forms.Form):
     def save(self):
         journal = self.user.journal
 
-        choices = None
-        if self.cleaned_data.get("choices"):
-            choices = list(self.cleaned_data["choices"].values_list("pk", flat=True))
-            choices = json.dumps(choices)
+        choices = self.cleaned_data["choices"].values_list("pk", flat=True)
 
-        journal.unnecessary_expenses = choices
-        journal.unnecessary_savings = self.cleaned_data.get("savings")
+        journal.unnecessary_expenses = json.dumps(list(choices))
+        journal.unnecessary_savings = self.cleaned_data["savings"]
 
         journal.save()
 
@@ -53,7 +50,7 @@ class SettingsForm(forms.Form):
     title = forms.CharField(validators=Journal._meta.get_field("title").validators)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
