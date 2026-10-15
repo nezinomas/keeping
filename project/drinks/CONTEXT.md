@@ -33,9 +33,7 @@ year's Drink Target and its reach back into the year before.
 _Avoid_: period, dataset, year data
 
 **Year boundary**:
-How far into a year a metric may read: today while the year is still running,
-Dec 31 once it is over — and, for the year before it, only as far as the same
-month and day. One rule, shared by every lib that reports a year.
+How far into a year a metric may read; defined in [core](../core/CONTEXT.md).
 _Avoid_: cutoff, year end, clipping
 
 **Year Comparison**:
