@@ -583,13 +583,15 @@ def test_plan_year_starts_at_the_users_year(main_user, kind):
 @pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
 def test_plan_ignores_a_posted_journal(main_user, second_user, kind, editing):
     data = _plan_data(kind, main_user, second_user)
-    obj = None
-    if editing:
-        obj = kind.factory(
+    obj = (
+        kind.factory(
             journal=main_user.journal,
             **kind.extra,
             **_owned_types(kind, main_user.journal),
         )
+        if editing
+        else None
+    )
 
     form = kind.form(user=main_user, today=TODAY, instance=obj, data=data)
 
