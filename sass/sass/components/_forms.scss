@@ -5,14 +5,14 @@ select,
 textarea {
     appearance: none;
 
-    &:disabled,
-    &[readonly] {
+    &:disabled {
         background-color: $disabled;
         opacity: 1;
     }
 
     &[readonly] {
         background-color: $disabled;
+        opacity: 1;
         color: #9ca3af;
         cursor: not-allowed;
 
