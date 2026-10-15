@@ -11,6 +11,10 @@ from ..expenses.services.model_services import ExpenseTypeModelService
 from .models import Journal
 
 
+def pks_json(choices):
+    return json.dumps(list(choices.values_list("pk", flat=True)))
+
+
 class UnnecessaryForm(forms.Form):
     choices = forms.ModelMultipleChoiceField(
         queryset=None, widget=forms.CheckboxSelectMultiple, required=False
@@ -36,19 +40,18 @@ class UnnecessaryForm(forms.Form):
         self.fields["choices"].label = False
 
     def clean_choices(self):
-        pks = self.cleaned_data["choices"].values_list("pk", flat=True)
-        expenses = json.dumps(list(pks))
+        choices = self.cleaned_data["choices"]
 
         column = Journal._meta.get_field("unnecessary_expenses")
-        if len(expenses) > column.max_length:
+        if len(pks_json(choices)) > column.max_length:
             raise ValidationError(_("Too many expense types selected."))
 
-        return expenses
+        return choices
 
     def save(self):
         journal = self.user.journal
 
-        journal.unnecessary_expenses = self.cleaned_data["choices"]
+        journal.unnecessary_expenses = pks_json(self.cleaned_data["choices"])
         journal.unnecessary_savings = self.cleaned_data["savings"]
 
         journal.save()
