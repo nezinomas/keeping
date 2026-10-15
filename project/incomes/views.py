@@ -104,7 +104,6 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
 
 # the nav and Bookkeeping open these too, so they take no tab kwarg
 class New(CreateViewMixin):
-    service_class = IncomeModelService
     form_class = forms.IncomeForm
     success_url = reverse_lazy("incomes:tab_data")
     hx_trigger_form = "reload"
@@ -126,7 +125,6 @@ class Delete(DeleteViewMixin):
 
 
 class TypeNew(CreateViewMixin):
-    service_class = IncomeTypeModelService
     form_class = forms.IncomeTypeForm
     hx_trigger_django = "reload"
     modal_form_title = _("Incomes type")

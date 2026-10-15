@@ -39,7 +39,6 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    service_class = SavingModelService
     form_class = forms.SavingForm
     hx_trigger_form = "reload"
     success_url = reverse_lazy("savings:list")
@@ -73,7 +72,6 @@ class TypeLists(ListViewMixin):
 
 
 class TypeNew(CreateViewMixin):
-    service_class = SavingTypeModelService
     form_class = forms.SavingTypeForm
     url_name = "type_new"
     hx_trigger_django = "afterType"

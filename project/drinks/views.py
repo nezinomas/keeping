@@ -172,7 +172,6 @@ class TabRisk(TabViewMixin, TemplateViewMixin):
 
 
 class TabData(TabViewMixin, ListViewMixin):
-    service_class = DrinkModelService
     tab = DrinkTab.resolve("data")
 
     def get_queryset(self):
@@ -229,7 +228,6 @@ class CompareTwo(TodayMixin, HtmxFormRetargetMixin, FormViewMixin):
 
 
 class New(CreateViewMixin):
-    service_class = DrinkModelService
     form_class = forms.DrinkForm
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Drinks")
@@ -257,7 +255,6 @@ class Delete(DeleteViewMixin):
 
 
 class TargetNew(CreateViewMixin):
-    service_class = DrinkTargetModelService
     form_class = forms.DrinkTargetForm
     success_url = reverse_lazy("drinks:index")
     modal_form_title = _("New goal")

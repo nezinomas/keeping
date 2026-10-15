@@ -16,9 +16,7 @@ from .queryset import GetQuerysetMixin
 from .search import SearchMixin
 
 
-class CreateViewMixin(
-    AddUserToKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView
-):
+class CreateViewMixin(AddUserToKwargsMixin, CreateUpdateMixin, CreateView):
     template_name = "core/generic_form.html"
     form_action = "insert"
     url_name = "new"

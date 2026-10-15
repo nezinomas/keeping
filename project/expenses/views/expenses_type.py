@@ -12,7 +12,6 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    service_class = ExpenseTypeModelService
     form_class = forms.ExpenseTypeForm
     hx_trigger_django = "afterType"
     modal_form_title = _("Expense type")

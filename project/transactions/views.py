@@ -66,7 +66,6 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    service_class = TransactionModelService
     form_class = forms.TransactionForm
     hx_trigger_form = "afterTransaction"
     success_url = reverse_lazy("transactions:list")
@@ -98,7 +97,6 @@ class SavingsCloseLists(ListViewMixin):
 
 
 class SavingsCloseNew(CreateViewMixin):
-    service_class = SavingCloseModelService
     form_class = forms.SavingCloseForm
     hx_trigger_form = "afterClose"
     url_name = "savings_close_new"
@@ -136,7 +134,6 @@ class SavingsChangeLists(ListViewMixin):
 
 
 class SavingsChangeNew(CreateViewMixin):
-    service_class = SavingChangeModelService
     form_class = forms.SavingChangeForm
     hx_trigger_form = "afterChange"
     url_name = "savings_change_new"
