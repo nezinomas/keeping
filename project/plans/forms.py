@@ -221,10 +221,7 @@ class IncomePlanForm(CommonPlanFormMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # overwrite ForeignKey expense_type queryset
         self.fields["income_type"].queryset = IncomeTypeModelService(self.user).items()
-
-        # field translation
         self.fields["income_type"].label = _("Income type")
 
 
@@ -241,12 +238,9 @@ class ExpensePlanForm(CommonPlanFormMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseTypeModelService(
             self.user
         ).items()
-
-        # field translation
         self.fields["expense_type"].label = _("Expense type")
 
 
@@ -263,10 +257,7 @@ class SavingPlanForm(CommonPlanFormMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # overwrite ForeignKey expense_type queryset
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
-
-        # field translation
         self.fields["saving_type"].label = _("Saving type")
 
 
@@ -294,12 +285,9 @@ class NecessaryPlanForm(CommonPlanFormMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseTypeModelService(
             self.user
         ).items()
-
-        # field translation
         self.fields["expense_type"].label = _("Expense type")
 
 
@@ -342,24 +330,24 @@ class CopyPlanForm(forms.Form):
 
         return cleaned_data
 
+    @transaction.atomic
     def save(self):
         dict_ = self._extract_selected_checkboxes(self.cleaned_data)
-        year_from = self.cleaned_data.get("year_from")
-        year_to = self.cleaned_data.get("year_to")
+        year_from = self.cleaned_data["year_from"]
+        year_to = self.cleaned_data["year_to"]
 
         for k, v in dict_.items():
-            # Skip unselected checkboxes immediately
             if not v:
                 continue
 
-            service = COPY_PLAN_MAP.get(k)(self.user)
+            service = COPY_PLAN_MAP[k](self.user)
             source_rows = list(service.year(year_from))
 
-            # Iterate and copy
             for obj in source_rows:
                 obj.pk = None
                 obj.year = year_to
-                obj.save()
+
+            service.objects.bulk_create(source_rows)
 
     def _setup_initial_values(self, today):
         self.fields["year_from"].initial = today.year
@@ -402,7 +390,7 @@ class CopyPlanForm(forms.Form):
             if not v:
                 continue
 
-            service = COPY_PLAN_MAP.get(k)(self.user)
+            service = COPY_PLAN_MAP[k](self.user)
 
             if not service.year(year_from).exists():
                 self._add_error_message(msg_empty, errors, k)

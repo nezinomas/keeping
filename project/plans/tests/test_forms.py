@@ -1,6 +1,8 @@
 from datetime import date
 
 import pytest
+from django.db import IntegrityError
+from django.db.models import QuerySet
 from django.forms import HiddenInput
 from django.utils.translation import gettext as _
 
@@ -1276,6 +1278,75 @@ def test_copy_data(main_user):
     assert copied_data.count() == 2
     assert copied_data.get(month=1).price == 100
     assert copied_data.get(month=3).price == 300
+    assert {row.journal for row in copied_data} == {main_user.journal}
+    assert {row.income_type for row in copied_data} == {income_type}
+
+
+COPY_CHECKBOX = {
+    IncomePlan: "income",
+    ExpensePlan: "expense",
+    SavingPlan: "saving",
+    DayPlan: "day",
+    NecessaryPlan: "necessary",
+}
+
+
+def _copy_queries(user, kind, year_from, months):
+    first = kind.factory(journal=user.journal, year=year_from, month=1, price=100)
+    copied = {f: getattr(first, f) for f in kind.grouping}
+    for month in range(2, months + 1):
+        kind.factory(
+            journal=user.journal,
+            year=year_from,
+            month=month,
+            price=month * 100,
+            **copied,
+        )
+    form = CopyPlanForm(
+        user=user,
+        today=TODAY,
+        data={
+            "year_from": year_from,
+            "year_to": year_from + 1,
+            COPY_CHECKBOX[kind.model]: True,
+        },
+    )
+    assert form.is_valid(), form.errors
+    return count_queries(form.save)
+
+
+def test_copy_a_failing_kind_leaves_no_kind_copied(main_user, mocker):
+    IncomePlanFactory(journal=main_user.journal, year=1999, month=1)
+    ExpensePlanFactory(journal=main_user.journal, year=1999, month=1)
+    form = CopyPlanForm(
+        user=main_user,
+        today=TODAY,
+        data={"year_from": 1999, "year_to": 2000, "income": True, "expense": True},
+    )
+    assert form.is_valid(), form.errors
+
+    real = QuerySet.bulk_create
+
+    def fail_on_expenses(qs, objs, *args, **kwargs):
+        if qs.model is ExpensePlan:
+            raise IntegrityError
+        return real(qs, objs, *args, **kwargs)
+
+    mocker.patch.object(QuerySet, "bulk_create", fail_on_expenses)
+
+    with pytest.raises(IntegrityError):
+        form.save()
+
+    assert not IncomePlan.objects.filter(year=2000).exists()
+
+
+@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
+def test_copy_query_count_does_not_grow_with_the_rows(main_user, kind):
+    few = _copy_queries(main_user, kind, 2001, 2)
+    many = _copy_queries(main_user, kind, 2003, 6)
+
+    assert many == few
+    assert kind.model.objects.filter(year=2004).count() == 6
 
 
 # A posted journal never moves a plan to another journal
