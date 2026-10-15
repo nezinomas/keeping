@@ -30,12 +30,19 @@ def test_signup_cleans_the_posted_values():
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     "email",
-    ["bob@bob.com", "BOB@bob.com", "yan@y.yy"],
-    ids=["email_exists", "email_exists_other_case", "email_stored_in_other_case"],
+    ["bob@bob.com", "BOB@bob.com", "yan@y.yy", "bob@bób.com", "zoe@z.zz"],
+    ids=[
+        "email_exists",
+        "email_exists_other_case",
+        "email_stored_in_other_case",
+        "email_exists_accented",
+        "email_stored_accented",
+    ],
 )
 def test_signup_unique_email(email):
     UserFactory()
     UserFactory(username="Yan", email="Yan@Y.yy")
+    UserFactory(username="Zoe", email="Zoé@z.zz")
 
     form = SignUpForm(data=SIGNUP | {"email": email})
 
@@ -60,6 +67,7 @@ def test_invite_form_cleans_the_email(main_user):
         ("BOB@bob.com", "Įvedėte savo Email."),
         ("X@X.xx", "Vartotojas su šiuo Email jau egzistuoja."),
         ("yan@y.yy", "Vartotojas su šiuo Email jau egzistuoja."),
+        ("x@ẍ.xx", "Vartotojas su šiuo Email jau egzistuoja."),
         (
             EMAIL_255,
             "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 254 ženklų "
@@ -73,6 +81,7 @@ def test_invite_form_cleans_the_email(main_user):
         "same_as_admin_email_other_case",
         "email_exists_other_case",
         "email_stored_in_other_case",
+        "email_exists_accented",
         "email_longer_than_a_user_email",
         "email_missing",
     ],

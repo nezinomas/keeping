@@ -1,3 +1,5 @@
+import unicodedata
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
@@ -6,17 +8,22 @@ from django.utils.translation import gettext as _
 from .models import User
 
 
+def fold(email):
+    decomposed = unicodedata.normalize("NFKD", email)
+    return "".join(x for x in decomposed if not unicodedata.combining(x)).casefold()
+
+
 def refuse_taken_email(email):
-    # casefold in Python: MariaDB's collation would also fold accents
-    existing = {x.casefold() for x in User.objects.values_list("email", flat=True)}
-    if email.casefold() in existing:
+    # MariaDB's collation folds case and accents
+    existing = {fold(x) for x in User.objects.values_list("email", flat=True)}
+    if fold(email) in existing:
         raise ValidationError(_("User with this Email already exists."))
 
 
 class SignUpForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ("username", "email", "password1")
+        fields = ("username", "email")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
