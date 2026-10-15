@@ -225,13 +225,31 @@ def test_navbar_all_records_opens_the_data_tab_on_every_year(client_logged):
     assert f'href="{reverse("books:tab_data")}?scope=all"' in content
 
 
-def test_all_records_pages_keep_their_scope(client_logged):
+@pytest.mark.parametrize(
+    ("url_name", "params", "query"),
+    [
+        ("books:list", {"scope": "all"}, "page=2&scope=all"),
+        (
+            "books:search",
+            {"search": "title & author"},
+            "page=2&search=title%20%26%20author",
+        ),
+        (
+            "books:search",
+            {"search": "title & author", "page": 2},
+            "page=1&search=title%20%26%20author",
+        ),
+    ],
+    ids=["all_records", "search_encoded", "search_encoded_back"],
+)
+def test_page_links_keep_their_query(client_logged, url_name, params, query):
     Book.objects.bulk_create(BookFactory.build_batch(51, user=UserFactory()))
 
-    url = reverse("books:list")
-    content = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
+    url = reverse(url_name)
+    content = client_logged.get(url, params).content.decode("utf-8")
 
-    assert f'hx-get="{url}?page=2&scope=all"' in content
+    # the other page's number and the next or previous arrow
+    assert content.count(f'hx-get="{url}?{query}"') == 2
 
 
 def test_list_with_data(client_logged):

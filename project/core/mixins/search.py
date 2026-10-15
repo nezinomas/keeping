@@ -1,23 +1,33 @@
 from collections.abc import Callable
+from typing import TypedDict
 
 from django.db.models import QuerySet
-from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from ...users.models import User
 from ..lib.paginator import CountlessPaginator
-from ..lib.utils import add_fast_urls, get_action_buttons_html
+from ..lib.utils import get_action_buttons_html
+
+PER_PAGE = 50
 
 
-def count_only(qs):
+class SearchTotals(TypedDict):
+    count: int
+
+
+def count_only(qs: QuerySet) -> SearchTotals:
     return {"count": qs.count()}
+
+
+def keep_rows(rows: list) -> list:
+    return rows
 
 
 class SearchMixin:
     search_method: Callable[[User, str], QuerySet]
-    per_page: int
+    per_page = PER_PAGE
     search_totals = staticmethod(count_only)
-    use_fast_urls = False
+    search_rows = staticmethod(keep_rows)
 
     def get_context_data(self, **kwargs):
         return (
@@ -38,17 +48,13 @@ class SearchMixin:
             per_page=self.per_page,
         )
         page_obj, paginator_object = paginator.paging(self.request.GET.get("page", 1))
-
-        app = self.request.resolver_match.app_name
-
-        if self.use_fast_urls:
-            page_obj.object_list = add_fast_urls(list(page_obj.object_list), app)
+        rows = self.search_rows(list(page_obj.object_list))
 
         return {
             "notice": _("No data found"),
-            "object_list": page_obj,
+            "object_list": page_obj.with_rows(rows),
             "search": search_str,
-            "url": reverse(f"{app}:search"),
+            "url": self.request.path,
             "paginator_object": paginator_object,
             **stats,
         }
