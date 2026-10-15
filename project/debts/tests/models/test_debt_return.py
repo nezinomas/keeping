@@ -11,9 +11,12 @@ from ....incomes.tests.factories import IncomeFactory
 from ...models import Debt, DebtReturn
 from ...services.model_services import DebtReturnModelService
 from ..factories import BorrowReturnFactory, LendFactory, LendReturnFactory
-from ..helpers import DEBT_FACTORIES, RETURN_FACTORIES, assert_balance
+from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES, assert_balance
 
 pytestmark = pytest.mark.django_db
+
+LEND_BEFORE = {"incomes": 6, "expenses": 100, "balance": -94}
+BORROW_BEFORE = {"incomes": 100, "expenses": 5, "balance": 95}
 
 
 @pytest.mark.parametrize(
@@ -51,33 +54,36 @@ def test_debt_return_related(main_user, second_user, debt_type, expected):
 
 
 @factory.django.mute_signals(post_save)
-def test_lend_return_related_queries(main_user, django_assert_num_queries):
-    LendReturnFactory()
-    LendReturnFactory()
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_return_related_queries(main_user, debt_type, django_assert_num_queries):
+    RETURN_FACTORIES[debt_type]()
+    RETURN_FACTORIES[debt_type]()
 
     with django_assert_num_queries(1):
         list(
             x.account.title
-            for x in list(DebtReturnModelService(main_user, Debt.DebtType.LEND).objects)
+            for x in list(DebtReturnModelService(main_user, debt_type).objects)
         )
 
 
 @factory.django.mute_signals(post_save)
-def test_lend_return_items(main_user):
-    LendReturnFactory()
-    LendReturnFactory()
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_return_items(main_user, debt_type):
+    RETURN_FACTORIES[debt_type]()
+    RETURN_FACTORIES[debt_type]()
 
-    actual = DebtReturnModelService(main_user, Debt.DebtType.LEND).items()
+    actual = DebtReturnModelService(main_user, debt_type).items()
 
     assert actual.count() == 2
 
 
 @factory.django.mute_signals(post_save)
-def test_lend_return_year(main_user):
-    LendReturnFactory()
-    LendReturnFactory(date=dt(1974, 1, 2))
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_return_year(main_user, debt_type):
+    RETURN_FACTORIES[debt_type]()
+    RETURN_FACTORIES[debt_type](date=dt(1974, 1, 2))
 
-    actual = DebtReturnModelService(main_user, Debt.DebtType.LEND).year(1999)
+    actual = DebtReturnModelService(main_user, debt_type).year(1999)
 
     assert actual.count() == 1
 
@@ -174,33 +180,54 @@ def test_lend_return_post_delete_debt_return_value(main_user):
     assert actual.returned == 0
 
 
+def _price_set_to_one(obj):
+    obj.price = 1
+    obj.save()
+
+
 @pytest.mark.parametrize(
-    "debt_type, before, after",
+    "debt_type, change, before, after",
     [
         pytest.param(
             Debt.DebtType.LEND,
-            {"incomes": 6, "expenses": 100, "balance": -94},
+            _price_set_to_one,
+            LEND_BEFORE,
             {"incomes": 1, "expenses": 100, "balance": -99},
-            id="lend",
+            id="lend_updated",
         ),
         pytest.param(
             Debt.DebtType.BORROW,
-            {"incomes": 100, "expenses": 5, "balance": 95},
+            _price_set_to_one,
+            BORROW_BEFORE,
             {"incomes": 100, "expenses": 1, "balance": 99},
-            id="borrow",
+            id="borrow_updated",
+        ),
+        pytest.param(
+            Debt.DebtType.LEND,
+            DebtReturn.delete,
+            LEND_BEFORE,
+            {"incomes": 0, "expenses": 100, "balance": -100},
+            id="lend_deleted",
+        ),
+        pytest.param(
+            Debt.DebtType.BORROW,
+            DebtReturn.delete,
+            BORROW_BEFORE,
+            {"incomes": 100, "expenses": 0, "balance": 100},
+            id="borrow_deleted",
         ),
     ],
 )
-def test_debt_return_post_save_update(debt_type, before, after):
+def test_debt_return_post_save_or_delete(debt_type, change, before, after):
     obj = RETURN_FACTORIES[debt_type]()
 
-    assert_balance(AccountBalance.objects.first(), **before)
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
+    assert_balance(actual, **before)
 
-    obj_update = DebtReturn.objects.get(pk=obj.pk)
-    obj_update.price = 1
-    obj_update.save()
+    change(DebtReturn.objects.get(pk=obj.pk))
 
-    assert_balance(AccountBalance.objects.first(), **after)
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
+    assert_balance(actual, **after)
 
 
 @pytest.mark.parametrize(
@@ -236,35 +263,6 @@ def test_debt_return_post_save_first_record(
     assert actual[1].expenses == expenses
     assert actual[1].balance == balance
     assert actual[1].delta == delta
-
-
-@pytest.mark.parametrize(
-    "debt_type, before, after",
-    [
-        pytest.param(
-            Debt.DebtType.LEND,
-            {"incomes": 6, "expenses": 100, "balance": -94},
-            {"incomes": 0, "expenses": 100, "balance": -100},
-            id="lend",
-        ),
-        pytest.param(
-            Debt.DebtType.BORROW,
-            {"incomes": 100, "expenses": 5, "balance": 95},
-            {"incomes": 100, "expenses": 0, "balance": 100},
-            id="borrow",
-        ),
-    ],
-)
-def test_debt_return_post_delete(debt_type, before, after):
-    obj = RETURN_FACTORIES[debt_type]()
-
-    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert_balance(actual, **before)
-
-    DebtReturn.objects.get(pk=obj.pk).delete()
-
-    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert_balance(actual, **after)
 
 
 @pytest.mark.parametrize(

@@ -92,44 +92,61 @@ def test_debt_open_items(main_user, second_user):
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_year(main_user):
-    o = LendFactory(name="N1", date=dt(1999, 2, 3))
-    LendFactory(name="N2", date=dt(2999, 2, 3), price=2)
+@pytest.mark.parametrize(
+    "debts, expect",
+    [
+        pytest.param(
+            [
+                {"name": "N1", "date": dt(1999, 2, 3)},
+                {"name": "N2", "date": dt(2999, 2, 3), "price": 2},
+            ],
+            [("N1", dt(1999, 2, 3), 100)],
+            id="its_year_only",
+        ),
+        pytest.param(
+            [
+                {"name": "O1", "date": dt(1974, 1, 1), "closed": False},
+                {"name": "C1", "date": dt(1974, 12, 1), "closed": True},
+                {"name": "O2", "date": dt(1999, 1, 1), "closed": False},
+                {"name": "C2", "date": dt(1999, 12, 1), "closed": True},
+            ],
+            [
+                ("C2", dt(1999, 12, 1), 100),
+                ("O2", dt(1999, 1, 1), 100),
+                ("O1", dt(1974, 1, 1), 100),
+            ],
+            id="and_earlier_open",
+        ),
+    ],
+)
+def test_debt_year(main_user, debts, expect):
+    for debt in debts:
+        LendFactory(**debt)
 
     actual = DebtModelService(main_user, Debt.DebtType.LEND).year(1999)
 
-    assert actual.count() == 1
-    assert str(actual[0]) == str(o)
-    assert actual[0].name == o.name
-    assert actual[0].date == dt(1999, 2, 3)
-    assert actual[0].price == 100
-
-
-@factory.django.mute_signals(post_save)
-def test_debt_year_and_not_closed(main_user):
-    o1 = LendFactory(date=dt(1974, 1, 1), closed=False)
-    LendFactory(date=dt(1974, 12, 1), closed=True)
-    o2 = LendFactory(date=dt(1999, 1, 1), closed=False)
-    o3 = LendFactory(date=dt(1999, 12, 1), closed=True)
-
-    actual = DebtModelService(main_user, Debt.DebtType.LEND).year(1999)
-
-    assert actual.count() == 3
-
-    assert actual[0].date == o3.date
-    assert actual[1].date == o2.date
-    assert actual[2].date == o1.date
+    assert [(o.name, o.date, o.price) for o in actual] == expect
 
 
 @pytest.mark.parametrize(
-    "debt_type, incomes, expenses, balance",
+    "debt_type, price, resaved, incomes, expenses, balance",
     [
-        pytest.param(Debt.DebtType.LEND, 0.0, 100.0, -100.0, id="lend"),
-        pytest.param(Debt.DebtType.BORROW, 100.0, 0.0, 100.0, id="borrow"),
+        pytest.param(Debt.DebtType.LEND, 100, False, 0.0, 100.0, -100.0, id="lend"),
+        pytest.param(Debt.DebtType.BORROW, 100, False, 100.0, 0.0, 100.0, id="borrow"),
+        pytest.param(
+            Debt.DebtType.LEND, 5, True, 0.0, 5.0, -5.0, id="lend_resaved_unchanged"
+        ),
+        pytest.param(
+            Debt.DebtType.BORROW, 5, True, 5.0, 0.0, 5.0, id="borrow_resaved_unchanged"
+        ),
     ],
 )
-def test_debt_post_save_new(main_user, debt_type, incomes, expenses, balance):
-    DEBT_FACTORIES[debt_type]()
+def test_debt_post_save_new_or_resaved(
+    main_user, debt_type, price, resaved, incomes, expenses, balance
+):
+    obj = DEBT_FACTORIES[debt_type](price=price)
+    if resaved:
+        Debt.objects.get(pk=obj.pk).save()
 
     actual = AccountBalanceModelService(main_user).year(1999)
 
@@ -193,27 +210,6 @@ def test_debt_post_save_first_record(main_user, debt_type, incomes, expenses, ba
 
     assert actual.past == 5.0
     assert_balance(actual, incomes=incomes, expenses=expenses, balance=balance)
-
-
-@pytest.mark.parametrize(
-    "debt_type, incomes, expenses, balance",
-    [
-        pytest.param(Debt.DebtType.LEND, 0.0, 5.0, -5.0, id="lend"),
-        pytest.param(Debt.DebtType.BORROW, 5.0, 0.0, 5.0, id="borrow"),
-    ],
-)
-def test_debt_post_save_update_with_nothing_changed(
-    main_user, debt_type, incomes, expenses, balance
-):
-    obj = DEBT_FACTORIES[debt_type](price=5)
-
-    obj_update = Debt.objects.get(pk=obj.pk)
-    obj_update.save()
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 1
-    assert_balance(actual[0], incomes=incomes, expenses=expenses, balance=balance)
 
 
 @pytest.mark.parametrize(

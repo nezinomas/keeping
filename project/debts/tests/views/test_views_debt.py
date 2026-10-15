@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.test import Client
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
@@ -130,7 +131,7 @@ def test_debt_save_invalid_data(client_logged, debt_type):
     response = client_logged.post(url, data)
     form = response.context["form"]
 
-    assert not form.is_valid()
+    assert sorted(form.errors) == ["account", "date", "name", "price"]
 
 
 @pytest.mark.parametrize(
@@ -228,8 +229,19 @@ def test_debt_update_cant_close(client_logged, debt_type):
     assert "Negalite uždaryti dar negražintos skolos." in form.as_p()
 
 
+@pytest.mark.parametrize(
+    "url_name, send",
+    [
+        pytest.param("debts:update", Client.get, id="update_get"),
+        pytest.param("debts:update", Client.post, id="update_post"),
+        pytest.param("debts:delete", Client.get, id="delete_get"),
+        pytest.param("debts:delete", Client.post, id="delete_post"),
+    ],
+)
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_update_not_load_other_journal(client_logged, second_user, debt_type):
+def test_debt_of_other_journal_is_404(
+    client_logged, second_user, debt_type, url_name, send
+):
     a1 = AccountFactory(title="a1")
     a2 = AccountFactory(journal=second_user.journal, title="a2")
 
@@ -237,11 +249,14 @@ def test_debt_update_not_load_other_journal(client_logged, second_user, debt_typ
     obj = DEBT_FACTORIES[debt_type](
         name="yyy", price=666, journal=second_user.journal, account=a2
     )
+    data = {"name": "zzz", "price": "1", "date": "1999-12-31", "account": a2.pk}
 
-    url = reverse("debts:update", kwargs={"pk": obj.pk, "debt_type": debt_type})
-    response = client_logged.get(url)
+    url = reverse(url_name, kwargs={"pk": obj.pk, "debt_type": debt_type})
+    response = send(client_logged, url, data)
 
     assert response.status_code == 404
+    actual = models.Debt.objects.get(pk=obj.pk)
+    assert (actual.name, actual.price) == ("yyy", 666)
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
@@ -268,29 +283,3 @@ def test_debt_delete(client_logged, debt_type):
 
     assert response.status_code == 204
     assert models.Debt.objects.all().count() == 0
-
-
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_delete_other_journal_get_form(client_logged, second_user, debt_type):
-    account = AccountFactory(journal=second_user.journal, title="a2")
-    obj = DEBT_FACTORIES[debt_type](
-        name="yyy", journal=second_user.journal, account=account
-    )
-
-    url = reverse("debts:delete", kwargs={"pk": obj.pk, "debt_type": debt_type})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_delete_other_journal_post_form(client_logged, second_user, debt_type):
-    account = AccountFactory(journal=second_user.journal, title="a2")
-    obj = DEBT_FACTORIES[debt_type](
-        name="yyy", journal=second_user.journal, account=account
-    )
-
-    url = reverse("debts:delete", kwargs={"pk": obj.pk, "debt_type": debt_type})
-    client_logged.post(url, follow=True)
-
-    assert models.Debt.objects.all().count() == 1
