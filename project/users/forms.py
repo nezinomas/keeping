@@ -50,7 +50,7 @@ class InviteForm(forms.Form):
         email = self.cleaned_data["email"]
         admin_email = self.user.email
 
-        if email.casefold() == admin_email.casefold():
+        if fold(email) == fold(admin_email):
             raise ValidationError(_("You entered your own Email."))
 
         refuse_taken_email(email)
