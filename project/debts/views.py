@@ -73,7 +73,8 @@ class DebtLists(ListViewMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return DebtModelService(user, self.kwargs["debt_type"]).year(user.year)
+        service = DebtModelService(user, self.kwargs["debt_type"])
+        return service.year(user.selected_year())
 
 
 class DebtNew(AddDebtTypeMixin, DebtMixin, CreateViewMixin):
@@ -104,7 +105,8 @@ class DebtReturnLists(ListViewMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return DebtReturnModelService(user, self.kwargs["debt_type"]).year(user.year)
+        service = DebtReturnModelService(user, self.kwargs["debt_type"])
+        return service.year(user.selected_year())
 
 
 class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
