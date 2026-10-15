@@ -17,7 +17,7 @@ from .dtos import IndexDataDTO
 class IndexDataProvider:
     def __init__(self, user: User):
         self.user = user
-        self.year = user.year
+        self.year = user.selected_year()
 
     def get_data(self) -> IndexDataDTO:
         return IndexDataDTO(

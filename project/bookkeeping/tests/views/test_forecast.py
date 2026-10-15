@@ -1,5 +1,13 @@
+from datetime import date
+
 import pytest
+import time_machine
 from django.urls import reverse
+
+from ....core.tests.utils import view_for
+from ....expenses.tests.factories import ExpenseFactory
+from ....incomes.tests.factories import IncomeFactory
+from ...views import Forecast
 
 pytestmark = pytest.mark.django_db
 
@@ -20,9 +28,11 @@ def test_302(client):
     assert response.status_code == 302
 
 
-def test_a_user_with_no_year_raises(client_logged, main_user):
-    main_user.year = None
-    main_user.save()
+@time_machine.travel("1999-02-10")
+def test_forecast_reads_the_month_of_the_views_today(rf, main_user):
+    IncomeFactory(price=1000, date=date(1999, 1, 5))
+    ExpenseFactory(price=200, date=date(1999, 1, 6))
+    ExpenseFactory(price=300, date=date(1999, 2, 6))
+    view = view_for(rf, main_user, Forecast)
 
-    with pytest.raises(ValueError, match="has no year"):
-        client_logged.get(reverse("bookkeeping:forecast"))
+    assert view.get_context_data()["data"] == [0, -1500, -1500]

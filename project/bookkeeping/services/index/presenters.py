@@ -90,7 +90,7 @@ class IndexContextBuilder:
 
 
 def load_service(user: User, today: date) -> IndexContextBuilder:
-    year = user.year
+    year = user.selected_year()
     provider = IndexDataProvider(user)
     dto = provider.get_data()
 

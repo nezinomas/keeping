@@ -2,7 +2,6 @@ from datetime import date
 from types import SimpleNamespace
 
 import pytest
-import time_machine
 
 from ...services.forecast.calculators import ForecastCalculator
 from ...services.forecast.dtos import ForecastDataDTO
@@ -12,9 +11,7 @@ from ...services.forecast.providers import ForecastDataProvider, MonthlyDataForm
 MODULE_PATH = "project.bookkeeping.services.forecast"
 
 
-def test_get_data(main_user):
-    main_user.year = 1000
-
+def test_get_data():
     data = [
         {"date": date(1000, 1, 1), "sum": 1, "title": "incomes"},
         {"date": date(1000, 12, 1), "sum": 2, "title": "incomes"},
@@ -191,7 +188,6 @@ def test_forecast_current_month_savings_exceeds_average(data):
     assert actual == expect
 
 
-@time_machine.travel("1999-3-1")
 @pytest.mark.parametrize(
     "year, expected",
     [
@@ -201,7 +197,7 @@ def test_forecast_current_month_savings_exceeds_average(data):
     ],
 )
 def test_get_month(year, expected):
-    assert get_month(year) == expected
+    assert get_month(year, date(1999, 3, 1)) == expected
 
 
 def test_forecast_data_dto():
@@ -218,9 +214,6 @@ def test_forecast_data_dto():
 
 
 def test_forecast_data_provider_get_forecast_data(mocker, main_user):
-    main_user.year = 1000
-
-    # 1. Mock the services to return fake database QuerySets
     mock_income = mocker.patch(f"{MODULE_PATH}.providers.IncomeModelService")
     mock_income.return_value.sum_by_month.return_value = [
         {"date": date(1000, 1, 1), "sum": 100}
@@ -242,11 +235,9 @@ def test_forecast_data_provider_get_forecast_data(mocker, main_user):
         {"month": 1, "price": 200}
     ]
 
-    # 2. Execute the provider
     provider = ForecastDataProvider(main_user)
     result = provider.get_forecast_data()
 
-    # 3. Assert the DTO is structured correctly based on the mocked data
     assert isinstance(result, ForecastDataDTO)
     assert result.incomes[0] == 100.0  # January Income
     assert result.expenses[1] == 50.0  # February Expense
@@ -255,8 +246,6 @@ def test_forecast_data_provider_get_forecast_data(mocker, main_user):
 
 
 def test_forecast_data_provider_get_beginning_balance(mocker, main_user):
-    main_user.year = 1000
-
     # Mock the chained database calls: objects.filter().aggregate()
     mock_balance_service = mocker.patch(
         f"{MODULE_PATH}.providers.AccountBalanceModelService"
@@ -268,11 +257,6 @@ def test_forecast_data_provider_get_beginning_balance(mocker, main_user):
     actual = provider.get_beginning_balance()
 
     assert actual == 1500
-    mock_balance_service.return_value.objects.filter.assert_called_once_with(year=1000)
-
-
-def test_provider_raises_for_a_user_with_no_year(main_user):
-    main_user.year = None
-
-    with pytest.raises(ValueError, match="has no year"):
-        ForecastDataProvider(main_user)
+    mock_balance_service.return_value.objects.filter.assert_called_once_with(
+        year=main_user.year
+    )

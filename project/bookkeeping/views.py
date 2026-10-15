@@ -36,7 +36,7 @@ class ReloadIndexContextDataMixin:
         exp = services.expenses.load_service(user)
 
         context = {
-            "year": user.year,
+            "year": user.selected_year(),
             "averages": ind.averages_context(),
             "borrow": ind.borrow_context(),
             "lend": ind.lend_context(),
@@ -92,7 +92,7 @@ class Accounts(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = services.accounts.load_service(user, user.year)
+        context = services.accounts.load_service(user, user.selected_year())
 
         return super().get_context_data(**kwargs) | context
 
@@ -112,7 +112,7 @@ class Savings(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = services.savings.load_service(user, user.year)
+        context = services.savings.load_service(user, user.selected_year())
         return super().get_context_data(**kwargs) | context
 
 
@@ -131,7 +131,7 @@ class Pensions(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = services.pensions.load_service(user, user.year)
+        context = services.pensions.load_service(user, user.selected_year())
 
         return super().get_context_data(**kwargs) | context
 
@@ -151,7 +151,7 @@ class Wealth(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = services.wealth.load_service(user, user.year)
+        context = services.wealth.load_service(user, user.selected_year())
         return super().get_context_data(**kwargs) | context
 
 
@@ -159,7 +159,7 @@ class Forecast(TemplateViewMixin):
     template_name = "bookkeeping/includes/forecast.html"
 
     def get_context_data(self, **kwargs):
-        context = services.forecast.load_service(self.request.user)
+        context = services.forecast.load_service(self.request.user, date.today())
 
         return super().get_context_data(**kwargs) | context
 
@@ -169,7 +169,7 @@ class NoIncomes(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = no_incomes.load_service(user, user.year)
+        context = no_incomes.load_service(user, user.selected_year())
 
         return super().get_context_data(**kwargs) | context
 

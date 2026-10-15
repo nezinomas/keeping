@@ -113,7 +113,7 @@ class MonthContextPresenter:
 
 
 def load_service(user: User, today: date) -> dict:
-    year = user.year
+    year = user.selected_year()
     month = user.month
 
     dto = MonthDataProvider(user).get_data()

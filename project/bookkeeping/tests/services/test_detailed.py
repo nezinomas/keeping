@@ -93,11 +93,6 @@ def test_total_row_property_no_data():
     assert actual == {}
 
 
-# -------------------------------------------------------------------------------------
-#                                                                             Fixtures
-# -------------------------------------------------------------------------------------
-
-
 @pytest.fixture
 def dummy_sort_dto():
     """
@@ -118,11 +113,6 @@ def dummy_sort_dto():
     )
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        Sorting Tests
-# -------------------------------------------------------------------------------------
-
-
 @pytest.mark.parametrize(
     "order, expected_titles, expected_active",
     [
@@ -136,22 +126,20 @@ def dummy_sort_dto():
     ],
 )
 def test_load_service_sorts_by_order(
-    mocker, dummy_sort_dto, order, expected_titles, expected_active
+    mocker, main_user, dummy_sort_dto, order, expected_titles, expected_active
 ):
+    main_user.year = 2026
     mock_provider = mocker.patch(
         "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
     )
     mock_provider.return_value.get_incomes.return_value = dummy_sort_dto
 
-    (table,) = load_service(MagicMock(year=2026), "income", order)
+    (table,) = load_service(main_user, "income", order)
 
     assert [row["title"] for row in table["data"]] == expected_titles
     assert table["order"] == expected_active
 
 
-# -------------------------------------------------------------------------------------
-#                                                     build_context Tests
-# -------------------------------------------------------------------------------------
 def test_build_context_empty_data():
     mock_dto = MagicMock(data=[])
 
@@ -162,12 +150,7 @@ def test_build_context_empty_data():
     assert result == {}
 
 
-# -------------------------------------------------------------------------------------
-#                                                                 load_service Tests
-# -------------------------------------------------------------------------------------
-def test_load_service_income_category(mocker):
-    user = MagicMock(year=2026)
-
+def test_load_service_income_category(mocker, main_user):
     mock_dto = MagicMock(data=[{"sum": 100}])
     mock_provider = mocker.patch(
         "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
@@ -179,15 +162,13 @@ def test_load_service_income_category(mocker):
     )
     mock_build.return_value = {"mock": "context", "total": {"total_col": 0}}
 
-    result = load_service(user, category="income")
+    result = load_service(main_user, category="income")
 
     assert result == [mock_build.return_value]
-    mock_provider.return_value.get_incomes.assert_called_once()
+    assert mock_build.call_args.kwargs["dto"] is mock_dto
 
 
-def test_load_service_saving_category(mocker):
-    user = MagicMock(year=2026)
-
+def test_load_service_saving_category(mocker, main_user):
     mock_dto = MagicMock(data=[{"sum": 500}])
     mock_provider = mocker.patch(
         "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
@@ -199,21 +180,19 @@ def test_load_service_saving_category(mocker):
     )
     mock_build.return_value = {"mock": "context", "total": {"total_col": 0}}
 
-    result = load_service(user, category="saving")
+    result = load_service(main_user, category="saving")
 
     assert result == [mock_build.return_value]
-    mock_provider.return_value.get_savings.assert_called_once()
+    assert mock_build.call_args.kwargs["dto"] is mock_dto
 
 
-def test_load_service_unknown_category_not_found(mocker):
-    user = MagicMock(year=2026)
-
+def test_load_service_unknown_category_not_found(mocker, main_user):
     mock_provider = mocker.patch(
         "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
     )
     mock_provider.return_value.get_expense_type.return_value = None
 
-    result = load_service(user, category="non_existent_slug")
+    result = load_service(main_user, category="non_existent_slug")
 
     assert result == []
 
