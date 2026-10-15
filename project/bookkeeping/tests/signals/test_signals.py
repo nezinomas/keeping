@@ -30,59 +30,55 @@ from ....savings.tests.factories import (
 pytestmark = pytest.mark.django_db
 
 
-def test_account_mixed_operations(main_user):
+@pytest.mark.parametrize(
+    "existing_years, columns, expect",
+    [
+        (
+            [2023, 2022],
+            {
+                "year": [2023, 2024],
+                "incomes": [2000, 3000],
+                "expenses": [1000, 1500],
+                "have": [1000, 1500],
+                "latest_check": [datetime(2023, 1, 2), datetime(2024, 1, 1)],
+                "balance": [1000, 1500],
+                "past": [1, 0],
+                "delta": [1, 0],
+            },
+            [
+                (2023, 2000, timezone.make_aware(datetime(2023, 1, 2))),
+                (2024, 3000, timezone.make_aware(datetime(2024, 1, 1))),
+            ],
+        ),
+        (
+            [],
+            {
+                "year": [2023],
+                "incomes": [1000],
+                "expenses": [500],
+                "have": [500],
+                "latest_check": [None],
+                "balance": [500],
+                "past": [0],
+                "delta": [0],
+            },
+            [(2023, 1000, None)],
+        ),
+    ],
+    ids=["mixed_operations", "null_latest_check"],
+)
+def test_sync_writes_the_account_frame(main_user, existing_years, columns, expect):
     account = AccountFactory()
-    AccountBalanceFactory(year=2023, account=account)
-    AccountBalanceFactory(year=2022, account=account)
-
+    for year in existing_years:
+        AccountBalanceFactory(year=year, account=account)
     df = pl.DataFrame(
-        {
-            "category_id": [account.pk, account.pk],
-            "year": [2023, 2024],
-            "incomes": [2000, 3000],
-            "expenses": [1000, 1500],
-            "have": [1000, 1500],
-            "latest_check": [datetime(2023, 1, 2), datetime(2024, 1, 1)],
-            "balance": [1000, 1500],
-            "past": [1, 0],
-            "delta": [1, 0],
-        }
+        {"category_id": [account.pk] * len(columns["year"]), **columns}
     ).lazy()
 
     BalanceSynchronizer(AccountBalanceModelService, main_user, df)
 
-    assert AccountBalance.objects.count() == 2
-    record_2023 = AccountBalance.objects.get(account=account, year=2023)
-    assert record_2023.incomes == 2000
-    assert record_2023.latest_check == timezone.make_aware(datetime(2023, 1, 2))
-    record_2024 = AccountBalance.objects.get(account=account, year=2024)
-    assert record_2024.incomes == 3000
-    assert record_2024.latest_check == timezone.make_aware(datetime(2024, 1, 1))
-    assert not AccountBalance.objects.filter(account=account, year=2022).exists()
-
-
-def test_account_null_latest_check(main_user):
-    account = AccountFactory()
-    df = pl.DataFrame(
-        {
-            "category_id": [account.pk],
-            "year": [2023],
-            "incomes": [1000],
-            "expenses": [500],
-            "have": [500],
-            "latest_check": [None],
-            "balance": [500],
-            "past": [0],
-            "delta": [0],
-        }
-    ).lazy()
-
-    BalanceSynchronizer(AccountBalanceModelService, main_user, df)
-
-    assert AccountBalance.objects.count() == 1
-    record = AccountBalance.objects.get(account=account, year=2023)
-    assert record.latest_check is None
-    assert record.incomes == 1000
+    actual = AccountBalance.objects.order_by("year")
+    assert [(r.year, r.incomes, r.latest_check) for r in actual] == expect
 
 
 class Balances(NamedTuple):

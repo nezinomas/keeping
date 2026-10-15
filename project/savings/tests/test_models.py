@@ -120,8 +120,7 @@ def test_saving_type_items_filter_closed_in_future(main_user, kwargs):
 
     actual = SavingTypeModelService(main_user).items(**kwargs)
 
-    assert actual.count() == 1
-    assert actual[0].title == "T2"
+    assert [row.title for row in actual] == ["T2"]
 
 
 @factory.django.mute_signals(post_save)
@@ -213,11 +212,7 @@ def test_saving_years_sum(main_user):
 
     actual = SavingModelService(main_user).sum_by_year()
 
-    assert actual[0]["year"] == 1998
-    assert actual[0]["sum"] == 8.0
-
-    assert actual[1]["year"] == 1999
-    assert actual[1]["sum"] == 10.0
+    assert [(row["year"], row["sum"]) for row in actual] == [(1998, 8.0), (1999, 10.0)]
 
 
 @time_machine.travel("1999-06-01")
@@ -314,23 +309,25 @@ def test_saving_query_count(main_user, django_assert_max_num_queries, query):
 
 @time_machine.travel("1999-06-01")
 @factory.django.mute_signals(post_save)
-def test_saving_last_months(main_user):
-    SavingFactory(date=date(1998, 11, 30), price=3)
-    SavingFactory(date=date(1998, 12, 31), price=4)
-    SavingFactory(date=date(1999, 1, 1), price=7)
-
-    actual = SavingModelService(main_user).last_months(6)
-
-    assert actual["sum"] == 11
-
-
-@time_machine.travel("1999-06-01")
-@factory.django.mute_signals(post_save)
-def test_saving_last_months_empty_savings(main_user):
+@pytest.mark.parametrize(
+    "savings, expect",
+    [
+        (
+            [(date(1998, 11, 30), 3), (date(1998, 12, 31), 4), (date(1999, 1, 1), 7)],
+            11,
+        ),
+        ([], 0),
+    ],
+    ids=["sums_the_window", "empty_savings"],
+)
+def test_saving_last_months(main_user, savings, expect):
     SavingTypeFactory()
+    for day, price in savings:
+        SavingFactory(date=day, price=price)
 
     actual = SavingModelService(main_user).last_months(6)
-    assert actual["sum"] == 0
+
+    assert actual["sum"] == expect
 
 
 @pytest.mark.parametrize("price, fee", [(150, 5), (10, 2)])
@@ -427,23 +424,18 @@ def test_saving_post_save_different_types():
     actual = Saving.objects.all()
     assert actual.count() == 2
 
-    actual = AccountBalance.objects.all()
-    assert actual.count() == 2
-
-    actual = AccountBalance.objects.first()
-    assert actual.incomes == 0
-    assert actual.expenses == 400
-
-    actual = SavingBalance.objects.all()
-    assert actual.count() == 4
-
-    actual = SavingBalance.objects.get(year=1999, saving_type_id=s1.pk)
-    assert actual.incomes == 150
-    assert actual.fee == 5
-
-    actual = SavingBalance.objects.get(year=1999, saving_type_id=s2.pk)
-    assert actual.incomes == 250
-    assert actual.fee == 5
+    actual = AccountBalance.objects.order_by("year", "pk")
+    assert [(a.year, a.incomes, a.expenses) for a in actual] == [
+        (1999, 0, 400),
+        (2000, 0, 0),
+    ]
+    actual = SavingBalance.objects.order_by("year", "saving_type__title")
+    assert [(a.year, a.saving_type.title, a.incomes, a.fee) for a in actual] == [
+        (1999, "1", 150, 5),
+        (1999, "2", 250, 5),
+        (2000, "1", 150, 5),
+        (2000, "2", 250, 5),
+    ]
 
 
 @pytest.mark.parametrize(
@@ -483,46 +475,24 @@ def test_savings_incomes(main_user, savings):
 
     actual = SavingModelService(main_user).incomes()
 
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["incomes"] == 125
-    assert actual[0]["fee"] == 25
-
-    assert actual[1]["year"] == 1970
-    assert actual[1]["category_id"] == 2
-    assert actual[1]["incomes"] == 25
-    assert actual[1]["fee"] == 0
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["incomes"] == 350
-    assert actual[2]["fee"] == 50
-
-    assert actual[3]["year"] == 1999
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["incomes"] == 450
-    assert actual[3]["fee"] == 50
+    assert [(r["year"], r["category_id"], r["incomes"], r["fee"]) for r in actual] == [
+        (1970, 1, 125, 25),
+        (1970, 2, 25, 0),
+        (1999, 1, 350, 50),
+        (1999, 2, 450, 50),
+    ]
 
 
 @factory.django.mute_signals(post_save)
 def test_savings_expenses(main_user, savings):
     actual = SavingModelService(main_user).expenses()
 
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["expenses"] == 125
-
-    assert actual[1]["year"] == 1970
-    assert actual[1]["category_id"] == 2
-    assert actual[1]["expenses"] == 25
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["expenses"] == 350
-
-    assert actual[3]["year"] == 1999
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["expenses"] == 225
+    assert [(r["year"], r["category_id"], r["expenses"]) for r in actual] == [
+        (1970, 1, 125),
+        (1970, 2, 25),
+        (1999, 1, 350),
+        (1999, 2, 225),
+    ]
 
 
 @factory.django.mute_signals(post_save)
@@ -673,14 +643,12 @@ def test_saving_balance_sorting(main_user):
 
     actual = SavingBalanceModelService(main_user).objects
 
-    assert actual[0].year == 1999
-    assert actual[0].saving_type == s1
-    assert actual[1].year == 1999
-    assert actual[1].saving_type == s2
-    assert actual[2].year == 2000
-    assert actual[2].saving_type == s1
-    assert actual[3].year == 2000
-    assert actual[3].saving_type == s2
+    assert [(row.year, row.saving_type.title) for row in actual] == [
+        (1999, "1"),
+        (1999, "2"),
+        (2000, "1"),
+        (2000, "2"),
+    ]
 
 
 SAVINGS_SUMS = {
@@ -738,45 +706,66 @@ def test_incomes_ignore_the_fee_source(main_user, fee_source):
     assert [(r["incomes"], r["fee"]) for r in actual] == [(20000, 300)]
 
 
-@factory.django.mute_signals(post_save)
-def test_account_fees_by_month_sums_only_account_charged_fees(main_user):
-    _fee_purchase(SavingType.FeeSource.ACCOUNT, 20000, 300, title="VALL")
-    _fee_purchase(SavingType.FeeSource.ACCOUNT, 0, 128, title="VALL")
-    _fee_purchase(SavingType.FeeSource.ACCOUNT, 500, 0, title="IB")
-    _fee_purchase(SavingType.FeeSource.INVESTMENT, 1000, 100, title="Finbee")
-
-    actual = list(SavingModelService(main_user).account_fees_by_month(1999))
-
-    assert actual == [
-        {"date": date(1999, 1, 1), "sum": 428, "title": "savings_account_fee"}
-    ]
+ACCOUNT_FEES_READS = {
+    "month": lambda s: list(s.account_fees_by_month(1999)),
+    "day": lambda s: list(s.account_fees_by_day(1999, 1)),
+}
+FEE_FROM_ACCOUNT = SavingType.FeeSource.ACCOUNT
+FEE_FROM_INVESTMENT = SavingType.FeeSource.INVESTMENT
+JANUARY_ACCOUNT_FEES = [
+    {"date": date(1999, 1, 1), "sum": 428, "title": "savings_account_fee"}
+]
 
 
 @factory.django.mute_signals(post_save)
-def test_account_fees_ignore_a_zero_fee(main_user):
-    _fee_purchase(SavingType.FeeSource.ACCOUNT, 500, 0)
-    service = SavingModelService(main_user)
+@pytest.mark.parametrize(
+    "read, purchases, expect",
+    [
+        (
+            "month",
+            [
+                (FEE_FROM_ACCOUNT, date(1999, 1, 1), 20000, 300),
+                (FEE_FROM_ACCOUNT, date(1999, 1, 1), 0, 128),
+                (FEE_FROM_ACCOUNT, date(1999, 1, 1), 500, 0),
+                (FEE_FROM_INVESTMENT, date(1999, 1, 1), 1000, 100),
+            ],
+            JANUARY_ACCOUNT_FEES,
+        ),
+        (
+            "day",
+            [
+                (FEE_FROM_ACCOUNT, date(1999, 1, 1), 20000, 300),
+                (FEE_FROM_ACCOUNT, date(1999, 1, 1), 500, 128),
+                (FEE_FROM_INVESTMENT, date(1999, 1, 1), 1000, 100),
+            ],
+            JANUARY_ACCOUNT_FEES,
+        ),
+        ("month", [(FEE_FROM_ACCOUNT, date(1999, 1, 1), 500, 0)], []),
+        ("day", [(FEE_FROM_ACCOUNT, date(1999, 1, 1), 500, 0)], []),
+        ("month", [(FEE_FROM_INVESTMENT, date(1999, 1, 1), 1000, 100)], []),
+        ("month", [(FEE_FROM_ACCOUNT, date(2000, 1, 1), 0, 300)], []),
+        ("day", [(FEE_FROM_ACCOUNT, date(1999, 2, 1), 0, 300)], []),
+    ],
+    ids=[
+        "month_sums_only_account_charged",
+        "day_sums_only_account_charged",
+        "month_ignores_a_zero_fee",
+        "day_ignores_a_zero_fee",
+        "month_empty_without_account_charged",
+        "month_reads_only_its_year",
+        "day_reads_only_its_month",
+    ],
+)
+def test_account_fees(main_user, read, purchases, expect):
+    for i, (fee_source, day, price, fee) in enumerate(purchases):
+        SavingFactory(
+            date=day,
+            price=price,
+            fee=fee,
+            saving_type=SavingTypeFactory(title=f"T{i}", fee_source=fee_source),
+        )
 
-    assert not list(service.account_fees_by_month(1999))
-    assert not list(service.account_fees_by_day(1999, 1))
-
-
-@factory.django.mute_signals(post_save)
-def test_account_fees_by_month_is_empty_without_account_charged_fees(main_user):
-    _fee_purchase(SavingType.FeeSource.INVESTMENT, 1000, 100)
-
-    assert not list(SavingModelService(main_user).account_fees_by_month(1999))
-
-
-@factory.django.mute_signals(post_save)
-def test_account_fees_by_month_reads_only_its_year(main_user):
-    SavingFactory(
-        date=date(2000, 1, 1),
-        fee=300,
-        saving_type=SavingTypeFactory(fee_source=SavingType.FeeSource.ACCOUNT),
-    )
-
-    assert not list(SavingModelService(main_user).account_fees_by_month(1999))
+    assert ACCOUNT_FEES_READS[read](SavingModelService(main_user)) == expect
 
 
 @factory.django.mute_signals(post_save)
@@ -833,30 +822,6 @@ def test_sum_query_count_does_not_grow_and_every_fund_is_counted(
     six, total = _queries_and_total(main_user, name)
     assert total == 6 * per_fund + 3 * per_account_fund
     assert six == two
-
-
-@factory.django.mute_signals(post_save)
-def test_account_fees_by_day_sums_only_account_charged_fees(main_user):
-    _fee_purchase(SavingType.FeeSource.ACCOUNT, 20000, 300, title="VALL")
-    _fee_purchase(SavingType.FeeSource.ACCOUNT, 500, 128, title="IB")
-    _fee_purchase(SavingType.FeeSource.INVESTMENT, 1000, 100, title="Finbee")
-
-    actual = list(SavingModelService(main_user).account_fees_by_day(1999, 1))
-
-    assert actual == [
-        {"date": date(1999, 1, 1), "sum": 428, "title": "savings_account_fee"}
-    ]
-
-
-@factory.django.mute_signals(post_save)
-def test_account_fees_by_day_reads_only_its_month(main_user):
-    SavingFactory(
-        date=date(1999, 2, 1),
-        fee=300,
-        saving_type=SavingTypeFactory(fee_source=SavingType.FeeSource.ACCOUNT),
-    )
-
-    assert not list(SavingModelService(main_user).account_fees_by_day(1999, 1))
 
 
 @time_machine.travel("1999-06-01")

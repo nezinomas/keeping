@@ -12,56 +12,30 @@ from ...services.model_services import (
 )
 from .. import factories
 
+SERVICES = [
+    pytest.param(ExpenseModelService, id="expense"),
+    pytest.param(ExpenseTypeModelService, id="expense_type"),
+    pytest.param(ExpenseNameModelService, id="expense_name"),
+    pytest.param(ExpenseKeywordModelService, id="expense_keyword"),
+]
 
-def test_expense_init_raises_if_no_user():
+
+@pytest.mark.parametrize("service", SERVICES)
+def test_service_init_raises_if_no_user(service):
     with pytest.raises(ValueError, match="User required"):
-        ExpenseModelService(user=None)
+        service(user=None)
 
 
-def test_expense_init_raises_if_anonymous_user():
-    anon = AnonymousUser()
+@pytest.mark.parametrize("service", SERVICES)
+def test_service_init_raises_if_anonymous_user(service):
     with pytest.raises(ValueError, match="Authenticated user required"):
-        ExpenseModelService(user=anon)
+        service(user=AnonymousUser())
 
 
 @pytest.mark.django_db
-def test_expense_init_succeeds_with_real_user(main_user):
-    # No need to save — just check __init__
-    ExpenseModelService(user=main_user)
-
-
-def test_expense_type_init_raises_if_no_user():
-    with pytest.raises(ValueError, match="User required"):
-        ExpenseTypeModelService(user=None)
-
-
-def test_expense_type_init_raises_if_anonymous_user():
-    anon = AnonymousUser()
-    with pytest.raises(ValueError, match="Authenticated user required"):
-        ExpenseTypeModelService(user=anon)
-
-
-@pytest.mark.django_db
-def test_expense_type_init_succeeds_with_real_user(main_user):
-    # No need to save — just check __init__
-    ExpenseTypeModelService(user=main_user)
-
-
-def test_expense_name_init_raises_if_no_user():
-    with pytest.raises(ValueError, match="User required"):
-        ExpenseNameModelService(user=None)
-
-
-def test_expense_name_init_raises_if_anonymous_user():
-    anon = AnonymousUser()
-    with pytest.raises(ValueError, match="Authenticated user required"):
-        ExpenseNameModelService(user=anon)
-
-
-@pytest.mark.django_db
-def test_expense_name_init_succeeds_with_real_user(main_user):
-    # No need to save — just check __init__
-    ExpenseNameModelService(user=main_user)
+@pytest.mark.parametrize("service", SERVICES)
+def test_service_init_succeeds_with_real_user(main_user, service):
+    assert service(user=main_user).user == main_user
 
 
 @pytest.mark.django_db
@@ -71,12 +45,8 @@ class TestExpenseService:
         return ExpenseModelService(main_user)
 
     def test_expenses_list_structure_and_values(self, service):
-        """
-        It should return a dictionary with correct keys and formatted values.
-        """
-        # Arrange
         obj = factories.ExpenseFactory(
-            price=120050,  # 1200.50 (stored as int)
+            price=120050,
             attachment="receipt.pdf",
             remark="Test Remark",
             quantity=10,
@@ -84,67 +54,37 @@ class TestExpenseService:
         )
         qs = models.Expense.objects.all()
 
-        # Act
-        results = service.expenses_list(qs)
-        result = results[0]
+        actual = list(service.expenses_list(qs))
 
-        # Assert 1: Check all required dictionary keys exist
-        expected_keys = {
-            "id",
-            "date",
-            "account__title",
-            "expense_type__pk",
-            "expense_type__title",
-            "expense_name__title",
-            "quantity",
-            "remark",
-            "attachment",
-            "exception",
-            "price_str",
-            "is_pdf",
-            "month_group",
-        }
-        assert expected_keys.issubset(result.keys())
-
-        # Assert 2: Check Values
-        assert result["id"] == obj.pk
-        assert result["remark"] == "Test Remark"
-        assert result["quantity"] == 10
-        assert result["exception"] is True
-
-        # Assert 3: Check PDF Logic
-        assert result["is_pdf"] is True
-
-    def test_expenses_list_urls(self, service):
-        """
-        It should carry the ID the update and delete URLs are built from.
-        """
-        obj = factories.ExpenseFactory()
-        qs = models.Expense.objects.all()
-
-        result = service.expenses_list(qs)[0]
-
-        assert result["id"] == obj.pk
+        assert actual == [
+            {
+                "id": obj.pk,
+                "date": date(1999, 1, 1),
+                "account__title": "Account1",
+                "expense_type__pk": obj.expense_type.pk,
+                "expense_type__title": "Expense Type",
+                "expense_name__title": "Expense Name",
+                "quantity": 10,
+                "remark": "Test Remark",
+                "attachment": "receipt.pdf",
+                "exception": True,
+                "price_str": "1.200,50",
+                "is_pdf": True,
+                "month_group": date(1999, 1, 1),
+            }
+        ]
 
     def test_expenses_list_pdf_detection_vs_image(self, service):
-        """
-        It should correctly flag PDF files (True) vs images (False).
-        """
         factories.ExpenseFactory(attachment="contract.pdf", price=100)
         factories.ExpenseFactory(attachment="photo.jpg", price=100)
 
         qs = models.Expense.objects.order_by("id")
 
-        results = list(service.expenses_list(qs))
+        actual = service.expenses_list(qs)
 
-        assert results[0]["is_pdf"] is False  # JPG
-        assert results[1]["is_pdf"] is True  # PDF
+        assert [a["is_pdf"] for a in actual] == [False, True]
 
     def test_expenses_list_ordering(self, service):
-        """
-        It should order by Date DESC, then ExpenseType, then ExpenseName ASC.
-        """
-
         e1 = factories.ExpenseFactory(
             date=date(2000, 1, 1), expense_name__title="Z_Name"
         )
@@ -157,35 +97,14 @@ class TestExpenseService:
 
         qs = models.Expense.objects.all()
 
-        results = list(service.expenses_list(qs))
+        actual = service.expenses_list(qs)
 
-        assert results[0]["id"] == e3.pk
-        assert results[1]["id"] == e2.pk
-        assert results[2]["id"] == e1.pk
+        assert [a["id"] for a in actual] == [e3.pk, e2.pk, e1.pk]
 
     def test_expenses_list_empty_queryset(self, service):
-        """
-        It should return an empty list if queryset is empty, without crashing.
-        """
         qs = models.Expense.objects.none()
         results = service.expenses_list(qs)
         assert not list(results)
-
-
-def test_expense_keyword_init_raises_if_no_user():
-    with pytest.raises(ValueError, match="User required"):
-        ExpenseKeywordModelService(user=None)
-
-
-def test_expense_keyword_init_raises_if_anonymous_user():
-    anon = AnonymousUser()
-    with pytest.raises(ValueError, match="Authenticated user required"):
-        ExpenseKeywordModelService(user=anon)
-
-
-@pytest.mark.django_db
-def test_expense_keyword_init_succeeds_with_real_user(main_user):
-    ExpenseKeywordModelService(user=main_user)
 
 
 @pytest.mark.django_db
@@ -212,8 +131,7 @@ def test_expense_keyword_items_other_journal(main_user, second_user):
 
     actual = ExpenseKeywordModelService(main_user).items()
 
-    assert actual.count() == 1
-    assert actual[0].keyword == "jogurt"
+    assert [a.keyword for a in actual] == ["jogurt"]
 
 
 @pytest.mark.django_db
@@ -235,8 +153,7 @@ def test_expense_keyword_year(main_user):
 
     actual = ExpenseKeywordModelService(main_user).year(2026)
 
-    assert actual.count() == 1
-    assert actual[0].keyword == "new"
+    assert [a.keyword for a in actual] == ["new"]
 
 
 @pytest.mark.django_db

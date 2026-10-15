@@ -178,10 +178,24 @@ def test_overview_cards(client_logged, open_books, finished_books, expected):
     assert re.findall(CARD, content)[:2] == expected
 
 
-def test_overview_goal_pencil_opens_target_new(client_logged):
-    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
+@pytest.mark.parametrize(
+    "targets, link_of, no_goal_shown",
+    [
+        (0, lambda ts: reverse("books:target_new"), True),
+        (
+            1,
+            lambda ts: reverse("books:target_update", kwargs={"pk": ts[0].pk}),
+            False,
+        ),
+    ],
+    ids=["target_new", "target_update"],
+)
+def test_overview_goal_pencil_opens_the_goal_form(
+    client_logged, targets, link_of, no_goal_shown
+):
+    link = link_of(BookTargetFactory.create_batch(targets))
 
-    link = reverse("books:target_new")
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     assert content.count(f'hx-get="{link}"') == 1
     assert f'<button type="button" class="trend-card__edit" hx-get="{link}"' in content
@@ -189,18 +203,7 @@ def test_overview_goal_pencil_opens_target_new(client_logged):
         rf'trend-card__edit" hx-get="{link}"[^>]*hx-target="#mainModal"', content
     )
     assert 'class="bi bi-pencil"' in content
-    assert "Neįvestas tikslas" in content
-
-
-def test_overview_goal_pencil_opens_target_update(client_logged):
-    t = BookTargetFactory()
-
-    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
-
-    link = reverse("books:target_update", kwargs={"pk": t.pk})
-
-    assert f'<button type="button" class="trend-card__edit" hx-get="{link}"' in content
-    assert "Neįvestas tikslas" not in content
+    assert ("Neįvestas tikslas" in content) is no_goal_shown
 
 
 def test_data_tab_reads_search_then_table(client_logged):
@@ -308,15 +311,28 @@ def test_list_empty_state(client_logged, params, shown, hidden):
 
 
 @time_machine.travel("2000-01-01")
-def test_load_books_form(client_logged):
-    url = reverse("books:new")
+@pytest.mark.parametrize(
+    "url_of, expected",
+    [
+        (
+            lambda book: reverse("books:new"),
+            ['<input type="text" name="started" value="1999-01-01"'],
+        ),
+        (
+            lambda book: reverse("books:update", kwargs={"pk": book.pk}),
+            ["1999-01-01", "Author", "Book Title", "Remark"],
+        ),
+    ],
+    ids=["new", "update"],
+)
+def test_books_load_form(client_logged, url_of, expected):
+    url = url_of(BookFactory())
 
-    response = client_logged.get(url, {})
+    actual = client_logged.get(url, {}, follow=True).content.decode()
 
-    actual = response.content.decode()
-
-    assert '<input type="text" name="started" value="1999-01-01"' in actual
     assert url in actual
+    for text in expected:
+        assert text in actual
 
 
 def test_save_book(client_logged):
@@ -440,20 +456,6 @@ def test_books_update(client_logged, started, data, shown, hidden):
     assert saved.author == data["author"]
     assert saved.title == data["title"]
     assert saved.remark == data.get("remark", "")
-
-
-def test_books_load_update_form(client_logged):
-    i = BookFactory()
-    url = reverse("books:update", kwargs={"pk": i.pk})
-
-    response = client_logged.get(url, follow=True)
-    actual = response.content.decode()
-
-    assert url in actual
-    assert "1999-01-01" in actual
-    assert "Author" in actual
-    assert "Book Title" in actual
-    assert "Remark" in actual
 
 
 @pytest.mark.parametrize(
