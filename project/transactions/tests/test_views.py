@@ -1,5 +1,6 @@
 import re
 from datetime import date
+from functools import partial
 from typing import NamedTuple
 
 import pytest
@@ -420,15 +421,11 @@ def _new_url(kind):
     return reverse(kind.new_url)
 
 
-def _closed_fund_update_url(kind):
-    obj = kind.factory(from_account=SavingTypeFactory(closed=1999))
-    return reverse(kind.update_url, kwargs={"pk": obj.pk})
-
-
-def _closed_fund_earlier_move_update_url(kind):
+def _closed_fund_update_url(kind, later_move=False):
     fund = SavingTypeFactory(closed=1999)
     obj = kind.factory(from_account=fund)
-    kind.factory(from_account=fund, date=date(1999, 6, 1))
+    if later_move:
+        kind.factory(from_account=fund, date=date(1999, 6, 1))
     return reverse(kind.update_url, kwargs={"pk": obj.pk})
 
 
@@ -439,7 +436,9 @@ def _closed_fund_earlier_move_update_url(kind):
         pytest.param(_new_url, 0, id="new"),
         pytest.param(_closed_fund_update_url, 1, id="update_of_a_closed_fund"),
         pytest.param(
-            _closed_fund_earlier_move_update_url, 0, id="update_of_an_earlier_move"
+            partial(_closed_fund_update_url, later_move=True),
+            0,
+            id="update_of_an_earlier_move",
         ),
     ],
 )

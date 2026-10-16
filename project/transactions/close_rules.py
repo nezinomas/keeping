@@ -12,28 +12,31 @@ class KeepClose:
 KEEP = KeepClose()
 
 
-@dataclass(frozen=True)
-class CloseBox:
-    """The *Uždaryti* box as submitted with a move: whether the user changed it, and
-    its state."""
+class CloseFund:
+    """The box ticked: the fund closes in its last move's year."""
 
-    changed: bool
-    ticked: bool
+    def year(self, closed: int | None, last: date) -> int:
+        return last.year
+
+
+CLOSE = CloseFund()
+
+
+class ReopenFund:
+    """The box unticked on the closing move: the fund is open again."""
 
     def year(self, closed: int | None, last: date) -> int | None:
-        if not self.changed:
-            return closed
-
-        if self.ticked:
-            return last.year
-
         return None
+
+
+REOPEN = ReopenFund()
 
 
 @dataclass(frozen=True)
 class Removed:
-    """A move deleted from its fund, or moved to another, dated `day` as loaded."""
+    """A move deleted from its fund, or moved to another, as loaded."""
 
+    fund_pk: int
     day: date
 
     def year(self, closed: int | None, last: date) -> int | None:
@@ -44,4 +47,4 @@ class Removed:
         return closed
 
 
-CloseRule = KeepClose | CloseBox | Removed
+CloseRule = KeepClose | CloseFund | ReopenFund | Removed

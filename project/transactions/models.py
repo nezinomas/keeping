@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.db import models
 from django.utils.formats import number_format
 
@@ -45,14 +43,15 @@ class FundMove:
     and `Removed` for the fund it was loaded from when it leaves it or is deleted."""
 
     close_rule: CloseRule = KEEP
-    _loaded: tuple[tuple[int, date], ...] = ()
+    # empty until the row is loaded or saved: a new move has left no fund
+    removed: tuple[Removed, ...] = ()
 
     @classmethod
     def from_db(cls, db, field_names, values, **kwargs):
         instance = super().from_db(db, field_names, values, **kwargs)
         # a deferred field would cost a query per row; such a row is never saved
         if {"from_account_id", "date"} <= instance.__dict__.keys():
-            instance._loaded = ((instance.from_account_id, instance.date),)
+            instance.settle()
 
         return instance
 
@@ -61,18 +60,14 @@ class FundMove:
         return self.from_account.journal
 
     @property
-    def left_funds(self) -> tuple[tuple[int, Removed], ...]:
+    def left_funds(self) -> tuple[Removed, ...]:
         return tuple(
-            (fund, rule) for fund, rule in self.removed if fund != self.from_account_id
+            move for move in self.removed if move.fund_pk != self.from_account_id
         )
-
-    @property
-    def removed(self) -> tuple[tuple[int, Removed], ...]:
-        return tuple((fund, Removed(day)) for fund, day in self._loaded)
 
     def settle(self) -> None:
         self.close_rule = KEEP
-        self._loaded = ((self.from_account_id, self.date),)
+        self.removed = (Removed(self.from_account_id, self.date),)
 
 
 class SavingClose(FundMove, models.Model):
