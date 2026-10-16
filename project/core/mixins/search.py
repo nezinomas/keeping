@@ -1,18 +1,33 @@
-from django.core.exceptions import FieldError
-from django.db.models import Count, F, FloatField, Sum
-from django.db.models.functions import Cast, Coalesce
-from django.urls import reverse
+from collections.abc import Callable
+from typing import TypedDict
+
+from django.db.models import QuerySet
 from django.utils.translation import gettext_lazy as _
 
-from ...core.lib import search
-from ...core.lib.utils import add_fast_urls, get_action_buttons_html
+from ...users.models import User
 from ..lib.paginator import CountlessPaginator
+from ..lib.utils import get_action_buttons_html
+
+PER_PAGE = 50
+
+
+class SearchTotals(TypedDict):
+    count: int
+
+
+def count_only(qs: QuerySet) -> SearchTotals:
+    return {"count": qs.count()}
+
+
+def keep_rows(rows: list) -> list:
+    return rows
 
 
 class SearchMixin:
-    # Set to True in child class to enable fast URLs reverse for update and delete
-    # for search results (like expenses list)
-    use_fast_urls = False
+    search_method: Callable[[User, str], QuerySet]
+    per_page = PER_PAGE
+    search_totals = staticmethod(count_only)
+    search_rows = staticmethod(keep_rows)
 
     def get_context_data(self, **kwargs):
         return (
@@ -21,76 +36,25 @@ class SearchMixin:
             | get_action_buttons_html()
         )
 
-    def get_search_method(self):
-        return getattr(search, self.search_method)
-
-    def search_statistic(self, sql):
-        """
-        Calculate total price, total quantity and average of search result.
-
-        :param sql: QuerySet
-        :return:
-            a dictionary with sum_price, sum_quantity and average
-            if search_method is 'search_expenses'
-        :rtype: dict or None
-        """
-
-        if self.search_method not in ["search_expenses"]:
-            return {}
-
-        try:
-            q = (
-                sql.annotate(count=Count("id"))
-                .values("count")
-                .annotate(
-                    sum_price=Sum("price"),
-                    sum_quantity=Sum("quantity"),
-                )
-                .order_by("count")
-                .values(
-                    "count",
-                    "sum_price",
-                    "sum_quantity",
-                    average=Coalesce(
-                        Cast(F("sum_price"), FloatField()) / F("sum_quantity"), 0.0
-                    ),
-                )
-            )
-        except (AttributeError, FieldError):
-            return {}
-
-        return q[0] if q else {}
-
     def search(self):
-        search_str = self.request.GET.get("search")
+        search_str = self.request.GET.get("search", "")
 
-        sql = self.get_search_method()(self.request.user, search_str)
-        stats = self.search_statistic(sql)
+        sql = self.search_method(self.request.user, search_str)
+        stats = self.search_totals(sql)
 
-        page = self.request.GET.get("page", 1)
         paginator = CountlessPaginator(
             query=sql,
-            total_records=stats.get("count") or sql.count(),
+            total_records=stats["count"],
             per_page=self.per_page,
         )
-        page_range = paginator.get_elided_page_range(page)
-        page_obj = paginator.get_page(page)
-
-        app = self.request.resolver_match.app_name
-
-        # Add fast URLs if enabled and if the view supports it (like expenses list)
-        if self.use_fast_urls:
-            page_obj.object_list = add_fast_urls(list(page_obj.object_list), app)
+        page_obj, paginator_object = paginator.paging(self.request.GET.get("page", 1))
+        rows = self.search_rows(list(page_obj.object_list))
 
         return {
             "notice": _("No data found"),
-            "object_list": page_obj,
+            "object_list": page_obj.with_rows(rows),
             "search": search_str,
-            "url": reverse(f"{app}:search"),
-            "paginator_object": {
-                "total_pages": paginator.total_pages,
-                "page_range": page_range,
-                "ELLIPSIS": paginator.ELLIPSIS,
-            },
+            "url": self.request.path,
+            "paginator_object": paginator_object,
             **stats,
         }

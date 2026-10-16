@@ -1,6 +1,7 @@
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
+from ..core.lib.utils import int_or_zero
 from ..core.mixins.views import (
     CreateViewMixin,
     ListViewMixin,
@@ -18,7 +19,6 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Account
     form_class = forms.AccountForm
     success_url = reverse_lazy("accounts:list")
     hx_trigger_django = "afterAccount"
@@ -38,19 +38,11 @@ class Update(UpdateViewMixin):
 
 class LoadAccount(ListViewMixin):
     template_name = "core/dropdown.html"
-    object_list = []
 
     def get(self, request, *args, **kwargs):
-        pk = request.GET.get("from_account")
+        pk = int_or_zero(request.GET.get("from_account"))
+        if not pk:
+            return self.render_to_response({"object_list": []})
 
-        try:
-            pk = int(pk)
-        except (ValueError, TypeError):
-            pk = None
-
-        if pk:
-            self.object_list = (
-                AccountModelService(self.request.user).items().exclude(pk=pk)
-            )
-
-        return self.render_to_response({"object_list": self.object_list})
+        items = AccountModelService(request.user).items().exclude(pk=pk)
+        return self.render_to_response({"object_list": items})

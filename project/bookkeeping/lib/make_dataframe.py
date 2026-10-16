@@ -5,9 +5,11 @@ from datetime import date
 
 import polars as pl
 
+from ...core.lib.table_columns import DATE
+
 
 def _date_frame(dates: list[date]) -> pl.DataFrame:
-    return pl.DataFrame({"date": dates}).with_columns(pl.col("date").cast(pl.Date))
+    return pl.DataFrame({DATE: dates}).with_columns(pl.col(DATE).cast(pl.Date))
 
 
 @dataclass(frozen=True)
@@ -44,8 +46,8 @@ class DataFrameSchemaFormatter:
         if missing_cols:
             df = df.with_columns(missing_cols)
 
-        data_cols = sorted([col for col in df.columns if col != "date"])
-        return df.select(["date", *data_cols])
+        data_cols = sorted([col for col in df.columns if col != DATE])
+        return df.select([DATE, *data_cols])
 
 
 class TimeSeriesPivotBuilder:
@@ -69,19 +71,17 @@ class TimeSeriesPivotBuilder:
             return self.formatter.format(expected_dates_df)
 
         pivoted_df = (
-            df.group_by(["date", "title"])
+            df.group_by([DATE, "title"])
             .agg(pl.col(value_column).sum().cast(pl.Int32))
             .pivot(
-                index="date",
+                index=DATE,
                 on="title",
                 values=value_column,
                 aggregate_function="first",
             )
         )
 
-        padded_df = expected_dates_df.join(pivoted_df, on="date", how="left").fill_null(
-            0
-        )
+        padded_df = expected_dates_df.join(pivoted_df, on=DATE, how="left").fill_null(0)
 
         return self.formatter.format(padded_df)
 
@@ -122,5 +122,5 @@ class MakeDataFrame:
             return df.with_columns(sum=pl.lit(0).cast(pl.Int32))
 
         return df.select(
-            [pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias("sum")]
+            [pl.col(DATE), pl.sum_horizontal(pl.exclude(DATE)).alias("sum")]
         )

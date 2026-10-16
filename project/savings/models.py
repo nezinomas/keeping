@@ -42,7 +42,6 @@ class SavingType(TitleAbstract):
     )
 
     class Meta:
-        unique_together = ["journal", "title"]
         ordering = ["type", "title"]
         constraints = [
             models.UniqueConstraint(

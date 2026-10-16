@@ -1,25 +1,19 @@
 from datetime import date
 from functools import cached_property
 
+from ...core.lib.day_stats import NoPastRecord, PastRecord
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DataRow
 from .model_services import DrinkModelService, DrinkTargetDTO, DrinkTargetModelService
 
 
 class ConsumptionYear:
-    """One user's year of drink records, in canonical Std Av units.
+    """One user's year of Drinks in canonical Std Av; every reader is cached."""
 
-    The seam the Index, Risk and Trends tab modules sit on. It owns the query
-    shape, the `DataRow` construction, the user's drink type, the year's target
-    and the reach back into the previous year — so a tab module never touches
-    the ORM or knows how a row becomes a `DataRow`.
-
-    Every reader is cached, so asking twice costs one query.
-    """
-
-    def __init__(self, user, year: int):
+    def __init__(self, user, year: int, today: date):
         self.user = user
         self.year = year
+        self.today = today
 
     @cached_property
     def converter(self) -> DrinkConverter:
@@ -43,16 +37,19 @@ class ConsumptionYear:
         return DrinkTargetModelService(self.user).get_target(self.year)
 
     @cached_property
-    def last_recorded_date(self) -> date | None:
-        return self._service.latest_date(self.year)
+    def earlier(self) -> PastRecord | NoPastRecord:
+        """The last Drink before the year, so its first Gap reaches back."""
+        return self._service.latest_record_before(self.year)
 
     @cached_property
-    def last_recorded_date_before(self) -> date | None:
-        return self._service.latest_date_before(self.year)
+    def latest(self) -> PastRecord | NoPastRecord:
+        """The last Drink on or before today, none later than the year's end."""
+        through = min(self.today, date(self.year, 12, 31))
+        return self._service.latest_record(through)
 
     @cached_property
     def previous(self) -> "ConsumptionYear":
-        return ConsumptionYear(self.user, self.year - 1)
+        return ConsumptionYear(self.user, self.year - 1, self.today)
 
     @property
     def has_data(self) -> bool:

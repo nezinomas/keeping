@@ -1,26 +1,26 @@
-from datetime import datetime
+from collections.abc import Iterable
+from datetime import date
 
 import polars as pl
-from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 
-from ...core.lib.date import yday, years
+from ...core.lib.date import ydays
 from ...users.models import User
 from ..lib.drinks_options import DrinkConverter, stdav_to_alcohol
 from ..services.model_services import DrinkModelService
 
 
 class HistoryService:
-    def __init__(self, user: User, data: list[dict]):
-        self.history_df: pl.DataFrame = pl.DataFrame()
+    def __init__(self, user: User, data: Iterable[dict], today: date):
         self.converter: DrinkConverter = DrinkConverter(user.drink_type)
-        self._header_year: int = user.year
+        self._header_year: int = user.selected_year()
+        self._today = today
+        self._days_elapsed = today.timetuple().tm_yday
 
-        if data:
-            if isinstance(data, QuerySet):
-                data = list(data)
-
-            self.history_df = self._prepare_data_frame(data)
+        rows = list(data)
+        self.history_df: pl.DataFrame = pl.DataFrame()
+        if rows:
+            self.history_df = self._prepare_data_frame(rows)
 
     @property
     def years(self) -> list[int]:
@@ -41,14 +41,13 @@ class HistoryService:
     @property
     def forecast(self) -> list[dict]:
         """The running year's straight-line pace of pure alcohol, as one point."""
-        calendar_year = datetime.now().year
+        calendar_year = self._today.year
 
         if calendar_year not in self.years:
             return []
 
         index = self.years.index(calendar_year)
-        days_elapsed, ydays_total = yday(calendar_year)
-        litres = self.alcohol[index] / days_elapsed * ydays_total
+        litres = self.alcohol[index] / self._days_elapsed * ydays(calendar_year)
 
         return [{"x": index, "y": litres}]
 
@@ -60,7 +59,7 @@ class HistoryService:
             last_recorded = history_df.select(pl.col.year.max()).collect().item()
             # the furthest of the three, so a header year ahead of the calendar
             # year still gets its own column
-            end_year = max(datetime.now().year, self._header_year, last_recorded)
+            end_year = max(self._today.year, self._header_year, last_recorded)
             years_df = pl.DataFrame({"year": range(start_year, end_year + 1)}).lazy()
             history_df = years_df.join(history_df, on="year", how="left").fill_null(0)
 
@@ -85,31 +84,28 @@ class HistoryService:
         ).with_columns(per_day=pl.col.shown / pl.col.days_in_year)
 
     def _calculate_days_in_year(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        now = datetime.now()
         return df.with_columns(
             days_in_year=pl.when(pl.col.date.dt.is_leap_year())
             .then(pl.lit(366))
             .otherwise(pl.lit(365))
         ).with_columns(
-            days_in_year=pl.when(pl.col.year == now.year)
-            .then(pl.lit(now.timetuple().tm_yday))
+            days_in_year=pl.when(pl.col.year == self._today.year)
+            .then(pl.lit(self._days_elapsed))
             .otherwise(pl.col.days_in_year)
         )
 
     def _data_frame_column(self, column_name: str) -> list:
-        return (
-            self.history_df[column_name].to_list()
-            if not self.history_df.is_empty()
-            else []
-        )
+        if self.history_df.is_empty():
+            return []
+
+        return self.history_df[column_name].to_list()
 
 
-def load_service(user) -> dict:
+def load_service(user, today: date) -> dict:
     data = DrinkModelService(user).sum_by_year()
-    service = HistoryService(user, data)
+    service = HistoryService(user, data, today)
 
     return {
-        "all_years": len(years()),
         "records": len(service.years) if len(service.years) > 1 else 0,
         "chart": {
             "categories": service.years,

@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from dataclasses import dataclass, field
+from datetime import date
 
 from ...core.lib.translation import month_names
 from ..lib.chart_view_model import ChartViewModel
@@ -11,13 +12,13 @@ from .consumption_year import ConsumptionYear
 @dataclass(frozen=True)
 class YearComparisonChartViewModel(ChartViewModel):
     categories: list[str]
-    serries: list[dict] = field(default_factory=list)
+    series: list[dict] = field(default_factory=list)
     unit: str = "ml"
     decimals: int = 0
 
     @property
     def has_data(self) -> bool:
-        return bool(self.serries)
+        return bool(self.series)
 
 
 class YearComparison:
@@ -29,18 +30,24 @@ class YearComparison:
     """
 
     @classmethod
-    def build(cls, user, years: Iterable[int]) -> YearComparisonChartViewModel:
-        return cls._chart(user, cls._series(user, years))
+    def build(
+        cls, user, years: Iterable[int], today: date
+    ) -> YearComparisonChartViewModel:
+        return cls._chart(user, cls._series(user, years, today))
 
     @classmethod
-    def for_recent(cls, user, year: int, qty: int) -> YearComparisonChartViewModel:
-        return cls.build(user, range(year - qty + 1, year + 1))
+    def for_recent(
+        cls, user, year: int, qty: int, today: date
+    ) -> YearComparisonChartViewModel:
+        return cls.build(user, range(year - qty + 1, year + 1), today)
 
     @classmethod
-    def for_pair(cls, user, year1, year2) -> YearComparisonChartViewModel:
+    def for_pair(
+        cls, user, year1: int, year2: int, today: date
+    ) -> YearComparisonChartViewModel:
         """All-or-nothing, unlike a span: half a comparison answers a question
         the user did not ask."""
-        series = cls._series(user, [year1, year2])
+        series = cls._series(user, [year1, year2], today)
 
         return cls._chart(user, series if len(series) == 2 else [])
 
@@ -52,21 +59,23 @@ class YearComparison:
 
         return YearComparisonChartViewModel(
             categories=list(month_names().values()),
-            serries=series,
+            series=series,
             unit=converter.display_unit,
             decimals=converter.display_decimals,
         )
 
     @staticmethod
-    def _series(user, years: Iterable[int]) -> list[dict]:
+    def _series(user, years: Iterable[int], today: date) -> list[dict]:
         series = []
 
         for year in years:
-            records = ConsumptionYear(user, int(year))
+            records = ConsumptionYear(user, year, today)
             if not records.monthly:
                 continue
 
-            stats = DrinkStats(records.converter, records.monthly)
+            stats = DrinkStats(
+                records.converter, records.monthly, year=records.year, today=today
+            )
             series.append({"name": year, "data": stats.monthly.avg_daily_volume})
 
         return series

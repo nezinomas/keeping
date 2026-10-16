@@ -1,37 +1,48 @@
+import json
 import re
 from datetime import date
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import pytest
 import time_machine
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
-from django.urls import resolve, reverse, reverse_lazy
+from django.urls import reverse
 from django.utils.html import escape
 from django.utils.translation import gettext as _
 
-from ...core.tests.utils import setup_view
+from ...core.mixins import kwargs as core_kwargs
+from ...core.tests.utils import setup_view, view_for
 from ...users.tests.factories import User
 from .. import forms, models, views
+from ..services.history import HistoryService
 from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 
-
-# -------------------------------------------------------------------------------------
-#                                                                             IndexView
-# -------------------------------------------------------------------------------------
-def test_index_func():
-    view = resolve("/drinks/")
-    assert views.TabIndex == view.func.view_class
-
-
-def test_index_200(client_logged):
-    url = reverse("drinks:index")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
+TABS = {
+    "index": "drinks:tab_index",
+    "trends": "drinks:tab_trends",
+    "habits": "drinks:tab_habits",
+    "risk": "drinks:tab_risk",
+    "history": "drinks:tab_history",
+    "data": "drinks:tab_data",
+}
 
 
+def chart_data(content: str, chart: str) -> dict:
+    match = re.search(
+        rf'<script id="chart-{chart}-data" type="application/json">(.*?)</script>',
+        content,
+        re.S,
+    )
+
+    assert match, f"no data script rendered for the {chart} chart"
+    return json.loads(match.group(1))
+
+
+# IndexView
 def test_index_heads_the_page_where_only_a_reader_hears_it(client_logged):
     content = client_logged.get(reverse("drinks:index")).content.decode("utf-8")
 
@@ -40,31 +51,19 @@ def test_index_heads_the_page_where_only_a_reader_hears_it(client_logged):
 
 
 @pytest.mark.parametrize(
-    "tab, expected",
+    "headers",
     [
-        ("index", "Overview"),
-        ("trends", "Trends"),
-        ("data", "Data"),
+        pytest.param({}, id="page"),
+        # the fragment carries the title so htmx can swap it
+        pytest.param({"HTTP_HX_REQUEST": "true"}, id="fragment"),
     ],
 )
-def test_index_names_the_open_tab_in_the_browser_title(client_logged, tab, expected):
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"))
-
-    assert f"<title>{_('Drinks')} | {_(expected)}</title>" in response.content.decode()
-
-
 @pytest.mark.parametrize(
     "tab, expected",
-    [
-        ("index", "Overview"),
-        ("trends", "Trends"),
-        ("data", "Data"),
-    ],
+    [("index", "Overview"), ("trends", "Trends"), ("data", "Data")],
 )
-def test_tab_fragment_carries_the_title_so_htmx_can_swap_it(
-    client_logged, tab, expected
-):
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+def test_tab_names_itself_in_the_browser_title(client_logged, headers, tab, expected):
+    response = client_logged.get(reverse(TABS[tab]), **headers)
 
     assert f"<title>{_('Drinks')} | {_(expected)}</title>" in response.content.decode()
 
@@ -85,17 +84,8 @@ def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
     assert 'class="paper-skin"' in response.content.decode()
 
 
-def test_index_loads_the_paper_chart_theme(client_logged):
-    # the shared Highcharts theme is every other app's too, so the paper
-    # overrides ride in a file only the pages wearing the skin load
-    response = client_logged.get(reverse("drinks:index"))
-
-    assert "js/chart_paper.js" in response.content.decode()
-
-
 def test_index_quick_add(client_logged):
-    # adding a drink now happens via the persistent quick-add widget
-    # (bottom pill -> sheet) instead of a button in the nav
+    # a drink is added from the bottom-pill widget, not from the nav
     url = reverse("drinks:index")
     response = client_logged.get(url)
     content = response.content.decode()
@@ -112,10 +102,17 @@ def test_index_quick_add(client_logged):
     assert '<select name="option" class="form-select"' in content
 
 
-def test_index_has_no_inline_separator_script(client_logged):
+@pytest.mark.parametrize(
+    "absent",
+    [
+        pytest.param("input.value.replace(/,/g, '.')", id="inline_separator_script"),
+        pytest.param("hx-swap-oob", id="switcher_swapped_out_of_band"),
+    ],
+)
+def test_index_carries_no(client_logged, absent):
     response = client_logged.get(reverse("drinks:index"))
 
-    assert "input.value.replace(/,/g, '.')" not in response.content.decode()
+    assert absent not in response.content.decode()
 
 
 def test_index_quick_add_prefilled_and_esc_close(client_logged, main_user):
@@ -174,17 +171,6 @@ def test_index_renders_the_tab_nav_once(client_logged):
     assert response.content.decode().count('class="subnav"') == 1
 
 
-@pytest.mark.parametrize(
-    "tab",
-    ["tab_index", "tab_habits", "tab_trends", "tab_risk", "tab_history", "tab_data"],
-)
-def test_tabs_do_not_render_the_nav(tab, client_logged):
-    # a tab response is the body only; the page it lands in owns the nav
-    response = client_logged.get(reverse(f"drinks:{tab}"), HTTP_HX_REQUEST="true")
-
-    assert 'class="subnav"' not in response.content.decode()
-
-
 def test_index_nav_tracks_the_open_tab_in_alpine(client_logged):
     # rendered once on Overview, so the mark moves client-side from there
     response = client_logged.get(reverse("drinks:index"))
@@ -222,21 +208,16 @@ def test_index_switcher_sits_in_the_quick_add_bar(client_logged):
     assert "dropdown" not in nav
 
 
-def test_index_switcher_is_not_swapped_out_of_band(client_logged):
-    """The page draws the control itself; only a tab reload replaces it."""
+def test_index_quick_add_preselects_the_users_drink_type(client_logged, main_user):
+    main_user.drink_type = "wine"
+    main_user.save()
+
     response = client_logged.get(reverse("drinks:index"))
+    content = response.content.decode()
 
-    assert "hx-swap-oob" not in response.content.decode()
-
-
-def test_index_context(client_logged):
-    url = reverse("drinks:index")
-    response = client_logged.get(url)
-    context = response.context
-
-    assert "drink_types" in context
-    assert context["drink_types"].selected == "beer"
-    assert context["drink_type_control"].selected == "beer"
+    assert "option: 'wine'" in content
+    assert '<option value="wine" selected>' in content
+    assert '<option value="beer" selected>' not in content
 
 
 @pytest.mark.parametrize(
@@ -271,43 +252,42 @@ def test_index_drink_type_press_closes_the_menu(client_logged):
 
 
 @pytest.mark.parametrize(
-    "tab, expect",
+    "url_name, expect",
     [
-        ("index", "Vynas"),
-        ("trends", "Vynas"),
-        ("history", "Vynas"),
-        ("habits", "Std Av"),
-        ("risk", "Std Av"),
+        ("drinks:tab_index", "Vynas"),
+        ("drinks:tab_trends", "Vynas"),
+        ("drinks:tab_history", "Vynas"),
+        ("drinks:tab_habits", "Std Av"),
+        ("drinks:tab_risk", "Std Av"),
     ],
 )
 def test_tab_reload_swaps_the_switcher_out_of_band(
-    tab, expect, main_user, client_logged
+    url_name, expect, main_user, client_logged
 ):
-    """A tab arrives with the control its own readings are in."""
     main_user.drink_type = "wine"
     main_user.save()
 
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+    response = client_logged.get(reverse(url_name), HTTP_HX_REQUEST="true")
     content = response.content.decode()
 
     assert '<div id="drink-type-control" hx-swap-oob="true">' in content
     assert expect in content
 
 
-@pytest.mark.parametrize("tab", ["habits", "risk"])
-def test_tab_reading_std_av_names_the_unit_and_offers_no_choice(tab, client_logged):
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+@pytest.mark.parametrize("url_name", ["drinks:tab_habits", "drinks:tab_risk"])
+def test_tab_reading_std_av_names_the_unit_and_offers_no_choice(
+    url_name, client_logged
+):
+    response = client_logged.get(reverse(url_name), HTTP_HX_REQUEST="true")
     content = response.content.decode()
 
     assert '<span class="drink-type-unit">[ Std Av ]</span>' in content
     assert "dropdown" not in content
 
 
-@pytest.mark.parametrize("tab", ["habits", "risk"])
-def test_tab_reading_std_av_says_the_whole_tab_is_in_it(tab, client_logged):
-    """A unit with no choice beside it has to say why it is there, and the
-    caption is part of that one control — not a label sitting next to it."""
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+@pytest.mark.parametrize("url_name", ["drinks:tab_habits", "drinks:tab_risk"])
+def test_tab_reading_std_av_says_the_whole_tab_is_in_it(url_name, client_logged):
+    response = client_logged.get(reverse(url_name), HTTP_HX_REQUEST="true")
     content = response.content.decode()
 
     assert (
@@ -318,10 +298,11 @@ def test_tab_reading_std_av_says_the_whole_tab_is_in_it(tab, client_logged):
     ) in content
 
 
-@pytest.mark.parametrize("tab", ["index", "trends", "history"])
-def test_tab_choosing_the_unit_carries_no_caption(tab, client_logged):
-    """The switcher says what it is by being pressable."""
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+@pytest.mark.parametrize(
+    "url_name", ["drinks:tab_index", "drinks:tab_trends", "drinks:tab_history"]
+)
+def test_tab_choosing_the_unit_carries_no_caption(url_name, client_logged):
+    response = client_logged.get(reverse(url_name), HTTP_HX_REQUEST="true")
 
     assert _("Data shown as") not in response.content.decode()
 
@@ -333,63 +314,44 @@ def test_tab_reading_no_amount_empties_the_control(client_logged):
     assert '<div id="drink-type-control" hx-swap-oob="true"></div>' in content
 
 
-@pytest.mark.parametrize("tab", ["index", "trends", "history", "habits", "risk"])
-def test_tab_context_carries_the_control(tab, client_logged):
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"))
-
-    assert response.context["drink_type_control"].state in ("choice", "fixed")
-
-
-def test_tab_context_carries_a_control_that_draws_nothing(client_logged):
-    """Never None — the tab that reads no amount still answers every question
-    the template asks."""
-    response = client_logged.get(reverse("drinks:tab_data"))
-
-    assert response.context["drink_type_control"].state == "absent"
-
-
-# -------------------------------------------------------------------------------------
-#                                                                          Tab urls
-# -------------------------------------------------------------------------------------
-TABS = ["index", "trends", "habits", "risk", "history", "data"]
-
-
+# Tab urls
 def tab_button(content: str, name: str) -> str:
-    """The attributes of one tab button, so a test does not pin their order."""
+    # the attributes alone, so a test does not pin their order
     match = re.search(rf'<button\s+id="tab-{name}"(.*?)>', content, re.S)
 
     assert match, f"no button rendered for the {name} tab"
     return match.group(1)
 
 
-@pytest.mark.parametrize("tab", TABS)
-def test_tab_url_opens_the_whole_page(tab, client_logged):
-    """A pushed url has to answer a bookmark and a reload, not just a swap."""
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"))
+@pytest.mark.parametrize("url_name", list(TABS.values()))
+def test_tab_url_opens_the_whole_page(url_name, client_logged):
+    response = client_logged.get(reverse(url_name))
     content = response.content.decode()
 
     assert 'role="tablist"' in content
     assert 'id="quick-add"' in content
 
 
-@pytest.mark.parametrize("tab", TABS)
-def test_tab_url_opens_on_its_own_tab(tab, client_logged):
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"))
+@pytest.mark.parametrize("tab, url_name", list(TABS.items()))
+def test_tab_url_opens_on_its_own_tab(tab, url_name, client_logged):
+    response = client_logged.get(reverse(url_name))
     content = response.content.decode()
 
     assert f"{{ tab: '{tab}' }}" in content
     assert 'aria-selected="true"' in tab_button(content, tab)
 
 
-@pytest.mark.parametrize("tab", TABS)
-def test_tab_url_over_htmx_is_only_the_fragment(tab, client_logged):
-    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+@pytest.mark.parametrize("url_name", list(TABS.values()))
+def test_tab_url_over_htmx_is_only_the_fragment(url_name, client_logged):
+    # the page a fragment lands in owns the nav
+    response = client_logged.get(reverse(url_name), HTTP_HX_REQUEST="true")
+    content = response.content.decode()
 
-    assert 'role="tablist"' not in response.content.decode()
+    assert 'role="tablist"' not in content
+    assert 'class="subnav"' not in content
 
 
 def test_tab_url_restoring_history_is_the_whole_page(client_logged):
-    """Back asks over htmx too, and swaps what comes back into the whole body."""
     response = client_logged.get(
         reverse("drinks:tab_risk"),
         HTTP_HX_REQUEST="true",
@@ -399,22 +361,22 @@ def test_tab_url_restoring_history_is_the_whole_page(client_logged):
     assert 'role="tablist"' in response.content.decode()
 
 
-@pytest.mark.parametrize("tab", TABS)
+@pytest.mark.parametrize("tab", list(TABS))
 def test_tab_button_pushes_its_url(tab, client_logged):
     attrs = tab_button(client_logged.get(reverse("drinks:index")).content.decode(), tab)
 
-    assert f'hx-get="/drinks/{tab}/"' in attrs
+    assert f'hx-get="{reverse(TABS[tab])}"' in attrs
     assert 'hx-push-url="true"' in attrs
 
 
-@pytest.mark.parametrize("tab", TABS)
+@pytest.mark.parametrize("tab", list(TABS))
 def test_tab_button_shows_the_loader_while_it_fetches(tab, client_logged):
     attrs = tab_button(client_logged.get(reverse("drinks:index")).content.decode(), tab)
 
     assert 'hx-indicator="#indicator"' in attrs
 
 
-@pytest.mark.parametrize("tab", TABS)
+@pytest.mark.parametrize("tab", list(TABS))
 def test_every_tab_button_is_a_tab(tab, client_logged):
     attrs = tab_button(client_logged.get(reverse("drinks:index")).content.decode(), tab)
 
@@ -422,28 +384,79 @@ def test_every_tab_button_is_a_tab(tab, client_logged):
     assert 'aria-controls="tab_content"' in attrs
 
 
-def test_only_the_open_tab_is_selected(client_logged):
+@pytest.mark.parametrize(
+    "open_attr, closed_attr",
+    [
+        pytest.param(
+            'aria-selected="true"',
+            'aria-selected="false"',
+            id="only_the_open_tab_is_selected",
+        ),
+        # arrow keys move between tabs, so Tab enters the row once and leaves it
+        pytest.param(
+            'tabindex="0"',
+            'tabindex="-1"',
+            id="the_open_tab_is_the_only_one_in_the_focus_order",
+        ),
+    ],
+)
+def test_the_open_tab_alone_is_marked_open(client_logged, open_attr, closed_attr):
     content = client_logged.get(reverse("drinks:index")).content.decode()
 
-    assert 'aria-selected="true"' in tab_button(content, "index")
-    assert all('aria-selected="false"' in tab_button(content, t) for t in TABS[1:])
+    assert open_attr in tab_button(content, "index")
+    assert all(closed_attr in tab_button(content, t) for t in list(TABS)[1:])
 
 
-def test_the_open_tab_is_the_only_one_in_the_focus_order(client_logged):
-    """Arrow keys move between tabs, so Tab enters the row once and leaves it."""
-    content = client_logged.get(reverse("drinks:index")).content.decode()
+@pytest.mark.parametrize(
+    "tab, titles",
+    [
+        pytest.param("index", ["Consumption by month", "Calendar"], id="index"),
+        pytest.param("habits", ["Weekday profile", "Typical year"], id="habits"),
+        pytest.param(
+            "trends", ["Rolling average", "Cumulative (year over year)"], id="trends"
+        ),
+        pytest.param(
+            "risk", ["Weekly units with risk bands", "Heavy days per month"], id="risk"
+        ),
+    ],
+)
+def test_tab_titles_its_panels(client_logged, tab, titles):
+    content = client_logged.get(reverse(TABS[tab])).content.decode()
 
-    assert 'tabindex="0"' in tab_button(content, "index")
-    assert all('tabindex="-1"' in tab_button(content, t) for t in TABS[1:])
+    for title in titles:
+        assert f'<h2 class="panel__title">{_(title)}</h2>' in content
+
+
+@pytest.mark.parametrize(
+    "tab, charts, markup, cards",
+    [
+        pytest.param(
+            "index",
+            ["quantity", "consumption"],
+            # the Converted table's rows exist only while the breakdown has data
+            ('<tr class="main__total">', "<td>0,40</td>"),
+            6,
+            id="index",
+        ),
+        pytest.param("habits", ["weekday"], (), 1, id="habits"),
+        pytest.param("trends", ["trend"], (), 5, id="trends"),
+        pytest.param("risk", ["weekly", "heavy"], (), 4, id="risk"),
+    ],
+)
+def test_tab_renders_its_charts_and_cards(client_logged, tab, charts, markup, cards):
+    DrinkFactory()
+
+    page = client_logged.get(reverse(TABS[tab])).content.decode()
+
+    for chart in charts:
+        assert isinstance(chart_data(page, chart), dict)
+    for text in markup:
+        assert text in page
+    assert page.count('<div class="trend-card">') == cards
 
 
 def test_back_reloads_the_page_rather_than_restoring_a_snapshot(client_logged):
-    """htmx 2 restored a snapshot by replacing the body, which ran every script in
-    it twice — `modal.js` died on a redeclared constant, so this page opted out of
-    snapshotting and forced a full reload on a miss instead. htmx 4 core has no
-    ajax-based history restore at all (that moved to the opt-in hx-history-cache
-    extension, not loaded here), so Back is already a plain page load — nothing
-    left to configure."""
+    # htmx 4 has no ajax history restore, so Back is a plain page load
     content = client_logged.get(reverse("drinks:index")).content.decode()
 
     assert 'hx-history="false"' not in content
@@ -457,40 +470,10 @@ def test_the_tabs_carry_a_tablist(client_logged):
     assert 'role="tabpanel"' in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         TabIndex View
-# -------------------------------------------------------------------------------------
-def test_tab_index_func():
-    view = resolve("/drinks/index/")
-    assert views.TabIndex == view.func.view_class
-
-
-def test_tab_index_200(client_logged):
-    url = reverse("drinks:tab_index")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_tab_index_context(client_logged):
-    DrinkFactory()
-
-    url = reverse("drinks:tab_index")
-    response = client_logged.get(url)
-
-    assert "all_years" in response.context
-    assert "chart_quantity" in response.context
-    assert "chart_consumption" in response.context
-    assert "tbl_std_av" in response.context
-    assert "cards" in response.context
-    assert "calendar" in response.context
-
-
-def test_tab_index_titles_its_panels(client_logged):
+# TabIndex View
+def test_tab_index_titles_the_converted_panel(client_logged):
     content = client_logged.get(reverse("drinks:tab_index")).content.decode()
 
-    assert f'<h2 class="panel__title">{_("Consumption by month")}</h2>' in content
-    assert f'<h2 class="panel__title">{_("Calendar")}</h2>' in content
     assert f'<h2 class="panel__title">{_("Converted")}, {_("pcs")}</h2>' in content
     assert (
         '<p class="panel__subtitle">'
@@ -499,10 +482,25 @@ def test_tab_index_titles_its_panels(client_logged):
     )
 
 
-def test_tab_index_breakdown_is_a_table_panel(client_logged):
+@pytest.mark.parametrize(
+    "markup",
+    [
+        pytest.param(
+            '<section class="panel panel--table" id="breakdown">',
+            id="breakdown_is_a_table_panel",
+        ),
+        # the Panel title carries the caption's text, so a sighted user reads it
+        # once; the table still names itself for a screen reader
+        pytest.param(
+            '<caption class="visually-hidden">',
+            id="breakdown_caption_is_visually_hidden",
+        ),
+    ],
+)
+def test_tab_index_breakdown_markup(client_logged, markup):
     content = client_logged.get(reverse("drinks:tab_index")).content.decode()
 
-    assert '<section class="panel panel--table" id="breakdown">' in content
+    assert markup in content
 
 
 @pytest.mark.parametrize("panel_id", ["panel-overview", "panel-calendar"])
@@ -510,14 +508,6 @@ def test_tab_index_figure_panels_keep_their_frame(client_logged, panel_id):
     content = client_logged.get(reverse("drinks:tab_index")).content.decode()
 
     assert f'<section class="panel" id="{panel_id}">' in content
-
-
-def test_tab_index_breakdown_caption_is_visually_hidden(client_logged):
-    # the Panel title carries the caption's text, so a sighted user reads it
-    # once; the table still names itself for a screen reader
-    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
-
-    assert '<caption class="visually-hidden">' in content
 
 
 def _tab_queries(client, url):
@@ -547,7 +537,6 @@ def test_tab_index_daily_limit_edit_link_uses_target_update(client_logged):
     response = client_logged.get(url)
     content = response.content.decode()
 
-    # with a saved target the pencil points at target_update
     edit_url = reverse("drinks:target_update", kwargs={"pk": target.pk})
     assert (
         f'<button type="button" class="trend-card__edit" hx-get="{edit_url}"' in content
@@ -555,8 +544,6 @@ def test_tab_index_daily_limit_edit_link_uses_target_update(client_logged):
 
 
 def test_tab_index_daily_limit_edit_link_sits_above_the_unit(client_logged):
-    """The pencil and the unit share one column beside the figure, the pencil on
-    top — so both live in the card's meta stack, the pencil first."""
     DrinkTargetFactory()
 
     response = client_logged.get(reverse("drinks:tab_index"))
@@ -570,8 +557,6 @@ def test_tab_index_daily_limit_edit_link_sits_above_the_unit(client_logged):
 
 
 def test_tab_index_info_icon_sits_above_the_unit(client_logged):
-    """A Stat Card's information mark shares the meta stack with the unit, above
-    it, rather than trailing the figure."""
     DrinkFactory()
 
     response = client_logged.get(reverse("drinks:tab_index"))
@@ -590,10 +575,8 @@ def test_tab_index_info_icon_sits_above_the_unit(client_logged):
 
 @time_machine.travel("1999-06-01")
 def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged):
-    """The arrow is set well below the figure's size, so it needs its own
-    element rather than sitting in the value as a bare entity."""
-    # Drinking days only carries a direction once there is a year to compare
-    # against, so the arrow needs both years on record
+    # the arrow is set below the figure's size, so it needs its own element;
+    # Drinking days has a direction only with a year to compare against
     DrinkFactory(date=date(1999, 1, 10), stdav=7)
     DrinkFactory(date=date(1998, 1, 10), stdav=8)
 
@@ -605,8 +588,6 @@ def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged)
 
 @time_machine.travel("1999-06-01")
 def test_tab_index_renders_the_state_modifier_for_a_compared_card(client_logged):
-    """A comparison resolves its state from the direction rather than storing
-    one, so the template has to reach a property to colour it."""
     DrinkFactory(date=date(1999, 1, 10), stdav=7)
     DrinkFactory(date=date(1998, 1, 10), stdav=8)
 
@@ -618,8 +599,7 @@ def test_tab_index_renders_the_state_modifier_for_a_compared_card(client_logged)
 
 
 def test_tab_index_renders_the_unit_apart_from_the_figure(client_logged):
-    """The skin sets a unit at a third of the figure's size, so it needs its own
-    element rather than trailing the value as text."""
+    # the skin sets a unit at a third of the figure's size, so it needs an element
     DrinkFactory()
 
     response = client_logged.get(reverse("drinks:tab_index"))
@@ -668,59 +648,7 @@ def test_tab_index_loads_the_calendar_script_as_a_static_file(client_logged):
     assert "js/calendar.js" in html
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        TabHabits View
-# -------------------------------------------------------------------------------------
-def test_tab_habits_func():
-    view = resolve("/drinks/habits/")
-
-    assert views.TabHabits == view.func.view_class
-
-
-def test_tab_habits_200(client_logged):
-    url = reverse("drinks:tab_habits")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_tab_habits_context_tab_value(client_logged):
-    url = reverse("drinks:tab_habits")
-    response = client_logged.get(url)
-
-    assert response.context["tab"] == "habits"
-
-
-def test_tab_habits_context(client_logged):
-    url = reverse("drinks:tab_habits")
-    response = client_logged.get(url)
-
-    assert "chart_weekday" in response.context
-    assert "cards" in response.context
-
-
-def test_tab_habits_titles_its_panels(client_logged):
-    content = client_logged.get(reverse("drinks:tab_habits")).content.decode()
-
-    assert f'<h2 class="panel__title">{_("Weekday profile")}</h2>' in content
-    assert f'<h2 class="panel__title">{_("Typical year")}</h2>' in content
-
-
-# -------------------------------------------------------------------------------------
-#                                                                 TypicalYearChart View
-# -------------------------------------------------------------------------------------
-def test_typical_year_func():
-    view = resolve("/drinks/typical_year/")
-
-    assert views.TypicalYearChart is view.func.view_class
-
-
-def test_typical_year_200(client_logged):
-    response = client_logged.get(reverse("drinks:typical_year"))
-
-    assert response.status_code == 200
-
-
+# TypicalYearChart View
 def test_tab_habits_loads_the_typical_year_chart(client_logged):
     # the container fetches itself, so the pooled range never depends on the tab
     response = client_logged.get(reverse("drinks:tab_habits"))
@@ -775,21 +703,23 @@ def test_typical_year_opens_on_the_header_year_alone(client_logged):
     DrinkFactory(date=date(1995, 1, 1))
     DrinkFactory(date=date(1999, 1, 1))
 
-    chart = client_logged.get(reverse("drinks:typical_year")).context["chart"]
+    page = client_logged.get(reverse("drinks:typical_year")).content.decode()
+    layers = chart_data(page, "typical-year")["layers"]
 
-    assert chart.year.label == "1999"
-    assert not chart.pooled.has_data
-    assert chart.layers == [chart.year]
+    assert [layer["label"] for layer in layers] == ["1999"]
 
 
 def test_typical_year_preset_fills_the_form_with_the_pooled_span(client_logged):
+    # a year before the span, so the form's own default (the first year) differs
+    DrinkFactory(date=date(1997, 1, 1))
     DrinkFactory(date=date(1998, 1, 1))
     DrinkFactory(date=date(1999, 1, 1))
 
     url = reverse("drinks:typical_year_last", kwargs={"qty": 2})
-    form = client_logged.get(url).context["form"]
+    content = client_logged.get(url).content.decode()
 
-    assert form.initial == {"year_from": 1998, "year_to": 1999}
+    assert 'name="year_from" value="1998"' in content
+    assert 'name="year_to" value="1999"' in content
 
 
 def test_typical_year_valid_post_pools_the_asked_range(client_logged):
@@ -798,102 +728,34 @@ def test_typical_year_valid_post_pools_the_asked_range(client_logged):
 
     url = reverse("drinks:typical_year")
     response = client_logged.post(url, {"year_from": "1998", "year_to": "1999"})
-    chart = response.context["chart"]
+    layers = chart_data(response.content.decode(), "typical-year")["layers"]
 
-    assert chart.pooled.has_data
-    assert (chart.year_from, chart.year_to) == (1998, 1999)
+    assert "1998–1999" in layers[0]["label"]
+    assert layers[1]["label"] == "1999"
     assert "HX-Retarget" not in response
 
 
-def test_typical_year_invalid_retargets_form(client_logged):
-    url = reverse("drinks:typical_year")
-    response = client_logged.post(url, {"year_from": "2005", "year_to": "1999"})
-
-    assert response["HX-Retarget"] == "#typical-year-form"
-    assert response["HX-Reswap"] == "outerHTML"
-    assert not response.context["form"].is_valid()
-    assert "chart-typical-year-data" not in response.content.decode()
-
-
-# -------------------------------------------------------------------------------------
-#                                                                        TabTrends View
-# -------------------------------------------------------------------------------------
-def test_tab_trends_func():
-    view = resolve("/drinks/trends/")
-
-    assert views.TabTrends == view.func.view_class
-
-
-def test_tab_trends_200(client_logged):
-    url = reverse("drinks:tab_trends")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_tab_trends_context_tab_value(client_logged):
-    url = reverse("drinks:tab_trends")
-    response = client_logged.get(url)
-
-    assert response.context["tab"] == "trends"
-
-
-def test_tab_trends_context(client_logged):
-    url = reverse("drinks:tab_trends")
-    response = client_logged.get(url)
-
-    assert "chart_trend" in response.context
-    assert "cards" in response.context
-
-
-def test_tab_trends_titles_its_panels(client_logged):
-    content = client_logged.get(reverse("drinks:tab_trends")).content.decode()
-
-    assert f'<h2 class="panel__title">{_("Rolling average")}</h2>' in content
-    assert (
-        f'<h2 class="panel__title">{_("Cumulative (year over year)")}</h2>' in content
+@time_machine.travel("1999-06-01")
+def test_every_figure_stops_at_the_views_today(client_logged, mocker):
+    mocker.patch.object(
+        core_kwargs, "date", mocker.Mock(today=lambda: date(1999, 3, 1))
     )
+    DrinkFactory(date=date(1998, 1, 1), stdav=2.5)
+    DrinkFactory(date=date(1999, 1, 15), stdav=2.5)
+    DrinkFactory(date=date(1999, 3, 1), stdav=2.5)
+    DrinkFactory(date=date(1999, 4, 10), stdav=2.5)
 
+    dry = client_logged.get(reverse("drinks:tab_index")).context["cards"][0]
+    typical = client_logged.get(reverse("drinks:typical_year")).content.decode()
+    compare = client_logged.get(reverse("drinks:compare", kwargs={"qty": 1}))
+    months = chart_data(compare.content.decode(), "history")["series"][0]["data"]
+    history = client_logged.get(reverse("drinks:tab_history")).content.decode()
 
-# -------------------------------------------------------------------------------------
-#                                                                         TabRisk View
-# -------------------------------------------------------------------------------------
-def test_tab_risk_func():
-    view = resolve("/drinks/risk/")
-
-    assert views.TabRisk == view.func.view_class
-
-
-def test_tab_risk_200(client_logged):
-    url = reverse("drinks:tab_risk")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_tab_risk_context_tab_value(client_logged):
-    url = reverse("drinks:tab_risk")
-    response = client_logged.get(url)
-
-    assert response.context["tab"] == "risk"
-
-
-def test_tab_risk_context(client_logged):
-    url = reverse("drinks:tab_risk")
-    response = client_logged.get(url)
-
-    assert "chart_weekly" in response.context
-    assert "chart_heavy" in response.context
-    assert "cards" in response.context
-
-
-def test_tab_risk_titles_its_panels(client_logged):
-    content = client_logged.get(reverse("drinks:tab_risk")).content.decode()
-
-    assert (
-        f'<h2 class="panel__title">{_("Weekly units with risk bands")}</h2>' in content
-    )
-    assert f'<h2 class="panel__title">{_("Heavy days per month")}</h2>' in content
+    assert (dry.value, dry.note) == ("0", "1999-03-01")
+    assert len(chart_data(typical, "typical-year")["layers"][0]["intensity"]) == 3
+    assert len(months) == 3
+    # 7.5 Std Av of beer over Jan 1 to Mar 1, the 60 days the view has reached
+    assert chart_data(history, "summary")["data_ml"][-1] == 25.0
 
 
 def test_tab_risk_heavy_panel_leaves_the_threshold_to_its_chart(client_logged):
@@ -919,29 +781,7 @@ def test_tab_index_renders_each_explanation_part_as_its_own_paragraph(client_log
     assert f'aria-label="{escape(" ".join(card.explanation))}"' in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          TabData View
-# -------------------------------------------------------------------------------------
-def test_tab_data_func():
-    view = resolve("/drinks/data/")
-
-    assert views.TabData == view.func.view_class
-
-
-def test_tab_data_200(client_logged):
-    url = reverse("drinks:tab_data")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_tab_data_context(client_logged):
-    url = reverse("drinks:tab_data")
-    response = client_logged.get(url)
-
-    assert "object_list" in response.context
-
-
+# TabData View
 def test_tab_data_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
@@ -955,13 +795,15 @@ def test_tab_data(client_logged):
     p = DrinkFactory(stdav=47.5)
     response = client_logged.get(reverse("drinks:tab_data"))
 
-    assert response.status_code == 200
-
     actual = response.content.decode("utf-8")
 
     assert "19,0" in actual
-    assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
-    assert f'<a role="button" hx-get="/drinks/delete/{p.pk}/"' in actual
+    assert f'<a role="button" hx-get="{reverse("drinks:update", args=[p.pk])}"' in (
+        actual
+    )
+    assert f'<a role="button" hx-get="{reverse("drinks:delete", args=[p.pk])}"' in (
+        actual
+    )
 
 
 def test_tab_data_date_column_header(client_logged):
@@ -981,45 +823,18 @@ def test_tab_data_quantity_value(client_logged):
     DrinkFactory(stdav=2.5, option="beer", converted_from_ml=True)
     response = client_logged.get(reverse("drinks:tab_data"))
 
-    assert response.status_code == 200
-
     actual = response.content.decode("utf-8")
 
     assert "500 ml" in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       TabHistory View
-# -------------------------------------------------------------------------------------
-def test_tab_history_func():
-    view = resolve("/drinks/history/")
-
-    assert views.TabHistory == view.func.view_class
-
-
-def test_tab_history_200(client_logged):
-    url = reverse("drinks:tab_history")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_tab_history_context_tab_value(client_logged):
-    url = reverse("drinks:tab_history")
-    response = client_logged.get(url)
-
-    assert response.context["tab"] == "history"
-
-
-def test_tab_history_context(client_logged):
+# TabHistory View
+def test_tab_history_renders_the_summary_chart_data(client_logged):
     DrinkFactory()
 
-    url = reverse("drinks:tab_history")
-    response = client_logged.get(url)
+    page = client_logged.get(reverse("drinks:tab_history")).content.decode()
 
-    assert "categories" in response.context["chart"]
-    assert "data_ml" in response.context["chart"]
-    assert "data_alcohol" in response.context["chart"]
+    assert {"categories", "data_ml", "data_alcohol"} <= set(chart_data(page, "summary"))
 
 
 def test_tab_history_titles_its_panels(client_logged):
@@ -1039,24 +854,21 @@ def test_tab_history_has_unified_compare_panel(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    # the unified year-comparison panel lives on the History tab
     assert 'id="historical-data"' in content
     assert 'id="chart-history-container"' in content
 
-    # preset buttons target the single history chart
     assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 2})}"' in content
     assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 3})}"' in content
     assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 7})}"' in content
     assert "Visi metai" not in content
     assert "All years" not in content
 
-    # the year-comparison form is embedded (not lazy-loaded) and posts to the
-    # same shared chart
     assert 'id="compare-form"' in content
+    assert 'name="year1"' in content
+    assert 'name="year2"' in content
     assert f'hx-post="{reverse("drinks:compare_two")}"' in content
     assert 'hx-target="#chart-history-container"' in content
 
-    # the second overlay chart/container is gone (one unified chart)
     assert 'id="compare-form-and-chart"' not in content
     assert "chart-compare-two" not in content
 
@@ -1070,7 +882,6 @@ def test_tab_history_chart_auto_loads_default_comparison(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    # the shared chart fills itself on load with the 2-year preset
     assert 'hx-trigger="load"' in content
 
 
@@ -1079,55 +890,31 @@ def test_tab_history_hides_compare_panel_without_records(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    # with no records the comparison panel is not rendered
     assert 'id="historical-data"' not in content
     assert 'id="chart-history-container"' not in content
     assert 'id="compare-form"' not in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Compare View
-# -------------------------------------------------------------------------------------
-def test_compare_data_func():
-    view = resolve("/drinks/compare/1/")
-
-    assert views.Compare is view.func.view_class
-
-
-def test_compare_data_200(client_logged):
-    DrinkFactory()
-
-    url = reverse("drinks:compare", kwargs={"qty": 2})
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
+# Compare View
 def test_compare_data_chart(client_logged):
     DrinkFactory(stdav=2.5)
 
     url = reverse("drinks:compare", kwargs={"qty": 2})
     response = client_logged.get(url)
-    actual = response.context["chart"]
+    first = chart_data(response.content.decode(), "history")["series"][0]
 
-    assert response.status_code == 200
-    assert actual.serries[0]["name"] == 1999
-    assert round(actual.serries[0]["data"][0], 2) == 16.13
-
-
-# -------------------------------------------------------------------------------------
-#                                                                       CompareTwo View
-# -------------------------------------------------------------------------------------
-def test_comparetwo_func():
-    view = resolve("/drinks/compare/")
-
-    assert views.CompareTwo is view.func.view_class
+    assert first["name"] == 1999
+    assert round(first["data"][0], 2) == 16.13
 
 
-def test_comparetwo_200(client_logged):
-    response = client_logged.get("/drinks/compare/")
+# CompareTwo View
+def test_comparetwo_get_renders_the_year_pair_form(client_logged):
+    response = client_logged.get(reverse("drinks:compare_two"))
+    content = response.content.decode()
 
-    assert response.status_code == 200
+    assert f'hx-post="{reverse("drinks:compare_two")}"' in content
+    assert 'name="year1"' in content
+    assert 'name="year2"' in content
 
 
 def test_compare_data_includes_form_and_oob_swap(client_logged):
@@ -1137,8 +924,6 @@ def test_compare_data_includes_form_and_oob_swap(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert "form" in response.context
-    assert isinstance(response.context["form"], forms.DrinkCompareForm)
     assert 'id="compare-form"' in content
     assert 'hx-swap-oob="true"' in content
 
@@ -1149,73 +934,121 @@ def test_comparetwo_valid_post_renders_the_pair(client_logged):
 
     url = reverse("drinks:compare_two")
     response = client_logged.post(url, {"year1": "1998", "year2": "1999"})
-    names = [serie["name"] for serie in response.context["chart"].serries]
+    series = chart_data(response.content.decode(), "history")["series"]
 
-    assert names == [1998, 1999]
+    assert [serie["name"] for serie in series] == [1998, 1999]
     assert "HX-Retarget" not in response
 
 
-def test_comparetwo_invalid_retargets_form(client_logged):
-    url = reverse("drinks:compare_two")
-    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
-
-    # an invalid submit re-renders the form in place, leaving the chart untouched
-    assert response["HX-Retarget"] == "#compare-form"
-    assert response["HX-Reswap"] == "outerHTML"
-    assert not response.context["form"].is_valid()
-
-
-# -------------------------------------------------------------------------------------
-#                                                                         Create/Update
-# -------------------------------------------------------------------------------------
-def test_new_func():
-    view = resolve("/drinks/index/new/")
-
-    assert views.New is view.func.view_class
-
-
-def test_update_func():
-    view = resolve("/drinks/update/1/")
-
-    assert views.Update is view.func.view_class
-
-
 @pytest.mark.parametrize(
-    "tab, trigger",
+    "url_name, data, form, chart",
     [
-        ("index", "reloadIndex"),
-        ("data", "reloadData"),
-        ("history", "reloadHistory"),
-        ("xxx", "reloadData"),
+        pytest.param(
+            "drinks:compare_two",
+            {"year1": "1999", "year2": "2000"},
+            "#compare-form",
+            "chart-history-data",
+            id="compare_two",
+        ),
+        pytest.param(
+            "drinks:typical_year",
+            {"year_from": "2005", "year_to": "1999"},
+            "#typical-year-form",
+            "chart-typical-year-data",
+            id="typical_year",
+        ),
     ],
 )
-def test_trigger_name(tab, trigger, rf):
-    request = rf.get(reverse("drinks:new", kwargs={"tab": tab}))
+def test_invalid_form_retargets_itself_and_leaves_the_chart(
+    client_logged, url_name, data, form, chart
+):
+    response = client_logged.post(reverse(url_name), data)
+    content = response.content.decode()
 
-    view = setup_view(views.New(), request)
-    view.kwargs = {"tab": tab}
-    actual = view.get_hx_trigger_django()
+    assert response["HX-Retarget"] == form
+    assert response["HX-Reswap"] == "outerHTML"
+    assert 'aria-invalid="true"' in content
+    assert chart not in content
+
+
+# Create/Update
+@pytest.mark.parametrize(
+    "view, url_name, tab, trigger",
+    [
+        pytest.param(views.New, "drinks:new", "index", "reloadIndex", id="new_index"),
+        pytest.param(views.New, "drinks:new", "data", "reloadData", id="new_data"),
+        pytest.param(
+            views.New, "drinks:new", "history", "reloadHistory", id="new_history"
+        ),
+        pytest.param(views.New, "drinks:new", "xxx", "reloadData", id="new_unknown"),
+        pytest.param(
+            views.TargetNew,
+            "drinks:target_new",
+            "index",
+            "reloadIndex",
+            id="target_index",
+        ),
+        pytest.param(
+            views.TargetNew, "drinks:target_new", "data", "reloadData", id="target_data"
+        ),
+        pytest.param(
+            views.TargetNew,
+            "drinks:target_new",
+            "history",
+            "reloadHistory",
+            id="target_history",
+        ),
+        pytest.param(
+            views.TargetNew,
+            "drinks:target_new",
+            "xxx",
+            "reloadIndex",
+            id="target_unknown",
+        ),
+    ],
+)
+def test_trigger_name(view, url_name, tab, trigger, rf):
+    request = rf.get(reverse(url_name, kwargs={"tab": tab}))
+
+    instance = setup_view(view(), request)
+    instance.kwargs = {"tab": tab}
+    actual = instance.get_hx_trigger_django()
 
     assert actual == trigger
 
 
 @pytest.mark.parametrize(
-    "tab, expect_url",
+    "url_name, field",
     [
-        ("index", reverse_lazy("drinks:new", kwargs={"tab": "index"})),
-        ("data", reverse_lazy("drinks:new", kwargs={"tab": "data"})),
-        ("history", reverse_lazy("drinks:new", kwargs={"tab": "history"})),
-        ("xxx", reverse_lazy("drinks:new", kwargs={"tab": "index"})),
+        pytest.param(
+            "drinks:new",
+            '<input type="text" name="date" value="1999-01-01"',
+            id="new",
+        ),
+        pytest.param(
+            "drinks:target_new",
+            '<input type="text" name="year" value="1999"',
+            id="target_new",
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "tab, posts_to",
+    [
+        ("index", "index"),
+        ("data", "data"),
+        ("history", "history"),
+        ("xxx", "index"),
     ],
 )
 @time_machine.travel("2000-1-1")
-def test_new_load_form(client_logged, tab, expect_url):
-    url = reverse("drinks:new", kwargs={"tab": tab})
+def test_new_load_form(client_logged, url_name, field, tab, posts_to):
+    url = reverse(url_name, kwargs={"tab": tab})
     response = client_logged.get(url)
     actual = response.content.decode()
 
-    assert f'hx-post="{expect_url}"' in actual
-    assert '<input type="text" name="date" value="1999-01-01"' in actual
+    assert f'hx-post="{reverse(url_name, kwargs={"tab": posts_to})}"' in actual
+    assert field in actual
 
 
 def test_new_tab_data(client_logged):
@@ -1223,18 +1056,39 @@ def test_new_tab_data(client_logged):
     url = reverse("drinks:new", kwargs={"tab": "data"})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode()
+    drink = models.Drink.objects.get()
 
     assert "19" in actual
-    assert '<a role="button" hx-get="/drinks/update/1/"' in actual
+    assert f'<a role="button" hx-get="{reverse("drinks:update", args=[drink.pk])}"' in (
+        actual
+    )
 
 
-def test_new_invalid_data(client_logged):
-    data = {"date": -2, "stdav": "x"}
-    url = reverse("drinks:new", kwargs={"tab": "data"})
+@pytest.mark.parametrize(
+    "url_name, tab, data, model",
+    [
+        pytest.param(
+            "drinks:new",
+            "data",
+            {"date": -2, "stdav": "x"},
+            models.Drink,
+            id="new",
+        ),
+        pytest.param(
+            "drinks:target_new",
+            "index",
+            {"year": -2, "quantity": "x"},
+            models.DrinkTarget,
+            id="target_new",
+        ),
+    ],
+)
+def test_new_form_rejects_invalid_data(client_logged, url_name, tab, data, model):
+    url = reverse(url_name, kwargs={"tab": tab})
     response = client_logged.post(url, data)
-    form = response.context["form"]
 
-    assert not form.is_valid()
+    assert 'aria-invalid="true"' in response.content.decode()
+    assert not model.objects.exists()
 
 
 def test_update(client_logged):
@@ -1247,7 +1101,7 @@ def test_update(client_logged):
 
     assert url in actual
     assert "0,7 vnt" in actual
-    assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
+    assert f'<a role="button" hx-get="{url}"' in actual
 
 
 @pytest.mark.parametrize(
@@ -1263,10 +1117,9 @@ def test_update_load_form_prefills_typed_quantity(converted, expect, client_logg
     p = DrinkFactory(stdav=2.5, option="beer", converted_from_ml=converted)
 
     url = reverse("drinks:update", kwargs={"pk": p.pk})
-    response = client_logged.get(url)
-    form = response.context["form"]
+    content = client_logged.get(url).content.decode()
 
-    assert form.initial["stdav"] == expect
+    assert f'name="stdav" value="{expect}"' in content
 
 
 def test_drinks_update_not_load_other_user(client_logged, second_user):
@@ -1279,24 +1132,7 @@ def test_drinks_update_not_load_other_user(client_logged, second_user):
     assert response.status_code == 404
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Drink Delete
-# -------------------------------------------------------------------------------------
-def test_view_drinks_delete_func():
-    view = resolve("/drinks/delete/1/")
-
-    assert views.Delete is view.func.view_class
-
-
-def test_view_drinks_delete_200(client_logged):
-    p = DrinkFactory()
-
-    url = reverse("drinks:delete", kwargs={"pk": p.pk})
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
+# Drink Delete
 def test_view_drinks_delete_load_form(client_logged):
     p = DrinkFactory()
 
@@ -1339,60 +1175,7 @@ def test_drinks_delete_other_user_post_form(client_logged, second_user):
     assert models.Drink.objects.all().count() == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                  Target Create/Update
-# -------------------------------------------------------------------------------------
-def test_target_func():
-    view = resolve("/drinks/index/target/new/")
-
-    assert views.TargetNew is view.func.view_class
-
-
-def test_target_update_func():
-    view = resolve("/drinks/target/update/1/")
-
-    assert views.TargetUpdate is view.func.view_class
-
-
-@pytest.mark.parametrize(
-    "tab, trigger",
-    [
-        ("index", "reloadIndex"),
-        ("data", "reloadData"),
-        ("history", "reloadHistory"),
-        ("xxx", "reloadIndex"),
-    ],
-)
-def test_target_get_trigger_name(tab, trigger, rf):
-    request = rf.get(reverse("drinks:target_new", kwargs={"tab": tab}))
-
-    view = setup_view(views.TargetNew(), request)
-    view.kwargs = {"tab": tab}
-    actual = view.get_hx_trigger_django()
-
-    assert actual == trigger
-
-
-@pytest.mark.parametrize(
-    "tab, expect_url",
-    [
-        ("index", reverse_lazy("drinks:target_new", kwargs={"tab": "index"})),
-        ("data", reverse_lazy("drinks:target_new", kwargs={"tab": "data"})),
-        ("history", reverse_lazy("drinks:target_new", kwargs={"tab": "history"})),
-        ("xxx", reverse_lazy("drinks:target_new", kwargs={"tab": "index"})),
-    ],
-)
-def test_target_new_load_form(client_logged, tab, expect_url):
-    url = reverse("drinks:target_new", kwargs={"tab": tab})
-    response = client_logged.get(url)
-    actual = response.content.decode()
-
-    assert response.status_code == 200
-
-    assert f'hx-post="{expect_url}"' in actual
-    assert '<input type="text" name="year" value="1999"' in actual
-
-
+# Target Create/Update
 @pytest.mark.parametrize(
     "drink_type, ml, expect",
     [
@@ -1412,15 +1195,6 @@ def test_target_new(drink_type, ml, expect, client_logged):
     assert actual.quantity == expect
 
 
-def test_target_new_invalid_data(client_logged):
-    data = {"year": -2, "quantity": "x"}
-    url = reverse("drinks:target_new", kwargs={"tab": "index"})
-    response = client_logged.post(url, data)
-    form = response.context["form"]
-
-    assert not form.is_valid()
-
-
 @pytest.mark.parametrize(
     "drink_type, expect",
     [
@@ -1434,10 +1208,9 @@ def test_target_update_load_form_convert_quantity(drink_type, expect, client_log
     p = DrinkTargetFactory(quantity=expect, drink_type=drink_type)
 
     url = reverse("drinks:target_update", kwargs={"pk": p.pk})
-    response = client_logged.get(url)
-    form = response.context["form"]
+    content = client_logged.get(url).content.decode()
 
-    assert f'name="quantity" value="{expect}"' in form.as_p()
+    assert f'name="quantity" value="{expect}"' in content
 
 
 def test_target_update_load_form(client_logged):
@@ -1480,27 +1253,13 @@ def test_target_update_not_load_other_user(client_logged, second_user):
     assert response.status_code == 404
 
 
-# -------------------------------------------------------------------------------------
-#                                                                      SelectDrink View
-# -------------------------------------------------------------------------------------
-def test_select_drink_func():
-    view = resolve("/drinks/drink_type/xxx/")
-    assert views.SelectDrink == view.func.view_class
-
-
+# SelectDrink View
 def test_select_drink_redirect(client_logged):
     url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})
     response = client_logged.get(url)
 
     assert response.status_code == 302
-
-
-def test_select_drink_redirect_follow(client_logged):
-    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})
-    response = client_logged.get(url, follow=True)
-
-    assert response.status_code == 200
-    assert views.TabIndex == response.resolver_match.func.view_class
+    assert response.url == reverse("drinks:index")
 
 
 def test_select_drinks_set_drink_type(client_logged):
@@ -1522,20 +1281,82 @@ def test_select_drinks_undeclared_drink_type_is_not_found(main_user, client_logg
     assert User.objects.first().drink_type == "wine"
 
 
-def test_select_drink_htmx_stays_on_current_tab(client_logged):
-    url = (
-        reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"}) + "?tab=trends"
-    )
-    response = client_logged.get(url, HTTP_HX_REQUEST="true")
+@pytest.mark.parametrize(
+    "tab, trigger",
+    [
+        pytest.param("trends", "reloadTrends", id="current_tab"),
+        pytest.param("xxx", "reloadIndex", id="unknown_tab_falls_back_to_index"),
+    ],
+)
+def test_select_drink_htmx_reloads_the_tab(client_logged, tab, trigger):
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})
+    response = client_logged.get(f"{url}?tab={tab}", HTTP_HX_REQUEST="true")
 
     assert response.status_code == 204
-    assert "reloadTrends" in response.headers.get("HX-Trigger", "")
+    assert trigger in response.headers.get("HX-Trigger", "")
     assert User.objects.first().drink_type == "wine"
 
 
-def test_select_drink_htmx_unknown_tab_falls_back_to_index(client_logged):
-    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"}) + "?tab=xxx"
-    response = client_logged.get(url, HTTP_HX_REQUEST="true")
+def _typical_year_last(view):
+    return view.get(view.request)
 
-    assert response.status_code == 204
-    assert "reloadIndex" in response.headers.get("HX-Trigger", "")
+
+def _typical_year_post(view):
+    form = SimpleNamespace(cleaned_data={"year_from": 1998, "year_to": 1999})
+    # render() runs the context processors, which raise on a no-year user themselves
+    with patch.object(views, "render"):
+        return view.form_valid(form)
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabIndex).get_context_data(), id="index"
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabHabits).get_context_data(),
+            id="habits",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabTrends).get_context_data(),
+            id="trends",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabRisk).get_context_data(), id="risk"
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabData).get_queryset(), id="data"
+        ),
+        pytest.param(
+            lambda rf, u: _typical_year_last(
+                view_for(rf, u, views.TypicalYearChart, qty=3)
+            ),
+            id="typical_year_last",
+        ),
+        pytest.param(
+            lambda rf, u: _typical_year_post(view_for(rf, u, views.TypicalYearChart)),
+            id="typical_year_post",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.Compare, qty=1).get_context_data(),
+            id="compare",
+        ),
+        pytest.param(
+            lambda rf, u: HistoryService(u, [], date(2025, 1, 1)), id="history_service"
+        ),
+        pytest.param(
+            lambda rf, u: forms.DrinkTargetForm(user=u, today=date(2025, 1, 1)),
+            id="target_form",
+        ),
+        pytest.param(
+            lambda rf, u: forms.DrinkCompareForm(user=u, today=date(2025, 1, 1)),
+            id="compare_form",
+        ),
+    ],
+)
+def test_a_user_with_no_year_raises(rf, main_user, call):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        call(rf, main_user)

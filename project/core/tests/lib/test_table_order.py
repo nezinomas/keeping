@@ -1,5 +1,7 @@
 from datetime import date
 
+import pytest
+
 from ...lib.table_order import Column, TableOrder
 
 ORDER = TableOrder(
@@ -17,12 +19,15 @@ def _titles(order):
     return [row["title"] for row in ORDER.sort(order, ROWS, lambda row: row).rows]
 
 
-def test_an_ascending_column_runs_smallest_first():
-    assert _titles("title") == ["Alfa", "Beta", "Gama"]
-
-
-def test_a_descending_column_runs_biggest_first():
-    assert _titles("sum") == ["Alfa", "Beta", "Gama"]
+@pytest.mark.parametrize(
+    "order",
+    [
+        pytest.param("title", id="ascending_smallest_first"),
+        pytest.param("sum", id="descending_biggest_first"),
+    ],
+)
+def test_a_column_runs_in_the_direction_it_declares(order):
+    assert _titles(order) == ["Alfa", "Beta", "Gama"]
 
 
 def test_an_absent_value_sorts_last_ascending_too():

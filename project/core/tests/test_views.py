@@ -10,9 +10,9 @@ pytestmark = pytest.mark.django_db
 @pytest.mark.parametrize(
     "year, expect",
     [
-        (2010, 2010),
-        (1000, 1999),
-        (3000, 1999),
+        pytest.param(2010, 2010, id="in_range"),
+        pytest.param(1000, 1999, id="before_first_record"),
+        pytest.param(3000, 1999, id="after_this_year"),
     ],
 )
 @time_machine.travel("2020-01-01")
@@ -24,9 +24,6 @@ def test_set_year(year, expect, main_user, client_logged):
     assert response.wsgi_request.user.year == expect
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Base Template
-# -------------------------------------------------------------------------------------
 def test_base_leaves_the_loader_styles_to_the_stylesheet(client_logged):
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
 
@@ -35,8 +32,6 @@ def test_base_leaves_the_loader_styles_to_the_stylesheet(client_logged):
 
 
 def test_base_keeps_error_responses_out_of_the_page(client_logged):
-    """htmx 4 swaps 4xx/5xx by default, which would paste Django's error page
-    into whatever the request targeted."""
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
 
     assert '"noSwap": [204, 304, "4xx", "5xx"]' in content

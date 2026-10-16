@@ -22,7 +22,6 @@ class IncomeType(TitleAbstract):
     )
 
     class Meta:
-        unique_together = ["journal", "title"]
         ordering = ["title"]
         constraints = [
             models.UniqueConstraint(

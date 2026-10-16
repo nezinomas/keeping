@@ -10,16 +10,12 @@ class CountType(TitleAbstract):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ["user", "title"]
         ordering = ["title"]
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "slug"], name="counts_counttype_unique_slug"
             ),
         ]
-
-    def __str__(self):
-        return str(self.title)
 
 
 class Count(models.Model):

@@ -1,22 +1,20 @@
 from datetime import date
 
 import pytest
-import time_machine
 
 from ....accounts.tests.factories import AccountFactory
 from ....users.tests.factories import UserFactory
 from ... import forms
 from .. import factories
+from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES
+
+TODAY = date(2000, 2, 2)
 
 pytestmark = pytest.mark.django_db
 
 
-def test_debt_return_init(main_user):
-    forms.DebtReturnForm(user=main_user, debt_type="x")
-
-
 def test_debt_return_init_fields(main_user):
-    form = forms.DebtReturnForm(user=main_user, debt_type="x").as_p()
+    form = forms.DebtReturnForm(user=main_user, today=TODAY, debt_type="lend").as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<select name="account"' in form
@@ -27,35 +25,27 @@ def test_debt_return_init_fields(main_user):
     assert '<select name="user"' not in form
 
 
-def test_debt_name_field_label_for_lend(main_user):
-    form = forms.DebtReturnForm(user=main_user, debt_type="lend").as_p()
+@pytest.mark.parametrize(
+    "debt_type, label",
+    [
+        pytest.param("lend", "Paskolos gavėjas", id="lend"),
+        pytest.param("borrow", "Paskolos davėjas", id="borrow"),
+    ],
+)
+def test_debt_name_field_label(main_user, debt_type, label):
+    form = forms.DebtReturnForm(user=main_user, today=TODAY, debt_type=debt_type).as_p()
 
-    assert '<label for="id_debt">Paskolos gavėjas:</label>' in form
+    assert f'<label for="id_debt">{label}:</label>' in form
 
 
-def test_debt_name_field_label_for_borrow(main_user):
-    form = forms.DebtReturnForm(user=main_user, debt_type="borrow").as_p()
-
-    assert '<label for="id_debt">Paskolos davėjas:</label>' in form
-
-
-@time_machine.travel("2-2-2")
-def test_borrow_return_year_initial_value(main_user):
+def test_debt_return_year_initial_value(main_user):
     UserFactory()
 
-    form = forms.DebtReturnForm(user=main_user, debt_type="x").as_p()
+    form = forms.DebtReturnForm(
+        user=main_user, today=date(2002, 2, 2), debt_type="lend"
+    ).as_p()
 
     assert '<input type="text" name="date" value="1999-02-02"' in form
-
-
-def test_debt_return_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")  # user bob, current user
-    AccountFactory(title="A2", journal=second_user.journal)  # user X
-
-    form = forms.DebtReturnForm(user=main_user, debt_type="x").as_p()
-
-    assert "A1" in form
-    assert "A2" not in form
 
 
 def test_debt_return_select_first_account(main_user, second_user):
@@ -63,84 +53,47 @@ def test_debt_return_select_first_account(main_user, second_user):
 
     a2 = AccountFactory(title="A2")
 
-    form = forms.DebtReturnForm(user=main_user, debt_type="x").as_p()
+    form = forms.DebtReturnForm(user=main_user, today=TODAY, debt_type="lend").as_p()
 
     expect = f'<option value="{a2.pk}" selected>{a2}</option>'
     assert expect in form
 
 
-def test_lend_return_valid_data(main_user):
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+@pytest.mark.parametrize(
+    "price, cents",
+    [
+        pytest.param("0.01", 1, id="point"),
+        pytest.param("12,1", 1210, id="decimal_comma"),
+    ],
+)
+def test_debt_return_valid_data(main_user, debt_type, price, cents):
     a = AccountFactory()
-    b = factories.LendFactory()
+    b = DEBT_FACTORIES[debt_type](price=200000)
 
     form = forms.DebtReturnForm(
         user=main_user,
-        debt_type="lend",
+        today=TODAY,
+        debt_type=debt_type,
         data={
             "date": "1999-12-02",
             "debt": b.pk,
-            "price": "0.01",
+            "price": price,
             "account": a.pk,
             "remark": "Rm",
-        },
-    )
-
-    assert form.is_valid()
-
-    e = form.save()
-    assert e.date == date(1999, 12, 2)
-    assert e.account == a
-    assert e.debt == b
-    assert e.price == 1
-    assert e.remark == "Rm"
-
-
-def test_lend_return_price_accepts_a_decimal_comma(main_user):
-    a = AccountFactory()
-    b = factories.LendFactory(price=200000)
-
-    form = forms.DebtReturnForm(
-        user=main_user,
-        debt_type="lend",
-        data={
-            "date": "1999-12-02",
-            "debt": b.pk,
-            "price": "12,1",
-            "account": a.pk,
         },
     )
 
     assert form.is_valid(), form.errors
-    assert form.save().price == 1210
-
-
-def test_borrow_return_valid_data(main_user):
-    a = AccountFactory()
-    b = factories.BorrowFactory()
-
-    form = forms.DebtReturnForm(
-        user=main_user,
-        debt_type="borrow",
-        data={
-            "date": "1999-12-02",
-            "debt": b.pk,
-            "price": "0.01",
-            "account": a.pk,
-            "remark": "Rm",
-        },
-    )
-
-    assert form.is_valid()
 
     e = form.save()
     assert e.date == date(1999, 12, 2)
     assert e.account == a
     assert e.debt == b
-    assert e.price == 1
+    assert e.price == cents
     assert e.remark == "Rm"
 
 
-@time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
 def test_debt_return_invalid_date(year, main_user):
     a = AccountFactory()
@@ -148,7 +101,8 @@ def test_debt_return_invalid_date(year, main_user):
 
     form = forms.DebtReturnForm(
         user=main_user,
-        debt_type="x",
+        today=date(1999, 2, 2),
+        debt_type="lend",
         data={
             "date": f"{year}-12-02",
             "debt": b.pk,
@@ -164,7 +118,7 @@ def test_debt_return_invalid_date(year, main_user):
 
 
 def test_debt_return_blank_data(main_user):
-    form = forms.DebtReturnForm(user=main_user, debt_type="x", data={})
+    form = forms.DebtReturnForm(user=main_user, today=TODAY, debt_type="lend", data={})
 
     assert not form.is_valid()
 
@@ -175,83 +129,97 @@ def test_debt_return_blank_data(main_user):
     assert "price" in form.errors
 
 
-def test_lend_return_only_not_closed(main_user):
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_return_only_not_closed(main_user, debt_type):
     # both named: the assertions match substrings, and Faker can draw "Tim" inside
     # "Timothy" — a pass or fail that says nothing about what the form excluded
-    closed = factories.LendFactory(name="Closed lend", closed=True)
-    not_closed = factories.LendFactory(name="Open lend", closed=False)
+    closed = DEBT_FACTORIES[debt_type](name="Closed debt", closed=True)
+    not_closed = DEBT_FACTORIES[debt_type](name="Open debt", closed=False)
 
-    form = forms.DebtReturnForm(user=main_user, debt_type="lend").as_p()
-
-    assert closed.name not in form
-    assert not_closed.name in form
-
-
-def test_borrow_return_only_not_closed(main_user):
-    closed = factories.BorrowFactory(name="Closed borrow", closed=True)
-    not_closed = factories.BorrowFactory(name="Open borrow", closed=False)
-
-    form = forms.DebtReturnForm(user=main_user, debt_type="borrow").as_p()
+    form = forms.DebtReturnForm(user=main_user, today=TODAY, debt_type=debt_type).as_p()
 
     assert closed.name not in form
     assert not_closed.name in form
 
 
-def test_lend_return_price_higher(main_user):
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+@pytest.mark.parametrize(
+    "price, errors",
+    [
+        pytest.param("150", {"price": ["Mokėtina suma viršija skolą."]}, id="over"),
+        pytest.param(
+            "60.01", {"price": ["Mokėtina suma viršija skolą."]}, id="cent_over"
+        ),
+        pytest.param("60", {}, id="all_that_is_left"),
+    ],
+)
+def test_debt_return_price_higher(main_user, debt_type, price, errors):
     a = AccountFactory()
-    b = factories.LendFactory(price=1)
+    b = DEBT_FACTORIES[debt_type](price=10000)
+    RETURN_FACTORIES[debt_type](debt=b, price=4000)
 
     form = forms.DebtReturnForm(
         user=main_user,
-        debt_type="lend",
+        today=TODAY,
+        debt_type=debt_type,
         data={
             "date": "1999-1-1",
             "debt": b.pk,
-            "price": "2",
+            "price": price,
             "account": a.pk,
         },
     )
 
-    assert not form.is_valid()
-    assert "price" in form.errors
-    assert form.errors["price"] == ["Mokėtina suma viršija skolą."]
+    assert form.errors == errors
 
 
-def test_borrow_return_price_higher(main_user):
-    a = AccountFactory()
-    b = factories.BorrowFactory(price=1)
-
-    form = forms.DebtReturnForm(
-        user=main_user,
-        debt_type="borrow",
-        data={
-            "date": "1999-1-1",
-            "debt": b.pk,
-            "price": "2",
-            "account": a.pk,
-        },
-    )
-
-    assert not form.is_valid()
-    assert "price" in form.errors
-    assert form.errors["price"] == ["Mokėtina suma viršija skolą."]
-
-
-def test_debt_return_date_earlier(main_user):
+@pytest.mark.parametrize(
+    "day, errors",
+    [
+        pytest.param(
+            "2000-12-31", {"date": ["Data yra ankstesnė nei skolos data."]}, id="before"
+        ),
+        pytest.param("2001-01-01", {}, id="the_debts_own_day"),
+    ],
+)
+def test_debt_return_date_earlier(main_user, day, errors):
     a = AccountFactory()
     b = factories.LendFactory(date=date(2001, 1, 1))
 
     form = forms.DebtReturnForm(
         user=main_user,
+        today=TODAY,
         debt_type="lend",
         data={
-            "date": "2000-01-01",
+            "date": day,
             "debt": b.pk,
             "price": "1",
             "account": a.pk,
         },
     )
 
+    assert form.errors == errors
+
+
+@pytest.mark.parametrize("field", ["account", "debt"])
+def test_debt_return_rejects_an_account_or_debt_of_another_journal(
+    main_user, second_user, field
+):
+    data = {
+        "date": "1999-12-02",
+        "price": 0.01,
+        "account": AccountFactory(title="Mine", journal=main_user.journal).pk,
+        "debt": factories.LendFactory(journal=main_user.journal, price=200000).pk,
+    }
+    foreign = {
+        "account": AccountFactory(title="Theirs", journal=second_user.journal),
+        "debt": factories.LendFactory(journal=second_user.journal, price=200000),
+    }
+    data[field] = foreign[field].pk
+
+    form = forms.DebtReturnForm(
+        user=main_user, today=TODAY, debt_type="lend", data=data
+    )
+
     assert not form.is_valid()
-    assert "date" in form.errors
-    assert form.errors["date"] == ["Data yra ankstesnė nei skolos data."]
+    assert field in form.errors

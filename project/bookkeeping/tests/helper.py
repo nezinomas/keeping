@@ -1,4 +1,4 @@
-import contextlib
+import json
 import re
 from datetime import date, datetime
 
@@ -11,30 +11,28 @@ from ...accounts.tests.factories import AccountFactory
 from ...savings.models import SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
+from .. import views
 from .factories import SavingWorthFactory
 
-
-def assert_(expected, actual):  # sourcery skip: raise-specific-error
-    for saving_type, arr in expected.items():
-        for _k, expected_val in expected[saving_type].items():
-            try:
-                actual_val = actual[saving_type][_k]
-            except KeyError as e:
-                raise Exception(f"No '{_k}' key in {actual[saving_type]}.") from e
-
-            with contextlib.suppress(Exception):
-                actual_val = round(float(actual_val), 2)
-
-            msg = f"{saving_type}->{_k}. Expected={expected_val} Actual={actual_val}"
-
-            assert expected_val == actual_val, msg
+WORTH_VIEWS = (views.AccountsWorthNew, views.SavingsWorthNew, views.PensionsWorthNew)
 
 
-def filter_fixture(data, leave_keys):
-    rm_keys = set(data.keys()) - set(leave_keys)
+def worth_form(form_class, user, *, today, now, **kwargs):
+    funds = {view.form_class: view.category_service_class for view in WORTH_VIEWS}
+    return form_class(
+        user=user,
+        today=today,
+        now=now,
+        funds=funds[form_class](user).items(),
+        **kwargs,
+    )
 
-    for key in rm_keys:
-        data.pop(key)
+
+def post_data(rows):
+    data = {"form-TOTAL_FORMS": len(rows), "form-INITIAL_FORMS": 0}
+    for number, row in enumerate(rows):
+        data |= {f"form-{number}-{name}": value for name, value in row.items()}
+    return data
 
 
 def fund_with_a_sell(title, bought, sold, *, fee=0, kind="funds", closed=None):
@@ -57,6 +55,11 @@ def fund_with_a_sell(title, bought, sold, *, fee=0, kind="funds", closed=None):
 def row_cells(content, title):
     row = re.search(rf"<tr>\s*<td[^>]*>{title}</td>(.*?)</tr>", content, re.S)
     return [c.strip() for c in re.findall(r"<td[^>]*>(.*?)</td>", row.group(1), re.S)]
+
+
+def script_json(content, script_id):
+    found = re.search(rf'<script id="{script_id}"[^>]*>(.*?)</script>', content, re.S)
+    return json.loads(found.group(1))
 
 
 def worth_in_1999(fund, price, month=12):

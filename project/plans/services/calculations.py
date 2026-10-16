@@ -2,7 +2,13 @@ from dataclasses import dataclass
 
 from django.utils.translation import gettext as _
 
-from ..lib.calc_day_sum import MONTH_NUMS, WITHIN, PlanCalculateDaySum
+from ..lib.calc_day_sum import (
+    MONTH_NUMS,
+    WITHIN,
+    CalcRow,
+    InputRow,
+    PlanCalculateDaySum,
+)
 
 
 def _values(row: dict) -> list:
@@ -61,40 +67,47 @@ class Calculations:
             self._row(
                 _("Incomes"),
                 _("median of the monthly income plans"),
-                day_sum.incomes_avg,
+                day_sum.row(CalcRow.INCOMES_AVG),
             ),
             self._row(
                 _("Necessary expenses and savings"),
                 _("= necessary + additional + savings"),
-                day_sum.expenses_necessary,
+                day_sum.row(CalcRow.EXPENSES_NECESSARY),
             ),
             self._row(
                 _("Necessary expenses"),
                 _("expense plans of necessary types"),
-                day_sum.db_expenses_necessary,
+                day_sum.row(InputRow.EXPENSES_NECESSARY),
                 part=True,
             ),
             self._row(
-                _("Additional necessary expenses"), "", day_sum.necessary, part=True
+                _("Additional necessary expenses"),
+                "",
+                day_sum.row(InputRow.NECESSARY),
+                part=True,
             ),
-            self._row(_("Savings"), "", day_sum.savings, part=True),
+            self._row(_("Savings"), "", day_sum.row(InputRow.SAVINGS), part=True),
             self._row(
                 _("Free money"),
                 _("= Incomes − Necessary expenses and savings"),
-                day_sum.expenses_free,
+                day_sum.row(CalcRow.EXPENSES_FREE),
             ),
             self._row(
-                _("Sum per day"), _("= Free money ÷ days in month"), day_sum.day_calced
+                _("Sum per day"),
+                _("= Free money ÷ days in month"),
+                day_sum.row(CalcRow.SUM_PER_DAY),
             ),
             self._row(
                 _("Day plan"),
                 _("yours, from the Sum per day table"),
-                day_sum.day_input,
+                day_sum.row(InputRow.DAY_PLAN),
                 states=day_states,
             ),
             # no states: the Day plan row already marks the months that do not fit
             self._row(
-                _("Residual"), _("= Free money − Day plan × days"), day_sum.remains
+                _("Residual"),
+                _("= Free money − Day plan × days"),
+                day_sum.row(CalcRow.REMAINS),
             ),
         ]
 
@@ -109,17 +122,17 @@ class Calculations:
             self._row(
                 _("Everyday expenses as planned"),
                 _("expense plans of other types"),
-                day_sum.expenses_regular,
+                day_sum.row(InputRow.EXPENSES_REGULAR),
             ),
             self._row(
                 _("Full expenses"),
                 _("= Necessary expenses and savings + Everyday expenses"),
-                day_sum.expenses_full,
+                day_sum.row(CalcRow.EXPENSES_FULL),
             ),
             self._row(
                 _("Left after the expense plans"),
                 _("= Incomes − Full expenses"),
-                day_sum.expenses_remains,
+                day_sum.row(CalcRow.EXPENSES_REMAINS),
             ),
         ]
 

@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import date
 
 from django.utils.translation import gettext as _
 
@@ -18,13 +19,11 @@ class Data:
     salary: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = IncomeModelService(self.user).sum_by_year()
-        self.incomes_types = IncomeModelService(self.user).sum_by_year_and_type()
-        self.salary = (
-            IncomeModelService(self.user)
-            .sum_by_year()
-            .filter(income_type__type="salary")
-        )
+        incomes = IncomeModelService(self.user)
+
+        self.incomes = incomes.sum_by_year()
+        self.incomes_types = incomes.sum_by_year_and_type()
+        self.salary = self.incomes.filter(income_type__type="salary")
         self.expenses = ExpenseModelService(self.user).sum_by_year()
 
 
@@ -36,14 +35,13 @@ class Charts:
         self._expenses = data.expenses
 
     def chart_balance(self) -> dict:
-        # generate balance_categories
         data = self._incomes or self._expenses
         balance_years = [x["year"] for x in data]
 
         records = len(balance_years)
         context = {"records": records}
 
-        if not records or records < 1:
+        if not records:
             return context
 
         context |= {
@@ -57,22 +55,21 @@ class Charts:
 
         return context
 
-    def chart_incomes(self) -> dict:
-        # data for salary summary
+    def chart_incomes(self, today: date) -> dict:
         salary_years = [x["year"] for x in self._salary]
 
         records = len(salary_years)
         context = {"records": records}
 
-        if not records or records < 1:
+        if not records:
             return context
 
         context |= {
             "chart_title": _("Incomes"),
             "categories": salary_years,
-            "incomes": common.average(self._incomes),
+            "incomes": common.average(self._incomes, today),
             "incomes_title": _("Average incomes"),
-            "salary": common.average(self._salary),
+            "salary": common.average(self._salary, today),
             "salary_title": _("Average salary") + ", €",
         }
 
@@ -97,12 +94,12 @@ class Charts:
         }
 
 
-def load_service(user: User) -> dict:
+def load_service(user: User, today: date) -> dict:
     data = Data(user)
     obj = Charts(data)
 
     return {
         "chart_balance": obj.chart_balance(),
-        "chart_incomes": obj.chart_incomes(),
+        "chart_incomes": obj.chart_incomes(today),
         "chart_incomes_types": obj.chart_incomes_types(),
     }

@@ -251,19 +251,19 @@ class InviteSignup(CreateView):
         context["valid_link"] = self.valid_link
         return context
 
-    def form_valid(self, form, **kwargs):
-        user = None
+    def form_valid(self, form):
         token = self.kwargs.get("token")
         signer = TimestampSigner(salt=settings.SALT)
         orig = signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
 
-        with contextlib.suppress(AttributeError, ObjectDoesNotExist):
+        try:
             user = User.objects.get(pk=orig["usr"], journal__pk=orig["jrn"])
+        except ObjectDoesNotExist:
+            return HttpResponseRedirect(reverse("users:login"))
 
-        if user:
-            obj = form.save(commit=False)
-            obj.journal = user.journal
-            obj.save()
+        obj = form.save(commit=False)
+        obj.journal = user.journal
+        obj.save()
 
         return HttpResponseRedirect(reverse("users:login"))
 
@@ -316,10 +316,8 @@ class SettingsUsersDelete(SettingsQueryMixin, DeleteViewMixin):
     modal_form_title = _("Delete user")
 
     def url(self):
-        return (
-            reverse_lazy("users:settings_users_delete", kwargs={"pk": self.object.pk})
-            if self.object
-            else None
+        return reverse_lazy(
+            "users:settings_users_delete", kwargs={"pk": self.object.pk}
         )
 
 
@@ -329,7 +327,7 @@ class SettingsUnnecessary(FormViewMixin):
     url = reverse_lazy("users:settings_unnecessary")
     success_url = reverse_lazy("users:settings_unnecessary")
 
-    def form_valid(self, form, **kwargs):
+    def form_valid(self, form):
         form.save()
         return super().form_valid(form)
 
@@ -345,7 +343,7 @@ class SettingsJournal(FormViewMixin):
         context["reload_site"] = True
         return context
 
-    def form_valid(self, form, **kwargs):
+    def form_valid(self, form):
         form.save()
 
         response = HttpResponse(status=200, headers={"HX-Redirect": self.success_url})

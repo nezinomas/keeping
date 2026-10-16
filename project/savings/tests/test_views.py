@@ -2,67 +2,31 @@ from datetime import date
 
 import pytest
 import time_machine
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.utils import clean_content
+from ...core.tests.utils import clean_content, view_for
+from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
 from .. import models, views
+from ..services.model_services import SavingTypeModelService
 from .factories import Saving, SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 
 
-def test_index_func():
-    view = resolve("/savings/")
+def test_index_renders_its_four_lists(client_logged):
+    SavingFactory(remark="saving remark")
+    SavingTypeFactory(title="Idle fund")
+    PensionFactory(remark="pension remark")
+    PensionTypeFactory(title="Idle plan")
 
-    assert views.Index == view.func.view_class
+    response = client_logged.get(reverse("savings:index"))
+    actual = response.content.decode("utf-8")
 
-
-def test_savings_lists_func():
-    view = resolve("/savings/lists/")
-
-    assert views.Lists == view.func.view_class
-
-
-def test_savings_new_func():
-    view = resolve("/savings/new/")
-
-    assert views.New == view.func.view_class
-
-
-def test_savings_update_func():
-    view = resolve("/savings/update/1/")
-
-    assert views.Update == view.func.view_class
-
-
-def test_types_lists_func():
-    view = resolve("/savings/type/")
-
-    assert views.TypeLists == view.func.view_class
-
-
-def test_types_new_func():
-    view = resolve("/savings/type/new/")
-
-    assert views.TypeNew == view.func.view_class
-
-
-def test_types_update_func():
-    view = resolve("/savings/type/update/1/")
-
-    assert views.TypeUpdate == view.func.view_class
-
-
-def test_index_view_context(client_logged):
-    url = reverse("savings:index")
-    response = client_logged.get(url)
-    context = response.context
-
-    assert "saving" in context
-    assert "saving_type" in context
-    assert "pension" in context
-    assert "pension_type" in context
+    assert "saving remark" in actual
+    assert "Idle fund" in actual
+    assert "pension remark" in actual
+    assert "Idle plan" in actual
 
 
 @time_machine.travel("2000-01-01")
@@ -161,9 +125,13 @@ def test_savings_load_update_form_field_values_fee_none(client_logged):
     assert form.instance.remark == "remark"
 
 
-@pytest.mark.parametrize("field", ["price", "fee"])
-def test_savings_update_form_shows_a_stored_zero_as_empty(client_logged, field):
-    obj = SavingFactory(**{"price": 1, "fee": 1, field: 0})
+@pytest.mark.parametrize(
+    "field, price, fee", [("price", 0, 1), ("fee", 1, 0)], ids=["price", "fee"]
+)
+def test_savings_update_form_shows_a_stored_zero_as_empty(
+    client_logged, field, price, fee
+):
+    obj = SavingFactory(price=price, fee=fee)
 
     url = reverse("savings:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
@@ -187,8 +155,8 @@ def test_saving_update_to_another_year(client_logged):
         "date": "2010-12-31",
         "remark": "Pastaba",
         "fee": "25",
-        "account": 1,
-        "saving_type": 1,
+        "account": saving.account.pk,
+        "saving_type": saving.saving_type.pk,
     }
     url = reverse("savings:update", kwargs={"pk": saving.pk})
 
@@ -199,16 +167,19 @@ def test_saving_update_to_another_year(client_logged):
 
 
 @time_machine.travel("1999-12-31")
-def test_saving_update(client_logged):
+@pytest.mark.parametrize(
+    "fee, expect", [("0.01", 1), ("4.89", 489)], ids=["fee_001", "fee_489"]
+)
+def test_saving_update(client_logged, fee, expect):
     saving = SavingFactory()
 
     data = {
         "price": "0.01",
-        "fee": "0.01",
+        "fee": fee,
         "date": "1999-12-31",
         "remark": "Pastaba",
-        "account": 1,
-        "saving_type": 1,
+        "account": saving.account.pk,
+        "saving_type": saving.saving_type.pk,
     }
     url = reverse("savings:update", kwargs={"pk": saving.pk})
 
@@ -217,30 +188,7 @@ def test_saving_update(client_logged):
 
     assert actual.date == date(1999, 12, 31)
     assert actual.price == 1
-    assert actual.fee == 1
-    assert actual.remark == "Pastaba"
-
-
-@time_machine.travel("1999-12-31")
-def test_saving_update_fee_with_489(client_logged):
-    saving = SavingFactory()
-
-    data = {
-        "price": "0.01",
-        "fee": "4.89",
-        "date": "1999-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "saving_type": 1,
-    }
-    url = reverse("savings:update", kwargs={"pk": saving.pk})
-
-    client_logged.post(url, data, follow=True)
-    actual = Saving.objects.get(pk=saving.pk)
-
-    assert actual.date == date(1999, 12, 31)
-    assert actual.price == 1
-    assert actual.fee == 489
+    assert actual.fee == expect
     assert actual.remark == "Pastaba"
 
 
@@ -260,44 +208,25 @@ def test_savings_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_savings_list_price_converted(client_logged):
-    SavingFactory(price=7777, fee=8888)
-
-    url = reverse("savings:list")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "77,77" in actual
-    assert "88,88" in actual
-
-
+@pytest.mark.parametrize(
+    "price, fee, shown_price, shown_fee",
+    [
+        pytest.param(7777, 8888, "77,77", "88,88", id="cents"),
+        pytest.param(100_000_000, 100_000, "1.000.000,00", "1.000,00", id="thousands"),
+    ],
+)
 @time_machine.travel("1999-1-1")
-def test_savings_list_price_converted_with_thousands(client_logged):
-    SavingFactory(price=100_000_000, fee=100_000)
+def test_savings_list_price_converted(
+    client_logged, price, fee, shown_price, shown_fee
+):
+    SavingFactory(price=price, fee=fee)
 
     url = reverse("savings:list")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert "1.000.000,00" in actual
-    assert "1.000,00" in actual
-
-
-# Saving Delete
-def test_view_saving_delete_func():
-    view = resolve("/savings/delete/1/")
-
-    assert views.Delete is view.func.view_class
-
-
-def test_view_saving_delete_200(client_logged):
-    p = SavingFactory()
-
-    url = reverse("savings:delete", kwargs={"pk": p.pk})
-
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
+    assert shown_price in actual
+    assert shown_fee in actual
 
 
 def test_view_saving_delete_load_form(client_logged):
@@ -351,15 +280,6 @@ def test_savings_delete_other_journal_post_form(client_logged, second_user):
     client_logged.post(url, follow=True)
 
     assert Saving.objects.all().count() == 1
-
-
-# Saving Type
-def test_type_load_form_200(client_logged):
-    url = reverse("savings:type_new")
-
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_type_load_form(client_logged):
@@ -503,14 +423,6 @@ def test_type_update_with_closed(client_logged):
     assert "TTT" in actual
 
 
-@pytest.mark.django_db
-def test_view_index_200(client_logged):
-    response = client_logged.get("/savings/")
-
-    assert response.status_code == 200
-
-
-@pytest.mark.django_db
 def test_type_list_view_has_all(client_logged):
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=1974)
@@ -537,3 +449,19 @@ def test_type_new_and_update_with_the_receiver_connected(client_logged):
 
     assert response.status_code == 200
     assert account.accounts_balance.get(year=1999).expenses == 203
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.Lists).get_queryset(), id="list"
+        ),
+        pytest.param(lambda rf, u: SavingTypeModelService(u).items(), id="types"),
+    ],
+)
+def test_a_user_with_no_year_raises(rf, main_user, call):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        call(rf, main_user)

@@ -2,61 +2,32 @@ from datetime import date
 
 import pytest
 import time_machine
-from django.urls import resolve, reverse
+from django.urls import reverse
 
-from ...core.tests.utils import clean_content
+from ...core.tests.utils import clean_content, view_for
 from .. import models, views
 from .factories import Pension, PensionFactory, PensionTypeFactory
 
 pytestmark = pytest.mark.django_db
 
 
-# Pensions
-def test_pensions_lists_func():
-    view = resolve("/pensions/lists/")
+def test_types_list_shows_the_title(client_logged):
+    PensionTypeFactory(title="Fondas")
 
-    assert views.Lists == view.func.view_class
+    response = client_logged.get(reverse("pensions:type_list"))
 
-
-def test_pensions_new_func():
-    view = resolve("/pensions/new/")
-
-    assert views.New == view.func.view_class
+    assert "Fondas" in response.content.decode("utf-8")
 
 
-def test_pensions_update_func():
-    view = resolve("/pensions/update/1/")
-
-    assert views.Update == view.func.view_class
-
-
-def test_types_lists_func():
-    view = resolve("/pensions/type/")
-
-    assert views.TypeLists == view.func.view_class
-
-
-def test_types_new_func():
-    view = resolve("/pensions/type/new/")
-
-    assert views.TypeNew == view.func.view_class
-
-
-def test_types_update_func():
-    view = resolve("/pensions/type/update/1/")
-
-    assert views.TypeUpdate == view.func.view_class
-
-
-@time_machine.travel("2000-01-01")
-def test_pensions_load_form(admin_client):
+@time_machine.travel("2000-03-04")
+def test_pensions_load_form(client_logged):
     url = reverse("pensions:new")
 
-    response = admin_client.get(url)
+    response = client_logged.get(url)
     actual = response.content.decode()
 
     assert f'hx-post="{url}"' in actual
-    assert "2000-01-01" in actual
+    assert 'name="date" value="1999-03-04"' in actual
 
 
 def test_pensions_save(client_logged):
@@ -66,7 +37,7 @@ def test_pensions_save(client_logged):
 
     url = reverse("pensions:new")
     client_logged.post(url, data, follow=True)
-    actual = Pension.objects.get(pk=i.pk)
+    actual = Pension.objects.get()
 
     assert actual.date == date(1999, 1, 1)
     assert actual.price == 1
@@ -97,69 +68,44 @@ def test_pensions_load_update_load_form(client_logged):
     assert "Atnaujinti ir uždaryti</button>" in actual
 
 
-def test_pensions_load_update_form_field_values(client_logged):
-    obj = PensionFactory(price=1, fee=1)
+@pytest.mark.parametrize(
+    "price, fee, expected_price, expected_fee",
+    [(1, 1, 0.01, 0.01), (1, 0, 0.01, 0), (0, 1, 0, 0.01)],
+    ids=["both", "no_fee", "no_price"],
+)
+def test_pensions_load_update_form_field_values(
+    client_logged, price, fee, expected_price, expected_fee
+):
+    obj = PensionFactory(price=price, fee=fee)
 
     url = reverse("pensions:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
     form = response.context["form"]
 
     assert form.instance.date == date(1999, 1, 1)
-    assert form.instance.price == 0.01
-    assert form.instance.fee == 0.01
+    assert form.instance.price == expected_price
+    assert form.instance.fee == expected_fee
     assert form.instance.pension_type.title == "PensionType"
     assert form.instance.remark == "remark"
 
 
-def test_pensions_load_update_form_field_values_no_fee(client_logged):
-    obj = PensionFactory(price=1, fee=0)
+@pytest.mark.parametrize(
+    "price, fee, empty, filled",
+    [(1, 0, "fee", "price"), (0, 1, "price", "fee")],
+    ids=["zero_fee", "zero_price"],
+)
+def test_pensions_update_form_shows_a_stored_zero_as_empty(
+    client_logged, price, fee, empty, filled
+):
+    obj = PensionFactory(price=price, fee=fee)
 
     url = reverse("pensions:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
     form = response.context["form"]
 
-    assert form.instance.date == date(1999, 1, 1)
-    assert form.instance.price == 0.01
-    assert not form.instance.fee
-    assert form.instance.pension_type.title == "PensionType"
-    assert form.instance.remark == "remark"
-
-
-def test_pensions_load_update_form_field_values_no_price(client_logged):
-    obj = PensionFactory(price=0, fee=1)
-
-    url = reverse("pensions:update", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert form.instance.date == date(1999, 1, 1)
-    assert not form.instance.price
-    assert form.instance.fee == 0.01
-    assert form.instance.pension_type.title == "PensionType"
-    assert form.instance.remark == "remark"
-
-
-def test_pensions_update_form_shows_a_stored_zero_fee_as_empty(client_logged):
-    obj = PensionFactory(price=1, fee=0)
-
-    url = reverse("pensions:update", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert 'name="fee"' in str(form["fee"])
-    assert 'value="' not in str(form["fee"])
-    assert 'value="0.01"' in str(form["price"])
-
-
-def test_pensions_update_form_shows_a_stored_zero_price_as_empty(client_logged):
-    obj = PensionFactory(price=0, fee=1)
-
-    url = reverse("pensions:update", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert 'value="' not in str(form["price"])
-    assert 'value="0.01"' in str(form["fee"])
+    assert f'name="{empty}"' in str(form[empty])
+    assert 'value="' not in str(form[empty])
+    assert 'value="0.01"' in str(form[filled])
 
 
 def test_pensions_update_to_another_year(client_logged):
@@ -169,8 +115,7 @@ def test_pensions_update_to_another_year(client_logged):
         "price": "150",
         "date": "2010-12-31",
         "remark": "Pastaba",
-        "account": 1,
-        "pension_type": 1,
+        "pension_type": pension.pension_type.pk,
     }
     url = reverse("pensions:update", kwargs={"pk": pension.pk})
 
@@ -191,7 +136,7 @@ def test_pensions_update(client_logged):
         "fee": "0.01",
         "date": "1999-12-31",
         "remark": "Pastaba",
-        "pension_type": 1,
+        "pension_type": pension.pension_type.pk,
     }
     url = reverse("pensions:update", kwargs={"pk": pension.pk})
 
@@ -220,44 +165,26 @@ def test_pensions_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_pensions_list_price_converted(client_logged):
-    PensionFactory(price=7777, fee=8888)
-
-    url = reverse("pensions:list")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "77,77" in actual
-    assert "88,88" in actual
-
-
 @time_machine.travel("1999-1-1")
-def test_pensions_list_price_converted_with_thousands(client_logged):
-    PensionFactory(price=100_000_000, fee=100_000)
+@pytest.mark.parametrize(
+    "price, fee, shown_price, shown_fee",
+    [
+        (7777, 8888, "77,77", "88,88"),
+        (100_000_000, 100_000, "1.000.000,00", "1.000,00"),
+    ],
+    ids=["converted", "with_thousands"],
+)
+def test_pensions_list_price_converted(
+    client_logged, price, fee, shown_price, shown_fee
+):
+    PensionFactory(price=price, fee=fee)
 
     url = reverse("pensions:list")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert "1.000.000,00" in actual
-    assert "1.000,00" in actual
-
-
-# Pension Delete
-def test_view_pensions_delete_func():
-    view = resolve("/pensions/delete/1/")
-
-    assert views.Delete is view.func.view_class
-
-
-def test_view_pensions_delete_200(client_logged):
-    p = PensionFactory()
-
-    url = reverse("pensions:delete", kwargs={"pk": p.pk})
-
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
+    assert shown_price in actual
+    assert shown_fee in actual
 
 
 def test_view_pensions_delete_load_form(client_logged):
@@ -301,18 +228,6 @@ def test_pensions_delete_other_journal_post_form(client_logged, second_user):
     client_logged.post(url)
 
     assert Pension.objects.all().count() == 1
-
-
-# PensionType
-
-
-@time_machine.travel("2000-01-01")
-def test_type_load_form(admin_client):
-    url = reverse("pensions:type_new")
-
-    response = admin_client.get(url)
-
-    assert response.status_code == 200
 
 
 def test_type_save(client_logged):
@@ -380,3 +295,10 @@ def test_pension_type_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_a_user_with_no_year_raises(rf, main_user):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        view_for(rf, main_user, views.Lists).get_queryset()

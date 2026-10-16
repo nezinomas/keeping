@@ -580,10 +580,6 @@ msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti."
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:111
-msgid "already has a goal."
-msgstr "metai jau turi tikslą."
-
 #: .\project\books\services\cards.py:37
 msgid "Finished"
 msgstr "Perskaitytos"
@@ -988,6 +984,10 @@ msgstr ""
 msgid "Title must contain at least one Latin letter or digit."
 msgstr "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
 
+#: .\project\expenses\forms.py
+msgid "This title is reserved."
+msgstr "Šis pavadinimas rezervuotas."
+
 #: .\project\core\validators.py
 #, python-format
 msgid "Title cannot contain “%(characters)s”."
@@ -1159,10 +1159,6 @@ msgid ""
 msgstr ""
 "Ištrynus %(counter)s bus ištrinta ir %(count)s įrašų, sukurtų nuo %(year)s."
 
-#: .\project\debts\forms.py:59 .\project\debts\forms.py:142
-msgid "Debtor"
-msgstr "Skolininkas"
-
 #: .\project\debts\forms.py:62 .\project\debts\forms.py:145
 #: .\project\debts\templates\debts\debt_list.html:16
 #: .\project\debts\templates\debts\debtreturn_list.html:15
@@ -1180,10 +1176,6 @@ msgstr "Paskolos davėjas"
 msgid "Returned"
 msgstr "Gražinta"
 
-#: .\project\debts\forms.py:84
-msgid "The name of the lender must be unique."
-msgstr "Skolintojo vardas turi būti unikalus."
-
 #: .\project\debts\forms.py:87
 msgid "You can't close a debt that hasn't been returned."
 msgstr "Negalite uždaryti dar negražintos skolos."
@@ -1191,6 +1183,10 @@ msgstr "Negalite uždaryti dar negražintos skolos."
 #: .\project\debts\forms.py:98 .\project\debts\forms.py:174
 msgid "The amount due exceeds the debt."
 msgstr "Mokėtina suma viršija skolą."
+
+#: .\project\debts\forms.py:104
+msgid "The debt can't be less than what has been returned."
+msgstr "Skola negali būti mažesnė nei grąžinta suma."
 
 #: .\project\debts\forms.py:185
 msgid "The date preceding the debt's date."
@@ -1228,7 +1224,7 @@ msgstr "Trinti skolos gražinimą"
 msgid "Drink type"
 msgstr "Gėrimo tipas"
 
-#: .\project\drinks\forms.py:145
+#: .\project\books\forms.py:104 .\project\drinks\forms.py:141
 #, python-format
 msgid "%(year)s already has a goal."
 msgstr "%(year)s metai jau turi tikslą."
@@ -1891,11 +1887,6 @@ msgstr "Suma"
 msgid "Incomes type"
 msgstr "Pajamų rūšis"
 
-#: .\project\incomes\forms.py:60
-#, python-format
-msgid "Year cannot be greater than %(year)s"
-msgstr "Metai negali būti didesni nei %(year)s"
-
 #: .\project\incomes\forms.py:81 .\project\savings\forms.py:31
 msgid "Type"
 msgstr "Tipas"
@@ -1929,6 +1920,10 @@ msgstr "Svetainės kalba"
 #: .\project\journals\forms.py:63
 msgid "Journal title"
 msgstr "Svetainės pavadinimas"
+
+#: .\project\journals\forms.py:47
+msgid "Too many expense types selected."
+msgstr "Pažymėta per daug išlaidų rūšių."
 
 #: .\project\pensions\forms.py:42
 msgid "Fee"
@@ -2206,18 +2201,18 @@ msgid "Amount left after fee"
 msgstr "Suma kuri lieka atskaičius mokesčius"
 
 #: .\project\transactions\templates\transactions\index.html:20
-msgid "Account &hArr; Account"
-msgstr "Sąskaita &rArr; Sąskaita"
+msgid "Account ⇔ Account"
+msgstr "Sąskaita ⇔ Sąskaita"
 
 #: .\project\transactions\templates\transactions\index.html:27
 #: .\project\transactions\views.py:107 .\project\transactions\views.py:117
-msgid "Fund &rArr; Account"
-msgstr "Fondas &rArr; Sąskaita"
+msgid "Fund ⇒ Account"
+msgstr "Fondas ⇒ Sąskaita"
 
 #: .\project\transactions\templates\transactions\index.html:34
 #: .\project\transactions\views.py:145 .\project\transactions\views.py:155
-msgid "Fund &hArr; Fund"
-msgstr "Fondas &hArr; Fondas"
+msgid "Fund ⇔ Fund"
+msgstr "Fondas ⇔ Fondas"
 
 #: .\project\transactions\views.py:73 .\project\transactions\views.py:81
 msgid "Transaction"
@@ -2731,3 +2726,16 @@ msgstr "iš investicijos"
 
 msgid "from the account"
 msgstr "iš sąskaitos"
+
+#, python-format
+msgid "Fund was closed in %(year)s."
+msgstr "Fondas uždarytas %(year)s."
+
+msgid "The same funds are selected."
+msgstr "Pasirinkti vienodi fondai."
+
+msgid "The same pensions are selected."
+msgstr "Pasirinktos vienodos pensijos."
+
+msgid "The name must be unique."
+msgstr "Vardas turi būti unikalus."

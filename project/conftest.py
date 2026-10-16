@@ -1,46 +1,47 @@
-from datetime import date, datetime
+from datetime import date
 
+import hypothesis
 import pytest
-import pytz
 from django.conf import settings
 from django.db.backends.signals import connection_created
 from django.utils import translation
 
 from .accounts.tests.factories import AccountFactory
-from .bookkeeping.tests.factories import (
-    AccountWorthFactory,
-    PensionWorthFactory,
-    SavingWorthFactory,
-)
-from .debts.tests.factories import LendFactory, LendReturnFactory
 from .expenses.tests.factories import ExpenseFactory
 from .incomes.tests.factories import IncomeFactory
-from .journals.tests.factories import JournalFactory
 from .pensions.tests.factories import PensionFactory, PensionTypeFactory
 from .savings.tests.factories import SavingFactory, SavingTypeFactory
 from .transactions.tests.factories import (
-    SavingChangeFactory,
     SavingCloseFactory,
     TransactionFactory,
 )
 from .users.tests.factories import UserFactory
 
+hypothesis.settings.register_profile("dev", max_examples=20, deadline=None)
+hypothesis.settings.register_profile("gate", max_examples=100, deadline=None)
+hypothesis.settings.load_profile("dev")
 
-@pytest.fixture(autouse=True)
-def main_user(monkeypatch, request):
-    if "disable_get_user_patch" in request.keywords:
-        return None
 
-    if "django_db" in request.keywords:
-        user = UserFactory()
+def _user(request, **kwargs):
+    if "django_db" not in request.keywords:
+        return UserFactory.build(**kwargs)
 
-        jr = user.journal
-        jr.first_record = date(1999, 1, 1)
-        jr.save()
-    else:
-        user = UserFactory.build()
+    user = UserFactory(**kwargs)
+    user.journal.first_record = date(1999, 1, 1)
+    user.journal.save()
 
     return user
+
+
+@pytest.fixture()
+def main_user(request):
+    return _user(request)
+
+
+@pytest.fixture(autouse=True)
+def _main_user_unless_disabled(request):
+    if "no_main_user" not in request.keywords:
+        request.getfixturevalue("main_user")
 
 
 @pytest.fixture(autouse=True)
@@ -52,59 +53,39 @@ def reset_language():
 
 @pytest.fixture()
 def second_user(request):
-    if "django_db" in request.keywords:
-        user = UserFactory(username="X", email="x@x.xx")
-
-        jr = user.journal
-        jr.first_record = date(1999, 1, 1)
-        jr.save()
-    else:
-        user = UserFactory.build(username="X", email="x@x.xx")
-
-    return user
+    return _user(request, username="X", email="x@x.xx")
 
 
 @pytest.fixture()
-def fake_request(rf):
+def fake_request(rf, db):
     request = rf.get("/fake/")
-    request.user = UserFactory.build()
-    request.user.journal = JournalFactory.build()
+    request.user = UserFactory()
 
     return request
 
 
 @pytest.fixture()
-def client_logged(client):
-    client.login(username="bob", password="123")
+def client_logged(client, main_user):
+    client.force_login(main_user)
     return client
 
 
-def _sqlite_format(value, decimals, locale=None):
-    """
-    Python simulation of MariaDB's FORMAT(X, D, locale).
-    """
+def _sqlite_format(value, decimals, locale):
+    """SQLite has no FORMAT(X, D, locale); this stands in for MariaDB's."""
     if value is None:
         return None
     try:
-        val = float(value)
-        # 1. Format with standard English commas: "1,234.56"
-        formatted = f"{val:,.{int(decimals)}f}"
-
-        # 2. Swap dots and commas to mimic European style if locale is present
-        if locale:
-            return formatted.replace(",", "X").replace(".", ",").replace("X", ".")
-        return formatted
+        formatted = f"{float(value):,.{int(decimals)}f}"
     except (ValueError, TypeError):
         return str(value)
+
+    if locale == "lt_LT":
+        return formatted.replace(",", "X").replace(".", ",").replace("X", ".")
+    return formatted
 
 
 @pytest.fixture(scope="session", autouse=True)
 def fix_sqlite_format_function():
-    """
-    Runs ONCE per test session.
-    Ensures that whenever a SQLite connection is created, it has the FORMAT function.
-    """
-
     def register_functions(sender, connection, **kwargs):
         if connection.vendor == "sqlite":
             connection.connection.create_function("FORMAT", 3, _sqlite_format)
@@ -116,10 +97,13 @@ def fix_sqlite_format_function():
     connection_created.disconnect(register_functions)
 
 
+def _two_accounts():
+    return AccountFactory(title="Account1"), AccountFactory(title="Account2")
+
+
 @pytest.fixture()
 def incomes():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
 
     IncomeFactory(price=525, date=date(1970, 1, 1), account=a1)
     IncomeFactory(price=225, date=date(1970, 1, 1), account=a2)
@@ -131,8 +115,7 @@ def incomes():
 
 @pytest.fixture()
 def expenses():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
 
     ExpenseFactory(date=date(1999, 1, 1), price=25, account=a1)
     ExpenseFactory(date=date(1999, 1, 1), price=25, account=a1)
@@ -144,8 +127,7 @@ def expenses():
 
 @pytest.fixture()
 def expenses_january():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
 
     ExpenseFactory(
         date=date(1999, 1, 1),
@@ -161,8 +143,7 @@ def expenses_january():
 
 @pytest.fixture()
 def transactions():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
 
     TransactionFactory(
         date=date(1999, 1, 1),
@@ -198,8 +179,7 @@ def transactions():
 
 @pytest.fixture()
 def savings():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
     s1 = SavingTypeFactory(title="Saving1")
     s2 = SavingTypeFactory(title="Saving2")
 
@@ -242,8 +222,7 @@ def savings():
 
 @pytest.fixture()
 def savings_close():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
     s1 = SavingTypeFactory(title="Saving1")
 
     SavingCloseFactory(
@@ -265,27 +244,6 @@ def savings_close():
         price=25,
         fee=5,
         to_account=a1,
-        from_account=s1,
-    )
-
-
-@pytest.fixture()
-def savings_change():
-    s1 = SavingTypeFactory(title="Saving1")
-    s2 = SavingTypeFactory(title="Saving2")
-
-    SavingChangeFactory(
-        date=date(1999, 1, 1),
-        price=125,
-        fee=5,
-        to_account=s2,
-        from_account=s1,
-    )
-    SavingChangeFactory(
-        date=date(1970, 1, 1),
-        price=225,
-        fee=15,
-        to_account=s2,
         from_account=s1,
     )
 
@@ -318,86 +276,3 @@ def pensions():
         date=date(1999, 1, 1),
         pension_type=p,
     )
-
-
-@pytest.fixture()
-def accounts_worth():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
-
-    AccountWorthFactory(
-        date=datetime(1970, 1, 1, tzinfo=pytz.utc),
-        price=10,
-        account=a1,
-    )
-    AccountWorthFactory(
-        date=datetime(1970, 1, 1, tzinfo=pytz.utc),
-        price=20,
-        account=a2,
-    )
-
-    AccountWorthFactory(
-        date=datetime(1999, 1, 2, tzinfo=pytz.utc),
-        price=3,
-        account=a1,
-    )
-    AccountWorthFactory(
-        date=datetime(1999, 1, 1, tzinfo=pytz.utc),
-        price=8,
-        account=a2,
-    )
-
-
-@pytest.fixture()
-def savings_worth():
-    s1 = SavingTypeFactory(title="Saving1")
-    s2 = SavingTypeFactory(title="Saving2")
-
-    SavingWorthFactory(
-        date=datetime(1970, 1, 1, tzinfo=pytz.utc),
-        price=10,
-        saving_type=s1,
-    )
-
-    SavingWorthFactory(
-        date=datetime(1999, 1, 2, tzinfo=pytz.utc),
-        price=15,
-        saving_type=s1,
-    )
-    SavingWorthFactory(
-        date=datetime(1999, 1, 1, tzinfo=pytz.utc),
-        price=6,
-        saving_type=s2,
-    )
-
-
-@pytest.fixture()
-def pensions_worth():
-    PensionWorthFactory(date=datetime(1974, 1, 1, tzinfo=pytz.utc), price=6)
-    PensionWorthFactory(price=25)
-
-
-@pytest.fixture
-def lend_fixture():
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
-
-    LendFactory(date=date(1999, 1, 2), price=1, account=a1)
-    LendFactory(date=date(1999, 2, 3), price=2, account=a1)
-    LendFactory(date=date(1999, 3, 4), price=3, account=a2)
-
-    LendFactory(date=date(1974, 1, 2), price=4, account=a1)
-    LendFactory(date=date(1974, 2, 3), price=5, account=a1)
-
-
-@pytest.fixture
-def lend_return_fixture():
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
-
-    LendReturnFactory(date=date(1999, 1, 2), price=5, account=a1)
-    LendReturnFactory(date=date(1999, 2, 3), price=15, account=a1)
-    LendReturnFactory(date=date(1999, 3, 4), price=16, account=a2)
-
-    LendReturnFactory(date=date(1974, 1, 2), price=35, account=a1)
-    LendReturnFactory(date=date(1974, 2, 3), price=45, account=a1)

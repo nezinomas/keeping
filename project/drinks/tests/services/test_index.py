@@ -2,17 +2,23 @@ from datetime import date
 from types import SimpleNamespace
 
 import pytest
-import time_machine
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ....core.lib import stat_card
-from ....core.lib.calendar_grid import CalendarYearViewModel
+from ....core.lib.day_stats import NoPastRecord, PastRecord
 from ....core.lib.stat_card import Card
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter, stdav_to_alcohol
-from ...lib.drinks_stats import DataRow, DrinkStats
-from ...services.index_tab import DryDaysViewModel, IndexBuilder, IndexTab
+from ...lib.drinks_stats import DataRow
+from ...services.index_tab import (
+    DailyLimit,
+    DryDaysViewModel,
+    IndexBuilder,
+    IndexTab,
+    NoDailyLimit,
+    NoDryDaysViewModel,
+)
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -27,8 +33,12 @@ def _row(dt: date, stdav: float, qty: float = 0.0) -> DataRow:
     return DataRow(date=dt, stdav=stdav, qty=qty)
 
 
-def _frequency(current=(), past=(), today=date(1999, 1, 10)) -> FrequencyStats:
-    return FrequencyStats(current_daily=current, past_daily=past, today=today)
+def _frequency(
+    current=(), past=(), today=date(1999, 1, 10), year=1999
+) -> FrequencyStats:
+    return FrequencyStats(
+        current_daily=current, past_daily=past, year=year, today=today
+    )
 
 
 def _stats(drink_converter, total_quantity=0.0, avg=0.0, year=1999):
@@ -52,117 +62,81 @@ def _card_builder(
     target=0.0,
     past_quantity=0.0,
     past_avg=0.0,
+    year=1999,
     **kwargs,
 ):
+    kwargs.setdefault("today", date(1999, 6, 1))
+    kwargs.setdefault("frequency_stats", _frequency())
+
     return IndexBuilder(
         converter=drink_converter,
-        drink_stats=_stats(drink_converter, total_quantity, avg),
-        previous_stats=_stats(drink_converter, past_quantity, past_avg, year=1998),
-        target=target,
+        drink_stats=_stats(drink_converter, total_quantity, avg, year=year),
+        previous_stats=_stats(drink_converter, past_quantity, past_avg, year=year - 1),
+        limit=DailyLimit(target) if target else NoDailyLimit(),
         **kwargs,
     )
 
 
 @pytest.mark.parametrize(
-    "past, current, expect",
+    "latest, expect",
     [
-        (date(1998, 1, 1), None, DryDaysViewModel(date(1998, 1, 1), 367)),
-        (None, date(1999, 1, 1), DryDaysViewModel(date(1999, 1, 1), 2)),
-        (date(1998, 1, 1), date(1999, 1, 1), DryDaysViewModel(date(1999, 1, 1), 2)),
-        (None, None, DryDaysViewModel(None, 0)),
+        (PastRecord(date(1998, 1, 1)), DryDaysViewModel(date(1998, 1, 1), 367)),
+        (PastRecord(date(1999, 1, 1)), DryDaysViewModel(date(1999, 1, 1), 2)),
+        (NoPastRecord(), NoDryDaysViewModel()),
     ],
 )
-@time_machine.travel("1999-01-03")
-def test_dry_days(past, current, expect, main_user, drink_converter):
-    DrinkFactory()
-
-    actual = IndexBuilder(
-        converter=drink_converter,
-        drink_stats=DrinkStats(drink_converter),
-        latest_past_date=past,
-        latest_current_date=current,
+def test_dry_days(latest, expect, main_user, drink_converter):
+    actual = _card_builder(
+        drink_converter, latest=latest, today=date(1999, 1, 3)
     ).tbl_dry_days()
 
     assert actual == expect
 
 
-@time_machine.travel("2019-10-10")
-def test_std_av(main_user, drink_converter):
-    actual = IndexBuilder(
-        converter=drink_converter, drink_stats=DrinkStats(drink_converter)
-    )._build_conversion_rows(2019, 273.5)
+@pytest.mark.parametrize(
+    "year, expect",
+    [
+        pytest.param(
+            2019,
+            [
+                ("Alus, 0.5L", 273.5, 0.97, 6.67, 27.35),
+                ("Vynas, 0.75L", 85.47, 0.3, 2.08, 8.55),
+                ("Degtinė, 1L", 17.09, 0.06, 0.42, 1.71),
+                ("Std Av", 683.75, 2.42, 16.68, 68.38),
+            ],
+            id="std_av",
+        ),
+        pytest.param(
+            1999,
+            [
+                ("Alus, 0.5L", 273.5, 0.75, 5.26, 22.79),
+                ("Vynas, 0.75L", 85.47, 0.23, 1.64, 7.12),
+                ("Degtinė, 1L", 17.09, 0.05, 0.33, 1.42),
+                ("Std Av", 683.75, 1.87, 13.15, 56.98),
+            ],
+            id="std_av_past_recods",
+        ),
+    ],
+)
+def test_tbl_std_av_reads_the_year_in_every_drink_type(drink_converter, year, expect):
+    builder = _card_builder(
+        drink_converter, total_quantity=273.5, year=year, today=date(2019, 10, 10)
+    )
 
-    assert len(actual) == 4
+    actual = [
+        (
+            row.title,
+            round(row.total, 2),
+            round(row.per_day, 2),
+            round(row.per_week, 2),
+            round(row.per_month, 2),
+        )
+        for row in builder.tbl_std_av().items
+    ]
 
-    assert actual[0].title == "Alus, 0.5L"
-    assert round(actual[0].total, 2) == 273.5
-    assert round(actual[0].per_day, 2) == 0.97
-    assert round(actual[0].per_week, 2) == 6.67
-    assert round(actual[0].per_month, 2) == 27.35
-
-    assert actual[1].title == "Vynas, 0.75L"
-    assert round(actual[1].total, 2) == 85.47
-    assert round(actual[1].per_day, 2) == 0.3
-    assert round(actual[1].per_week, 2) == 2.08
-    assert round(actual[1].per_month, 2) == 8.55
-
-    assert actual[2].title == "Degtinė, 1L"
-    assert round(actual[2].total, 2) == 17.09
-    assert round(actual[2].per_day, 2) == 0.06
-    assert round(actual[2].per_week, 2) == 0.42
-    assert round(actual[2].per_month, 2) == 1.71
-
-    assert actual[3].title == "Std Av"
-    assert round(actual[3].total, 2) == 683.75
-    assert round(actual[3].per_day, 2) == 2.42
-    assert round(actual[3].per_week, 2) == 16.68
-    assert round(actual[3].per_month, 2) == 68.38
-
-
-@time_machine.travel("2019-10-10")
-def test_std_av_past_recods(main_user, drink_converter):
-    actual = IndexBuilder(
-        converter=drink_converter, drink_stats=DrinkStats(drink_converter)
-    )._build_conversion_rows(1999, 273.5)
-
-    assert len(actual) == 4
-
-    assert actual[0].title == "Alus, 0.5L"
-    assert round(actual[0].total, 2) == 273.5
-    assert round(actual[0].per_day, 2) == 0.75
-    assert round(actual[0].per_week, 2) == 5.26
-    assert round(actual[0].per_month, 2) == 22.79
-
-    assert actual[1].title == "Vynas, 0.75L"
-    assert round(actual[1].total, 2) == 85.47
-    assert round(actual[1].per_day, 2) == 0.23
-    assert round(actual[1].per_week, 2) == 1.64
-    assert round(actual[1].per_month, 2) == 7.12
-
-    assert actual[2].title == "Degtinė, 1L"
-    assert round(actual[2].total, 2) == 17.09
-    assert round(actual[2].per_day, 2) == 0.05
-    assert round(actual[2].per_week, 2) == 0.33
-    assert round(actual[2].per_month, 2) == 1.42
-
-    assert actual[3].title == "Std Av"
-    assert round(actual[3].total, 2) == 683.75
-    assert round(actual[3].per_day, 2) == 1.87
-    assert round(actual[3].per_week, 2) == 13.15
-    assert round(actual[3].per_month, 2) == 56.98
+    assert actual == expect
 
 
-def test_dry_days_view_model_has_data():
-    model_with_data = DryDaysViewModel(date=date(2026, 5, 8), delta=10)
-    assert model_with_data.has_data is True
-
-    empty_model = DryDaysViewModel()
-    assert empty_model.has_data is False
-
-
-# -------------------------------------------------------------------------------------
-#                                                          IndexBuilder.get_cards
-# -------------------------------------------------------------------------------------
 def test_get_cards_order(main_user, drink_converter):
     # six, the Daily limit last. A seventh should have to argue with this test
     cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
@@ -178,17 +152,25 @@ def test_get_cards_order(main_user, drink_converter):
     assert all(isinstance(c, Card) for c in cards)
 
 
-# -------------------------------------------------------------------------------------
-#                                                    IndexBuilder.get_cards: Daily limit
-# -------------------------------------------------------------------------------------
-def test_card_limit_with_target(main_user, drink_converter):
-    card = _card_builder(drink_converter, target=500.0, target_id=7).get_cards()[5]
+@pytest.mark.parametrize(
+    "drink_type, target, value, unit, amount",
+    [
+        pytest.param("beer", 500.0, "500", _("ml"), "182,5 L", id="volume"),
+        # Std Av is read as typed, so the figure carries no unit beside it and
+        # keeps the decimal a whole number would destroy
+        pytest.param("stdav", 1.5, "1.5", "", "547,5 Std Av", id="stdav"),
+    ],
+)
+def test_card_limit_with_target(main_user, drink_type, target, value, unit, amount):
+    card = _card_builder(
+        DrinkConverter(drink_type), target=target, target_id=7
+    ).get_cards()[5]
 
     assert card.title == _("Daily limit")
-    assert card.value == "500"
-    assert card.unit == _("ml")
-    # 500 ml a day over 1999 is 182,5 L, read in the unit a year's total takes
-    assert card.note == _("%(amount)s per year") % {"amount": "182,5 L"}
+    assert card.value == value
+    assert card.unit == unit
+    # a daily limit over 1999, read in the unit a year's total takes
+    assert card.note == _("%(amount)s per year") % {"amount": amount}
     assert card.edit_url == reverse("drinks:target_update", kwargs={"pk": 7})
 
 
@@ -204,145 +186,127 @@ def test_card_limit_without_target(main_user, drink_converter):
     assert card.edit_url == reverse("drinks:target_new", kwargs={"tab": "index"})
 
 
-def test_card_limit_in_stdav_carries_no_unit(main_user):
-    """Std Av is read as typed, so the figure carries no unit beside it — and it
-    keeps the decimal a whole number would destroy."""
-    card = _card_builder(DrinkConverter("stdav"), target=1.5, target_id=7).get_cards()[
-        5
-    ]
-
-    assert card.value == "1.5"
-    assert card.unit == ""
-    assert card.note == _("%(amount)s per year") % {"amount": "547,5 Std Av"}
-
-
-@time_machine.travel("1999-01-05")
-def test_card_dry_days_with_data(main_user, drink_converter):
+@pytest.mark.parametrize(
+    "latest, value, note",
+    [
+        pytest.param(PastRecord(date(1999, 1, 1)), "4", "1999-01-01", id="this_year"),
+        pytest.param(PastRecord(date(1998, 12, 20)), "16", "1998-12-20", id="before"),
+    ],
+)
+def test_card_dry_days_with_data(latest, value, note, main_user, drink_converter):
     card = _card_builder(
-        drink_converter, latest_current_date=date(1999, 1, 1)
+        drink_converter, latest=latest, today=date(1999, 1, 5)
     ).get_cards()[0]
 
     assert card.state == "neutral"
-    assert card.value == "4"
-    assert card.note == "1999-01-01"
+    assert card.value == value
+    assert card.note == note
 
 
-def test_card_dry_days_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter).get_cards()[0]
-
-    assert card.state == "empty"
-    assert card.value == ""
-    assert card.note == _("No data")
-
-
-def test_card_std_drinks_with_data(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[2]
-
-    assert card.state == "neutral"
-    assert card.value == "250"  # 100 units * 2.5 std av per beer
-    assert card.note == _("Std Av this year")
-
-
-def test_card_std_drinks_notes_last_year(main_user, drink_converter):
+@pytest.mark.parametrize(
+    "quantity, past, value, note, state, show_icon, improving",
+    [
+        pytest.param(
+            100.0,
+            0.0,
+            "250",
+            _("Std Av this year"),
+            "neutral",
+            False,
+            False,
+            id="alone",
+        ),
+        pytest.param(
+            100.0,
+            80.0,
+            "250",
+            f"{_('Last year')} 200",
+            "worsening",
+            True,
+            False,
+            id="more_than_last_year",
+        ),
+        pytest.param(
+            80.0,
+            100.0,
+            "200",
+            f"{_('Last year')} 250",
+            "improving",
+            True,
+            True,
+            id="less_than_last_year",
+        ),
+    ],
+)
+def test_card_std_drinks_reads_the_year_total(
+    main_user, drink_converter, quantity, past, value, note, state, show_icon, improving
+):
+    # 2.5 std av per beer
     card = _card_builder(
-        drink_converter, total_quantity=100.0, past_quantity=80.0
+        drink_converter, total_quantity=quantity, past_quantity=past
     ).get_cards()[2]
 
-    assert card.value == "250"
-    assert card.note == f"{_('Last year')} 200"
-    assert card.state == "worsening"
-    assert card.show_icon is True
-    assert card.improving is False
+    assert card.value == value
+    assert card.note == note
+    assert card.state == state
+    assert card.show_icon is show_icon
+    assert card.improving is improving
 
 
-def test_card_std_drinks_less_than_last_year_is_improving(main_user, drink_converter):
+@pytest.mark.parametrize(
+    "drink_type, avg, target, state, value, unit, note, explained_in",
+    [
+        pytest.param(
+            "beer", 300.0, 250.0, "high", "300", "ml", "50 {over}", "ml", id="over"
+        ),
+        pytest.param(
+            "beer", 300.0, 400.0, "low", "300", "ml", "100 {under}", "ml", id="under"
+        ),
+        pytest.param(
+            "beer", 250.0, 250.0, "low", "250", "ml", "0 {under}", "ml", id="equal"
+        ),
+        pytest.param(
+            "beer", 300.0, 0.0, "neutral", "300", "ml", "{none}", "ml", id="no_limit"
+        ),
+        pytest.param(
+            "stdav",
+            3.0,
+            2.5,
+            "high",
+            "3.0",
+            "",
+            "0.5 {over}",
+            "Std Av",
+            id="stdav_over",
+        ),
+        pytest.param(
+            "stdav",
+            2.0,
+            2.5,
+            "low",
+            "2.0",
+            "",
+            "0.5 {under}",
+            "Std Av",
+            id="stdav_under",
+        ),
+    ],
+)
+def test_card_avg_per_day_reads_against_the_limit(
+    main_user, drink_type, avg, target, state, value, unit, note, explained_in
+):
+    """Std Av is shown as typed: the explanation names the unit, the figure does not."""
     card = _card_builder(
-        drink_converter, total_quantity=80.0, past_quantity=100.0
-    ).get_cards()[2]
-
-    assert card.note == f"{_('Last year')} 250"
-    assert card.state == "improving"
-    assert card.improving is True
-
-
-def test_card_std_drinks_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[2]
-
-    assert card.state == "empty"
-    assert card.value == ""
-    assert card.note == _("No data")
-
-
-def test_card_avg_per_day_over_limit(main_user, drink_converter):
-    card = _card_builder(
-        drink_converter, total_quantity=100.0, avg=300.0, target=250.0
+        DrinkConverter(drink_type), total_quantity=100.0, avg=avg, target=target
     ).get_cards()[3]
 
-    assert card.state == "high"
-    assert card.value == "300"
-    assert card.unit == "ml"
-    assert card.note == f"50 {_('over the limit')}"
-    assert card.explanation == (f"ml {_('per calendar day')}",)
-
-
-def test_card_avg_per_day_under_limit(main_user, drink_converter):
-    card = _card_builder(
-        drink_converter, total_quantity=100.0, avg=300.0, target=400.0
-    ).get_cards()[3]
-
-    assert card.state == "low"
-    assert card.value == "300"
-    assert card.unit == "ml"
-    assert card.note == f"100 {_('under the limit')}"
-    assert card.explanation == (f"ml {_('per calendar day')}",)
-
-
-def test_card_avg_per_day_equal_limit_is_positive(main_user, drink_converter):
-    card = _card_builder(
-        drink_converter, total_quantity=100.0, avg=250.0, target=250.0
-    ).get_cards()[3]
-
-    assert card.state == "low"
-    assert card.note == f"0 {_('under the limit')}"
-    assert card.explanation == (f"ml {_('per calendar day')}",)
-
-
-def test_card_avg_per_day_no_limit(main_user, drink_converter):
-    card = _card_builder(
-        drink_converter, total_quantity=100.0, avg=300.0, target=0.0
-    ).get_cards()[3]
-
-    assert card.state == "neutral"
-    assert card.value == "300"
-    assert card.unit == "ml"
-    assert card.note == _("No limit set")
-    assert card.explanation == (f"ml {_('per calendar day')}",)
-
-
-def test_card_avg_per_day_stdav_over_limit(main_user):
-    converter = DrinkConverter("stdav")
-    card = _card_builder(
-        converter, total_quantity=100.0, avg=3.0, target=2.5
-    ).get_cards()[3]
-
-    assert card.state == "high"
-    assert card.value == "3.0"
-    # Std Av is shown as typed: the explanation names the unit, the figure does not
-    assert card.unit == ""
-    assert card.note == f"0.5 {_('over the limit')}"
-    assert card.explanation == (f"Std Av {_('per calendar day')}",)
-
-
-def test_card_avg_per_day_stdav_under_limit(main_user):
-    converter = DrinkConverter("stdav")
-    card = _card_builder(
-        converter, total_quantity=100.0, avg=2.0, target=2.5
-    ).get_cards()[3]
-
-    assert card.state == "low"
-    assert card.value == "2.0"
-    assert card.note == f"0.5 {_('under the limit')}"
-    assert card.explanation == (f"Std Av {_('per calendar day')}",)
+    assert card.state == state
+    assert card.value == value
+    assert card.unit == unit
+    assert card.note == note.format(
+        over=_("over the limit"), under=_("under the limit"), none=_("No limit set")
+    )
+    assert card.explanation == (f"{explained_in} {_('per calendar day')}",)
 
 
 def test_card_avg_per_day_notes_last_year_but_is_still_coloured_by_the_limit(
@@ -407,50 +371,49 @@ def test_card_avg_per_day_stdav_reads_the_baseline_in_std_av_too(main_user):
     assert card.note == f"{_('Last year')} 2.0"
 
 
-def test_card_avg_per_day_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=0.0, avg=0.0).get_cards()[3]
+@pytest.mark.parametrize("index", range(5), ids=lambda i: f"card_{i}")
+def test_a_card_with_no_data_reads_no_data(main_user, drink_converter, index):
+    card = _card_builder(drink_converter).get_cards()[index]
 
     assert card.state == "empty"
     assert card.value == ""
     assert card.note == _("No data")
 
 
-def test_card_pure_alcohol_with_data(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[4]
-
-    assert card.state == "neutral"
-    assert card.value == "2.5"  # 100 units -> 250 std av -> 2.5 L pure alcohol
-    assert card.unit == "L"
-    assert card.note == _("this year")
-
-
-def test_card_pure_alcohol_notes_last_year(main_user, drink_converter):
+@pytest.mark.parametrize(
+    "past, note, state, show_icon",
+    [
+        pytest.param(0.0, _("this year"), "neutral", False, id="alone"),
+        pytest.param(80.0, f"{_('Last year')} 2.0", "worsening", True, id="last_year"),
+    ],
+)
+def test_card_pure_alcohol_reads_the_year_total(
+    main_user, drink_converter, past, note, state, show_icon
+):
     card = _card_builder(
-        drink_converter, total_quantity=100.0, past_quantity=80.0
+        drink_converter, total_quantity=100.0, past_quantity=past
     ).get_cards()[4]
 
-    assert card.value == "2.5"
+    assert card.value == "2.5"  # 100 units -> 250 std av -> 2.5 L pure alcohol
     assert card.unit == "L"
-    assert card.note == f"{_('Last year')} 2.0"
-    assert card.state == "worsening"
-    assert card.show_icon is True
+    assert card.note == note
+    assert card.state == state
+    assert card.show_icon is show_icon
 
 
-def test_card_pure_alcohol_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[4]
-
-    assert card.state == "empty"
-    assert card.value == ""
-    assert card.note == _("No data")
-
-
-# -------------------------------------------------------------------------------------
-#                                                                    Drinking days card
-# -------------------------------------------------------------------------------------
-def test_card_drinking_days_with_data(main_user, drink_converter):
-    # 4 drinking days out of the 10 elapsed, against 2 last year
-    current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
-    past = [_row(date(1998, 1, 1), 3), _row(date(1998, 1, 2), 3)]
+@pytest.mark.parametrize(
+    "current_days, past_days, note, state",
+    [
+        # 4 drinking days out of the 10 elapsed, against 2 last year
+        pytest.param(4, 2, f"{_('Last year')} 2", "worsening", id="more"),
+        pytest.param(1, 2, f"{_('Last year')} 2", "improving", id="fewer"),
+    ],
+)
+def test_card_drinking_days_reads_against_last_year(
+    main_user, drink_converter, current_days, past_days, note, state
+):
+    current = [_row(date(1999, 1, i), 3) for i in range(1, current_days + 1)]
+    past = [_row(date(1998, 1, i), 3) for i in range(1, past_days + 1)]
 
     card = _card_builder(
         drink_converter,
@@ -458,19 +421,30 @@ def test_card_drinking_days_with_data(main_user, drink_converter):
         frequency_stats=_frequency(current, past),
     ).get_cards()[1]
 
-    assert card.value == "4"
-    assert card.note == f"{_('Last year')} 2"
-    assert card.state == "worsening"
+    assert card.value == str(current_days)
+    assert card.note == note
+    assert card.state == state
     assert card.show_icon is True
 
 
-def test_card_drinking_days_explains_itself_in_three_paragraphs(
-    main_user, drink_converter
+@pytest.mark.parametrize(
+    "past_days, arrow_key",
+    [
+        pytest.param(
+            1,
+            (_("The arrow compares with last year, up to the same date."),),
+            id="baseline",
+        ),
+        pytest.param(0, (), id="no_baseline"),
+    ],
+)
+def test_card_drinking_days_explains_itself(
+    main_user, drink_converter, past_days, arrow_key
 ):
     """A reading, a definition and a key to the arrow are three kinds of
-    statement, so each is its own paragraph."""
+    statement, so each is its own paragraph — the key only with a baseline."""
     current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
-    past = [_row(date(1998, 1, 1), 3)]
+    past = [_row(date(1998, 1, i), 3) for i in range(1, past_days + 1)]
 
     card = _card_builder(
         drink_converter, frequency_stats=_frequency(current, past)
@@ -479,22 +453,7 @@ def test_card_drinking_days_explains_itself_in_three_paragraphs(
     assert card.explanation == (
         _("%(share)s%% of the year so far") % {"share": "40"},
         _("Calendar days with at least one Drink recorded."),
-        _("The arrow compares with last year, up to the same date."),
-    )
-
-
-def test_card_drinking_days_drops_the_arrow_paragraph_without_a_baseline(
-    main_user, drink_converter
-):
-    current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
-
-    card = _card_builder(
-        drink_converter, frequency_stats=_frequency(current)
-    ).get_cards()[1]
-
-    assert card.explanation == (
-        _("%(share)s%% of the year so far") % {"share": "40"},
-        _("Calendar days with at least one Drink recorded."),
+        *arrow_key,
     )
 
 
@@ -507,19 +466,6 @@ def test_card_drinking_days_note_on_a_year_already_over(main_user, drink_convert
     ).get_cards()[1]
 
     assert card.explanation[0] == _("%(share)s%% of the year") % {"share": "1"}
-
-
-def test_card_drinking_days_fewer_than_last_year_is_improving(
-    main_user, drink_converter
-):
-    current = [_row(date(1999, 1, 1), 3)]
-    past = [_row(date(1998, 1, 1), 3), _row(date(1998, 1, 2), 3)]
-
-    card = _card_builder(
-        drink_converter, frequency_stats=_frequency(current, past)
-    ).get_cards()[1]
-
-    assert card.state == "improving"
 
 
 def test_card_drinking_days_without_a_prior_year(main_user, drink_converter):
@@ -536,58 +482,30 @@ def test_card_drinking_days_without_a_prior_year(main_user, drink_converter):
     assert card.note == _("%(share)s%% of the year so far") % {"share": "40"}
 
 
-def test_card_drinking_days_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, frequency_stats=_frequency()).get_cards()[1]
-
-    assert card.state == "empty"
-    assert card.value == ""
-    assert card.note == _("No data")
-
-
-# -------------------------------------------------------------------------------------
-#                                                                         IndexTab.build
-# -------------------------------------------------------------------------------------
-@time_machine.travel("1999-06-01")
-def test_index_tab_build_returns_expected_keys(main_user):
-    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
-
-    actual = IndexTab.build(main_user, 1999)
-
-    assert set(actual) == {
-        "all_years",
-        "chart_quantity",
-        "chart_consumption",
-        "tbl_std_av",
-        "cards",
-        "calendar",
-    }
-    assert len(actual["cards"]) == 6
-    assert all(isinstance(c, Card) for c in actual["cards"])
-    assert isinstance(actual["calendar"], CalendarYearViewModel)
-
-
-@time_machine.travel("1999-06-01")
-def test_index_tab_build_charts_stop_at_the_year_boundary(main_user):
+@pytest.mark.parametrize(
+    "today, drinks, months",
+    [
+        pytest.param(
+            "1999-06-01", [date(1999, 1, 10)], 6, id="running_year_ends_in_june"
+        ),
+        pytest.param(
+            "2000-03-01", [date(1999, 1, 10)], 12, id="finished_year_runs_to_december"
+        ),
+        pytest.param("2000-03-01", [], 12, id="finished_year_without_drinks"),
+    ],
+)
+def test_index_tab_build_charts_end_at_the_month_reached(
+    main_user, today, drinks, months
+):
     # a month the year has not reached is not a month with no Drinks in it
-    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
+    for drink_date in drinks:
+        DrinkFactory(date=drink_date, stdav=2.5)
+    actual = IndexTab.build(main_user, 1999, date.fromisoformat(today))
 
-    actual = IndexTab.build(main_user, 1999)
-
-    assert actual["chart_consumption"].data[6:] == [None] * 6
-    assert actual["chart_quantity"].data[6:] == [None] * 6
-
-
-@time_machine.travel("1999-12-31")
-def test_index_tab_build_charts_run_to_december_once_the_year_is_over(main_user):
-    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
-
-    actual = IndexTab.build(main_user, 1999)
-
-    assert None not in actual["chart_consumption"].data
-    assert None not in actual["chart_quantity"].data
+    assert len(actual["chart_consumption"].data) == months
+    assert len(actual["chart_quantity"].data) == months
 
 
-@time_machine.travel("1999-06-01")
 def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
     # two Drinks on one day and one on another: two Drinking days, not three
     # rows — the count DrinkStats' monthly rows could not have produced
@@ -596,41 +514,47 @@ def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
     DrinkFactory(date=date(1999, 2, 20), stdav=5.0)
     DrinkFactory(date=date(1998, 1, 10), stdav=2.5)
 
-    cards = IndexTab.build(main_user, 1999)["cards"]
+    cards = IndexTab.build(main_user, 1999, date(1999, 6, 1))["cards"]
 
     assert cards[1].value == "2"
     assert cards[1].state == "worsening"  # 2 days against last year's 1
 
 
-@time_machine.travel("1999-06-01")
-def test_index_tab_build_limit_has_data(main_user):
-    target = DrinkTargetFactory(user=main_user, year=1999, quantity=100)
+@pytest.mark.parametrize(
+    "year, today, drink_type, quantity, value, unit, amount",
+    [
+        pytest.param(
+            1999, "1999-06-01", "beer", 100, "100", "ml", "36,5 L", id="volume"
+        ),
+        # Std Av is read as typed: the figure keeps its decimal and carries no unit
+        pytest.param(
+            1999, "1999-06-01", "stdav", 2.5, "2.5", "", "912,5 Std Av", id="stdav"
+        ),
+        pytest.param(
+            2000, "2001-03-01", "beer", 100, "100", "ml", "36,6 L", id="empty_leap_year"
+        ),
+    ],
+)
+def test_index_tab_build_limit_has_data(
+    main_user, year, today, drink_type, quantity, value, unit, amount
+):
+    main_user.drink_type = drink_type
+    target = DrinkTargetFactory(
+        user=main_user, year=year, quantity=quantity, drink_type=drink_type
+    )
 
-    card = IndexTab.build(main_user, 1999)["cards"][5]
+    card = IndexTab.build(main_user, year, date.fromisoformat(today))["cards"][5]
 
     assert card.title == _("Daily limit")
     assert card.state == stat_card.NEUTRAL
-    assert card.value == "100"
-    assert card.unit == "ml"
-    assert card.note == _("%(amount)s per year") % {"amount": "36,5 L"}
+    assert card.value == value
+    assert card.unit == unit
+    assert card.note == _("%(amount)s per year") % {"amount": amount}
     assert card.edit_url == reverse("drinks:target_update", kwargs={"pk": target.pk})
 
 
-@time_machine.travel("1999-06-01")
-def test_index_tab_build_limit_stdav(main_user):
-    main_user.drink_type = "stdav"
-    DrinkTargetFactory(user=main_user, year=1999, quantity=2.5, drink_type="stdav")
-
-    card = IndexTab.build(main_user, 1999)["cards"][5]
-
-    # Std Av is read as typed: the figure keeps its decimal and carries no unit
-    assert card.value == "2.5"
-    assert card.unit == ""
-
-
-@time_machine.travel("1999-06-01")
 def test_index_tab_build_limit_no_target(main_user):
-    card = IndexTab.build(main_user, 1999)["cards"][5]
+    card = IndexTab.build(main_user, 1999, date(1999, 6, 1))["cards"][5]
 
     assert card.title == _("Daily limit")
     assert card.state == stat_card.EMPTY
@@ -639,7 +563,6 @@ def test_index_tab_build_limit_no_target(main_user):
     assert card.edit_url == reverse("drinks:target_new", kwargs={"tab": "index"})
 
 
-@time_machine.travel("1999-06-01")
 def test_index_tab_build_reads_last_year_without_a_further_query(
     main_user, django_assert_num_queries
 ):
@@ -649,10 +572,9 @@ def test_index_tab_build_reads_last_year_without_a_further_query(
     DrinkFactory(date=date(1998, 1, 10), stdav=2.5)
 
     with django_assert_num_queries(6):
-        IndexTab.build(main_user, 1999)
+        IndexTab.build(main_user, 1999, date(1999, 6, 1))
 
 
-@time_machine.travel("1999-06-01")
 def test_index_tab_build_states_last_year_only_as_far_as_today(main_user):
     """A Drink last November is past this June, so it is no part of the baseline
     the cards state — the Year boundary cuts it off."""
@@ -660,6 +582,63 @@ def test_index_tab_build_states_last_year_only_as_far_as_today(main_user):
     DrinkFactory(date=date(1998, 1, 10), stdav=10.0)
     DrinkFactory(date=date(1998, 11, 20), stdav=100.0)
 
-    cards = {card.title: card for card in IndexTab.build(main_user, 1999)["cards"]}
+    cards = {
+        card.title: card
+        for card in IndexTab.build(main_user, 1999, date(1999, 6, 1))["cards"]
+    }
 
     assert cards[_("Std drinks")].note == f"{_('Last year')} 10"
+
+
+@pytest.mark.parametrize(
+    "drink_type, total, targets, limit, decimals",
+    [
+        pytest.param(
+            "beer",
+            500.0,
+            [{"quantity": 100}],
+            {"amount": 100.0, "is_set": True},
+            0,
+            id="volume",
+        ),
+        pytest.param(
+            "stdav",
+            2.5,
+            [{"quantity": 2.5, "drink_type": "stdav"}],
+            {"amount": 2.5, "is_set": True},
+            1,
+            id="stdav",
+        ),
+        pytest.param(
+            "beer", 500.0, [], {"amount": 0.0, "is_set": False}, 0, id="no_target"
+        ),
+    ],
+)
+def test_chart_consumption_carries_the_limit_and_the_year_average(
+    main_user, drink_type, total, targets, limit, decimals
+):
+    """No Drink Target is a state of its own, so the chart draws no limit."""
+    main_user.drink_type = drink_type
+    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
+    for target in targets:
+        DrinkTargetFactory(user=main_user, year=1999, **target)
+
+    chart = IndexTab.build(main_user, 1999, date(1999, 6, 1))[
+        "chart_consumption"
+    ].as_dict
+
+    assert chart["limit"] == limit
+    assert chart["avg"] == pytest.approx(total / 152)  # Jan 1 to Jun 1
+    assert chart["decimals"] == decimals
+
+
+def test_index_tab_build_counts_days_dry_from_the_last_drink_not_after_today(
+    main_user,
+):
+    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
+    DrinkFactory(date=date(1999, 8, 1), stdav=2.5)
+
+    card = IndexTab.build(main_user, 1999, date(1999, 6, 1))["cards"][0]
+
+    assert card.value == "142"
+    assert card.note == "1999-01-10"

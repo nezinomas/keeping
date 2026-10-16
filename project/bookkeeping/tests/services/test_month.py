@@ -1,164 +1,141 @@
+from dataclasses import replace
 from datetime import date
 
 import pytest
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
+from ....expenses.tests.factories import ExpenseTypeFactory
+from ....plans.lib.calc_day_sum import CalcRow, DataDto, InputRow
 from ...services.month.builders import ChartBuilder, InfoBuilder, MonthTableBuilder
 from ...services.month.dtos import InfoState, MonthDataDTO
-from ...services.month.presenters import MonthContextPresenter
+from ...services.month.presenters import MonthContextPresenter, load_service
+from ...services.month.providers import MonthDataProvider
 
-MONTH_SERVICE_PATH = "project.bookkeeping.services.month"
+PLAN_MONTHS = range(1, 13)
+TODAY = date(2026, 4, 2)
 
 
-# Fixtures
-@pytest.fixture
-def dummy_dto():
-    """A static payload representing the data fetched from the DB."""
+@pytest.fixture(name="month_dto")
+def fixture_month_dto():
+    plans = DataDto(
+        incomes=[{"month": m, "amount": 3000} for m in PLAN_MONTHS],
+        expenses_regular=[],
+        expenses_necessary=[{"month": m, "amount": 200} for m in PLAN_MONTHS],
+        savings=[],
+        per_day=[{"month": m, "amount": 10 * m} for m in PLAN_MONTHS],
+        necessary=[{"month": m, "amount": 100} for m in PLAN_MONTHS],
+        month_len=[{"month": m, "amount": 30} for m in PLAN_MONTHS],
+    )
     return MonthDataDTO(
         incomes=1000,
-        expenses=[{"date": "2026-04-01", "Food": 10}],
-        expense_types=["Food"],
-        necessary_expense_types=["Food"],
-        savings=[{"date": "2026-04-01", "savings": 50}],
-        plans_data={"dummy_plan_key": "dummy_plan_value"},
+        expenses=[
+            {"date": date(2026, 4, 1), "title": "Food", "sum": 10, "exception_sum": 0},
+            {"date": date(2026, 4, 1), "title": "Rent", "sum": 500, "exception_sum": 0},
+        ],
+        expense_types=["Food", "Rent"],
+        necessary_expense_types=["Rent"],
+        savings=[{"date": date(2026, 4, 1), "sum": 50, "title": "savings"}],
+        plans_data=plans,
         targets={"Food": 100},
     )
 
 
-def test_chart_expenses_context():
-    totals = {"xyz": 10, "Taupymas": 1}
-    targets = {"xyz": 6, "Taupymas": 9}
-    obj = ChartBuilder(targets, totals)
-
-    actual = obj.build_expenses()
-
-    assert len(actual) == 2
-    assert actual[0]["name"] == "XYZ"
-    assert actual[1]["name"] == "TAUPYMAS"
-
-
-def test_chart_expenses():
-    totals = {"T1": 25, "T2": 50}
-    obj = ChartBuilder(totals=totals, targets={})
-
-    actual = obj.build_expenses()
-
-    expect = [
-        {"name": "T2", "y": 50},
-        {"name": "T1", "y": 25},
-    ]
-
-    assert actual == expect
-
-
-def test_chart_expenses_colors_shorter_then_data():
-    totals = {"T1": 2, "T2": 5, "T3": 1}
-    obj = ChartBuilder(targets={}, totals=totals)
-
-    actual = obj.build_expenses()
-
-    expect = [
-        {"name": "T2", "y": 5},
-        {"name": "T1", "y": 2},
-        {"name": "T3", "y": 1},
-    ]
+@pytest.mark.parametrize(
+    "targets, totals, expect",
+    [
+        pytest.param(
+            {"xyz": 6, "Taupymas": 9},
+            {"xyz": 10, "Taupymas": 1},
+            [{"name": "XYZ", "y": 10}, {"name": "TAUPYMAS", "y": 1}],
+            id="upper_case_names",
+        ),
+        pytest.param(
+            {},
+            {"T1": 25, "T2": 50},
+            [{"name": "T2", "y": 50}, {"name": "T1", "y": 25}],
+            id="sorted_two",
+        ),
+        pytest.param(
+            {},
+            {"T1": 2, "T2": 5, "T3": 1},
+            [
+                {"name": "T2", "y": 5},
+                {"name": "T1", "y": 2},
+                {"name": "T3", "y": 1},
+            ],
+            id="sorted_three",
+        ),
+        pytest.param({}, {}, [], id="no_data"),
+    ],
+)
+def test_chart_expenses(targets, totals, expect):
+    actual = ChartBuilder(targets=targets, totals=totals).build_expenses()
 
     assert actual == expect
 
 
-def test_chart_expenses_no_expenes_data():
-    obj = ChartBuilder(targets={}, totals={})
+def test_build_targets_without_data():
+    actual = ChartBuilder(targets={}, totals={}).build_targets()
 
-    actual = obj.build_expenses()
-
-    assert actual == []
-
-
-def test_build_targets_context():
-    obj = ChartBuilder(targets={}, totals={})
-    actual = obj.build_targets()
-
-    assert "categories" in actual
-    assert "target" in actual
-    assert "targetTitle" in actual
-    assert "fact" in actual
-    assert "factTitle" in actual
+    assert actual == {
+        "categories": [],
+        "target": [],
+        "targetTitle": "Planas",
+        "fact": [],
+        "factTitle": "Faktas",
+        "max_category_len": 0,
+    }
 
 
-def test_build_targets_context_with_savings():
-    totals = {"xxx": 6, "Taupymas": 99}
-    targets = {"xxx": 6, "Taupymas": 9}
-    obj = ChartBuilder(targets, totals)
-    actual = obj.build_targets()
+@pytest.mark.parametrize(
+    "targets, totals, categories, target, fact, max_category_len",
+    [
+        pytest.param(
+            {"xxx": 6, "Taupymas": 9},
+            {"xxx": 6, "Taupymas": 99},
+            ["TAUPYMAS", "XXX"],
+            [9, 6],
+            [{"y": 99, "target": 9}, {"y": 6, "target": 6}],
+            8,
+            id="upper_case_names",
+        ),
+        pytest.param(
+            {"T1": 3, "T2": 4},
+            {"T1": 2, "T2": 5},
+            ["T2", "T1"],
+            [4, 3],
+            [{"y": 5, "target": 4}, {"y": 2, "target": 3}],
+            2,
+            id="sorted_by_total",
+        ),
+        pytest.param(
+            {},
+            {"T1": 2, "T2": 5},
+            ["T2", "T1"],
+            [0, 0],
+            [{"y": 5, "target": 0}, {"y": 2, "target": 0}],
+            2,
+            id="no_targets",
+        ),
+        pytest.param(
+            {},
+            {"savings": 5, "ab": 1},
+            ["TAUPYMAS", "AB"],
+            [0, 0],
+            [{"y": 5, "target": 0}, {"y": 1, "target": 0}],
+            8,
+            id="translated_savings_name",
+        ),
+    ],
+)
+def test_build_targets(targets, totals, categories, target, fact, max_category_len):
+    actual = ChartBuilder(targets, totals).build_targets()
 
-    assert actual["categories"] == ["TAUPYMAS", "XXX"]
-    assert actual["target"] == [9, 6]
-    assert actual["fact"] == [{"y": 99, "target": 9}, {"y": 6, "target": 6}]
-
-
-def test_build_targets_categories():
-    totals = {"T1": 2, "T2": 5}
-    targets = {"T1": 3, "T2": 4}
-
-    obj = ChartBuilder(targets, totals)
-
-    actual = obj.build_targets()
-
-    expect = ["T2", "T1"]
-
-    assert actual["categories"] == expect
-
-
-def test_build_targets_data_target():
-    totals = {"T1": 2, "T2": 5}
-    targets = {"T1": 3, "T2": 4}
-
-    obj = ChartBuilder(targets, totals)
-
-    actual = obj.build_targets()
-
-    assert actual["target"] == [4, 3]
-
-
-def test_build_targets_data_target_empty():
-    totals = {"T1": 2, "T2": 5}
-    targets = {}
-    obj = ChartBuilder(targets, totals)
-
-    actual = obj.build_targets()
-
-    assert actual["target"] == [0, 0]
-
-
-def test_build_targets_data_fact():
-    totals = {"T1": 2, "T2": 5}
-    targets = {"T1": 3, "T2": 4}
-    obj = ChartBuilder(targets, totals)
-
-    actual = obj.build_targets()
-
-    expect = [
-        {"y": 5, "target": 4},
-        {"y": 2, "target": 3},
-    ]
-
-    assert actual["fact"] == expect
-
-
-def test_build_targets_data_fact_no_target():
-    totals = {"T1": 2, "T2": 5}
-    targets = {}
-    obj = ChartBuilder(targets, totals)
-
-    actual = obj.build_targets()
-
-    expect = [
-        {"y": 5, "target": 0},
-        {"y": 2, "target": 0},
-    ]
-
-    assert actual["fact"] == expect
+    assert actual["categories"] == categories
+    assert actual["target"] == target
+    assert actual["fact"] == fact
+    assert actual["max_category_len"] == max_category_len
 
 
 @pytest.fixture(name="df_expense")
@@ -245,86 +222,47 @@ def test_info_builder_delta():
     }
 
 
-# MonthContextPresenter Tests
+def test_plans_property(month_dto):
+    plans = MonthContextPresenter(2026, 4, month_dto, TODAY).plans
+
+    assert plans.row(InputRow.DAY_PLAN) == 40
+    assert plans.row(CalcRow.EXPENSES_FREE) == 2700
 
 
-def test_presenter_init(dummy_dto):
-    """Proves the constructor only assigns state and does not trigger heavy logic."""
-    presenter = MonthContextPresenter(2026, 4, dummy_dto)
-
-    assert presenter.year == 2026
-    assert presenter.month == 4
-    assert presenter.dto == dummy_dto
-
-
-def test_month_table_property(mocker, dummy_dto):
-    """Proves MakeDataFrame and MonthTableBuilder are initialized correctly."""
-    # Mock the external dependencies
-    mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.MakeDataFrame")
-    mock_table_builder = mocker.patch(
-        f"{MONTH_SERVICE_PATH}.presenters.MonthTableBuilder"
+def test_info_context_plan_state(month_dto):
+    plans = replace(
+        month_dto.plans_data,
+        savings=[{"month": m, "amount": 70} for m in PLAN_MONTHS],
     )
+    dto = replace(month_dto, plans_data=plans)
 
-    presenter = MonthContextPresenter(2026, 4, dummy_dto)
-    _ = presenter.month_table  # Trigger the cached property
+    actual = MonthContextPresenter(2026, 4, dto, TODAY).info_context["plan"]
 
-    # Ensure DataFrames were generated for both expenses and savings
-    assert mock_make_df.for_month.call_count == 2
-    mock_table_builder.assert_called_once()
-
-
-def test_plans_property(mocker, dummy_dto):
-    """Proves PlanCalculateDaySum is initialized directly with DTO data."""
-    # We no longer need to mock PlanCollectData!
-    mock_calc = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.PlanCalculateDaySum")
-
-    presenter = MonthContextPresenter(2026, 4, dummy_dto)
-    result = presenter.plans
-
-    # Verify the calculator receives the exact data stored in the DTO
-    mock_calc.assert_called_once_with(
-        data={"dummy_plan_key": "dummy_plan_value"}, month=4
-    )
-    assert result == mock_calc.return_value
+    assert actual == {
+        "income": 3000,
+        "saving": 70,
+        "expense": 2930,
+        "per_day": 40,
+        "balance": 2630 - 40 * 30,
+    }
 
 
-def test_spending_property(mocker, dummy_dto):
-    """Proves DaySpending is initialized with the correct plan parameters."""
-    mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.MakeDataFrame")
-    mock_day_spending = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.DaySpending")
+def test_spending_property(month_dto):
+    spending = MonthContextPresenter(2026, 4, month_dto, TODAY).spending
 
-    # Mock the 'plans' cached property so we don't trigger its real logic
-    mock_plans = mocker.Mock(day_input=15, expenses_free=200)
-    mocker.patch.object(
-        MonthContextPresenter,
-        "plans",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_plans,
-    )
-
-    presenter = MonthContextPresenter(2026, 4, dummy_dto)
-    result = presenter.spending
-
-    mock_day_spending.assert_called_once_with(
-        expense=mock_make_df.for_month.return_value,
-        necessary=["Food"],
-        per_day=15,
-        free=200,
-    )
-    mock_make_df.for_month.assert_called_once_with(
-        year=2026,
-        month=4,
-        data=dummy_dto.expenses,
-        columns=dummy_dto.expense_types,
-    )
-    assert result == mock_day_spending.return_value
+    assert spending.spending[0] == {
+        "date": date(2026, 4, 1),
+        "total": 10,
+        "day": 30,
+        "teoretical": 2660,
+        "real": 2690,
+        "full": 30,
+    }
 
 
-def test_totals_property(mocker, dummy_dto):
-    """Proves dictionary keys are accessed safely and mapped correctly."""
-    presenter = MonthContextPresenter(2026, 4, dummy_dto)
+def test_totals_property(mocker, month_dto):
+    presenter = MonthContextPresenter(2026, 4, month_dto, TODAY)
 
-    # Mock the 'month_table' and 'spending' properties
     mock_month_table = mocker.Mock()
     mock_month_table.total_row = {"total": 400, "savings": 50}
 
@@ -346,16 +284,15 @@ def test_totals_property(mocker, dummy_dto):
     actual = presenter.totals
 
     assert actual == {
-        "income": 1000,  # From DTO
-        "expense": 400,  # From table total_row
-        "saving": 50,  # From table total_row
-        "avg_per_day": 12,  # From spending
+        "income": 1000,
+        "expense": 400,
+        "saving": 50,
+        "avg_per_day": 12,
     }
 
 
-def test_tables_property(mocker, dummy_dto):
-    """Proves the tables dictionary is built from the nested properties."""
-    presenter = MonthContextPresenter(2026, 4, dummy_dto)
+def test_tables_property(mocker, month_dto):
+    presenter = MonthContextPresenter(2026, 4, month_dto, TODAY)
 
     mock_month_table = mocker.Mock(table=["main_data"], total_row={"total": 10})
     mock_spending = mocker.Mock(spending=["spending_data"])
@@ -380,26 +317,36 @@ def test_tables_property(mocker, dummy_dto):
     }
 
 
-def test_charts_property(mocker, dummy_dto):
-    """Proves the ChartBuilder receives targets directly from the DTO."""
-    mock_chart_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.ChartBuilder")
+def test_charts_property(month_dto):
+    charts = MonthContextPresenter(2026, 4, month_dto, TODAY).charts
 
-    # Presenter initialized without a user!
-    presenter = MonthContextPresenter(2026, 4, dummy_dto)
+    assert charts.build_targets()["fact"] == [
+        {"y": 500, "target": 0},
+        {"y": 50, "target": 0},
+        {"y": 10, "target": 100},
+    ]
 
-    mock_month_table = mocker.Mock(total_row={"total": 10})
-    mocker.patch.object(
-        MonthContextPresenter,
-        "month_table",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_month_table,
-    )
 
-    result = presenter.charts
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "today, expect",
+    [
+        pytest.param(date(1999, 12, 7), 7, id="the_users_month_is_running"),
+        pytest.param(date(2000, 1, 1), 0, id="the_users_month_is_over"),
+    ],
+)
+def test_month_table_marks_todays_day(main_user, today, expect):
+    actual = load_service(main_user, today)
 
-    # We no longer need to mock PlanAggregatorService because it is handled by the DTO
-    mock_chart_builder.assert_called_once_with(
-        targets={"Food": 100},  # Pulls directly from dummy_dto.targets
-        totals={"total": 10},
-    )
-    assert result == mock_chart_builder.return_value
+    assert actual["month_table"]["day"] == expect
+
+
+@pytest.mark.django_db
+def test_provider_reads_the_necessary_expense_types_apart(main_user):
+    ExpenseTypeFactory(title="Food")
+    ExpenseTypeFactory(title="Rent", necessary=True)
+
+    actual = MonthDataProvider(main_user).get_data()
+
+    assert sorted(actual.expense_types) == ["Food", "Rent"]
+    assert actual.necessary_expense_types == ["Rent"]

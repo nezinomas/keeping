@@ -1,6 +1,6 @@
 from django import forms
+from django.template.loader import render_to_string
 from django.urls import reverse
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
@@ -8,12 +8,24 @@ from ..core.lib.convert_price import NeverEmptyFormMixin, PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
+from ..core.lib.utils import int_or_zero
 from ..core.mixins.forms import YearBetweenMixin
 from ..savings.services.model_services import (
     SavingTypeModelService,
 )
 from .close_rules import CloseBox
 from .models import SavingChange, SavingClose, Transaction
+
+
+def set_to_account_choices(form, service):
+    """Every item of the service but the move's from_account."""
+    to_account = form.fields["to_account"]
+    to_account.queryset = service.none()
+
+    if from_account_pk := (
+        int_or_zero(form.data.get("from_account")) or form.instance.from_account_id
+    ):
+        to_account.queryset = service.items().exclude(pk=from_account_pk)
 
 
 class TransactionForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
@@ -27,7 +39,8 @@ class TransactionForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "from_account", "to_account", "price"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -39,21 +52,13 @@ class TransactionForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["date"].widget = DatePickerWidget()
 
         self.fields["price"].label = _("Amount")
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
     def _overwrite_default_queries(self):
         account = AccountModelService(self.user)
 
-        from_account = self.fields["from_account"]
-        to_account = self.fields["to_account"]
-
-        from_account.queryset = account.items()
-        to_account.queryset = account.none()
-
-        _from = getattr(self.instance, "from_account", None)
-        _from_pk = getattr(_from, "pk", None)
-        if from_account_pk := self.data.get("from_account") or _from_pk:
-            to_account.queryset = account.items().exclude(pk=from_account_pk)
+        self.fields["from_account"].queryset = account.items()
+        set_to_account_choices(self, account)
 
     def _set_htmx_attributes(self):
         url = reverse("accounts:load")
@@ -71,6 +76,15 @@ class TransactionForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
 
 class CloseFromAccountMixin:
     """Closes or reopens the from-fund with the form's `close` checkbox."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["close"].label = render_to_string(
+            "transactions/includes/close_label.html"
+        )
+        if self.instance.from_account_id and self.instance.from_account.closed:
+            self.fields["close"].initial = True
 
     def save(self, *args, **kwargs):
         previous_fund, previous_date = self._previous_move()
@@ -112,20 +126,17 @@ class SavingCloseForm(
     field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
         self._overwrite_default_queries()
         self._translate_fields()
 
-        # if from_account is closed, update close checkbox value
-        if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
-            self.fields["close"].initial = True
-
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
     def _overwrite_default_queries(self):
         self.fields["from_account"].queryset = SavingTypeModelService(self.user).items()
@@ -138,9 +149,6 @@ class SavingCloseForm(
         self.fields["date"].label = _("Date")
         self.fields["from_account"].label = _("From account")
         self.fields["to_account"].label = _("To account")
-        self.fields["close"].label = mark_safe(
-            f"{_('Close')} <b>{_('From account')}</b>"
-        )
 
 
 class SavingChangeForm(
@@ -164,7 +172,8 @@ class SavingChangeForm(
     field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -172,29 +181,16 @@ class SavingChangeForm(
         self._set_htmx_attributes()
         self._translate_fields()
 
-        # if from_account is closed, update close checkbox value
-        if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
-            self.fields["close"].initial = True
-
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
 
-        # initial values
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
     def _overwrite_default_queries(self):
-        from_account = self.fields["from_account"]
-        to_account = self.fields["to_account"]
-
         saving_model = SavingTypeModelService(self.user)
 
-        from_account.queryset = saving_model.items()
-        to_account.queryset = saving_model.none()
-
-        _from = getattr(self.instance, "from_account", None)
-        _from_pk = getattr(_from, "pk", None)
-        if from_account_pk := self.data.get("from_account") or _from_pk:
-            to_account.queryset = saving_model.items().exclude(pk=from_account_pk)
+        self.fields["from_account"].queryset = saving_model.items()
+        set_to_account_choices(self, saving_model)
 
     def _set_htmx_attributes(self):
         url = reverse("transactions:load_saving_type")
@@ -211,6 +207,3 @@ class SavingChangeForm(
         self.fields["date"].label = _("Date")
         self.fields["from_account"].label = _("From account")
         self.fields["to_account"].label = _("To account")
-        self.fields["close"].label = mark_safe(
-            f"{_('Close')} <b>{_('From account')}</b>"
-        )

@@ -1,362 +1,150 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+from zoneinfo import ZoneInfo
 
 import pytest
-import time_machine
 
 from ....accounts.tests.factories import AccountFactory
 from ....pensions.tests.factories import PensionTypeFactory
 from ...forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
+from ...services.model_services import SavingWorthModelService
 from ..factories import SavingTypeFactory
+from ..helper import worth_form
 
 pytestmark = pytest.mark.django_db
 
-
-# -------------------------------------------------------------------------------------
-#                                                                          Saving Worth
-# -------------------------------------------------------------------------------------
-def test_saving_worth_init(main_user):
-    SavingWorthForm(user=main_user)
+TODAY = date(1999, 2, 2)
+NOW = datetime(1999, 2, 2, 3, 2, 1, tzinfo=timezone.utc)
 
 
-def test_saving_worth_init_fields(main_user):
-    form = SavingWorthForm(user=main_user).as_p()
+WORTH_FORMS = pytest.mark.parametrize(
+    "form_class, factory, field",
+    [
+        pytest.param(SavingWorthForm, SavingTypeFactory, "saving_type", id="saving"),
+        pytest.param(AccountWorthForm, AccountFactory, "account", id="account"),
+        pytest.param(
+            PensionWorthForm, PensionTypeFactory, "pension_type", id="pension"
+        ),
+    ],
+)
+
+
+@WORTH_FORMS
+def test_worth_form_fields(main_user, form_class, factory, field):
+    form = worth_form(form_class, main_user, today=TODAY, now=NOW).as_p()
 
     assert '<input type="text" name="price"' in form
-    assert '<select name="saving_type"' in form
+    assert f'<select name="{field}"' in form
 
 
-def test_saving_worth_current_user_types(main_user, second_user):
-    SavingTypeFactory(title="T1")  # user bob, current user
-    SavingTypeFactory(title="T2", journal=second_user.journal)  # user tom
+@WORTH_FORMS
+@pytest.mark.parametrize(
+    "price, cents",
+    [
+        pytest.param("0.01", 1, id="a_cent"),
+        pytest.param("12,1", 1210, id="decimal_comma"),
+        pytest.param("0", 0, id="reset"),
+    ],
+)
+def test_worth_form_valid_data(main_user, form_class, factory, field, price, cents):
+    related = factory()
 
-    form = SavingWorthForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form
-
-
-@time_machine.travel("1999-2-2 03:02:01")
-def test_saving_worth_valid_data(main_user):
-    t = SavingTypeFactory()
-
-    form = SavingWorthForm(
-        user=main_user,
-        data={
-            "date": "1999-1-2",
-            "price": "0.01",
-            "saving_type": t.pk,
-        },
+    form = worth_form(
+        form_class,
+        main_user,
+        today=TODAY,
+        now=NOW,
+        data={"date": "1999-1-2", "price": price, field: related.pk},
     )
-    assert form.is_valid()
+    assert form.is_valid(), form.errors
 
     data = form.save()
 
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
-    assert data.price == 1
-    assert data.saving_type.title == t.title
+    assert data.price == cents
+    assert data.serializable_value(field) == related.pk
 
 
-@time_machine.travel("1999-2-2 03:02:01")
-def test_saving_worth_price_accepts_a_decimal_comma(main_user):
-    t = SavingTypeFactory()
+@WORTH_FORMS
+def test_worth_form_date_starts_at_today_in_the_users_year(
+    main_user, form_class, factory, field
+):
+    form = worth_form(form_class, main_user, today=date(2005, 3, 4), now=NOW)
 
-    form = SavingWorthForm(
-        user=main_user,
-        data={"date": "1999-1-2", "price": "12,1", "saving_type": t.pk},
-    )
-
-    assert form.is_valid(), form.errors
-    assert form.save().price == 1210
+    assert form["date"].value() == datetime(main_user.year, 3, 4)
 
 
-@time_machine.travel("1999-2-2 03:02:01")
-def test_saving_worth_valid_data_reset(main_user):
-    t = SavingTypeFactory()
-
-    form = SavingWorthForm(
-        user=main_user,
-        data={
-            "date": "1999-1-2",
-            "price": "0",
-            "saving_type": t.pk,
-        },
-    )
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.price == 0
-
-
-def test_saving_blank_data(main_user):
-    form = SavingWorthForm(user=main_user, data={})
+@WORTH_FORMS
+def test_worth_form_blank_data(main_user, form_class, factory, field):
+    form = worth_form(form_class, main_user, today=TODAY, now=NOW, data={})
 
     assert not form.is_valid()
 
-    assert "saving_type" in form.errors
-
-
-def test_saving_form_type_closed_in_past(main_user):
-    main_user.year = 3000
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingWorthForm(user=main_user)
-
-    assert "S1" in str(form["saving_type"])
-    assert "S2" not in str(form["saving_type"])
-
-
-def test_saving_form_type_closed_in_future(main_user):
-    main_user.year = 1000
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingWorthForm(user=main_user)
-
-    assert "S1" in str(form["saving_type"])
-    assert "S2" in str(form["saving_type"])
-
-
-def test_saving_form_type_closed_in_current_year(main_user):
-    main_user.year = 2000
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingWorthForm(user=main_user)
-
-    assert "S1" in str(form["saving_type"])
-    assert "S2" in str(form["saving_type"])
+    assert field in form.errors
 
 
 @pytest.mark.parametrize(
-    "closed, date, valid",
+    "form_class, factory, field, message",
     [
-        ("1999", "2000-1-1", False),
-        ("1999", "1999-12-31", True),
-        ("1999", "1998-12-31", True),
+        pytest.param(
+            SavingWorthForm,
+            SavingTypeFactory,
+            "saving_type",
+            "Fondas uždarytas 1999.",
+            id="saving",
+        ),
+        pytest.param(
+            AccountWorthForm,
+            AccountFactory,
+            "account",
+            "Sąskaita uždaryta 1999.",
+            id="account",
+        ),
     ],
 )
-def test_saving_worth_account_closed_date(closed, date, valid, main_user):
-    a = SavingTypeFactory(closed=closed)
-
-    form = SavingWorthForm(
-        user=main_user,
-        data={
-            "date": date,
-            "price": "1.0",
-            "saving_type": a.pk,
-        },
-    )
-
-    if valid:
-        assert form.is_valid()
-    else:
-        assert not form.is_valid()
-        assert "date" in form.errors
-        assert form.errors["date"][0] == "Sąskaita uždaryta 1999."
-
-
-# -------------------------------------------------------------------------------------
-#                                                                         Account Worth
-# -------------------------------------------------------------------------------------
-def test_account_worth_init(main_user):
-    AccountWorthForm(user=main_user)
-
-
-def test_account_worth_init_fields(main_user):
-    form = AccountWorthForm(user=main_user).as_p()
-
-    assert '<input type="text" name="price"' in form
-    assert '<select name="account"' in form
-
-
-def test_account_worth_current_user_types(main_user, second_user):
-    AccountFactory(title="T1")  # user bob, current user
-    AccountFactory(title="T2", journal=second_user.journal)  # user tom
-
-    form = AccountWorthForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form
-
-
-@time_machine.travel("1999-01-02 03:02:01")
-def test_account_worth_valid_data(main_user):
-    a = AccountFactory()
-
-    form = AccountWorthForm(
-        user=main_user,
-        data={
-            "date": "1999-1-2",
-            "price": "0.01",
-            "account": a.pk,
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
-    assert data.price == 1
-    assert data.account.title == a.title
-
-
-@time_machine.travel("1999-01-02 03:02:01")
-def test_account_worth_price_accepts_a_decimal_comma(main_user):
-    a = AccountFactory()
-
-    form = AccountWorthForm(
-        user=main_user,
-        data={"date": "1999-1-2", "price": "12,1", "account": a.pk},
-    )
-
-    assert form.is_valid(), form.errors
-    assert form.save().price == 1210
-
-
-@time_machine.travel("1999-01-02 03:02:01")
-def test_account_worth_valid_data_reset(main_user):
-    a = AccountFactory()
-
-    form = AccountWorthForm(
-        user=main_user,
-        data={
-            "date": "1999-1-2",
-            "price": "0",
-            "account": a.pk,
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.price == 0
-
-
-def test_account_worth_blank_data(main_user):
-    form = AccountWorthForm(user=main_user, data={})
-
-    assert not form.is_valid()
-
-    assert "account" in form.errors
-
-
 @pytest.mark.parametrize(
-    "closed, date, valid",
+    "date, closed_error",
     [
-        ("1999", "2000-1-1", False),
-        ("1999", "1999-12-31", True),
-        ("1999", "1998-12-31", True),
+        pytest.param("2000-1-1", True, id="after_closed"),
+        pytest.param("1999-12-31", False, id="closed_year"),
+        pytest.param("1998-12-31", False, id="before_closed"),
     ],
 )
-def test_account_worth_account_closed_date(closed, date, valid, main_user):
-    a = AccountFactory(closed=closed)
+def test_worth_form_date_after_the_fund_closed(
+    main_user, form_class, factory, field, message, date, closed_error
+):
+    fund = factory(closed=1999)
 
-    form = AccountWorthForm(
-        user=main_user,
-        data={
-            "date": date,
-            "price": "1.0",
-            "account": a.pk,
-        },
+    form = worth_form(
+        form_class,
+        main_user,
+        today=TODAY,
+        now=NOW,
+        data={"date": date, "price": "1.0", field: fund.pk},
     )
 
-    if valid:
-        assert form.is_valid()
-    else:
-        assert not form.is_valid()
-        assert "date" in form.errors
-        assert form.errors["date"][0] == "Sąskaita uždaryta 1999."
+    assert form.is_valid() is not closed_error
+    assert form.errors.get("date", []) == ([message] if closed_error else [])
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         Pension Worth
-# -------------------------------------------------------------------------------------
-def test_pension_worth_init(main_user):
-    PensionWorthForm(user=main_user)
-
-
-def test_pension_worth_init_fields(main_user):
-    form = PensionWorthForm(user=main_user).as_p()
-
-    assert '<input type="text" name="price"' in form
-    assert '<select name="pension_type"' in form
-
-
-def test_pension_worth_current_user_types(main_user, second_user):
-    PensionTypeFactory(title="T1")  # user bob, current user
-    PensionTypeFactory(title="T2", journal=second_user.journal)  # user tom
-
-    form = PensionWorthForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form
-
-
-@time_machine.travel("1999-12-12 3:2:1")
-def test_pension_worth_valid_data(main_user):
-    p = PensionTypeFactory()
-
-    form = PensionWorthForm(
-        user=main_user,
-        data={
-            "date": "1999-1-2",
-            "price": "0.01",
-            "pension_type": p.pk,
-        },
+@pytest.mark.parametrize("picked", ["2000-01-01", "1999-12-31"])
+@pytest.mark.parametrize(
+    "clock",
+    [
+        datetime(2000, 1, 1, 0, 30, tzinfo=ZoneInfo("Europe/Vilnius")),
+        datetime(1999, 12, 31, 23, 30, tzinfo=ZoneInfo("Europe/Vilnius")),
+    ],
+)
+def test_a_worth_counts_in_the_year_it_was_picked_for(picked, clock, main_user):
+    form = worth_form(
+        SavingWorthForm,
+        main_user,
+        today=TODAY,
+        now=clock.astimezone(timezone.utc),
+        data={"date": picked, "price": "1", "saving_type": SavingTypeFactory().pk},
     )
-
     assert form.is_valid()
+    form.save()
 
-    data = form.save()
+    actual = SavingWorthModelService(main_user).have()
 
-    assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
-    assert data.price == 1
-    assert data.pension_type.title == p.title
-
-
-@time_machine.travel("1999-12-12 3:2:1")
-def test_pension_worth_price_accepts_a_decimal_comma(main_user):
-    p = PensionTypeFactory()
-
-    form = PensionWorthForm(
-        user=main_user,
-        data={"date": "1999-1-2", "price": "12,1", "pension_type": p.pk},
-    )
-
-    assert form.is_valid(), form.errors
-    assert form.save().price == 1210
-
-
-@time_machine.travel("1999-12-12 3:2:1")
-def test_pension_worth_valid_data_reset(main_user):
-    p = PensionTypeFactory()
-
-    form = PensionWorthForm(
-        user=main_user,
-        data={
-            "date": "1999-1-2",
-            "price": "0",
-            "pension_type": p.pk,
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.price == 0
-
-
-def test_pension_worth_blank_data(main_user):
-    form = PensionWorthForm(user=main_user, data={})
-
-    assert not form.is_valid()
-
-    assert "pension_type" in form.errors
+    assert [x["year"] for x in actual] == [int(picked[:4])]

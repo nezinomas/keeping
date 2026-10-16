@@ -98,7 +98,7 @@ def load_service(
             title=title,
             url_title=url_title,
             dto=dto,
-            year=user.year,
+            year=user.selected_year(),
             order=order,
             url=url,
         ):

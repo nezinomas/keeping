@@ -1,38 +1,32 @@
 from collections import defaultdict
+from collections.abc import Callable, Hashable, Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
-from django.db.models import F, Sum
+from django.db.models import F, QuerySet, Sum
 from django.utils.translation import gettext_lazy as _
 
+from ...core.lib.table_columns import SAVINGS
 from ...core.services.model_services import DatedModelService
-from ...expenses.services.model_services import ExpenseTypeModelService
 from .. import models
 
 
-class CommonMethodsMixin:
+class PlanModelService(DatedModelService):
     def year(self, year):
         return self.objects.filter(year=year)
 
     def items(self):
         return self.objects
 
-    def generic_pivot_table(self, year: int, key_func):
-        """
-        INTERNAL METHOD: Groups tall database rows into a nested dictionary.
-        `key_func` defines what object/value becomes the dictionary key.
-        """
-        # Rely on the model's Meta.ordering to sort the queryset properly
-        qs = self.year(year)
-
+    def generic_pivot_table(self, year: int, key_func: Callable[[Any], Hashable]):
         grouped = defaultdict(dict)
-        for plan in qs:
-            # Dynamically extract the object/tuple using the provided function
-            group_key = key_func(plan)
-            grouped[group_key][plan.month] = plan.price
+        # Meta.ordering sets the order of the table's rows
+        for plan in self.year(year):
+            grouped[key_func(plan)][plan.month] = plan.price
 
         return dict(grouped)
 
-    def generic_summed_by_month(self, year):
+    def summed_by_month(self, year):
         return (
             self.year(year)
             .order_by("month")
@@ -42,7 +36,7 @@ class CommonMethodsMixin:
         )
 
 
-class IncomePlanModelService(CommonMethodsMixin, DatedModelService):
+class IncomePlanModelService(PlanModelService):
     def get_queryset(self):
         return models.IncomePlan.objects.select_related("income_type").filter(
             journal=self.user.journal
@@ -51,9 +45,6 @@ class IncomePlanModelService(CommonMethodsMixin, DatedModelService):
     def pivot_table(self, year: int):
         return self.generic_pivot_table(year, lambda plan: plan.income_type)
 
-    def summed_by_month(self, year):
-        return self.generic_summed_by_month(year)
-
 
 @dataclass
 class ExpensePlanTables:
@@ -61,7 +52,7 @@ class ExpensePlanTables:
     everyday: dict = field(default_factory=dict)
 
 
-class ExpensePlanModelService(CommonMethodsMixin, DatedModelService):
+class ExpensePlanModelService(PlanModelService):
     def get_queryset(self):
         return models.ExpensePlan.objects.select_related("expense_type").filter(
             journal=self.user.journal
@@ -77,13 +68,14 @@ class ExpensePlanModelService(CommonMethodsMixin, DatedModelService):
             table[expense_type] = months
         return tables
 
-    def summed_by_month(self, year, necessary=False):
-        return self.generic_summed_by_month(year).filter(
-            expense_type__necessary=necessary
-        )
+    def everyday_by_month(self, year: int):
+        return self.summed_by_month(year).filter(expense_type__necessary=False)
+
+    def necessary_by_month(self, year: int):
+        return self.summed_by_month(year).filter(expense_type__necessary=True)
 
 
-class SavingPlanModelService(CommonMethodsMixin, DatedModelService):
+class SavingPlanModelService(PlanModelService):
     def get_queryset(self):
         return models.SavingPlan.objects.select_related("saving_type").filter(
             journal=self.user.journal
@@ -92,22 +84,16 @@ class SavingPlanModelService(CommonMethodsMixin, DatedModelService):
     def pivot_table(self, year: int):
         return self.generic_pivot_table(year, lambda plan: plan.saving_type)
 
-    def summed_by_month(self, year):
-        return self.generic_summed_by_month(year)
 
-
-class DayPlanModelService(CommonMethodsMixin, DatedModelService):
+class DayPlanModelService(PlanModelService):
     def get_queryset(self):
         return models.DayPlan.objects.filter(journal=self.user.journal)
 
     def pivot_table(self, year: int):
-        return self.generic_pivot_table(year, lambda x: _("Daily"))
-
-    def summed_by_month(self, year):
-        return self.generic_summed_by_month(year)
+        return self.generic_pivot_table(year, lambda _plan: _("Daily"))
 
 
-class NecessaryPlanModelService(CommonMethodsMixin, DatedModelService):
+class NecessaryPlanModelService(PlanModelService):
     def get_queryset(self):
         return models.NecessaryPlan.objects.select_related("expense_type").filter(
             journal=self.user.journal
@@ -118,64 +104,48 @@ class NecessaryPlanModelService(CommonMethodsMixin, DatedModelService):
             year, lambda plan: (plan.expense_type, plan.title)
         )
 
-    def summed_by_month(self, year):
-        return self.generic_summed_by_month(year)
 
+@dataclass
+class MonthTargets:
+    """What the plans set for each Expense type, and for savings, in one month."""
 
-class PlanAggregatorService:
-    def __init__(self, user):
-        self.user = user
+    type_titles: Sequence[str]
+    expense_plans: QuerySet
+    necessary_plans: QuerySet
+    saving_plans: QuerySet
+    month: int
 
-    def get_monthly_plan_targets(self, year: int, month: int) -> dict:
-        targets = self._initialize_targets()
+    @classmethod
+    def for_month(
+        cls,
+        type_titles: Sequence[str],
+        expense_plans: QuerySet,
+        necessary_plans: QuerySet,
+        saving_plans: QuerySet,
+        month: int,
+    ) -> dict[str, int]:
+        return cls(
+            type_titles, expense_plans, necessary_plans, saving_plans, month
+        )._targets()
 
-        self._add_expense_plans(targets, year, month)
-        self._add_necessary_plans(targets, year, month)
-        self._add_saving_plans(targets, year, month)
+    def _targets(self) -> dict[str, int]:
+        targets = dict.fromkeys(self.type_titles, 0)
+
+        for plans in (self.expense_plans, self.necessary_plans):
+            for title, total in self._totals_by_type_title(plans):
+                if title in targets:
+                    targets[title] += total
+
+        targets[SAVINGS] = self.saving_plans.filter(month=self.month).aggregate(
+            total=Sum("price", default=0)
+        )["total"]
 
         return targets
 
-    def _initialize_targets(self) -> dict:
-        expense_types = (
-            ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
-        )
-        targets = {title: 0 for title in expense_types}
-        targets["savings"] = 0
-        return targets
-
-    def _add_expense_plans(self, targets: dict, year: int, month: int):
-        expenses = (
-            ExpensePlanModelService(self.user)
-            .year(year)
-            .filter(month=month)
+    def _totals_by_type_title(self, plans: QuerySet):
+        return (
+            plans.filter(month=self.month)
             .values(type_title=F("expense_type__title"))
             .annotate(total=Sum("price", default=0))
+            .values_list("type_title", "total")
         )
-        for row in expenses:
-            if row["type_title"] not in targets:
-                continue
-            targets[row["type_title"]] += row["total"]
-
-    def _add_necessary_plans(self, targets: dict, year: int, month: int):
-        necessary = (
-            NecessaryPlanModelService(self.user)
-            .year(year)
-            .filter(month=month)
-            .values(type_title=F("expense_type__title"))
-            .annotate(total=Sum("price", default=0))
-        )
-        for row in necessary:
-            if row["type_title"] not in targets:
-                continue
-            targets[row["type_title"]] += row["total"]
-
-    def _add_saving_plans(self, targets: dict, year: int, month: int):
-        savings = (
-            SavingPlanModelService(self.user)
-            .year(year)
-            .filter(month=month)
-            .aggregate(total=Sum("price", default=0))
-        )
-        if not savings.get("total"):
-            return
-        targets["savings"] += savings["total"]

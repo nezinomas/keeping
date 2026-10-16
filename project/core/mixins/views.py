@@ -11,53 +11,38 @@ from vanilla import (
 
 from .create_update import CreateUpdateMixin
 from .delete import DeleteMixin
-from .kwargs import AddUserToKwargsMixin
+from .kwargs import FormKwargsMixin
 from .queryset import GetQuerysetMixin
 from .search import SearchMixin
 
 
-class CreateViewMixin(
-    AddUserToKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView
-):
+class CreateViewMixin(FormKwargsMixin, CreateUpdateMixin, CreateView):
     template_name = "core/generic_form.html"
     form_action = "insert"
-    url_name = None
+    url_name = "new"
 
     def url(self):
         app = self.request.resolver_match.app_name
-        url_name = self.url_name or "new"
-        return reverse_lazy(f"{app}:{url_name}")
+        return reverse_lazy(f"{app}:{self.url_name}")
 
 
-class UpdateViewMixin(
-    AddUserToKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
-):
+class UpdateViewMixin(FormKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView):
     template_name = "core/generic_form.html"
     form_action = "update"
-    url_name = None
+    url_name = "update"
 
     def url(self):
         app = self.request.resolver_match.app_name
-        url_name = self.url_name or "update"
-        return (
-            reverse_lazy(f"{app}:{url_name}", kwargs={"pk": self.object.pk})
-            if self.object
-            else None
-        )
+        return reverse_lazy(f"{app}:{self.url_name}", kwargs={"pk": self.object.pk})
 
 
-class DeleteViewMixin(AddUserToKwargsMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
+class DeleteViewMixin(FormKwargsMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
     template_name = "core/generic_delete_form.html"
-    url_name = None
+    url_name = "delete"
 
     def url(self):
         app = self.request.resolver_match.app_name
-        url_name = self.url_name or "delete"
-        return (
-            reverse_lazy(f"{app}:{url_name}", kwargs={"pk": self.object.pk})
-            if self.object
-            else None
-        )
+        return reverse_lazy(f"{app}:{self.url_name}", kwargs={"pk": self.object.pk})
 
 
 class RedirectViewMixin(RedirectView):
@@ -72,9 +57,9 @@ class ListViewMixin(GetQuerysetMixin, ListView):
     pass
 
 
-class FormViewMixin(AddUserToKwargsMixin, FormView):
+class FormViewMixin(FormKwargsMixin, FormView):
     template_name = "core/generic_form.html"
 
 
-class SearchViewMixin(AddUserToKwargsMixin, SearchMixin, TemplateView):
+class SearchViewMixin(FormKwargsMixin, SearchMixin, TemplateView):
     pass

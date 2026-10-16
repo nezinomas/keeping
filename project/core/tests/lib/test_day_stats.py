@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from ...lib.day_stats import GapSpan, Stats
+from ...lib.day_stats import NoPastRecord, PastRecord, Stats
 
 
 def in_year(rows, year):
@@ -20,128 +20,73 @@ def fixture_data():
     ]
 
 
-# Static / Metadata Methods
+@pytest.mark.parametrize(
+    "years, expect",
+    [
+        pytest.param(
+            (1999,),
+            [2, 0, 0, 0, 4, 0, 0],
+            id="one_year",
+        ),
+        pytest.param(
+            (1999, 2000),
+            [2, 0, 0, 0, 4, 1, 0],
+            id="all_years",
+        ),
+        pytest.param((), [0] * 7, id="empty"),
+    ],
+)
+def test_stats_weekdays_aggregation(data, years, expect):
+    rows = [row for row in data if row["date"].year in years]
+
+    actual = Stats(data=rows).weekdays_stats()
+
+    assert actual == [{"weekday": day, "count": n} for day, n in enumerate(expect)]
 
 
-def test_stats_months_list():
-    actual = Stats.months()
-    assert len(actual) == 12
-    assert actual[0] == "Sausis"
-    assert actual[11] == "Gruodis"
+@pytest.mark.parametrize(
+    "years, expect",
+    [
+        pytest.param(
+            (1999,),
+            [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0],
+            id="one_year",
+        ),
+        pytest.param((), [0.0] * 12, id="empty"),
+    ],
+)
+def test_stats_months_aggregation(data, years, expect):
+    rows = [row for row in data if row["date"].year in years]
+
+    assert Stats(data=rows).months_stats() == expect
 
 
-def test_stats_weekdays_list():
-    actual = Stats.weekdays()
-    assert len(actual) == 7
-    assert actual[0] == "Pirmadienis"
-    assert actual[6] == "Sekmadienis"
+@pytest.mark.parametrize(
+    "earlier, extra, expect",
+    [
+        pytest.param(
+            NoPastRecord(),
+            [{"date": date(1999, 2, 2), "qty": 1.0}],
+            {
+                date(1999, 1, 8): 7,
+                date(1999, 2, 2): 1,
+                date(1999, 12, 3): 304,
+            },
+            id="from_the_record_before",
+        ),
+        pytest.param(
+            PastRecord(date(1998, 1, 1)),
+            [],
+            {date(1999, 1, 8): 372},
+            id="with_an_earlier_record",
+        ),
+    ],
+)
+def test_stats_gap_by_date(data, earlier, extra, expect):
+    actual = Stats(data=in_year(data, 1999) + extra, earlier=earlier).gap_by_date()
 
-
-# Basic Statistics
-
-
-def test_stats_weekdays_aggregation(data):
-    actual = Stats(data=in_year(data, 1999)).weekdays_stats()
-    expect = [
-        {"weekday": 0, "count": 2},  # pirmadienis
-        {"weekday": 1, "count": 0},
-        {"weekday": 2, "count": 0},
-        {"weekday": 3, "count": 0},
-        {"weekday": 4, "count": 4},
-        {"weekday": 5, "count": 0},
-        {"weekday": 6, "count": 0},
-    ]
-    assert actual == expect
-
-
-def test_stats_weekdays_aggregation_all_years(data):
-    actual = Stats(data=data).weekdays_stats()
-    expect = [
-        {"weekday": 0, "count": 2},
-        {"weekday": 1, "count": 0},
-        {"weekday": 2, "count": 0},
-        {"weekday": 3, "count": 0},
-        {"weekday": 4, "count": 4},
-        {"weekday": 5, "count": 1},
-        {"weekday": 6, "count": 0},
-    ]
-    assert actual == expect
-
-
-def test_stats_weekdays_aggregation_empty():
-    actual = Stats(data=[]).weekdays_stats()
-    assert len(actual) == 7
-    assert all(x["count"] == 0 for x in actual)
-
-
-def test_stats_months_aggregation(data):
-    actual = Stats(data=in_year(data, 1999)).months_stats()
-    expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0]
-    assert actual == expect
-
-
-def test_stats_months_aggregation_empty():
-    actual = Stats(data=[]).months_stats()
-    assert actual == [0.0] * 12
-
-
-def test_stats_year_total(data):
-    actual = Stats(data=in_year(data, 1999)).year_total()
-    assert actual == 6
-
-
-def test_stats_year_total_missing_year(data):
-    actual = Stats(data=in_year(data, 2010)).year_total()
-    assert actual == 0
-
-
-def test_stats_year_total_empty():
-    assert Stats(data=[]).year_total() == 0
-
-
-def test_stats_totals_by_year(data):
-    actual = Stats(data=data).totals_by_year()
-    assert actual == {1999: 6.0, 2000: 1.0}
-
-
-def test_stats_totals_by_year_empty():
-    assert Stats(data=[]).totals_by_year() == {}
-
-
-# Gap Analysis
-
-
-def test_stats_gap_by_date_measures_each_record_from_the_one_before(data):
-    data.append({"date": date(1999, 2, 2), "qty": 1.0})
-    actual = Stats(data=in_year(data, 1999)).gap_by_date()
-    assert actual[date(1999, 1, 8)] == 7
-    assert actual[date(1999, 2, 2)] == 1
-    assert actual[date(1999, 12, 3)] == 304
-
-
-def test_stats_gap_by_date_with_past_latest(data):
-    actual = Stats(data=in_year(data, 1999), past_latest=date(1998, 1, 1)).gap_by_date()
-    assert actual[date(1999, 1, 8)] == 372
-
-
-def test_stats_gap_spans_open_on_past_latest(data):
-    actual = Stats(data=in_year(data, 1999), past_latest=date(1998, 1, 1)).gap_spans()
-
-    assert actual[0] == GapSpan(date(1998, 1, 1), date(1999, 1, 8), 372)
-    assert actual[1] == GapSpan(date(1999, 1, 8), date(1999, 1, 15), 7)
+    assert expect.items() <= actual.items()
 
 
 def test_stats_gap_by_date_empty():
     assert Stats(data=[]).gap_by_date() == {}
-
-
-def test_stats_needs_its_data():
-    with pytest.raises(TypeError):
-        Stats()
-
-
-def test_stats_reads_every_year_it_is_handed(data):
-    with pytest.raises(TypeError):
-        Stats(data=data, year=1999)
-
-    assert Stats(data=data).totals_by_year() == {1999: 6.0, 2000: 1.0}

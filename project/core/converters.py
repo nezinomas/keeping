@@ -11,7 +11,7 @@ class DateConverter:
         try:
             return value.strftime("%Y-%m-%d")
         except AttributeError:
-            return "1974-1-1"
+            raise ValueError(f"{value!r} is not a date") from None
 
 
 class SignerConverter:

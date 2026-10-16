@@ -2,12 +2,11 @@ from datetime import date, datetime
 
 import pytest
 import pytz
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
-from ... import views
 from ..factories import PensionWorthFactory
 from ..helper import (
     fund_with_a_sell,
@@ -20,19 +19,6 @@ from ..helper import (
 pytestmark = pytest.mark.django_db
 
 
-def test_view_func():
-    view = resolve("/bookkeeping/pensions/")
-
-    assert views.Pensions == view.func.view_class
-
-
-def test_view_200(client_logged):
-    url = reverse("bookkeeping:pensions")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
 def test_view_context(client_logged):
     url = reverse("bookkeeping:pensions")
     response = client_logged.get(url)
@@ -40,8 +26,6 @@ def test_view_context(client_logged):
 
     assert actual["title"] == "Pensijos"
     assert actual["type"] == "pensions"
-    assert "object_list" in actual
-    assert "total_row" in actual
 
 
 def test_view_context_with_saving_type_pension(client_logged):

@@ -1,45 +1,69 @@
 from datetime import date
 
 import pytest
-import time_machine
 
-from ...users.tests.factories import UserFactory
 from ..forms import BookForm, BookTargetForm
+from ..models import Book
 from .factories import BookTargetFactory
+
+TODAY = date(2000, 2, 2)
 
 pytestmark = pytest.mark.django_db
 
 
-def test_book_init(main_user):
-    BookForm(user=main_user)
+@pytest.mark.parametrize(
+    ("form_class", "inputs"),
+    [
+        (
+            BookForm,
+            [
+                '<input type="text" name="started"',
+                '<input type="text" name="ended"',
+                '<input type="text" name="author"',
+                '<input type="text" name="title"',
+            ],
+        ),
+        (
+            BookTargetForm,
+            ['<input type="text" name="year"', '<input type="number" name="quantity"'],
+        ),
+    ],
+    ids=["book", "book_target"],
+)
+def test_form_init_fields(main_user, form_class, inputs):
+    form = form_class(user=main_user, today=TODAY).as_p()
 
-
-def test_book_init_fields(main_user):
-    form = BookForm(user=main_user).as_p()
-
-    assert '<input type="text" name="started"' in form
-    assert '<input type="text" name="ended"' in form
-    assert '<input type="text" name="author"' in form
-    assert '<input type="text" name="title"' in form
-
+    for expected in inputs:
+        assert expected in form
     assert '<select name="user"' not in form
 
 
-@time_machine.travel("1974-01-01")
-def test_book_year_initial_value(main_user):
-    UserFactory()
+@pytest.mark.parametrize(
+    ("form_class", "expected"),
+    [
+        (BookForm, '<input type="text" name="started" value="1999-01-01"'),
+        (BookTargetForm, '<input type="text" name="year" value="1999"'),
+    ],
+    ids=["book_year", "book_target_year"],
+)
+def test_form_year_initial_value(main_user, form_class, expected):
+    form = form_class(user=main_user, today=date(1974, 1, 1)).as_p()
 
-    form = BookForm(user=main_user).as_p()
-
-    assert '<input type="text" name="started" value="1999-01-01"' in form
+    assert expected in form
 
 
-def test_book_valid_data(main_user):
+@pytest.mark.parametrize(
+    "ended",
+    ["1999-01-31", "1999-01-01"],
+    ids=["ended_after_started", "ended_on_started"],
+)
+def test_book_valid_data(main_user, ended):
     form = BookForm(
         user=main_user,
+        today=TODAY,
         data={
             "started": "1999-01-01",
-            "ended": "1999-01-31",
+            "ended": ended,
             "author": "Author",
             "title": "Title",
         },
@@ -50,190 +74,132 @@ def test_book_valid_data(main_user):
     data = form.save()
 
     assert data.started == date(1999, 1, 1)
-    assert data.ended == date(1999, 1, 31)
+    assert data.ended == date.fromisoformat(ended)
     assert data.author == "Author"
     assert data.title == "Title"
     assert data.user.username == "bob"
 
 
-@time_machine.travel("2000-2-2")
-@pytest.mark.parametrize("year", [1998, 2001])
-def test_book_invalid_start_year(year, main_user):
+@pytest.mark.parametrize(
+    ("data", "field", "message"),
+    [
+        ({"started": "1998-1-1"}, "started", "Metai turi būti tarp 1999 ir 2000"),
+        ({"started": "2001-1-1"}, "started", "Metai turi būti tarp 1999 ir 2000"),
+        ({"started": "2000-2-3"}, "started", "Data negali būti ateityje"),
+        (
+            {"started": "1999-1-1", "ended": "2000-2-3"},
+            "ended",
+            "Data negali būti ateityje",
+        ),
+        (
+            {"started": "1999-1-2", "ended": "1999-1-1"},
+            "ended",
+            "Baigta skaityti negali būti anksčiau nei pradėta skaityti.",
+        ),
+    ],
+    ids=[
+        "invalid_start_year_1998",
+        "invalid_start_year_2001",
+        "invalid_start_date",
+        "invalid_end_date",
+        "end_date_earlier_than_start_date",
+    ],
+)
+def test_book_refuses_a_date(main_user, data, field, message):
     form = BookForm(
-        user=main_user,
-        data={
-            "started": f"{year}-1-1",
-            "author": "Author",
-            "title": "Title",
-        },
+        user=main_user, today=TODAY, data={"author": "Author", "title": "Title", **data}
     )
 
     assert not form.is_valid()
-    assert "started" in form.errors
-    assert "Metai turi būti tarp 1999 ir 2000" in form.errors["started"]
-
-
-@time_machine.travel("2000-2-2")
-def test_book_invalid_start_date(main_user):
-    form = BookForm(
-        user=main_user,
-        data={
-            "started": "2000-2-3",
-            "author": "Author",
-            "title": "Title",
-        },
-    )
-
-    assert not form.is_valid()
-    assert "started" in form.errors
-    assert "Data negali būti ateityje" in form.errors["started"]
-
-
-@time_machine.travel("2000-2-2")
-def test_book_invalid_end_date(main_user):
-    form = BookForm(
-        user=main_user,
-        data={
-            "started": "1999-1-1",
-            "ended": "2000-2-3",
-            "author": "Author",
-            "title": "Title",
-        },
-    )
-
-    assert not form.is_valid()
-    assert "ended" in form.errors
-    assert "Data negali būti ateityje" in form.errors["ended"]
-
-
-@time_machine.travel("2000-2-2")
-def test_book_end_date_earlier_than_start_date(main_user):
-    form = BookForm(
-        user=main_user,
-        data={
-            "started": "1999-1-2",
-            "ended": "1999-1-1",
-            "author": "Author",
-            "title": "Title",
-        },
-    )
-
-    assert not form.is_valid()
-    assert "ended" in form.errors
-    assert (
-        "Baigta skaityti negali būti anksčiau nei pradėta skaityti."
-        in form.errors["ended"]
-    )
-
-
-def test_book_blank_data(main_user):
-    form = BookForm(user=main_user, data={})
-
-    assert not form.is_valid()
-
-    assert len(form.errors) == 3
-    assert "started" in form.errors
-    assert "author" in form.errors
-    assert "title" in form.errors
-
-
-def test_book_author_too_long(main_user):
-    form = BookForm(
-        user=main_user,
-        data={
-            "started": "1999-01-01",
-            "ended": "1999-01-31",
-            "author": "Author" * 250,
-            "title": "Title",
-        },
-    )
-
-    assert not form.is_valid()
-
-    assert "author" in form.errors
-
-
-def test_book_title_too_long(main_user):
-    form = BookForm(
-        user=main_user,
-        data={
-            "started": "1999-01-01",
-            "ended": "1999-01-31",
-            "author": "Author",
-            "title": "Title" * 254,
-        },
-    )
-
-    assert not form.is_valid()
-
-    assert "title" in form.errors
-
-
-def test_book_author_too_short(main_user):
-    form = BookForm(
-        user=main_user,
-        data={
-            "started": "1999-01-01",
-            "ended": "1999-01-31",
-            "author": "AA",
-            "title": "Title",
-        },
-    )
-
-    assert not form.is_valid()
-
-    assert "author" in form.errors
-
-
-def test_book_title_too_short(main_user):
-    form = BookForm(
-        user=main_user,
-        data={
-            "started": "1999-01-01",
-            "ended": "1999-01-31",
-            "author": "Author",
-            "title": "T",
-        },
-    )
-
-    assert not form.is_valid()
-
-    assert "title" in form.errors
-
-
-# -------------------------------------------------------------------------------------
-#                                                                           Book Target
-# -------------------------------------------------------------------------------------
-def test_book_target_init(main_user):
-    BookTargetForm(user=main_user)
-
-
-def test_book_target_init_fields(main_user):
-    form = BookTargetForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year"' in form
-    assert '<input type="number" name="quantity"' in form
-    assert '<select name="user"' not in form
-
-
-@time_machine.travel("1974-01-01")
-def test_book_target_year_initial_value(main_user):
-    UserFactory()
-
-    form = BookTargetForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year" value="1999"' in form
+    assert message in form.errors[field]
 
 
 @pytest.mark.parametrize(
-    "year",
+    ("form_class", "fields"),
     [
-        ("2000"),
-        (2000),
+        (BookForm, ["started", "author", "title"]),
+        (BookTargetForm, ["year", "quantity"]),
+    ],
+    ids=["book", "book_target"],
+)
+def test_blank_data(main_user, form_class, fields):
+    form = form_class(user=main_user, today=TODAY, data={})
+
+    assert form.errors == {field: ["Šis laukas yra privalomas."] for field in fields}
+
+
+def _max_length(field):
+    return Book._meta.get_field(field).max_length
+
+
+def _too_long(field, length):
+    return {
+        field: [
+            f"Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip "
+            f"{_max_length(field)} ženklų (dabartinis ilgis {length})."
+        ]
+    }
+
+
+def _too_short(field, minimum, length):
+    return {
+        field: [
+            f"Įsitikinkite, kad reikšmė sudaryta iš nemažiau kaip {minimum} ženklų "
+            f"(dabartinis ilgis {length})."
+        ]
+    }
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "errors"),
+    [
+        ("author", "Author" * 250, _too_long("author", 1500)),
+        ("title", "Title" * 254, _too_long("title", 1270)),
+        ("author", "AA", _too_short("author", 3, 2)),
+        ("title", "T", _too_short("title", 2, 1)),
+        ("author", "A" * _max_length("author"), {}),
+        ("title", "T" * _max_length("title"), {}),
+        (
+            "author",
+            "A" * (_max_length("author") + 1),
+            _too_long("author", _max_length("author") + 1),
+        ),
+        (
+            "title",
+            "T" * (_max_length("title") + 1),
+            _too_long("title", _max_length("title") + 1),
+        ),
+    ],
+    ids=[
+        "author_too_long",
+        "title_too_long",
+        "author_too_short",
+        "title_too_short",
+        "author_at_max_length",
+        "title_at_max_length",
+        "author_one_over_max_length",
+        "title_one_over_max_length",
     ],
 )
+def test_book_text_length(main_user, field, value, errors):
+    data = {
+        "started": "1999-01-01",
+        "ended": "1999-01-31",
+        "author": "Author",
+        "title": "Title",
+        field: value,
+    }
+
+    form = BookForm(user=main_user, today=TODAY, data=data)
+
+    assert form.errors == errors
+
+
+@pytest.mark.parametrize("year", ["2000", 2000], ids=["text", "number"])
 def test_book_target_valid_data(year, main_user):
-    form = BookTargetForm(user=main_user, data={"year": year, "quantity": 1.0})
+    form = BookTargetForm(
+        user=main_user, today=TODAY, data={"year": year, "quantity": 1.0}
+    )
 
     assert form.is_valid()
 
@@ -247,18 +213,28 @@ def test_book_target_valid_data(year, main_user):
 def test_book_target_year_validation(main_user):
     BookTargetFactory()
 
-    form = BookTargetForm(user=main_user, data={"year": 1999, "quantity": 200})
+    form = BookTargetForm(
+        user=main_user, today=TODAY, data={"year": 1999, "quantity": 200}
+    )
 
     assert not form.is_valid()
 
-    assert "year" in form.errors
+    assert form.errors == {"year": ["1999 metai jau turi tikslą."]}
 
 
-def test_book_target_blank_data(main_user):
-    form = BookTargetForm(user=main_user, data={})
+@pytest.mark.parametrize(
+    ("form_class", "data"),
+    [
+        (BookForm, {"started": "1999-01-01", "author": "Author", "title": "Title"}),
+        (BookTargetForm, {"year": 2000, "quantity": 1}),
+    ],
+    ids=["book", "book_target"],
+)
+def test_a_posted_user_is_ignored(main_user, second_user, form_class, data):
+    form = form_class(
+        user=main_user, today=TODAY, data={**data, "user": second_user.pk}
+    )
 
-    assert not form.is_valid()
+    assert form.is_valid()
 
-    assert len(form.errors) == 2
-    assert "year" in form.errors
-    assert "quantity" in form.errors
+    assert form.save().user == main_user

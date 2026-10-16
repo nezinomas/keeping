@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 
@@ -9,7 +11,7 @@ from .mixins.views import TemplateViewMixin
 @login_required()
 def set_year(request, year):
     user = request.user
-    if year in years(user):
+    if year in years(user, date.today()):
         user.year = year
         user.save()
 

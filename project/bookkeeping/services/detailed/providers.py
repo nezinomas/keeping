@@ -15,7 +15,7 @@ class DetailedDataProvider:
 
     def __init__(self, user: User):
         self.user = user
-        self.year = user.year
+        self.year = user.selected_year()
 
     def get_incomes(self) -> DetailedDto:
         return DetailedDto(

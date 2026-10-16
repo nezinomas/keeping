@@ -39,6 +39,12 @@ def setup_view(view, request, *args, **kwargs):
     return view
 
 
+def view_for(rf, user, view_class, path="/", **kwargs):
+    request = rf.get(path)
+    request.user = user
+    return setup_view(view_class(), request, **kwargs)
+
+
 def timer(*a, **kw):
     def timer_inner(func):
         @functools.wraps(func)

@@ -1,10 +1,18 @@
 import pytest
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib.drink_quantity import DrinkQuantity
+from ...lib.drink_types import DrinkType
+from ...lib.drinks_options import DrinkConverter
 
-# -------------------------------------------------------------------------------------
-#                                                            from_input (typed number)
-# -------------------------------------------------------------------------------------
+MAX_BOTTLES = 20
+
+DRINK_TYPES = st.sampled_from(DrinkType.values)
+SERVED_TYPES = st.sampled_from([t for t in DrinkType.values if t != DrinkType.STDAV])
+QUANTITIES = st.floats(min_value=0.01, max_value=5000, allow_nan=False)
+# the rule turns over between 20 and 21: generation must land on both
+INPUTS = st.one_of(QUANTITIES, st.sampled_from([MAX_BOTTLES, MAX_BOTTLES + 1]))
 
 
 @pytest.mark.parametrize(
@@ -39,9 +47,17 @@ def test_from_input(value, drink_type, expect_stdav, expect_is_volume):
     assert actual.drink_type == drink_type
 
 
-# -------------------------------------------------------------------------------------
-#                                                          from_volume (always a volume)
-# -------------------------------------------------------------------------------------
+@given(value=INPUTS, drink_type=DRINK_TYPES)
+def test_from_input_is_a_volume_only_above_max_bottles(value, drink_type):
+    actual = DrinkQuantity.from_input(value, drink_type)
+
+    assert actual.is_volume is (drink_type != "stdav" and value > MAX_BOTTLES)
+    assert actual.drink_type == drink_type
+
+
+@given(value=INPUTS)
+def test_from_input_never_converts_std_av(value):
+    assert DrinkQuantity.from_input(value, "stdav").stdav == value
 
 
 @pytest.mark.parametrize(
@@ -60,11 +76,6 @@ def test_from_volume(ml, drink_type, expect_stdav, expect_is_volume):
 
     assert round(actual.stdav, 3) == expect_stdav
     assert actual.is_volume is expect_is_volume
-
-
-# -------------------------------------------------------------------------------------
-#                                                            from_stdav (stored record)
-# -------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize(
@@ -91,43 +102,57 @@ def test_from_stdav_value(stdav, drink_type, is_volume, expect_value):
     assert actual.value == expect_value
 
 
+@given(stdav=QUANTITIES, drink_type=SERVED_TYPES)
+def test_from_stdav_volume_converts_back_to_the_stored_stdav(stdav, drink_type):
+    actual = DrinkQuantity.from_stdav(stdav, drink_type, is_volume=True)
+
+    reloaded = DrinkQuantity.from_volume(actual.value, drink_type)
+
+    assert reloaded.stdav == pytest.approx(stdav)
+
+
+@given(stdav=QUANTITIES, drink_type=SERVED_TYPES)
+def test_from_stdav_count_converts_back_to_the_stored_stdav(stdav, drink_type):
+    actual = DrinkQuantity.from_stdav(stdav, drink_type, is_volume=False)
+
+    converter = DrinkConverter(drink_type)
+
+    assert converter.servings_to_stdav(actual.value) == pytest.approx(stdav)
+
+
 def test_from_stdav_forces_std_av_to_a_count():
     actual = DrinkQuantity.from_stdav(21, "stdav", is_volume=True)
 
     assert actual.is_volume is False
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        round trip
-# -------------------------------------------------------------------------------------
+ENTRIES = st.sampled_from([DrinkQuantity.from_input, DrinkQuantity.from_volume])
 
 
-@pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
-@pytest.mark.parametrize("typed", [1, 5, 20, 21, 500, 1000])
-def test_typed_number_survives_the_round_trip(drink_type, typed):
-    """What the user typed is what the form shows them again."""
-    stored = DrinkQuantity.from_input(typed, drink_type)
+@given(value=QUANTITIES, drink_type=DRINK_TYPES, enter=ENTRIES)
+@example(value=20, drink_type="beer", enter=DrinkQuantity.from_input)
+@example(value=21, drink_type="beer", enter=DrinkQuantity.from_input)
+@example(value=20, drink_type="wine", enter=DrinkQuantity.from_input)
+@example(value=21, drink_type="wine", enter=DrinkQuantity.from_input)
+@example(value=20, drink_type="vodka", enter=DrinkQuantity.from_input)
+@example(value=21, drink_type="vodka", enter=DrinkQuantity.from_input)
+@example(value=21, drink_type="stdav", enter=DrinkQuantity.from_input)
+@example(value=1, drink_type="beer", enter=DrinkQuantity.from_volume)
+@example(value=1000, drink_type="beer", enter=DrinkQuantity.from_volume)
+@example(value=1, drink_type="wine", enter=DrinkQuantity.from_volume)
+@example(value=1000, drink_type="wine", enter=DrinkQuantity.from_volume)
+@example(value=1, drink_type="vodka", enter=DrinkQuantity.from_volume)
+@example(value=1000, drink_type="vodka", enter=DrinkQuantity.from_volume)
+@example(value=1, drink_type="stdav", enter=DrinkQuantity.from_volume)
+@example(value=1000, drink_type="stdav", enter=DrinkQuantity.from_volume)
+def test_what_was_entered_survives_the_round_trip(value, drink_type, enter):
+    """What the user entered is what the form shows them again."""
+    stored = enter(value, drink_type)
     reloaded = DrinkQuantity.from_stdav(
         stored.stdav, drink_type, is_volume=stored.is_volume
     )
 
-    assert round(reloaded.value, 6) == typed
-
-
-@pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
-@pytest.mark.parametrize("ml", [1, 500, 750, 1000])
-def test_volume_survives_the_round_trip(drink_type, ml):
-    stored = DrinkQuantity.from_volume(ml, drink_type)
-    reloaded = DrinkQuantity.from_stdav(
-        stored.stdav, drink_type, is_volume=stored.is_volume
-    )
-
-    assert round(reloaded.value, 6) == ml
-
-
-# -------------------------------------------------------------------------------------
-#                                                                          display
-# -------------------------------------------------------------------------------------
+    assert reloaded.value == pytest.approx(value, abs=5e-7)
 
 
 @pytest.mark.parametrize(
