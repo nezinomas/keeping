@@ -136,7 +136,7 @@ def test_load_service_records(data, expect):
 
 
 @pytest.mark.parametrize(
-    "data, expect",
+    "data, expect, titles",
     [
         pytest.param(
             LOAD_FULL,
@@ -148,18 +148,30 @@ def test_load_service_records(data, expect):
                 "pensions2",
                 "funds_shares_pensions",
             ],
+            [
+                "Fondai",
+                "Akcijos",
+                "Fondai, Akcijos",
+                "Pensijos III",
+                "Pensijos II",
+                "Fondai, Akcijos, Pensijos III",
+            ],
             id="full",
         ),
         pytest.param(
-            LOAD_FUNDS, ["funds", "funds_shares", "funds_shares_pensions"], id="funds"
+            LOAD_FUNDS,
+            ["funds", "funds_shares", "funds_shares_pensions"],
+            ["Fondai", "Fondai, Akcijos", "Fondai, Akcijos, Pensijos III"],
+            id="funds",
         ),
     ],
 )
-def test_load_service_template_variables(data, expect):
+def test_load_service_template_variables(data, expect, titles):
     actual = load_service(data, chart_keys_map(), TODAY)
 
     assert actual["pointers"] == expect
     assert list(actual["charts"].keys()) == expect
+    assert [chart["title"] for chart in actual["charts"].values()] == titles
 
 
 @given(

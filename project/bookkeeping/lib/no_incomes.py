@@ -20,21 +20,28 @@ from ...users.models import User
 
 @dataclass(frozen=True)
 class Data:
-    account_sum: float
-    fund_sum: float
-    pension_sum: float
+    account_sum: int
+    fund_sum: int
+    pension_sum: int
     expenses: list
     savings: dict
     unnecessary: list
+
+
+def _row(title, money_fund, money_fund_pension, *, price) -> dict:
+    return {
+        "title": title,
+        "money_fund": money_fund,
+        "money_fund_pension": money_fund_pension,
+        "price": price,
+    }
 
 
 class NoIncomes:
     def __init__(self, data: Data, months: int = 6):
         self.data = data
         self.months = months
-        self.avg_expenses = 0.0
-        self.cut_sum = 0.0
-        self._calculate_monthly_metrics()
+        self.avg_expenses, self.cut_sum = self._monthly_metrics()
 
     @property
     def unnecessary(self) -> list:
@@ -46,34 +53,23 @@ class NoIncomes:
         money_fund_pension = money_fund + self.data.pension_sum
         reduced_expenses = self.avg_expenses - self.cut_sum
 
-        return self._generate_dict(
-            (f"{_('Money')}, €", money_fund, money_fund_pension, True),
-            (
+        return [
+            _row(f"{_('Money')}, €", money_fund, money_fund_pension, price=True),
+            _row(
                 _("No change in spending, month"),
                 self._div(money_fund, self.avg_expenses),
                 self._div(money_fund_pension, self.avg_expenses),
-                False,
+                price=False,
             ),
-            (
+            _row(
                 _("After spending cuts, month"),
                 self._div(money_fund, reduced_expenses),
                 self._div(money_fund_pension, reduced_expenses),
-                False,
+                price=False,
             ),
-        )
-
-    def _generate_dict(self, *entries) -> list[dict]:
-        return [
-            {
-                "title": title,
-                "money_fund": money_fund,
-                "money_fund_pension": money_fund_pension,
-                "price": is_currency,
-            }
-            for title, money_fund, money_fund_pension, is_currency in entries
         ]
 
-    def _calculate_monthly_metrics(self):
+    def _monthly_metrics(self) -> tuple[float, float]:
         expenses_sum = 0
         cut_sum = 0
 
@@ -87,8 +83,10 @@ class NoIncomes:
 
         savings_val = self.data.savings.get("sum", 0)
 
-        self.avg_expenses = (expenses_sum + savings_val) / self.months
-        self.cut_sum = (cut_sum + savings_val) / self.months
+        return (
+            (expenses_sum + savings_val) / self.months,
+            (cut_sum + savings_val) / self.months,
+        )
 
     def _div(self, incomes: float, expenses: float) -> float:
         return incomes / expenses if expenses else 0.0
@@ -136,7 +134,7 @@ def _unnecessary_expense_titles(user: User) -> list[str]:
     )
 
 
-def _fresh_worth(user: User, year: int, types: list[str]) -> float:
+def _fresh_worth(user: User, year: int, types: list[str]) -> int:
     return (
         SavingBalanceModelService(user)
         .items()

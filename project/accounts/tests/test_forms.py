@@ -31,6 +31,20 @@ def test_account_form_has_fields(main_user):
 
 
 @pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("title", "Sąskaitos pavadinimas"),
+        ("closed", "Uždaryta"),
+        ("order", "Rūšiavimas"),
+    ],
+)
+def test_account_form_labels(main_user, field, label):
+    form = AccountForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
+@pytest.mark.parametrize(
     "closed",
     ["2000", 2000],
 )

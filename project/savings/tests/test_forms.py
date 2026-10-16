@@ -33,6 +33,21 @@ def test_saving_type_init_fields(main_user):
 
 
 @pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("title", "Fondas"),
+        ("closed", "Uždaryta"),
+        ("type", "Tipas"),
+        ("fee_source", "Mokestis nuskaitomas"),
+    ],
+)
+def test_saving_type_form_labels(main_user, field, label):
+    form = SavingTypeForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
+@pytest.mark.parametrize(
     "closed",
     [
         ("2000"),

@@ -19,6 +19,19 @@ def test_income_type_init_fields(main_user):
     assert '<select name="user"' not in form
 
 
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("title", "Pajamų rūšis"),
+        ("type", "Tipas"),
+    ],
+)
+def test_income_type_form_labels(main_user, field, label):
+    form = IncomeTypeForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
 def test_income_type_valid_data(main_user):
     form = IncomeTypeForm(
         user=main_user,

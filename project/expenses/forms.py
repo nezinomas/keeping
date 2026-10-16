@@ -204,8 +204,13 @@ class ExpenseTypeForm(UserTodayMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._overwrite_default_queries()
+        self._translate_fields()
+
+    def _overwrite_default_queries(self):
         pin(self.fields["journal"], self.user.journal)
 
+    def _translate_fields(self):
         self.fields["title"].label = _("Title")
         self.fields["necessary"].label = _("Necessary")
 
@@ -232,8 +237,13 @@ class ExpenseNameForm(UserTodayMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._overwrite_default_queries()
+        self._translate_fields()
+
+    def _overwrite_default_queries(self):
         self.fields["parent"].queryset = ExpenseTypeModelService(self.user).items()
 
+    def _translate_fields(self):
         self.fields["parent"].label = _("Expense type")
         self.fields["title"].label = _("Expense name")
         self.fields["valid_for"].label = _("Valid for")
