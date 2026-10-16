@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy
 
 from ..core.lib.form_fields import pin
 from ..core.lib.form_widgets import YearPickerWidget
-from ..core.mixins.forms import CloseNotBeforeRowsMixin
+from ..core.mixins.forms import CloseNotBeforeRowsMixin, UserTodayMixin
 from .models import Account
 from .services.model_services import AccountModelService
 
@@ -14,7 +14,7 @@ ACCOUNT_CLOSED = gettext_lazy(
 )
 
 
-class AccountForm(CloseNotBeforeRowsMixin, forms.ModelForm):
+class AccountForm(UserTodayMixin, CloseNotBeforeRowsMixin, forms.ModelForm):
     class Meta:
         model = Account
         fields = ["journal", "title", "closed", "order"]
@@ -22,8 +22,6 @@ class AccountForm(CloseNotBeforeRowsMixin, forms.ModelForm):
     field_order = ["title", "order", "closed"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["closed"].widget = YearPickerWidget()

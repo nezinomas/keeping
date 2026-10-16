@@ -91,6 +91,29 @@ def test_income_year_initial_value(main_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
+def test_income_form_widgets(main_user):
+    form = IncomeForm(user=main_user, today=TODAY)
+
+    assert form["date"].widget_type == "datepicker"
+    assert form["remark"].field.widget.attrs["rows"] == 3
+
+
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("date", "Data"),
+        ("account", "Sąskaita"),
+        ("price", "Suma"),
+        ("remark", "Pastaba"),
+        ("income_type", "Pajamų rūšis"),
+    ],
+)
+def test_income_form_labels(main_user, field, label):
+    form = IncomeForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
 def test_income_select_first_account(main_user, second_user):
     a2 = AccountFactory(title="A2")
     AccountFactory(title="A1", journal=second_user.journal)

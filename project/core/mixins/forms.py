@@ -4,7 +4,18 @@ from django.utils.translation import gettext as _
 from ..lib.date import latest_year, years
 
 
+class UserTodayMixin:
+    """The user and today every view's form kwargs carry (`FormKwargsMixin`)."""
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
+        super().__init__(*args, **kwargs)
+
+
 class YearBetweenMixin:
+    # needs UserTodayMixin's user and today
+
     def clean_date(self):
         dt = self.cleaned_data["date"]
         self.add_error_unless_year_between("date", years(self.user, self.today))
@@ -73,6 +84,8 @@ class CloseNotBeforeRowsMixin:
 
 
 class YearNotLaterMixin:
+    # needs UserTodayMixin's today
+
     def clean_date(self):
         dt = self.cleaned_data["date"]
 

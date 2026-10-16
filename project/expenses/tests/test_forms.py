@@ -83,6 +83,7 @@ def test_expense_form_widget_attributes(main_user):
     assert form["total_sum"].field.widget.attrs["inputmode"] == "decimal"
     assert form["price"].field.widget.attrs["readonly"]
     assert "class" not in form["price"].field.widget.attrs
+    assert form["remark"].field.widget.attrs["rows"] == 3
 
 
 def test_expense_initial_date_is_today_in_the_users_year(main_user):

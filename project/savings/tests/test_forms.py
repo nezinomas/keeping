@@ -8,7 +8,6 @@ from ...core.tests.utils import count_queries
 from ...journals.tests.factories import JournalFactory
 from ...plans.tests.factories import SavingPlanFactory
 from ...transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
-from ...users.tests.factories import UserFactory
 from ..forms import SavingForm, SavingTypeForm
 from ..models import SavingType
 from .factories import SavingFactory, SavingTypeFactory
@@ -323,11 +322,33 @@ def test_saving_type_title_slug_rules(main_user, title, message):
 
 
 def test_saving_year_initial_value(main_user):
-    UserFactory()
-
-    form = SavingForm(user=main_user, today=TODAY).as_p()
+    form = SavingForm(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
+
+
+def test_saving_form_widgets(main_user):
+    form = SavingForm(user=main_user, today=TODAY)
+
+    assert form["date"].widget_type == "datepicker"
+    assert form["remark"].field.widget.attrs["rows"] == 3
+
+
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("date", "Data"),
+        ("account", "Iš sąskaitos"),
+        ("price", "Suma"),
+        ("fee", "Mokesčiai"),
+        ("remark", "Pastaba"),
+        ("saving_type", "Fondas"),
+    ],
+)
+def test_saving_form_labels(main_user, field, label):
+    form = SavingForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
 
 
 def test_saving_select_first_account(main_user, second_user):
@@ -340,44 +361,17 @@ def test_saving_select_first_account(main_user, second_user):
     assert expect in form
 
 
-def test_saving_valid_data(main_user):
-    a = AccountFactory()
-    t = SavingTypeFactory()
-
-    form = SavingForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "date": "1999-01-01",
-            "price": 0.01,
-            "fee": 0.01,
-            "remark": "remark",
-            "account": a.pk,
-            "saving_type": t.pk,
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(1999, 1, 1)
-    assert data.price == 1
-    assert data.fee == 1
-    assert data.remark == "remark"
-    assert data.account.title == a.title
-    assert data.saving_type.title == t.title
-
-
 @pytest.mark.parametrize(
-    "price",
+    "amounts, expect_price, expect_fee",
     [
-        (""),
-        (None),
-        (0),
+        pytest.param({"price": 0.01, "fee": 0.01}, 1, 1, id="price_and_fee"),
+        pytest.param({"price": "", "fee": 0.01}, 0, 1, id="only_fee_empty_price"),
+        pytest.param({"price": None, "fee": 0.01}, 0, 1, id="only_fee_none_price"),
+        pytest.param({"price": 0, "fee": 0.01}, 0, 1, id="only_fee_zero_price"),
+        pytest.param({"price": 0.01}, 1, 0, id="no_fee"),
     ],
 )
-def test_saving_valid_data_only_fee(main_user, price):
+def test_saving_valid_data(main_user, amounts, expect_price, expect_fee):
     a = AccountFactory()
     t = SavingTypeFactory()
 
@@ -386,12 +380,11 @@ def test_saving_valid_data_only_fee(main_user, price):
         today=TODAY,
         data={
             "date": "1999-01-01",
-            "price": price,
-            "fee": 0.01,
             "remark": "remark",
             "account": a.pk,
             "saving_type": t.pk,
-        },
+        }
+        | amounts,
     )
 
     assert form.is_valid()
@@ -399,36 +392,8 @@ def test_saving_valid_data_only_fee(main_user, price):
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert not data.price
-    assert data.fee == 1
-    assert data.remark == "remark"
-    assert data.account.title == a.title
-    assert data.saving_type.title == t.title
-
-
-def test_saving_valid_data_with_no_fee(main_user):
-    a = AccountFactory()
-    t = SavingTypeFactory()
-
-    form = SavingForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "date": "1999-01-01",
-            "price": 0.01,
-            "remark": "remark",
-            "account": a.pk,
-            "saving_type": t.pk,
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(1999, 1, 1)
-    assert data.price == 1
-    assert not data.fee
+    assert data.price == expect_price
+    assert data.fee == expect_fee
     assert data.remark == "remark"
     assert data.account.title == a.title
     assert data.saving_type.title == t.title

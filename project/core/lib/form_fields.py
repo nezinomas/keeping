@@ -1,8 +1,17 @@
+from datetime import date
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms.models import ModelChoiceIterator
 
-from .form_widgets import DecimalCommaWidget
+from ...users.models import User
+from .date import set_date_with_user_year
+from .form_widgets import DatePickerWidget, DecimalCommaWidget
+
+
+def date_field(field, user: User, today: date):
+    field.widget = DatePickerWidget()
+    field.initial = set_date_with_user_year(user, today)
 
 
 def pin(field, value):
