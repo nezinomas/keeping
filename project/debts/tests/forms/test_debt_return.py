@@ -94,6 +94,36 @@ def test_debt_return_valid_data(main_user, debt_type, price, cents):
     assert e.remark == "Rm"
 
 
+@pytest.mark.parametrize(
+    "posted, errors",
+    [
+        pytest.param(
+            "2000-03-01",
+            {
+                "date": [
+                    "Data negali būti vėlesnė nei sąskaitos uždarymo data. "
+                    "Sąskaita buvo uždaryta 1999."
+                ]
+            },
+            id="after_closed",
+        ),
+        pytest.param("1999-12-31", {}, id="closed_year"),
+    ],
+)
+def test_debt_return_date_after_the_account_closed(main_user, posted, errors):
+    a = AccountFactory(closed=1999)
+    b = factories.LendFactory(date=date(1999, 1, 1))
+
+    form = forms.DebtReturnForm(
+        user=main_user,
+        today=TODAY,
+        debt_type="lend",
+        data={"date": posted, "debt": b.pk, "price": "1", "account": a.pk},
+    )
+
+    assert form.errors == errors
+
+
 @pytest.mark.parametrize("year", [1998, 2001])
 def test_debt_return_invalid_date(year, main_user):
     a = AccountFactory()

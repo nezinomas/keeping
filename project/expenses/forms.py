@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from ..accounts.forms import ACCOUNT_CLOSED
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib import table_columns
 from ..core.lib.convert_price import PriceToCentsFormMixin
@@ -13,7 +14,7 @@ from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.lib.utils import int_or_zero
-from ..core.mixins.forms import YearNotLaterMixin
+from ..core.mixins.forms import ClosedYearMixin, YearNotLaterMixin
 from .models import DEFAULT_QUANTITY, Expense, ExpenseName, ExpenseType
 from .services.model_services import (
     ExpenseNameModelService,
@@ -78,11 +79,13 @@ class ExpenseNameChoicesMixin:
 
 
 class ExpenseForm(
+    ClosedYearMixin,
     ExpenseNameChoicesMixin,
     PriceToCentsFormMixin,
     YearNotLaterMixin,
     forms.ModelForm,
 ):
+    closed_fields = {"account": (ACCOUNT_CLOSED, "date")}
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
     quantity = forms.IntegerField(min_value=1, initial=DEFAULT_QUANTITY)
@@ -192,28 +195,6 @@ class ExpenseForm(
                 raise ValidationError(_("Image file too large ( > 4Mb )"))
 
         return image
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        if "account" not in cleaned_data or "date" not in cleaned_data:
-            return cleaned_data
-
-        account = cleaned_data["account"]
-        if not account.closed:
-            return cleaned_data
-
-        if cleaned_data["date"].year > account.closed:
-            self.add_error(
-                "date",
-                _(
-                    "The date cannot be later than the account closure date. "
-                    "The account was closed in %(year)s."
-                )
-                % ({"year": account.closed}),
-            )
-
-        return cleaned_data
 
 
 class ExpenseTypeForm(forms.ModelForm):

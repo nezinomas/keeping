@@ -1817,7 +1817,7 @@ msgstr "Per didelis vaizdo failas ( > 4Mb)"
 msgid "Year cannot be later than %(year)s"
 msgstr "Metai negali būti vėlesni nei %(year)s"
 
-#: .\project\expenses\forms.py:184
+#: .\project\accounts\forms.py:9
 #, python-format
 msgid ""
 "The date cannot be later than the account closure date. The account was "

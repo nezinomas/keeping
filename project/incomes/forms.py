@@ -1,17 +1,21 @@
 from django import forms
 from django.utils.translation import gettext as _
 
+from ..accounts.forms import ACCOUNT_CLOSED
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget
-from ..core.mixins.forms import YearNotLaterMixin
+from ..core.mixins.forms import ClosedYearMixin, YearNotLaterMixin
 from .models import Income, IncomeType
 from .services.model_services import IncomeTypeModelService
 
 
-class IncomeForm(PriceToCentsFormMixin, YearNotLaterMixin, forms.ModelForm):
+class IncomeForm(
+    ClosedYearMixin, PriceToCentsFormMixin, YearNotLaterMixin, forms.ModelForm
+):
+    closed_fields = {"account": (ACCOUNT_CLOSED, "date")}
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 

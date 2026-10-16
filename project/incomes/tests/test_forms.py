@@ -200,3 +200,34 @@ def test_income_rejects_an_account_or_type_of_another_journal(
 
     assert not form.is_valid()
     assert field in form.errors
+
+
+@pytest.mark.parametrize(
+    ("posted", "errors"),
+    [
+        ("1999-12-31", {}),
+        (
+            "2000-03-01",
+            {
+                "date": [
+                    "Data negali būti vėlesnė nei sąskaitos uždarymo data. "
+                    "Sąskaita buvo uždaryta 1999."
+                ]
+            },
+        ),
+    ],
+    ids=["last_open_day", "after_close"],
+)
+def test_income_date_is_valid_up_to_the_accounts_closed_year(main_user, posted, errors):
+    form = IncomeForm(
+        user=main_user,
+        today=TODAY,
+        data={
+            "date": posted,
+            "price": 0.01,
+            "account": AccountFactory(closed=1999).pk,
+            "income_type": IncomeTypeFactory().pk,
+        },
+    )
+
+    assert form.errors == errors

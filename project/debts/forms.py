@@ -2,12 +2,13 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
+from ..accounts.forms import ACCOUNT_CLOSED
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceToCentsFormMixin, float_to_int_cents
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget
-from ..core.mixins.forms import YearBetweenMixin
+from ..core.mixins.forms import ClosedYearMixin, YearBetweenMixin
 from . import models
 from .services.model_services import DebtModelService, DebtReturnModelService
 
@@ -19,8 +20,10 @@ def _other_party_label(debt_type):
     }[debt_type]
 
 
-class DebtFormMixin(PriceToCentsFormMixin, YearBetweenMixin):
-    """The date, account and remark every debt form sets up the same way."""
+class DebtFormMixin(ClosedYearMixin, PriceToCentsFormMixin, YearBetweenMixin):
+    """The date, account and remark every debt form sets up and checks the same way."""
+
+    closed_fields = {"account": (ACCOUNT_CLOSED, "date")}
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")

@@ -486,6 +486,42 @@ def test_saving_date_after_the_fund_closed(main_user, posted, errors):
     assert form.errors == errors
 
 
+ACCOUNT_ERROR = (
+    "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 1999."
+)
+
+
+@pytest.mark.parametrize(
+    "fund_closed, posted, errors",
+    [
+        pytest.param(None, "2000-03-01", {"date": [ACCOUNT_ERROR]}, id="after_closed"),
+        pytest.param(None, "1999-12-31", {}, id="closed_year"),
+        pytest.param(
+            1999,
+            "2000-03-01",
+            {"date": ["Fondas uždarytas 1999.", ACCOUNT_ERROR]},
+            id="fund_and_account_after_closed",
+        ),
+    ],
+)
+def test_saving_date_after_the_account_closed(main_user, fund_closed, posted, errors):
+    a = AccountFactory(closed=1999)
+    t = SavingTypeFactory(closed=fund_closed)
+
+    form = SavingForm(
+        user=main_user,
+        today=TODAY,
+        data={
+            "date": posted,
+            "price": "10",
+            "account": a.pk,
+            "saving_type": t.pk,
+        },
+    )
+
+    assert form.errors == errors
+
+
 def test_saving_blank_data(main_user):
     form = SavingForm(user=main_user, today=TODAY, data={})
 
