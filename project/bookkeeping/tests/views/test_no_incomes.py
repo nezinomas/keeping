@@ -83,7 +83,7 @@ def test_a_stale_worth_counts_as_zero(main_user, kind):
         Sum("balance", default=0)
     )["balance__sum"]
 
-    actual = no_incomes.load_service(main_user, 1999)["no_incomes"][0]
+    actual = no_incomes.load_service(main_user, 1999, date(1999, 6, 1))["no_incomes"][0]
 
     assert actual["money_fund"] == account_sum
     assert actual["money_fund_pension"] == account_sum

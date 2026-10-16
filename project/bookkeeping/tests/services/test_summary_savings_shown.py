@@ -21,7 +21,7 @@ pytestmark = pytest.mark.django_db
 
 
 def _chart(user, pointer="funds"):
-    return summary_savings.load(user)["charts"][pointer]
+    return summary_savings.load(user, date(YEAR, 12, 31))["charts"][pointer]
 
 
 def _figures(chart, year=YEAR):
@@ -124,7 +124,7 @@ def test_pensions_ii_counts_only_the_rows_that_show_a_profit(main_user):
 def _grow(years):
     """Adds the funds of each of the last `years` years not yet there."""
     for k in range(years):
-        year = date.today().year - k
+        year = YEAR - k
         if SavingType.objects.filter(title=f"A{year}").exists():
             continue
         a = SavingTypeFactory(title=f"A{year}")

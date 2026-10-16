@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
@@ -29,6 +28,7 @@ def _purchase(fee_source, title="Fund", day=date(1999, 1, 1), price=200, fee=3):
 
 TODAY = date(1999, 1, 1)
 FORECAST_TODAY = date(1999, 1, 15)
+NO_INCOMES_TODAY = date(1999, 6, 1)
 
 
 def _queries(func, *args):
@@ -117,26 +117,24 @@ def fixture_savings_are_spending(main_user):
     main_user.journal.save()
 
 
-@time_machine.travel("1999-06-01")
 @pytest.mark.parametrize("fee_source, spent", [(ACCOUNT, 203), (INVESTMENT, 200)])
 def test_no_incomes_spend_counts_account_fees_only(
     main_user, savings_are_spending, fee_source, spent
 ):
     _purchase(fee_source, day=date(1999, 5, 10))
 
-    actual = no_incomes_load_service(main_user, 1999, months=1)
+    actual = no_incomes_load_service(main_user, 1999, NO_INCOMES_TODAY, months=1)
 
     assert actual["avg_expenses"] == spent
     assert actual["save_sum"] == spent
 
 
-@time_machine.travel("1999-06-01")
 def test_no_incomes_query_count_does_not_grow(main_user, savings_are_spending):
     for i in range(2):
         _purchase(ACCOUNT, title=f"T{i}", day=date(1999, 5, 10))
-    two = _queries(no_incomes_load_service, main_user, 1999)
+    two = _queries(no_incomes_load_service, main_user, 1999, NO_INCOMES_TODAY)
 
     for i in range(2, 6):
         _purchase(ACCOUNT, title=f"T{i}", day=date(1999, 5, 10))
 
-    assert _queries(no_incomes_load_service, main_user, 1999) == two
+    assert _queries(no_incomes_load_service, main_user, 1999, NO_INCOMES_TODAY) == two

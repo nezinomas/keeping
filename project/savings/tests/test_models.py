@@ -28,6 +28,8 @@ from ..services.model_services import (
 
 pytestmark = pytest.mark.django_db
 
+TODAY = date(1999, 6, 1)
+
 slug_migration = import_module(
     "project.savings.migrations.0017_savingtype_savings_savingtype_unique_slug"
 )
@@ -215,7 +217,6 @@ def test_saving_years_sum(main_user):
     assert [(row["year"], row["sum"]) for row in actual] == [(1998, 8.0), (1999, 10.0)]
 
 
-@time_machine.travel("1999-06-01")
 @pytest.mark.parametrize(
     "read, expect",
     [
@@ -224,7 +225,7 @@ def test_saving_years_sum(main_user):
             [(1999, 2)],
             id="year_sum",
         ),
-        pytest.param(lambda s: s.last_months(), {"sum": 2}, id="last_months"),
+        pytest.param(lambda s: s.last_months(TODAY), {"sum": 2}, id="last_months"),
     ],
 )
 def test_saving_read_query_count(
@@ -307,7 +308,6 @@ def test_saving_query_count(main_user, django_assert_max_num_queries, query):
         query(SavingModelService(main_user))
 
 
-@time_machine.travel("1999-06-01")
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
     "savings, expect",
@@ -325,7 +325,7 @@ def test_saving_last_months(main_user, savings, expect):
     for day, price in savings:
         SavingFactory(date=day, price=price)
 
-    actual = SavingModelService(main_user).last_months(6)
+    actual = SavingModelService(main_user).last_months(TODAY, 6)
 
     assert actual["sum"] == expect
 
@@ -657,7 +657,7 @@ SAVINGS_SUMS = {
     "sum_by_day": lambda s: list(s.sum_by_day(1999, 1)),
     "sum_by_month_and_type": lambda s: list(s.sum_by_month_and_type(1999)),
     "sum_by_day_and_type": lambda s: list(s.sum_by_day_and_type(1999, 1)),
-    "last_months": lambda s: [s.last_months(6)],
+    "last_months": lambda s: [s.last_months(TODAY, 6)],
 }
 
 
@@ -679,7 +679,6 @@ def _fee_purchase(fee_source, price, fee, title="Fund"):
     )
 
 
-@time_machine.travel("1999-06-01")
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize("name", SAVINGS_SUMS)
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
@@ -804,7 +803,6 @@ def _queries_and_total(user, name):
     return len(ctx), sum(row["sum"] for row in rows)
 
 
-@time_machine.travel("1999-06-01")
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
     "name, per_fund, per_account_fund",
@@ -824,7 +822,6 @@ def test_sum_query_count_does_not_grow_and_every_fund_is_counted(
     assert six == two
 
 
-@time_machine.travel("1999-06-01")
 @factory.django.mute_signals(post_save)
 def test_spent_last_months_adds_only_account_charged_fees(main_user):
     SavingFactory(
@@ -848,14 +845,13 @@ def test_spent_last_months_adds_only_account_charged_fees(main_user):
         ),
     )
 
-    actual = SavingModelService(main_user).spent_last_months(6)
+    actual = SavingModelService(main_user).spent_last_months(TODAY, 6)
 
     assert actual["sum"] == 507
 
 
-@time_machine.travel("1999-06-01")
 def test_spent_last_months_is_zero_without_savings(main_user):
-    assert SavingModelService(main_user).spent_last_months(6)["sum"] == 0
+    assert SavingModelService(main_user).spent_last_months(TODAY, 6)["sum"] == 0
 
 
 @pytest.mark.parametrize(
