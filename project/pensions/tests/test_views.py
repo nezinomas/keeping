@@ -4,8 +4,8 @@ import pytest
 import time_machine
 from django.urls import reverse
 
-from ...core.tests.utils import clean_content
-from .. import models
+from ...core.tests.utils import clean_content, view_for
+from .. import models, views
 from .factories import Pension, PensionFactory, PensionTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -19,7 +19,7 @@ def test_types_list_shows_the_title(client_logged):
     assert "Fondas" in response.content.decode("utf-8")
 
 
-@time_machine.travel("2000-01-01")
+@time_machine.travel("2000-03-04")
 def test_pensions_load_form(client_logged):
     url = reverse("pensions:new")
 
@@ -27,7 +27,7 @@ def test_pensions_load_form(client_logged):
     actual = response.content.decode()
 
     assert f'hx-post="{url}"' in actual
-    assert "2000-01-01" in actual
+    assert 'name="date" value="1999-03-04"' in actual
 
 
 def test_pensions_save(client_logged):
@@ -295,3 +295,10 @@ def test_pension_type_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_a_user_with_no_year_raises(rf, main_user):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        view_for(rf, main_user, views.Lists).get_queryset()

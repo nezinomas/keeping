@@ -1,11 +1,11 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import transaction
-from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from ..core.lib.convert_price import PriceToCentsFormMixin, int_cents_to_float
-from ..core.lib.date import monthnames, set_date_with_user_year
+from ..core.lib.date import monthnames
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
@@ -29,12 +29,24 @@ from .services.model_services import (
 
 MONTH_FIELD_KWARGS = {"min_value": 0.01, "required": False}
 
-COPY_PLAN_MAP = {
-    "income": lambda user: IncomePlanModelService(user),
-    "expense": lambda user: ExpensePlanModelService(user),
-    "saving": lambda user: SavingPlanModelService(user),
-    "day": lambda user: DayPlanModelService(user),
-    "necessary": lambda user: NecessaryPlanModelService(user),
+COPY_PLANS = {
+    "income": {
+        "service": IncomePlanModelService,
+        "label": gettext_lazy("Incomes plans"),
+    },
+    "expense": {
+        "service": ExpensePlanModelService,
+        "label": gettext_lazy("Expenses plans"),
+    },
+    "saving": {
+        "service": SavingPlanModelService,
+        "label": gettext_lazy("Savings plans"),
+    },
+    "day": {"service": DayPlanModelService, "label": gettext_lazy("Day plans")},
+    "necessary": {
+        "service": NecessaryPlanModelService,
+        "label": gettext_lazy("Plans for additional necessary expenses"),
+    },
 }
 
 
@@ -61,10 +73,10 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        kwargs.pop("today")
 
         super().__init__(*args, **kwargs)
 
-        self._setup_journal_field()
         self._setup_year_field()
         self._translate_common_fields()
 
@@ -138,16 +150,10 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
         for key, val in month_names().items():
             self.fields[key.lower()].label = val
 
-    def _setup_journal_field(self):
-        self.fields["journal"].initial = self.user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
-
     def _setup_year_field(self):
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
+        self.fields["year"].initial = self.user.selected_year()
 
     def _load_month_prices(self):
-        """Loads tall DB rows into the wide UI inputs."""
         if not self.instance.pk:
             return
 
@@ -191,21 +197,18 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
         service = self.Meta.service_class(self.user)
         return service.objects.filter(**lookup).exists()
 
-    def _raise_duplicate_plan_error(self, year, grouping_data):
+    def _duplicate_message(self, year, grouping_data):
         if not self.Meta.grouping_fields:
-            error_msg = _("Plan for %(year)s already exists.") % {"year": year}
-        else:
-            values_list = [str(v) for v in grouping_data.values() if v]
-            values_str = (
-                _(" and ").join(values_list)
-                if len(values_list) <= 2
-                else ", ".join(values_list)
-            )
-            error_msg = _("A plan for %(year)s with %(values)s already exists.") % {
-                "year": year,
-                "values": f"'{values_str}'" if values_str else _("these details"),
-            }
+            return _("Plan for %(year)s already exists.") % {"year": year}
 
+        values = _(" and ").join(str(v) for v in grouping_data.values())
+        return _("A plan for %(year)s with %(values)s already exists.") % {
+            "year": year,
+            "values": f"'{values}'",
+        }
+
+    def _raise_duplicate_plan_error(self, year, grouping_data):
+        error_msg = self._duplicate_message(year, grouping_data)
         errors_dict = {"__all__": error_msg, "year": ""}
         for field in self.Meta.grouping_fields:
             errors_dict[field] = ""
@@ -218,18 +221,13 @@ class IncomePlanForm(CommonPlanFormMixin):
         model = IncomePlan
         service_class = IncomePlanModelService
 
-        fields = ["journal", "year", "income_type"] + monthnames()
         grouping_fields = ["income_type"]
-
-    field_order = ["year", "income_type"] + monthnames()
+        fields = ["year", *grouping_fields, *monthnames()]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # overwrite ForeignKey expense_type queryset
         self.fields["income_type"].queryset = IncomeTypeModelService(self.user).items()
-
-        # field translation
         self.fields["income_type"].label = _("Income type")
 
 
@@ -238,20 +236,15 @@ class ExpensePlanForm(CommonPlanFormMixin):
         model = ExpensePlan
         service_class = ExpensePlanModelService
 
-        fields = ["journal", "year", "expense_type"] + monthnames()
         grouping_fields = ["expense_type"]
-
-    field_order = ["year", "expense_type"] + monthnames()
+        fields = ["year", *grouping_fields, *monthnames()]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseTypeModelService(
             self.user
         ).items()
-
-        # field translation
         self.fields["expense_type"].label = _("Expense type")
 
 
@@ -260,18 +253,13 @@ class SavingPlanForm(CommonPlanFormMixin):
         model = SavingPlan
         service_class = SavingPlanModelService
 
-        fields = ["journal", "year", "saving_type"] + monthnames()
         grouping_fields = ["saving_type"]
-
-    field_order = ["year", "saving_type"] + monthnames()
+        fields = ["year", *grouping_fields, *monthnames()]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # overwrite ForeignKey expense_type queryset
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
-
-        # field translation
         self.fields["saving_type"].label = _("Saving type")
 
 
@@ -280,10 +268,8 @@ class DayPlanForm(CommonPlanFormMixin):
         model = DayPlan
         service_class = DayPlanModelService
 
-        fields = ["journal", "year"] + monthnames()
         grouping_fields = []
-
-    field_order = ["year"] + monthnames()
+        fields = ["year", *grouping_fields, *monthnames()]
 
 
 class NecessaryPlanForm(CommonPlanFormMixin):
@@ -291,20 +277,15 @@ class NecessaryPlanForm(CommonPlanFormMixin):
         model = NecessaryPlan
         service_class = NecessaryPlanModelService
 
-        fields = ["journal", "year", "expense_type", "title"] + monthnames()
         grouping_fields = ["expense_type", "title"]
-
-    field_order = ["year", "expense_type", "title"] + monthnames()
+        fields = ["year", *grouping_fields, *monthnames()]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseTypeModelService(
             self.user
         ).items()
-
-        # field translation
         self.fields["expense_type"].label = _("Expense type")
 
 
@@ -317,18 +298,15 @@ class CopyPlanForm(forms.Form):
         widget=YearPickerWidget(),
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
-    income = forms.BooleanField(required=False)
-    expense = forms.BooleanField(required=False)
-    saving = forms.BooleanField(required=False)
-    day = forms.BooleanField(required=False)
-    necessary = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self._setup_initial_values()
+        self._setup_initial_values(today)
         self._translate_fields()
+        self._add_copy_checkboxes()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -346,58 +324,41 @@ class CopyPlanForm(forms.Form):
 
         return cleaned_data
 
+    @transaction.atomic
     def save(self):
         dict_ = self._extract_selected_checkboxes(self.cleaned_data)
-        year_from = self.cleaned_data.get("year_from")
-        year_to = self.cleaned_data.get("year_to")
+        year_from = self.cleaned_data["year_from"]
+        year_to = self.cleaned_data["year_to"]
 
         for k, v in dict_.items():
-            # Skip unselected checkboxes immediately
             if not v:
                 continue
 
-            service = COPY_PLAN_MAP.get(k)(self.user)
+            service = COPY_PLANS[k]["service"](self.user)
             source_rows = list(service.year(year_from))
 
-            # Iterate and copy
             for obj in source_rows:
                 obj.pk = None
                 obj.year = year_to
-                obj.save()
 
-    def _setup_initial_values(self):
-        current_year = timezone.now().year
+            service.objects.bulk_create(source_rows)
 
-        self.fields["year_from"].initial = current_year
-        self.fields["year_to"].initial = current_year + 1
-
-        for field in ["income", "expense", "saving", "day", "necessary"]:
-            self.fields[field].initial = True
+    def _setup_initial_values(self, today):
+        self.fields["year_from"].initial = today.year
+        self.fields["year_to"].initial = today.year + 1
 
     def _translate_fields(self):
         self.fields["year_from"].label = _("Copy from")
         self.fields["year_to"].label = _("Copy to")
-        self.fields["income"].label = _("Incomes plans")
-        self.fields["expense"].label = _("Expenses plans")
-        self.fields["saving"].label = _("Savings plans")
-        self.fields["day"].label = _("Day plans")
-        self.fields["necessary"].label = _("Plans for additional necessary expenses")
+
+    def _add_copy_checkboxes(self):
+        for kind, plan in COPY_PLANS.items():
+            self.fields[kind] = forms.BooleanField(
+                required=False, label=plan["label"], initial=True
+            )
 
     def _extract_selected_checkboxes(self, cleaned_data):
-        return {
-            "income": cleaned_data.get("income"),
-            "expense": cleaned_data.get("expense"),
-            "saving": cleaned_data.get("saving"),
-            "day": cleaned_data.get("day"),
-            "necessary": cleaned_data.get("necessary"),
-        }
-
-    def _add_error_message(self, msg, errors, key):
-        if err := errors.get(key):
-            err.append(msg)
-            errors[key] = err
-        else:
-            errors[key] = [msg]
+        return {kind: cleaned_data.get(kind) for kind in COPY_PLANS}
 
     def _validate_copy_operation(self, checkboxes, year_from, year_to):
         errors = {}
@@ -408,13 +369,13 @@ class CopyPlanForm(forms.Form):
             if not v:
                 continue
 
-            service = COPY_PLAN_MAP.get(k)(self.user)
+            service = COPY_PLANS[k]["service"](self.user)
 
             if not service.year(year_from).exists():
-                self._add_error_message(msg_empty, errors, k)
+                errors.setdefault(k, []).append(msg_empty)
 
             if service.year(year_to).exists():
-                self._add_error_message(msg_exists, errors, k)
+                errors.setdefault(k, []).append(msg_exists)
 
         if errors:
             raise forms.ValidationError(errors)

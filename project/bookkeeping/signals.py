@@ -41,7 +41,9 @@ def debt_return_signal(sender: object, instance: debt.DebtReturn, **kwargs):
 
     balance_sources.sync_accounts(journal_user(instance))
     # every debt of the type: a return moved to another debt changes the one it left
-    DebtModelService.sync_returned(instance.debt.journal_id, instance.debt.debt_type)
+    DebtModelService.sync_returned(
+        instance.debt.journal_id, debt.Debt.DebtType(instance.debt.debt_type)
+    )
 
 
 # A type's fee source and close year change its balances.

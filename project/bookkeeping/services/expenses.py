@@ -15,12 +15,12 @@ from ..lib.make_dataframe import MakeDataFrame
 @dataclass
 class ExpenseServiceData:
     user: User
-    year: int = field(init=False, default=1974)
+    year: int = field(init=False)
     expense_types: list = field(init=False, default_factory=list)
     expenses: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.year = self.user.year
+        self.year = self.user.selected_year()
         self.expense_types = list(
             ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
         )
@@ -68,5 +68,5 @@ class ExpenseService:
 
 def load_service(user):
     data = ExpenseServiceData(user)
-    df = MakeDataFrame.for_year(user.year, data.expenses, data.expense_types)
+    df = MakeDataFrame.for_year(data.year, data.expenses, data.expense_types)
     return ExpenseService(BalanceBase(df.data))

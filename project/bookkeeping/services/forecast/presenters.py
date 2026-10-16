@@ -1,23 +1,20 @@
-from datetime import datetime
-from typing import cast
+from datetime import date
 
 from ....users.models import User
 from .calculators import ForecastCalculator
 from .providers import ForecastDataProvider
 
 
-def get_month(year: int) -> int:
-    now = datetime.now()
-
-    if year > now.year:
+def get_month(year: int, today: date) -> int:
+    if year > today.year:
         return 1
 
-    return 12 if year < now.year else now.month
+    return 12 if year < today.year else today.month
 
 
-def load_service(user: User) -> dict:
-    year = cast(int, user.year)
-    month = get_month(year)
+def load_service(user: User, today: date) -> dict:
+    year = user.selected_year()
+    month = get_month(year, today)
 
     provider = ForecastDataProvider(user)
     forecast_data = provider.get_forecast_data()

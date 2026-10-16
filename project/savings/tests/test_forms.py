@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 
 from ...accounts.tests.factories import AccountFactory
 from ...journals.tests.factories import JournalFactory
@@ -12,16 +11,18 @@ from .factories import SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 
+TODAY = date(1999, 1, 1)
+
 
 def test_saving_type_init(main_user):
-    form = SavingTypeForm(user=main_user)
+    form = SavingTypeForm(user=main_user, today=TODAY)
 
     assert form.fields["journal"].initial == main_user.journal
     assert form.fields["journal"].disabled
 
 
 def test_saving_type_init_fields(main_user):
-    form = SavingTypeForm(user=main_user).as_p()
+    form = SavingTypeForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<input type="text" name="closed"' in form
@@ -38,6 +39,7 @@ def test_saving_type_init_fields(main_user):
 def test_saving_type_valid_data(main_user, closed):
     form = SavingTypeForm(
         user=main_user,
+        today=TODAY,
         data={
             "title": "Title",
             "closed": closed,
@@ -61,6 +63,7 @@ def test_saving_type_with_no_close_year_saves_open(main_user, closed):
     fund = SavingTypeFactory(closed=closed)
     form = SavingTypeForm(
         user=main_user,
+        today=TODAY,
         instance=fund,
         data={
             "title": "Title",
@@ -75,7 +78,7 @@ def test_saving_type_with_no_close_year_saves_open(main_user, closed):
 
 
 def test_saving_type_fee_source_field(main_user):
-    form = SavingTypeForm(user=main_user).as_p()
+    form = SavingTypeForm(user=main_user, today=TODAY).as_p()
 
     assert '<select name="fee_source"' in form
     assert "Mokestis nuskaitomas" in form
@@ -87,6 +90,7 @@ def test_saving_type_fee_source_field(main_user):
 def test_saving_type_saves_fee_source(main_user, fee_source):
     form = SavingTypeForm(
         user=main_user,
+        today=TODAY,
         data={"title": "Title", "type": "funds", "fee_source": fee_source},
     )
 
@@ -97,6 +101,7 @@ def test_saving_type_saves_fee_source(main_user, fee_source):
 def test_saving_type_rejects_unknown_fee_source(main_user):
     form = SavingTypeForm(
         user=main_user,
+        today=TODAY,
         data={"title": "Title", "type": "funds", "fee_source": "bank"},
     )
 
@@ -105,7 +110,7 @@ def test_saving_type_rejects_unknown_fee_source(main_user):
 
 
 def test_saving_type_blank_data(main_user):
-    form = SavingTypeForm(user=main_user, data={})
+    form = SavingTypeForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -121,7 +126,7 @@ def test_saving_type_blank_data(main_user):
     ids=["null", "too_short", "too_long"],
 )
 def test_saving_type_title_rejected(main_user, title):
-    form = SavingTypeForm(user=main_user, data={"title": title})
+    form = SavingTypeForm(user=main_user, today=TODAY, data={"title": title})
 
     assert not form.is_valid()
 
@@ -132,6 +137,7 @@ def test_saving_type_title_max_symbols(main_user):
     title = "a" * 50
     form = SavingTypeForm(
         user=main_user,
+        today=TODAY,
         data={
             "title": title,
             "journal": JournalFactory(),
@@ -159,32 +165,34 @@ def test_saving_type_closed(main_user, user_year, closed_listed):
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = SavingForm(user=main_user, data={})
+    form = SavingForm(user=main_user, today=TODAY, data={})
 
     assert "S1" in str(form["saving_type"])
     assert ("S2" in str(form["saving_type"])) is closed_listed
 
 
-def test_saving_type_title_taken(main_user):
-    SavingType.objects.create(title="Finbee", journal=main_user.journal)
+@pytest.mark.parametrize(
+    "existing, title, message",
+    [
+        pytest.param("Finbee", "Finbee", "„Finbee“ jau yra.", id="title_taken"),
+        pytest.param(
+            "Būstas",
+            "Bustas",
+            "Pavadinimas per daug panašus į jau esantį „Būstas“.",
+            id="slug_taken",
+        ),
+    ],
+)
+def test_saving_type_title_taken(main_user, existing, title, message):
+    SavingType.objects.create(title=existing, journal=main_user.journal)
 
-    form = SavingTypeForm(user=main_user, data={"title": "Finbee", "type": "funds"})
+    form = SavingTypeForm(
+        user=main_user, today=TODAY, data={"title": title, "type": "funds"}
+    )
 
     assert not form.is_valid()
 
-    assert form.errors["title"] == ["„Finbee“ jau yra."]
-
-
-def test_saving_type_title_slug_taken(main_user):
-    SavingType.objects.create(title="Būstas", journal=main_user.journal)
-
-    form = SavingTypeForm(user=main_user, data={"title": "Bustas", "type": "funds"})
-
-    assert not form.is_valid()
-
-    assert form.errors["title"] == [
-        "Pavadinimas per daug panašus į jau esantį „Būstas“."
-    ]
+    assert form.errors["title"] == [message]
 
 
 def test_saving_type_title_taken_in_other_journal(main_user, second_user):
@@ -192,6 +200,7 @@ def test_saving_type_title_taken_in_other_journal(main_user, second_user):
 
     form = SavingTypeForm(
         user=main_user,
+        today=TODAY,
         data={"title": "Finbee", "type": "funds", "fee_source": "investment"},
     )
 
@@ -203,6 +212,7 @@ def test_saving_type_edit_keeps_own_title(main_user):
 
     form = SavingTypeForm(
         user=main_user,
+        today=TODAY,
         instance=obj,
         data={"title": "Finbee", "type": "funds", "fee_source": "investment"},
     )
@@ -213,6 +223,7 @@ def test_saving_type_edit_keeps_own_title(main_user):
 def test_saving_type_title_without_character_rule(main_user):
     form = SavingTypeForm(
         user=main_user,
+        today=TODAY,
         data={
             "title": "Artea Ambicingas Index 16+",
             "type": "funds",
@@ -231,18 +242,19 @@ def test_saving_type_title_without_character_rule(main_user):
     ],
 )
 def test_saving_type_title_slug_rules(main_user, title, message):
-    form = SavingTypeForm(user=main_user, data={"title": title, "type": "funds"})
+    form = SavingTypeForm(
+        user=main_user, today=TODAY, data={"title": title, "type": "funds"}
+    )
 
     assert not form.is_valid()
 
     assert form.errors["title"] == [message]
 
 
-@time_machine.travel("1974-01-01")
 def test_saving_year_initial_value(main_user):
     UserFactory()
 
-    form = SavingForm(user=main_user).as_p()
+    form = SavingForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
@@ -251,19 +263,19 @@ def test_saving_select_first_account(main_user, second_user):
     AccountFactory(title="S1", journal=second_user.journal)
     s2 = AccountFactory(title="S2")
 
-    form = SavingForm(user=main_user).as_p()
+    form = SavingForm(user=main_user, today=TODAY).as_p()
 
     expect = f'<option value="{s2.pk}" selected>{s2}</option>'
     assert expect in form
 
 
-@time_machine.travel("1999-1-1")
 def test_saving_valid_data(main_user):
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "1999-01-01",
             "price": 0.01,
@@ -294,13 +306,13 @@ def test_saving_valid_data(main_user):
         (0),
     ],
 )
-@time_machine.travel("1999-1-1")
 def test_saving_valid_data_only_fee(main_user, price):
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "1999-01-01",
             "price": price,
@@ -323,13 +335,13 @@ def test_saving_valid_data_only_fee(main_user, price):
     assert data.saving_type.title == t.title
 
 
-@time_machine.travel("1999-1-1")
 def test_saving_valid_data_with_no_fee(main_user):
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "1999-01-01",
             "price": 0.01,
@@ -352,10 +364,10 @@ def test_saving_valid_data_with_no_fee(main_user):
 
 
 @pytest.mark.parametrize("empty", ["", None])
-@time_machine.travel("1999-1-1")
 def test_saving_empty_fee_saves_zero(main_user, empty):
     form = SavingForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "1999-01-01",
             "price": 0.01,
@@ -375,10 +387,10 @@ def test_saving_empty_fee_saves_zero(main_user, empty):
 
 
 @pytest.mark.parametrize("empty", ["", None])
-@time_machine.travel("1999-1-1")
 def test_saving_empty_price_beside_a_fee_saves_zero(main_user, empty):
     form = SavingForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "1999-01-01",
             "price": empty,
@@ -397,13 +409,13 @@ def test_saving_empty_price_beside_a_fee_saves_zero(main_user, empty):
     assert actual.fee == 1
 
 
-@time_machine.travel("1999-1-1")
 def test_saving_price_and_fee_accept_a_decimal_comma(main_user):
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "1999-01-01",
             "price": "12,1",
@@ -421,7 +433,6 @@ def test_saving_price_and_fee_accept_a_decimal_comma(main_user):
     assert data.fee == 55
 
 
-@time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
 def test_saving_invalid_date(main_user, year):
     a = AccountFactory()
@@ -429,6 +440,7 @@ def test_saving_invalid_date(main_user, year):
 
     form = SavingForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": f"{year}-01-01",
             "price": "10",
@@ -445,7 +457,7 @@ def test_saving_invalid_date(main_user, year):
 
 
 def test_saving_blank_data(main_user):
-    form = SavingForm(user=main_user, data={})
+    form = SavingForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -461,6 +473,7 @@ def test_saving_price_null_and_fee_null(main_user):
 
     form = SavingForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "2000-01-01",
             "price": "",
@@ -485,29 +498,22 @@ def _saving_type_data(second_user, title):
     }
 
 
-def test_saving_type_create_ignores_a_posted_journal(main_user, second_user):
-    form = SavingTypeForm(user=main_user, data=_saving_type_data(second_user, "Title"))
-
-    assert form.is_valid()
-
-    assert form.save().journal == main_user.journal
-
-
-def test_saving_type_edit_ignores_a_posted_journal(main_user, second_user):
-    obj = SavingTypeFactory(title="Mine", journal=main_user.journal)
+@pytest.mark.parametrize("editing", [False, True], ids=["create", "edit"])
+def test_saving_type_ignores_a_posted_journal(main_user, second_user, editing):
+    obj = (
+        SavingTypeFactory(title="Mine", journal=main_user.journal) if editing else None
+    )
 
     form = SavingTypeForm(
         user=main_user,
+        today=TODAY,
         instance=obj,
         data=_saving_type_data(second_user, "Mine"),
     )
 
     assert form.is_valid()
 
-    form.save()
-    obj.refresh_from_db()
-
-    assert obj.journal == main_user.journal
+    assert form.save().journal == main_user.journal
 
 
 @pytest.mark.parametrize("field", ["account", "saving_type"])
@@ -526,7 +532,7 @@ def test_saving_rejects_a_fund_or_account_of_another_journal(
     }
     data[field] = foreign[field].pk
 
-    form = SavingForm(user=main_user, data=data)
+    form = SavingForm(user=main_user, today=TODAY, data=data)
 
     assert not form.is_valid()
     assert field in form.errors

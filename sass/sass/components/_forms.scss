@@ -5,14 +5,14 @@ select,
 textarea {
     appearance: none;
 
-    &:disabled,
-    &.disabled {
+    &:disabled {
         background-color: $disabled;
         opacity: 1;
     }
 
     &[readonly] {
         background-color: $disabled;
+        opacity: 1;
         color: #9ca3af;
         cursor: not-allowed;
 
@@ -25,7 +25,6 @@ textarea {
 
 // Forced bold for price field when inactive
 #id_price:disabled,
-#id_price.disabled,
 #id_price[readonly] {
     font-weight: bold !important;
     color: $text-muted !important;

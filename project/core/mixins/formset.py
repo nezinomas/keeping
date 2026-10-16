@@ -1,6 +1,7 @@
 from collections.abc import Callable
 
 from django.forms.models import BaseModelFormSet, modelformset_factory
+from django.utils import timezone
 from django.utils.functional import cached_property
 
 from ...core.lib.utils import http_htmx_response
@@ -9,6 +10,14 @@ from ...users.models import User
 
 
 class BaseTypeFormSet(BaseModelFormSet):
+    # Only writes new rows: a posted id, any journal's or none, is never read.
+    def initial_form_count(self):
+        return 0
+
+    def add_fields(self, form, index):
+        super().add_fields(form, index)
+        del form.fields[self.model._meta.pk.name]
+
     def clean(self):
         if any(self.errors):
             return
@@ -55,8 +64,15 @@ class FormsetMixin:
     def funds(self):
         return list(self.category_service_class(self.request.user).items())
 
+    @cached_property
+    def now(self):
+        return timezone.now()
+
     def get_form_kwargs(self, **kwargs):
-        return super().get_form_kwargs(**kwargs) | {"funds": self.funds}
+        return super().get_form_kwargs(**kwargs) | {
+            "funds": self.funds,
+            "now": self.now,
+        }
 
     def formset_initial(self):
         fund_field = self.model_class.fund_field

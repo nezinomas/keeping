@@ -7,15 +7,16 @@ def years(request):
     if not request.user.is_authenticated:
         return {"years": []}
 
-    return {"years": lib_date.years(request.user)[::-1]}
+    return {"years": lib_date.years(request.user, date.today())[::-1]}
 
 
 def yday(request):
-    year = date.today().year
+    today = date.today()
+    year = today.year
     if request.user.is_authenticated:
-        year = request.user.year
+        year = request.user.selected_year()
 
-    _yday, _ydays = lib_date.yday(year)
+    _yday, _ydays = lib_date.yday(year, today)
 
     return {"yday": _yday, "ydays": _ydays}
 
@@ -24,7 +25,7 @@ def context_months(request):
     if not request.user.is_authenticated:
         return {"context_months": []}
 
-    return {"context_months": lib_date.year_month_list(request.user.year)}
+    return {"context_months": lib_date.year_month_list(request.user.selected_year())}
 
 
 def csp_nonce(request):

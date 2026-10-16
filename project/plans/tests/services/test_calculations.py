@@ -1,5 +1,5 @@
 from ...lib.calc_day_sum import MONTH_NUMS as MONTHS
-from ...lib.calc_day_sum import DataDto, PlanCalculateDaySum
+from ...lib.calc_day_sum import CalcRow, DataDto, InputRow, PlanCalculateDaySum
 from ...services.calculations import Calculations
 
 
@@ -131,14 +131,14 @@ def test_p18_guard_rows_match_the_day_sum_rows():
     by_label = {row.label: row for row in _rows(blocks)}
 
     mapping = {
-        "Pajamos": day_sum.incomes_avg,
-        "Būtinos išlaidos ir taupymas": day_sum.expenses_necessary,
-        "Laisvi pinigai": day_sum.expenses_free,
-        "Kasdienės išlaidos pagal planą": day_sum.expenses_regular,
-        "Visos išlaidos": day_sum.expenses_full,
-        "Lieka po išlaidų planų": day_sum.expenses_remains,
-        "Suma dienai": day_sum.day_calced,
-        "Likutis": day_sum.remains,
+        "Pajamos": day_sum.row(CalcRow.INCOMES_AVG),
+        "Būtinos išlaidos ir taupymas": day_sum.row(CalcRow.EXPENSES_NECESSARY),
+        "Laisvi pinigai": day_sum.row(CalcRow.EXPENSES_FREE),
+        "Kasdienės išlaidos pagal planą": day_sum.row(InputRow.EXPENSES_REGULAR),
+        "Visos išlaidos": day_sum.row(CalcRow.EXPENSES_FULL),
+        "Lieka po išlaidų planų": day_sum.row(CalcRow.EXPENSES_REMAINS),
+        "Suma dienai": day_sum.row(CalcRow.SUM_PER_DAY),
+        "Likutis": day_sum.row(CalcRow.REMAINS),
     }
 
     for label, row in mapping.items():

@@ -1,8 +1,10 @@
 import itertools as it
 
 from django.db.models import F, QuerySet, Sum
+from django.db.models.functions import Coalesce
 
 from ....accounts.services.model_services import AccountBalanceModelService
+from ....debts.models import Debt
 from ....debts.services.model_services import DebtModelService, DebtReturnModelService
 from ....expenses.services.model_services import ExpenseModelService
 from ....incomes.services.model_services import IncomeModelService
@@ -15,7 +17,7 @@ from .dtos import IndexDataDTO
 class IndexDataProvider:
     def __init__(self, user: User):
         self.user = user
-        self.year = user.year
+        self.year = user.selected_year()
 
     def get_data(self) -> IndexDataDTO:
         return IndexDataDTO(
@@ -28,8 +30,7 @@ class IndexDataProvider:
         return (
             AccountBalanceModelService(self.user)
             .year(self.year)
-            .aggregate(Sum("past"))["past__sum"]
-            or 0
+            .aggregate(past=Coalesce(Sum("past"), 0))["past"]
         )
 
     def _get_monthly_data(self) -> list[dict]:
@@ -39,22 +40,23 @@ class IndexDataProvider:
                 ExpenseModelService(self.user).sum_by_month(self.year),
                 SavingModelService(self.user).cash_flow_by_month(self.year),
                 SavingCloseModelService(self.user).sum_by_month(self.year),
-                self._get_debt_monthly("lend"),
-                self._get_debt_monthly("borrow"),
-                DebtReturnModelService(self.user, "lend").sum_by_month(self.year),
-                DebtReturnModelService(self.user, "borrow").sum_by_month(self.year),
+                *(self._get_debt_monthly(debt_type) for debt_type in Debt.DebtType),
+                *(
+                    DebtReturnModelService(self.user, debt_type).sum_by_month(self.year)
+                    for debt_type in Debt.DebtType
+                ),
             )
         )
 
-    def _get_debt_monthly(self, debt_type: str) -> QuerySet:
+    def _get_debt_monthly(self, debt_type: Debt.DebtType) -> QuerySet:
         return (
             DebtModelService(self.user, debt_type)
-            .sum_by_month(self.year, closed=True)
+            .sum_by_month(self.year)
             .values("date", "title", sum=F("sum_debt"))
         )
 
-    def _get_debts(self) -> dict[str, dict]:
+    def _get_debts(self) -> dict[Debt.DebtType, dict]:
         return {
-            "lend": DebtModelService(self.user, "lend").sum_all(),
-            "borrow": DebtModelService(self.user, "borrow").sum_all(),
+            debt_type: DebtModelService(self.user, debt_type).sum_all()
+            for debt_type in Debt.DebtType
         }

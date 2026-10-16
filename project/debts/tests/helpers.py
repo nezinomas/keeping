@@ -1,3 +1,7 @@
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+
+from ..models import Debt
 from .factories import (
     BorrowFactory,
     BorrowReturnFactory,
@@ -5,10 +9,13 @@ from .factories import (
     LendReturnFactory,
 )
 
-DEBT_TYPES = ["lend", "borrow"]
+DEBT_TYPES = [Debt.DebtType.LEND, Debt.DebtType.BORROW]
 
-DEBT_FACTORIES = {"lend": LendFactory, "borrow": BorrowFactory}
-RETURN_FACTORIES = {"lend": LendReturnFactory, "borrow": BorrowReturnFactory}
+DEBT_FACTORIES = {Debt.DebtType.LEND: LendFactory, Debt.DebtType.BORROW: BorrowFactory}
+RETURN_FACTORIES = {
+    Debt.DebtType.LEND: LendReturnFactory,
+    Debt.DebtType.BORROW: BorrowReturnFactory,
+}
 
 
 def assert_balance(actual, *, incomes, expenses, balance, title="Account1"):
@@ -16,3 +23,10 @@ def assert_balance(actual, *, incomes, expenses, balance, title="Account1"):
     assert actual.incomes == incomes
     assert actual.expenses == expenses
     assert actual.balance == balance
+
+
+def account_read_queries(service):
+    with CaptureQueriesContext(connection) as captured:
+        for row in service.objects:
+            row.account.title
+    return len(captured)

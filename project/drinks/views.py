@@ -1,4 +1,4 @@
-from datetime import datetime
+from functools import cached_property
 from typing import cast
 
 from django.http import Http404, HttpResponse
@@ -8,6 +8,7 @@ from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 
+from ..core.mixins.kwargs import TodayMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -38,29 +39,31 @@ class HtmxFormRetargetMixin:
         return response
 
 
-class TabViewMixin(CoreTabViewMixin):
+class UserMixin:
+    @cached_property
+    def user(self) -> User:
+        return cast(User, self.request.user)
+
+
+class TabViewMixin(UserMixin, TodayMixin, CoreTabViewMixin):
     tab = DEFAULT_TAB
     fragment_template = "drinks/tab_fragment.html"
     page_template = "drinks/index.html"
 
     def get_context_data(self, **kwargs):
-        user = cast(User, self.request.user)
-
         return {
             **super().get_context_data(**kwargs),
-            "drink_type_control": self.tab.control(user.drink_type),
+            "drink_type_control": self.tab.control(self.user.drink_type),
         }
 
     def page_context(self) -> dict:
         """What the shell around a tab needs, and no tab does."""
-        user = cast(User, self.request.user)
-
         return {
             "tab_title": self.tab.title,
             "page_title": format_lazy("{} | {}", _("Drinks"), self.tab.title),
             "tabs": [(tab, tab.url) for tab in TABS],
-            "recent_days": services.RecentDaySelector.for_day(datetime.now().date()),
-            "drink_types": services.DrinkTypeSelector(user.drink_type),
+            "recent_days": services.RecentDaySelector.for_day(self.today),
+            "drink_types": services.DrinkTypeSelector(self.user.drink_type),
         }
 
 
@@ -68,12 +71,11 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
     tab = DrinkTab.resolve("index")
 
     def get_context_data(self, **kwargs):
-        user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = self.user.selected_year()
 
         return {
             **super().get_context_data(**kwargs),
-            **services.IndexTab.build(user, year),
+            **services.IndexTab.build(self.user, year, self.today),
         }
 
 
@@ -81,22 +83,21 @@ class TabHabits(TabViewMixin, TemplateViewMixin):
     tab = DrinkTab.resolve("habits")
 
     def get_context_data(self, **kwargs):
-        user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = self.user.selected_year()
 
         return {
             **super().get_context_data(**kwargs),
-            **services.HabitsTab.build(user, year),
+            **services.HabitsTab.build(self.user, year, self.today),
         }
 
 
-class TypicalYearChart(HtmxFormRetargetMixin, FormViewMixin):
+class TypicalYearChart(UserMixin, HtmxFormRetargetMixin, FormViewMixin):
     form_class = forms.TypicalYearForm
     template_name = "drinks/includes/typical_year_form.html"
     retarget = "#typical-year-form"
 
     def get(self, request, *args, **kwargs):
-        year = cast(int, cast(User, request.user).year)
+        year = self.user.selected_year()
         pooled = services.NoPooledRange()
         if "qty" in self.kwargs:
             pooled = services.PooledRange.resolve(year, self.kwargs["qty"])
@@ -115,9 +116,9 @@ class TypicalYearChart(HtmxFormRetargetMixin, FormViewMixin):
         return self._render(chart, form)
 
     def _chart(self, pooled: services.PooledRange):
-        user = cast(User, self.request.user)
-
-        return services.TypicalYear.build(user, cast(int, user.year), pooled)
+        return services.TypicalYear.build(
+            self.user, self.user.selected_year(), self.today, pooled
+        )
 
     @staticmethod
     def _initial(chart) -> dict:
@@ -138,12 +139,11 @@ class TabTrends(TabViewMixin, TemplateViewMixin):
     tab = DrinkTab.resolve("trends")
 
     def get_context_data(self, **kwargs):
-        user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = self.user.selected_year()
 
         return {
             **super().get_context_data(**kwargs),
-            **services.TrendsTab.build(user, year),
+            **services.TrendsTab.build(self.user, year, self.today),
         }
 
 
@@ -151,22 +151,19 @@ class TabRisk(TabViewMixin, TemplateViewMixin):
     tab = DrinkTab.resolve("risk")
 
     def get_context_data(self, **kwargs):
-        user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = self.user.selected_year()
 
         return {
             **super().get_context_data(**kwargs),
-            **services.RiskTab.build(user, year),
+            **services.RiskTab.build(self.user, year, self.today),
         }
 
 
 class TabData(TabViewMixin, ListViewMixin):
-    service_class = DrinkModelService
     tab = DrinkTab.resolve("data")
 
     def get_queryset(self):
-        user = cast(User, self.request.user)
-        return DrinkModelService(user).year(user.year)
+        return DrinkModelService(self.user).year(self.user.selected_year())
 
 
 class TabHistory(TabViewMixin, TemplateViewMixin):
@@ -175,26 +172,27 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            **{"form": forms.DrinkCompareForm(user=self.request.user)},
-            **services.history.load_service(self.request.user),
+            "form": forms.DrinkCompareForm(user=self.user, today=self.today),
+            **services.history.load_service(self.user, self.today),
         }
 
 
-class Compare(TemplateViewMixin):
+class Compare(UserMixin, TodayMixin, TemplateViewMixin):
     template_name = "drinks/includes/history.html"
 
     def get_context_data(self, **kwargs):
-        user = cast(User, self.request.user)
-
         return {
             "chart": services.YearComparison.for_recent(
-                user, cast(int, user.year), self.kwargs.get("qty", 0)
+                self.user,
+                self.user.selected_year(),
+                self.kwargs.get("qty", 0),
+                self.today,
             ),
-            "form": forms.DrinkCompareForm(user=user),
+            "form": forms.DrinkCompareForm(user=self.user, today=self.today),
         }
 
 
-class CompareTwo(HtmxFormRetargetMixin, FormViewMixin):
+class CompareTwo(UserMixin, HtmxFormRetargetMixin, FormViewMixin):
     form_class = forms.DrinkCompareForm
     template_name = "drinks/includes/compare_form.html"
     success_url = reverse_lazy("drinks:compare_two")
@@ -202,9 +200,10 @@ class CompareTwo(HtmxFormRetargetMixin, FormViewMixin):
 
     def form_valid(self, form):
         chart = services.YearComparison.for_pair(
-            self.request.user,
+            self.user,
             form.cleaned_data["year1"],
             form.cleaned_data["year2"],
+            self.today,
         )
 
         return render(
@@ -215,7 +214,6 @@ class CompareTwo(HtmxFormRetargetMixin, FormViewMixin):
 
 
 class New(CreateViewMixin):
-    service_class = DrinkModelService
     form_class = forms.DrinkForm
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Drinks")
@@ -243,7 +241,6 @@ class Delete(DeleteViewMixin):
 
 
 class TargetNew(CreateViewMixin):
-    service_class = DrinkTargetModelService
     form_class = forms.DrinkTargetForm
     success_url = reverse_lazy("drinks:index")
     modal_form_title = _("New goal")
@@ -272,16 +269,15 @@ class TargetUpdate(UpdateViewMixin):
         return obj
 
 
-class SelectDrink(RedirectViewMixin):
+class SelectDrink(UserMixin, RedirectViewMixin):
     def get(self, request, *args, **kwargs):
         drink_type = kwargs["drink_type"]
 
         if drink_type not in models.DrinkType.values:
             raise Http404
 
-        user = cast(User, request.user)
-        user.drink_type = drink_type
-        user.save()
+        self.user.drink_type = drink_type
+        self.user.save()
 
         if not request.htmx:
             return super().get(request, *args, **kwargs)
@@ -293,9 +289,9 @@ class SelectDrink(RedirectViewMixin):
         return reverse_lazy("drinks:index")
 
 
-class QuickAdd(View):
+class QuickAdd(UserMixin, TodayMixin, View):
     def post(self, request, *args, **kwargs):
-        form = forms.QuickAddForm.from_post(request.POST, cast(User, request.user))
+        form = forms.QuickAddForm.from_post(request.POST, self.user, self.today)
 
         if not form.is_valid():
             return HttpResponse(status=422)

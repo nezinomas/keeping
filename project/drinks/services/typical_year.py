@@ -41,8 +41,7 @@ class MonthPoint:
 
 @dataclass(frozen=True)
 class TypicalYearProfile:
-    """Twelve months pooled across a span of years, and which years those were.
-    Pure: aggregated rows and a ``today`` in, no ORM."""
+    """Twelve months pooled across a span of years. Pure: rows and ``today`` in."""
 
     points: list[MonthPoint]
     year_from: int = 0
@@ -59,8 +58,7 @@ class TypicalYearProfile:
 
     @classmethod
     def pool(cls, rows: Sequence[MonthTotal], today: date) -> "TypicalYearProfile":
-        """Sum each month across the years present, and each month's days with it.
-        Only years carrying a Drink add days: an unlogged year is not abstinence."""
+        """Only years carrying a Drink add days: an unlogged year is not abstinence."""
         years = sorted({row.year for row in rows})
         stdav = [0.0] * MONTHS
         drinking_days = [0] * MONTHS
@@ -91,7 +89,7 @@ class TypicalYearProfile:
     def _days_reached(year: int, month: int, today: date) -> int:
         """The days of one month of one year the calendar has reached: a finished
         year runs to Dec 31, the running one only to today."""
-        end = YearBoundary.for_year(year, today).end_date
+        end = YearBoundary(year, today).end_date
 
         if month > end.month:
             return 0
@@ -180,12 +178,11 @@ class TypicalYear:
 
     @classmethod
     def build(
-        cls, user, year: int, pooled: PooledRange = NoPooledRange()
+        cls, user, year: int, today: date, pooled: PooledRange = NoPooledRange()
     ) -> TypicalYearChartViewModel:
         """The header year, and the pooled range behind it if one was asked for.
         A query a layer: the range may not contain the header year."""
         service = DrinkModelService(user)
-        today = date.today()
 
         return TypicalYearBuilder(
             year=PooledRange(year, year).profile(service, today),

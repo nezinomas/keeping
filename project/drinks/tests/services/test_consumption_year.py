@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 
 from ....core.lib.day_stats import NoPastRecord, PastRecord
 from ...lib.drinks_stats import DataRow
@@ -9,6 +8,8 @@ from ...services.consumption_year import ConsumptionYear
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
+
+TODAY = date(2000, 1, 1)
 
 
 @pytest.fixture(name="_records")
@@ -21,7 +22,7 @@ def fixture_records(second_user):
 
 
 def test_daily_returns_data_rows(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).daily
+    actual = ConsumptionYear(main_user, 1999, TODAY).daily
 
     assert all(isinstance(row, DataRow) for row in actual)
     assert [row.date for row in actual] == [date(1999, 1, 1), date(1999, 2, 10)]
@@ -29,21 +30,21 @@ def test_daily_returns_data_rows(main_user, _records):
 
 
 def test_daily_rows_stay_dicts_for_core_modules(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).daily_rows
+    actual = ConsumptionYear(main_user, 1999, TODAY).daily_rows
 
     assert all(isinstance(row, dict) for row in actual)
     assert set(actual[0]) == {"date", "stdav", "qty"}
 
 
 def test_monthly_returns_data_rows(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).monthly
+    actual = ConsumptionYear(main_user, 1999, TODAY).monthly
 
     assert all(isinstance(row, DataRow) for row in actual)
     assert [row.stdav for row in actual] == [2.5, 2.0]
 
 
 def test_empty_year(main_user, _records):
-    records = ConsumptionYear(main_user, 2000)
+    records = ConsumptionYear(main_user, 2000, TODAY)
 
     assert records.daily == []
     assert records.monthly == []
@@ -51,14 +52,14 @@ def test_empty_year(main_user, _records):
 
 @pytest.mark.parametrize("year, expect", [(1999, True), (2000, False)])
 def test_has_data(year, expect, main_user, _records):
-    assert ConsumptionYear(main_user, year).has_data is expect
+    assert ConsumptionYear(main_user, year, TODAY).has_data is expect
 
 
 def test_converter_follows_the_users_drink_type(main_user):
     main_user.drink_type = "wine"
     main_user.save()
 
-    actual = ConsumptionYear(main_user, 1999).converter
+    actual = ConsumptionYear(main_user, 1999, TODAY).converter
 
     assert actual.drink_type == "wine"
     assert actual.servings_to_stdav(1) == 8
@@ -92,8 +93,7 @@ def test_converter_follows_the_users_drink_type(main_user):
     ],
 )
 def test_latest(year, today, expect, main_user, _records):
-    with time_machine.travel(today):
-        assert ConsumptionYear(main_user, year).latest == expect
+    assert ConsumptionYear(main_user, year, today).latest == expect
 
 
 @pytest.mark.parametrize(
@@ -105,11 +105,11 @@ def test_latest(year, today, expect, main_user, _records):
     ],
 )
 def test_earlier(year, expect, main_user, _records):
-    assert ConsumptionYear(main_user, year).earlier == expect
+    assert ConsumptionYear(main_user, year, TODAY).earlier == expect
 
 
 def test_previous_is_the_year_before(main_user, _records):
-    records = ConsumptionYear(main_user, 1999)
+    records = ConsumptionYear(main_user, 1999, TODAY)
 
     assert records.previous.year == 1998
     assert [row.date for row in records.previous.daily] == [date(1998, 12, 20)]
@@ -126,7 +126,7 @@ def test_target(target_years, has_data, qty, main_user):
     for year in target_years:
         DrinkTargetFactory(year=year, quantity=500, drink_type="beer")
 
-    actual = ConsumptionYear(main_user, 1999).target
+    actual = ConsumptionYear(main_user, 1999, TODAY).target
 
     assert actual.has_data is has_data
     assert actual.qty == qty
@@ -134,7 +134,7 @@ def test_target(target_years, has_data, qty, main_user):
 
 
 def test_readers_are_cached(main_user, _records, django_assert_num_queries):
-    records = ConsumptionYear(main_user, 1999)
+    records = ConsumptionYear(main_user, 1999, TODAY)
 
     with django_assert_num_queries(1):
         records.daily

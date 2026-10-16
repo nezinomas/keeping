@@ -17,9 +17,15 @@ from .factories import SavingWorthFactory
 WORTH_VIEWS = (views.AccountsWorthNew, views.SavingsWorthNew, views.PensionsWorthNew)
 
 
-def worth_form(form_class, user, **kwargs):
+def worth_form(form_class, user, *, today, now, **kwargs):
     funds = {view.form_class: view.category_service_class for view in WORTH_VIEWS}
-    return form_class(user=user, funds=funds[form_class](user).items(), **kwargs)
+    return form_class(
+        user=user,
+        today=today,
+        now=now,
+        funds=funds[form_class](user).items(),
+        **kwargs,
+    )
 
 
 def post_data(rows):

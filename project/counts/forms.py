@@ -2,6 +2,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
+from ..core.lib.form_fields import pin
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Count, CountType
@@ -16,8 +17,9 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "count_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
-        self.counter_type = kwargs.pop("counter_type", None)
+        self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
+        self.counter_type = kwargs.pop("counter_type", "")
 
         super().__init__(*args, **kwargs)
 
@@ -27,7 +29,7 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
         self.fields["quantity"].initial = 1
 
         if self.counter_type:
@@ -38,9 +40,7 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
             )
             self.fields["count_type"].initial = obj
 
-        self.fields["user"].initial = self.user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
+        pin(self.fields["user"], self.user)
 
     def _overwrite_default_queries(self):
         self.fields["count_type"].queryset = CountTypeModelService(self.user).items()
@@ -57,11 +57,10 @@ class CountTypeForm(forms.ModelForm):
         fields = ["user", "title"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
+        user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["user"].initial = user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
+        pin(self.fields["user"], user)
 
         self.fields["title"].label = _("Title")

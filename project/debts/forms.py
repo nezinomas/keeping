@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceToCentsFormMixin, float_to_int_cents
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField
+from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from . import models
@@ -13,7 +13,10 @@ from .services.model_services import DebtModelService, DebtReturnModelService
 
 
 def _other_party_label(debt_type):
-    return {"lend": _("Borrower"), "borrow": _("Lender")}[debt_type]
+    return {
+        models.Debt.DebtType.LEND: _("Borrower"),
+        models.Debt.DebtType.BORROW: _("Lender"),
+    }[debt_type]
 
 
 class DebtFormMixin(PriceToCentsFormMixin, YearBetweenMixin):
@@ -21,6 +24,7 @@ class DebtFormMixin(PriceToCentsFormMixin, YearBetweenMixin):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         self.debt_type = kwargs.pop("debt_type")
 
         super().__init__(*args, **kwargs)
@@ -32,12 +36,13 @@ class DebtFormMixin(PriceToCentsFormMixin, YearBetweenMixin):
 
     def date_field_settings(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
     def account_field_settings(self):
         accounts = AccountModelService(self.user).items()
 
-        self.fields["account"].initial = accounts.first()
+        if account := accounts.first():
+            self.fields["account"].initial = account
         self.fields["account"].queryset = accounts
 
 
@@ -57,14 +62,9 @@ class DebtForm(DebtFormMixin, forms.ModelForm):
         if not self.instance.pk:
             self.instance.debt_type = self.debt_type
 
-        self.journal_field_settings()
+        pin(self.fields["journal"], self.user.journal)
 
         self.translations()
-
-    def journal_field_settings(self):
-        self.fields["journal"].initial = self.user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
 
     def translations(self):
         self.fields["date"].label = _("Date")

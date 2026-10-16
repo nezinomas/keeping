@@ -1,17 +1,17 @@
 from django import forms
-from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField
+from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget
-from ..incomes.services.model_services import IncomeTypeModelService
+from ..core.mixins.forms import YearNotLaterMixin
 from .models import Income, IncomeType
+from .services.model_services import IncomeTypeModelService
 
 
-class IncomeForm(PriceToCentsFormMixin, forms.ModelForm):
+class IncomeForm(PriceToCentsFormMixin, YearNotLaterMixin, forms.ModelForm):
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 
@@ -23,43 +23,28 @@ class IncomeForm(PriceToCentsFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
 
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        accounts = AccountModelService(self.user)
+        account_items = AccountModelService(self.user).items()
         incomes = IncomeTypeModelService(self.user)
 
-        self.fields["account"].initial = accounts.items().first()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
+        if account := account_items.first():
+            self.fields["account"].initial = account
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
         self.fields["income_type"].queryset = incomes.items()
-        self.fields["account"].queryset = accounts.items()
+        self.fields["account"].queryset = account_items
 
         self.fields["date"].label = _("Date")
         self.fields["account"].label = _("Account")
         self.fields["price"].label = _("Amount")
         self.fields["remark"].label = _("Remark")
         self.fields["income_type"].label = _("Incomes type")
-
-    def clean_date(self):
-        dt = self.cleaned_data["date"]
-
-        year_user = self.user.year
-        year_instance = dt.year
-        year_now = timezone.now().year
-
-        diff = 1
-        if (year_instance - year_now) > diff:
-            year_msg = year_user + diff
-            self.add_error(
-                "date",
-                _("Year cannot be greater than %(year)s") % {"year": year_msg},
-            )
-
-        return dt
 
 
 class IncomeTypeForm(forms.ModelForm):
@@ -69,11 +54,10 @@ class IncomeTypeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["journal"].initial = user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
+        pin(self.fields["journal"], user.journal)
 
         self.fields["title"].label = _("Incomes type")
         self.fields["type"].label = _("Type")

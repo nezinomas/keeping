@@ -2,6 +2,7 @@ from django.db.models import Count, Sum
 from django.db.models.functions import Coalesce
 
 from ...core.lib.search import generic_search
+from ...core.mixins.search import SearchTotals
 from .model_services import ExpenseModelService
 
 
@@ -14,7 +15,13 @@ def search_expenses(user, search_str):
     return service.expenses_list(qs)
 
 
-def search_totals(qs):
+class ExpenseTotals(SearchTotals):
+    sum_price: int
+    sum_quantity: int
+    average: float
+
+
+def search_totals(qs) -> ExpenseTotals:
     totals = qs.aggregate(
         count=Count("id"),
         sum_price=Coalesce(Sum("price"), 0),

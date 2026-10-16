@@ -7,7 +7,7 @@ from .factories import AccountFactory
 pytestmark = pytest.mark.django_db
 
 
-def test_save_account(main_user, client_logged):
+def test_save_account(client_logged):
     data = {"title": "Title", "order": "111"}
 
     url = reverse("accounts:new")
@@ -22,9 +22,9 @@ def test_accounts_save_invalid_data(client_logged):
 
     url = reverse("accounts:new")
     response = client_logged.post(url, data)
-    form = response.context["form"]
+    actual = response.content.decode("utf-8")
 
-    assert form.is_valid() is False
+    assert actual.count('aria-invalid="true"') == 2
 
 
 def test_account_update(client_logged):
@@ -55,15 +55,13 @@ def test_account_list_view_has_all(client_logged):
     url = reverse("accounts:list")
     response = client_logged.get(url)
 
-    actual = response.context["object_list"]
-    assert len(actual) == 2
+    actual = response.content.decode("utf-8")
 
-    actual = actual.values_list("title", flat=True)
-    assert "S1" in actual
-    assert "S2" in actual
+    assert ">S1</a>" in actual
+    assert ">S2</a>" in actual
 
 
-def test_load_to_account_form_200(client_logged):
+def test_new_form_renders_the_title_field(client_logged):
     url = reverse("accounts:new")
     response = client_logged.get(url)
 
@@ -71,7 +69,7 @@ def test_load_to_account_form_200(client_logged):
     assert 'name="title"' in response.content.decode("utf-8")
 
 
-def test_load_to_account_form_302(tp):
+def test_new_form_redirects_anonymous_to_login(tp):
     response = tp.get("accounts:new")
 
     assert response.status_code == 302
@@ -91,10 +89,21 @@ def test_load_to_account(tp, client_logged, second_user):
 
     tp.get("accounts:load", data={"from_account": a1.pk})
 
-    assert len(tp.get_context("object_list")) == 1
+    assert [account.title for account in tp.get_context("object_list")] == ["A2"]
 
 
-def test_load_to_account_empty_parent(tp, client_logged):
-    tp.get("accounts:load", data={"from_account": ""})
+@pytest.mark.parametrize(
+    "data",
+    [
+        pytest.param({}, id="no-value"),
+        pytest.param({"from_account": ""}, id="empty"),
+        pytest.param({"from_account": "x"}, id="not-a-number"),
+        pytest.param({"from_account": "0"}, id="zero"),
+    ],
+)
+def test_load_to_account_empty_parent(tp, client_logged, data):
+    AccountFactory(title="A1")
+
+    tp.get("accounts:load", data=data)
 
     assert tp.get_context("object_list") == []

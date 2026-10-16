@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 
+from django.utils.functional import Promise
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
@@ -47,6 +48,77 @@ class CalendarYearViewModel:
     legend: CalendarLegendViewModel = CalendarLegendViewModel(bounds=())
 
 
+@dataclass(frozen=True)
+class DayCell:
+    day_date: date
+    level: int
+    qty: float
+    gap: int
+    is_today: bool
+    is_future: bool
+
+
+@dataclass(frozen=True)
+class CalendarTitles:
+    quantity: str | Promise
+    empty: str
+
+
+@dataclass(frozen=True)
+class CalendarDays:
+    boundary: YearBoundary
+    val_by_date: dict[date, float]
+    qty_by_date: dict[date, float]
+    gap_by_date: dict[date, int]
+    today_gap: int
+    thresholds: Sequence[float]
+
+    @classmethod
+    def from_rows(
+        cls,
+        boundary: YearBoundary,
+        daily_data: Sequence[dict],
+        earlier: PastRecord | NoPastRecord,
+        value_key: str,
+        thresholds: Sequence[float],
+    ) -> "CalendarDays":
+        today = boundary.today
+        past_dates = [row["date"] for row in daily_data if row["date"] <= today]
+        latest = earlier
+        if past_dates:
+            latest = PastRecord(max(past_dates))
+
+        return cls(
+            boundary=boundary,
+            val_by_date={row["date"]: row.get(value_key, 0.0) for row in daily_data},
+            qty_by_date={
+                row["date"]: row.get("qty", row.get(value_key, 0.0))
+                for row in daily_data
+            },
+            gap_by_date=Stats(data=daily_data, earlier=earlier).gap_by_date(),
+            today_gap=latest.days_to(today),
+            thresholds=thresholds,
+        )
+
+    def cell(self, day_date: date) -> DayCell:
+        boundary = self.boundary
+        level = _calc_level(self.val_by_date.get(day_date, 0.0), self.thresholds)
+        is_today = day_date == boundary.today
+        gap = self.gap_by_date.get(day_date, 0)
+
+        if is_today and level == 0:
+            gap = self.today_gap
+
+        return DayCell(
+            day_date=day_date,
+            level=level,
+            qty=self.qty_by_date.get(day_date, 0.0),
+            gap=gap,
+            is_today=is_today,
+            is_future=day_date > boundary.end_date,
+        )
+
+
 def _fmt(bound: float) -> str:
     return f"{bound:g}"
 
@@ -57,27 +129,18 @@ def _calc_level(val: float, thresholds: Sequence[float]) -> int:
     return 1 + sum(1 for bound in thresholds if val >= bound)
 
 
-def _label(
-    day_date: date,
-    level: int,
-    qty: float,
-    gap: int,
-    quantity_title: str,
-    empty_title: str,
-    is_today: bool,
-    is_future: bool,
-) -> str:
-    stamp = f"{day_date:%Y-%m-%d}"
+def _label(cell: DayCell, titles: CalendarTitles) -> str:
+    stamp = f"{cell.day_date:%Y-%m-%d}"
     gap_title = _("Gap")
 
-    if level:
-        return f"{stamp}\n{quantity_title}: {qty:.1f}\n{gap_title}: {gap}d."
-    if is_future:
+    if cell.level:
+        return f"{stamp}\n{titles.quantity}: {cell.qty:.1f}\n{gap_title}: {cell.gap}d."
+    if cell.is_future:
         return ""
-    if is_today:
-        return f"{stamp}\n{gap_title}: {gap}d."
+    if cell.is_today:
+        return f"{stamp}\n{gap_title}: {cell.gap}d."
 
-    return "\n".join(filter(None, (stamp, empty_title)))
+    return "\n".join(filter(None, (stamp, titles.empty)))
 
 
 class CalendarGrid:
@@ -87,7 +150,7 @@ class CalendarGrid:
         boundary: YearBoundary,
         daily_data: Sequence[dict] = (),
         earlier: PastRecord | NoPastRecord = NoPastRecord(),
-        quantity_title: str = _lazy("Quantity"),
+        quantity_title: str | Promise = _lazy("Quantity"),
         empty_title: str = "",
         unit: str = "",
         # no thresholds means presence, not a scale nobody configured
@@ -97,34 +160,14 @@ class CalendarGrid:
         low_title: str = "",
         high_title: str = "",
     ) -> CalendarYearViewModel:
-        today = boundary.today
-
-        val_by_date = {row["date"]: row.get(value_key, 0.0) for row in daily_data}
-        qty_by_date = {
-            row["date"]: row.get("qty", row.get(value_key, 0.0)) for row in daily_data
-        }
-
-        gap_by_date = Stats(data=daily_data, earlier=earlier).gap_by_date()
-
-        past_dates = [row["date"] for row in daily_data if row["date"] <= today]
-        latest = earlier
-        if past_dates:
-            latest = PastRecord(max(past_dates))
-
-        today_gap = latest.days_to(today)
+        calendar_days = CalendarDays.from_rows(
+            boundary, daily_data, earlier, value_key, thresholds
+        )
+        titles = CalendarTitles(quantity=quantity_title, empty=empty_title)
+        names = list(month_names().values())
 
         months = [
-            cls._build_month(
-                boundary,
-                month,
-                val_by_date,
-                qty_by_date,
-                gap_by_date,
-                today_gap,
-                quantity_title,
-                empty_title,
-                thresholds,
-            )
+            cls._build_month(calendar_days, month, titles, names[month - 1])
             for month in range(1, 13)
         ]
 
@@ -163,73 +206,32 @@ class CalendarGrid:
     @classmethod
     def _build_month(
         cls,
-        boundary: YearBoundary,
+        calendar_days: CalendarDays,
         month: int,
-        val_by_date: dict[date, float],
-        qty_by_date: dict[date, float],
-        gap_by_date: dict[date, int],
-        today_gap: int,
-        quantity_title: str,
-        empty_title: str,
-        thresholds: Sequence[float],
+        titles: CalendarTitles,
+        name: str,
     ) -> CalendarMonthViewModel:
-        year = boundary.year
-        first_day = date(year, month, 1)
+        year = calendar_days.boundary.year
         total_days = calendar.monthrange(year, month)[1]
 
-        days = [
-            cls._build_day(
-                boundary,
-                date(year, month, day),
-                val_by_date,
-                qty_by_date,
-                gap_by_date,
-                today_gap,
-                quantity_title,
-                empty_title,
-                thresholds,
-            )
-            for day in range(1, total_days + 1)
-        ]
-
         return CalendarMonthViewModel(
-            name=list(month_names().values())[month - 1],
+            name=name,
             number=month,
-            leading_blanks=first_day.weekday(),
-            days=days,
+            leading_blanks=date(year, month, 1).weekday(),
+            days=[
+                cls._build_day(calendar_days.cell(date(year, month, day)), titles)
+                for day in range(1, total_days + 1)
+            ],
         )
 
-    @classmethod
-    def _build_day(
-        cls,
-        boundary: YearBoundary,
-        day_date: date,
-        val_by_date: dict[date, float],
-        qty_by_date: dict[date, float],
-        gap_by_date: dict[date, int],
-        today_gap: int,
-        quantity_title: str,
-        empty_title: str,
-        thresholds: Sequence[float],
-    ) -> CalendarDayViewModel:
-        level = _calc_level(val_by_date.get(day_date, 0.0), thresholds)
-        qty = qty_by_date.get(day_date, 0.0)
-        gap = gap_by_date.get(day_date, 0)
-        is_today = day_date == boundary.today
-        is_future = day_date > boundary.end_date
-
-        if is_today and level == 0:
-            gap = today_gap
-
-        label = _label(
-            day_date, level, qty, gap, quantity_title, empty_title, is_today, is_future
-        )
+    @staticmethod
+    def _build_day(cell: DayCell, titles: CalendarTitles) -> CalendarDayViewModel:
 
         return CalendarDayViewModel(
-            day=day_date.day,
-            level=level,
-            is_today=is_today,
-            is_future=is_future,
-            label=label,
-            gap=gap,
+            day=cell.day_date.day,
+            level=cell.level,
+            is_today=cell.is_today,
+            is_future=cell.is_future,
+            label=_label(cell, titles),
+            gap=cell.gap,
         )

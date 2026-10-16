@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 from django.utils.translation import gettext as _
 
 from ....core.lib.stat_card import Card
@@ -20,13 +19,12 @@ def _row(dt: date, stdav: float, qty: float = 0.0) -> DataRow:
 
 def _builder(current=(), past=(), today=date(1999, 1, 19)) -> HabitsBuilder:
     return HabitsBuilder(
-        FrequencyStats(current_daily=current, past_daily=past, today=today)
+        FrequencyStats(
+            current_daily=current, past_daily=past, year=today.year, today=today
+        )
     )
 
 
-# -------------------------------------------------------------------------------------
-#                                                            HabitsBuilder.chart_weekday
-# -------------------------------------------------------------------------------------
 def test_chart_weekday_view_model():
     actual = _builder([_row(date(1999, 1, 4), 5)]).chart_weekday()
 
@@ -128,9 +126,6 @@ def test_chart_weekday_on_no_records_is_seven_zeroed_points():
     assert actual.intensity == [0.0] * 7
 
 
-# -------------------------------------------------------------------------------------
-#                                                                Per drinking day card
-# -------------------------------------------------------------------------------------
 def test_get_cards_carries_the_per_drinking_day_card():
     cards = _builder([_row(date(1999, 1, 4), 7.9)]).get_cards()
 
@@ -185,30 +180,24 @@ def test_card_per_drinking_day_empty():
     assert card.explanation == ()
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       HabitsTab.build
-# -------------------------------------------------------------------------------------
-@time_machine.travel("1999-06-01")
 def test_build_returns_the_chart_and_the_cards(main_user):
     DrinkFactory(date=date(1999, 1, 4), stdav=7.9)
 
-    actual = HabitsTab.build(main_user, 1999)
+    actual = HabitsTab.build(main_user, 1999, date(1999, 6, 1))
 
     assert isinstance(actual["chart_weekday"], WeekdayChartViewModel)
     assert len(actual["chart_weekday"].categories) == 7
     assert [card.title for card in actual["cards"]] == [_("Per drinking day")]
 
 
-@time_machine.travel("1999-06-01")
 def test_build_on_a_year_with_no_drinks_does_not_raise(main_user):
-    actual = HabitsTab.build(main_user, 1999)
+    actual = HabitsTab.build(main_user, 1999, date(1999, 6, 1))
 
     assert actual["chart_weekday"].intensity == [0.0] * 7
     assert actual["cards"][0].state == "empty"
 
 
 @pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
-@time_machine.travel("1999-06-01")
 def test_build_is_the_same_tab_under_every_drink_type(drink_type, main_user):
     """Nothing on this tab follows the drink-type dropdown.
 
@@ -225,7 +214,7 @@ def test_build_is_the_same_tab_under_every_drink_type(drink_type, main_user):
     main_user.drink_type = drink_type
     DrinkFactory(date=date(1999, 1, 4), stdav=7.9)  # a Monday
 
-    actual = HabitsTab.build(main_user, 1999)
+    actual = HabitsTab.build(main_user, 1999, date(1999, 6, 1))
     chart = actual["chart_weekday"]
 
     # 1 of the 22 Mondays reached by 1999-06-01, at 7.9 Std Av on the one

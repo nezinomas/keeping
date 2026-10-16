@@ -79,7 +79,7 @@ def _sqlite_format(value, decimals, locale):
     except (ValueError, TypeError):
         return str(value)
 
-    if locale:
+    if locale == "lt_LT":
         return formatted.replace(",", "X").replace(".", ",").replace("X", ".")
     return formatted
 

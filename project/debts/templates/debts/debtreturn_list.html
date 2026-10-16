@@ -1,4 +1,3 @@
-{% load humanize %}
 {% load i18n %}
 {% load math %}
 {% load cell_format %}
@@ -30,7 +29,7 @@
         <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.debt.name or ifchanged object.debt.closed %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
             <td class="text-center">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-left cell-padding">{{ object.debt.name }}</td>
-            <td class="text-rightcell-padding">{{object.price|price|cellformat}}</td>
+            <td class="text-right cell-padding">{{object.price|price|cellformat}}</td>
             <td class="text-left cell-padding">{{ object.account }}</td>
             <td class="text-left">{{ object.remark }}</td>
             <td class="text-center">{% if object.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>

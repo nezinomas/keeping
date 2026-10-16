@@ -3,10 +3,9 @@ from datetime import date
 import factory
 import pytest
 import time_machine
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.db import IntegrityError, models, transaction
+from django.db import IntegrityError, transaction
 from django.db.models.signals import post_save
 from override_storage import override_storage
 
@@ -28,7 +27,6 @@ from .factories import (
 )
 
 pytestmark = pytest.mark.django_db
-is_sqlite = "sqlite3" in settings.DATABASES["default"]["ENGINE"]
 
 
 def test_expense_type_str():
@@ -70,22 +68,21 @@ def test_day_expense_type(main_user, expenses_january):
     assert actual == expect
 
 
-def test_expense_type_items(main_user):
+@pytest.mark.parametrize(
+    "t2_owner, expect",
+    [
+        pytest.param("main", ["T1", "T2"], id="same_journal"),
+        pytest.param("second", ["T1"], id="other_journal"),
+    ],
+)
+def test_expense_type_items(main_user, second_user, t2_owner, expect):
+    owners = {"main": main_user, "second": second_user}
     ExpenseTypeFactory(title="T1")
-    ExpenseTypeFactory(title="T2")
+    ExpenseTypeFactory(title="T2", journal=owners[t2_owner].journal)
 
     actual = ExpenseTypeModelService(main_user).items()
 
-    assert actual.count() == 2
-
-
-def test_expense_type_items_user(main_user, second_user):
-    ExpenseTypeFactory(title="T1")
-    ExpenseTypeFactory(title="T2", journal=second_user.journal)
-
-    actual = ExpenseTypeModelService(main_user).items()
-
-    assert actual.count() == 1
+    assert [a.title for a in actual] == expect
 
 
 def test_expense_type_related_qs_count(main_user, django_assert_max_num_queries):
@@ -126,26 +123,24 @@ def test_expense_name_str():
     assert str(expense_name) == "Expense Name"
 
 
-def test_expense_name_items(main_user):
-    ExpenseNameFactory(title="N1")
-    ExpenseNameFactory(title="N2")
+@pytest.mark.parametrize(
+    "n2_owner, expect",
+    [
+        pytest.param("main", ["N1", "N2"], id="same_journal"),
+        pytest.param("second", ["N1"], id="other_journal"),
+    ],
+)
+def test_expense_name_items(main_user, second_user, n2_owner, expect):
+    owners = {"main": main_user, "second": second_user}
+    ExpenseNameFactory(title="N1", parent=ExpenseTypeFactory(title="T1"))
+    ExpenseNameFactory(
+        title="N2",
+        parent=ExpenseTypeFactory(title="T2", journal=owners[n2_owner].journal),
+    )
 
     actual = ExpenseNameModelService(main_user).items()
 
-    assert actual.count() == 2
-
-
-def test_expense_name_related_different_users(main_user, second_user):
-    main_type = ExpenseTypeFactory(title="T1")
-    second_type = ExpenseTypeFactory(title="T2", journal=second_user.journal)
-
-    ExpenseNameFactory(title="N1", parent=main_type)
-    ExpenseNameFactory(title="N2", parent=second_type)
-
-    actual = ExpenseNameModelService(main_user).items()
-
-    assert len(actual) == 1
-    assert actual[0].title == "N1"
+    assert [a.title for a in actual] == expect
 
 
 def test_expense_name_related_qs_count(main_user, django_assert_max_num_queries):
@@ -156,25 +151,20 @@ def test_expense_name_related_qs_count(main_user, django_assert_max_num_queries)
         list(item.parent.title for item in ExpenseNameModelService(main_user).items())
 
 
-def test_expense_name_year(main_user):
+@pytest.mark.parametrize(
+    "second_valid_for, expect",
+    [
+        pytest.param(1999, ["N1"], id="other_year_excluded"),
+        pytest.param(None, ["N2", "N1"], id="unlimited_before_the_years"),
+    ],
+)
+def test_expense_name_year(main_user, second_valid_for, expect):
     ExpenseNameFactory(title="N1", valid_for=2000)
-    ExpenseNameFactory(title="N2", valid_for=1999)
+    ExpenseNameFactory(title="N2", valid_for=second_valid_for)
 
     actual = ExpenseNameModelService(main_user).year(2000)
 
-    assert actual.count() == 1
-    assert actual[0].title == "N1"
-
-
-def test_expense_name_year_lists_unlimited_names_before_the_years(main_user):
-    ExpenseNameFactory(title="N1", valid_for=2000)
-    ExpenseNameFactory(title="N2")
-
-    actual = ExpenseNameModelService(main_user).year(2000)
-
-    assert actual.count() == 2
-    assert actual[0].title == "N2"
-    assert actual[1].title == "N1"
+    assert [a.title for a in actual] == expect
 
 
 @pytest.mark.parametrize(("first", "second"), [("N1", "N1"), ("Būstas", "Bustas")])
@@ -197,16 +187,47 @@ def test_expense_str():
     assert str(expense) == "1999-01-01/Expense Type/Expense Name"
 
 
-def test_expense_fields_types():
-    assert isinstance(Expense._meta.get_field("date"), models.DateField)
-    assert isinstance(Expense._meta.get_field("price"), models.PositiveIntegerField)
-    assert isinstance(Expense._meta.get_field("quantity"), models.IntegerField)
-    assert isinstance(Expense._meta.get_field("expense_type"), models.ForeignKey)
-    assert isinstance(Expense._meta.get_field("expense_name"), models.ForeignKey)
-    assert isinstance(Expense._meta.get_field("remark"), models.TextField)
-    assert isinstance(Expense._meta.get_field("exception"), models.BooleanField)
-    assert isinstance(Expense._meta.get_field("account"), models.ForeignKey)
-    assert isinstance(Expense._meta.get_field("attachment"), models.FileField)
+@override_storage()
+def test_expense_stores_every_field():
+    saved = ExpenseFactory(
+        date=date(1998, 2, 3),
+        price=1234,
+        quantity=7,
+        remark="R",
+        exception=True,
+        attachment=ContentFile(b"x", name="test1.jpg"),
+    )
+
+    actual = Expense.objects.get(pk=saved.pk)
+
+    assert actual.date == date(1998, 2, 3)
+    assert actual.price == 1234
+    assert actual.quantity == 7
+    assert actual.remark == "R"
+    assert actual.exception is True
+    assert actual.expense_type == saved.expense_type
+    assert actual.expense_name == saved.expense_name
+    assert actual.account == saved.account
+    assert actual.attachment.read() == b"x"
+
+
+@pytest.mark.parametrize(
+    "fields, expect",
+    [
+        pytest.param({"price": -1}, ["price"], id="negative_price"),
+        pytest.param({"remark": "R" * 1000}, [], id="long_remark"),
+    ],
+)
+def test_expense_full_clean_accepts_only_what_its_columns_hold(fields, expect):
+    expense = ExpenseFactory.build(**fields)
+
+    errors = []
+    try:
+        expense.full_clean(exclude=["expense_type", "expense_name", "account"])
+    except ValidationError as error:
+        errors = list(error.message_dict)
+
+    assert errors == expect
 
 
 @override_storage()
@@ -245,8 +266,7 @@ def test_expense_related(main_user, second_user):
 
     actual = ExpenseModelService(main_user).items()
 
-    assert len(actual) == 1
-    assert str(actual[0].expense_type) == "T1"
+    assert [str(a.expense_type) for a in actual] == ["T1"]
 
 
 @factory.django.mute_signals(post_save)
@@ -356,8 +376,7 @@ def test_expense_last_months(main_user):
 
     actual = ExpenseModelService(main_user).last_months(6)
 
-    assert actual[0]["sum"] == 11
-    assert actual[0]["title"] == "Expense Type"
+    assert [(a["sum"], a["title"]) for a in actual] == [(11, "Expense Type")]
 
 
 @time_machine.travel("1999-06-01")
@@ -379,9 +398,7 @@ def test_expense_last_months_one_of_expenses_empty(main_user):
 
     actual = ExpenseModelService(main_user).last_months(6)
 
-    assert len(actual) == 1
-    assert actual[0]["sum"] == 3
-    assert actual[0]["title"] == "T1"
+    assert [(a["sum"], a["title"]) for a in actual] == [(3, "T1")]
 
 
 @factory.django.mute_signals(post_save)
@@ -402,11 +419,7 @@ def test_expense_years_sum(main_user):
 
     actual = ExpenseModelService(main_user).sum_by_year()
 
-    assert actual[0]["year"] == 1998
-    assert actual[0]["sum"] == 8
-
-    assert actual[1]["year"] == 1999
-    assert actual[1]["sum"] == 10
+    assert [(a["year"], a["sum"]) for a in actual] == [(1998, 8), (1999, 10)]
 
 
 @factory.django.mute_signals(post_save)
@@ -432,87 +445,51 @@ def test_expense_updates_journal_first_record():
     assert Journal.objects.first().first_record == date(1974, 2, 2)
 
 
+def account_balance_rows(*years):
+    """Rows of the years named, or every year's row (the gap years too)."""
+    qs = AccountBalance.objects.order_by("year")
+    if years:
+        qs = qs.filter(year__in=years)
+    return [
+        (a.account.title, a.year, a.past, a.incomes, a.expenses, a.balance, a.delta)
+        for a in qs
+    ]
+
+
 def test_expense_new_post_save(main_user):
     ExpenseFactory(price=1)
 
     actual = AccountBalanceModelService(main_user).year(1999)
 
-    assert actual.count() == 1
-
-    balance = actual[0]
-
-    assert balance.account.title == "Account1"
-    assert balance.expenses == 1
-    assert balance.balance == -1
+    assert [
+        (a.account.title, a.past, a.incomes, a.expenses, a.balance) for a in actual
+    ] == [("Account1", 0, 0, 1, -1)]
 
 
-def test_expense_update_post_save(main_user):
-    obj = Expense.objects.create(
-        date=date(1999, 1, 1),
-        price=112,
-        quantity=1,
-        account=AccountFactory(),
-        expense_type=ExpenseTypeFactory(),
-        expense_name=ExpenseNameFactory(),
-    )
+@pytest.mark.parametrize(
+    "account_title, price_before, price_after",
+    [
+        pytest.param("Account1", 5, 5, id="nothing_changed"),
+        pytest.param("Account1", 112, 1, id="price"),
+        pytest.param("XXX", 5, 5, id="account"),
+    ],
+)
+def test_expense_post_save_update(account_title, price_before, price_after):
+    accounts = {t: AccountFactory(title=t) for t in ("Account1", "XXX")}
+    obj = ExpenseFactory(price=price_before, account=accounts["Account1"])
 
-    obj_update = Expense.objects.get(pk=obj.pk)
-    obj_update.price = 1
-    obj_update.save()
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 1
-
-    balance = actual[0]
-
-    assert balance.account.title == "Account1"
-    assert balance.expenses == 1
-    assert balance.balance == -1
-
-
-def test_expense_post_save_update_with_nothing_changed(main_user):
-    obj = ExpenseFactory(price=5)
+    assert account_balance_rows(1999) == [
+        ("Account1", 1999, 0, 0, price_before, -price_before, price_before)
+    ]
 
     obj_update = Expense.objects.get(pk=obj.pk)
+    obj_update.account = accounts[account_title]
+    obj_update.price = price_after
     obj_update.save()
 
-    actual = AccountBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 1
-
-    balance = actual[0]
-
-    assert balance.account.title == "Account1"
-    assert balance.incomes == 0
-    assert balance.expenses == 5
-    assert balance.balance == -5
-
-
-def test_expense_post_save_change_account():
-    account_old = AccountFactory()
-    account_new = AccountFactory(title="XXX")
-
-    obj = ExpenseFactory(price=5, account=account_old)
-
-    actual = AccountBalance.objects.get(account_id=account_old.pk, year=1999)
-    assert actual.account.title == "Account1"
-    assert actual.incomes == 0
-    assert actual.expenses == 5
-    assert actual.balance == -5
-
-    obj_new = Expense.objects.get(pk=obj.pk)
-    obj_new.account = account_new
-    obj_new.save()
-
-    with pytest.raises(AccountBalance.DoesNotExist):
-        AccountBalance.objects.get(account_id=account_old.pk, year=1999)
-
-    actual = AccountBalance.objects.get(account_id=account_new.pk, year=1999)
-    assert actual.account.title == "XXX"
-    assert actual.incomes == 0
-    assert actual.expenses == 5
-    assert actual.balance == -5
+    assert account_balance_rows(1999) == [
+        (account_title, 1999, 0, 0, price_after, -price_after, price_after)
+    ]
 
 
 def test_expense_post_save_update_object_user_model_year(main_user):
@@ -528,74 +505,61 @@ def test_expense_post_save_update_object_user_model_year(main_user):
     assert date(1974, 2, 3) == Journal.objects.get(pk=main_user.journal.pk).first_record
 
 
-def test_expense_post_delete(main_user):
-    ExpenseFactory()
-
-    Expense.objects.first().delete()
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 0
-    assert Expense.objects.all().count() == 0
-
-
-def test_expense_post_delete_with_update():
+def test_expense_post_save_first_year_record():
     ExpenseFactory(date=date(1974, 1, 1), price=5)
+
+    AccountBalance.objects.all().delete()
+
+    ExpenseFactory(date=date(1999, 1, 1), price=1)
+
+    assert account_balance_rows(1974, 1999) == [
+        ("Account1", 1974, 0, 0, 5, -5, 5),
+        ("Account1", 1999, -5, 0, 1, -6, 6),
+    ]
+
+
+@pytest.mark.parametrize(
+    "prior, before, after",
+    [
+        pytest.param(
+            [],
+            [("Account1", 1999, 0, 0, 1, -1, 1)],
+            [],
+            id="the_only_expense",
+        ),
+        pytest.param(
+            [date(1974, 1, 1)],
+            [("Account1", 1974, 0, 0, 5, -5, 5), ("Account1", 1999, -5, 0, 1, -6, 6)],
+            [("Account1", 1974, 0, 0, 5, -5, 5)],
+            id="another_year_remains",
+        ),
+    ],
+)
+def test_expense_post_delete(prior, before, after):
+    for day in prior:
+        ExpenseFactory(date=day, price=5)
     obj = ExpenseFactory(date=date(1999, 1, 1), price=1)
 
-    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert actual.past == -5
-    assert actual.incomes == 0
-    assert actual.expenses == 1
-    assert actual.balance == -6
-    assert actual.delta == 6
+    assert account_balance_rows(1974, 1999) == before
 
     Expense.objects.get(pk=obj.pk).delete()
 
-    with pytest.raises(AccountBalance.DoesNotExist):
-        AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-
-
-def test_expense_post_save_first_year_record():
-    obj1 = ExpenseFactory(date=date(1974, 1, 1), price=5)
-
-    AccountBalance.objects.all().delete()
-
-    obj2 = ExpenseFactory(date=date(1999, 1, 1), price=1)
-
-    actual = AccountBalance.objects.get(account_id=obj2.account.pk, year=1999)
-    assert actual.past == -5
-    assert actual.incomes == 0
-    assert actual.expenses == 1
-    assert actual.balance == -6
-    assert actual.delta == 6
-
-    actual = AccountBalance.objects.get(account_id=obj1.account.pk, year=1974)
-    assert actual.past == 0
-    assert actual.incomes == 0
-    assert actual.expenses == 5
-    assert actual.balance == -5
-    assert actual.delta == 5
+    assert account_balance_rows(1974, 1999) == after
+    assert Expense.objects.count() == len(prior)
 
 
 def test_expense_post_delete_empty_account_balance_table():
-    obj_stay = ExpenseFactory(date=date(1974, 1, 1), price=5)
-    obj_del = ExpenseFactory(date=date(1999, 1, 1), price=1)
+    ExpenseFactory(date=date(1974, 1, 1), price=5)
+    obj = ExpenseFactory(date=date(1999, 1, 1), price=1)
 
     AccountBalance.objects.all().delete()
 
-    Expense.objects.get(pk=obj_del.pk).delete()
+    Expense.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.all()
-
-    assert actual.count() == 2
-    assert actual[0].account_id == obj_stay.account.pk
-    assert actual[0].year == 1974
-    assert actual[0].past == 0
-    assert actual[0].incomes == 0
-    assert actual[0].expenses == 5
-    assert actual[0].balance == -5
-    assert actual[0].delta == 5
+    assert account_balance_rows() == [
+        ("Account1", 1974, 0, 0, 5, -5, 5),
+        ("Account1", 1975, -5, 0, 0, -5, 5),
+    ]
 
 
 @factory.django.mute_signals(post_save)
@@ -618,12 +582,10 @@ def test_expense_sum_by_year(main_user, sum_by, title):
 
     actual = sum_by(ExpenseModelService(main_user))
 
-    assert actual[0]["year"] == 1111
-    assert actual[0]["title"] == title
-    assert actual[0]["sum"] == 5
-    assert actual[1]["year"] == 1999
-    assert actual[1]["title"] == title
-    assert actual[1]["sum"] == 12
+    assert [(a["year"], a["title"], a["sum"]) for a in actual] == [
+        (1111, title, 5),
+        (1999, title, 12),
+    ]
 
 
 @factory.django.mute_signals(post_save)
@@ -666,12 +628,10 @@ def test_expense_sum_by_year_filtering(
 
     actual = sum_by(ExpenseModelService(main_user), **filter_kwargs(picked))
 
-    assert actual[0]["year"] == 1111
-    assert actual[0]["title"] == title
-    assert actual[0]["sum"] == 5
-    assert actual[1]["year"] == 1999
-    assert actual[1]["title"] == title
-    assert actual[1]["sum"] == 12
+    assert [(a["year"], a["title"], a["sum"]) for a in actual] == [
+        (1111, title, 5),
+        (1999, title, 12),
+    ]
 
 
 @factory.django.mute_signals(post_save)
@@ -681,21 +641,12 @@ def test_expenses(main_user, expenses):
 
     actual = ExpenseModelService(main_user).expenses()
 
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == account1.pk
-    assert actual[0]["expenses"] == 250
-
-    assert actual[1]["year"] == 1970
-    assert actual[1]["category_id"] == account2.pk
-    assert actual[1]["expenses"] == 225
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["category_id"] == account1.pk
-    assert actual[2]["expenses"] == 50
-
-    assert actual[3]["year"] == 1999
-    assert actual[3]["category_id"] == account2.pk
-    assert actual[3]["expenses"] == 125
+    assert [(a["year"], a["category_id"], a["expenses"]) for a in actual] == [
+        (1970, account1.pk, 250),
+        (1970, account2.pk, 225),
+        (1999, account1.pk, 50),
+        (1999, account2.pk, 125),
+    ]
 
 
 @factory.django.mute_signals(post_save)
@@ -710,22 +661,11 @@ def test_sum_by_day_and_type_basic_grouping(main_user):
 
     actual = list(ExpenseModelService(main_user).sum_by_day_and_type(1999, 1))
 
-    assert len(actual) == 3
-
-    assert actual[0]["date"] == date(1999, 1, 1)
-    assert actual[0]["title"] == "T1"
-    assert actual[0]["sum"] == 30
-    assert actual[0]["exception_sum"] == 0
-
-    assert actual[1]["date"] == date(1999, 1, 1)
-    assert actual[1]["title"] == "T2"
-    assert actual[1]["sum"] == 50
-    assert actual[1]["exception_sum"] == 0
-
-    assert actual[2]["date"] == date(1999, 1, 2)
-    assert actual[2]["title"] == "T1"
-    assert actual[2]["sum"] == 100
-    assert actual[2]["exception_sum"] == 0
+    assert [(a["date"], a["title"], a["sum"], a["exception_sum"]) for a in actual] == [
+        (date(1999, 1, 1), "T1", 30, 0),
+        (date(1999, 1, 1), "T2", 50, 0),
+        (date(1999, 1, 2), "T1", 100, 0),
+    ]
 
 
 @factory.django.mute_signals(post_save)
@@ -737,9 +677,7 @@ def test_sum_by_day_and_type_calculates_exceptions(main_user):
 
     actual = list(ExpenseModelService(main_user).sum_by_day_and_type(1999, 1))
 
-    assert len(actual) == 1
-    assert actual[0]["sum"] == 40
-    assert actual[0]["exception_sum"] == 15
+    assert [(a["sum"], a["exception_sum"]) for a in actual] == [(40, 15)]
 
 
 @factory.django.mute_signals(post_save)
@@ -752,32 +690,26 @@ def test_sum_by_day_and_type_ignores_other_dates(main_user):
 
     actual = list(ExpenseModelService(main_user).sum_by_day_and_type(1999, 1))
 
-    assert len(actual) == 1
-    assert actual[0]["date"] == date(1999, 1, 15)
-    assert actual[0]["sum"] == 10
+    assert [(a["date"], a["sum"]) for a in actual] == [(date(1999, 1, 15), 10)]
 
 
-@pytest.mark.skipif(
-    is_sqlite, reason="SQLite does not support MariaDB's FORMAT() function."
-)
 @pytest.mark.parametrize(
     "lang, expected",
     [
-        pytest.param("lt", "12,50", id="lt"),
-        pytest.param("en", "12.50", id="en"),
+        pytest.param("lt", "1.234,56", id="lt"),
+        pytest.param("en", "1,234.56", id="en"),
     ],
 )
 def test_expenses_list_dynamic_locale(main_user, lang, expected):
     main_user.journal.lang = lang
     main_user.journal.save()
 
-    ExpenseFactory(price=1250)
+    ExpenseFactory(price=123456)
 
     qs = ExpenseModelService(main_user).items()
     actual = list(ExpenseModelService(main_user).expenses_list(qs))
 
-    assert len(actual) == 1
-    assert actual[0]["price_str"] == expected
+    assert [a["price_str"] for a in actual] == [expected]
 
 
 def test_expense_keyword_str():

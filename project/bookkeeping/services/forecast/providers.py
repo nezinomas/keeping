@@ -1,5 +1,3 @@
-from typing import cast
-
 from django.db.models import QuerySet, Sum
 
 from ....accounts.services.model_services import AccountBalanceModelService
@@ -22,7 +20,7 @@ class MonthlyDataFormatter:
         return arr
 
     @staticmethod
-    def from_planned_data(data: QuerySet, month_names: list | None = None) -> list[int]:
+    def from_planned_data(data: QuerySet) -> list[int]:
         arr = [0] * 12
         for row in data:
             if month := row.get("month"):
@@ -33,7 +31,7 @@ class MonthlyDataFormatter:
 class ForecastDataProvider:
     def __init__(self, user: User):
         self.user = user
-        self.year = cast(int, user.year)
+        self.year = user.selected_year()
 
     def get_forecast_data(self) -> ForecastDataDTO:
         incomes_qs = IncomeModelService(self.user).sum_by_month(self.year)

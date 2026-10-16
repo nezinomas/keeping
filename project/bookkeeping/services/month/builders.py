@@ -5,6 +5,7 @@ from operator import itemgetter
 import polars as pl
 from django.utils.translation import gettext as _
 
+from ....core.lib.table_columns import DATE, SAVINGS, TOTAL
 from .dtos import InfoState
 
 
@@ -21,11 +22,11 @@ class MonthTableBuilder:
 
         if has_expense_types:
             expense_df = expense_df.with_columns(
-                pl.sum_horizontal(pl.exclude("date")).alias("total")
+                pl.sum_horizontal(pl.exclude(DATE)).alias(TOTAL)
             )
 
         return expense_df.join(
-            saving_df, on="date", how="full", coalesce=True, nulls_equal=True
+            saving_df, on=DATE, how="full", coalesce=True, nulls_equal=True
         )
 
     @cached_property
@@ -36,14 +37,14 @@ class MonthTableBuilder:
     def total_row(self) -> dict:
         if self.df.is_empty() or self.df.shape[1] == 1:
             return {}
-        return self.df.select(pl.exclude("date")).sum().to_dicts()[0]
+        return self.df.select(pl.exclude(DATE)).sum().to_dicts()[0]
 
 
 class ChartBuilder:
     """Formats financial data specifically for frontend charts."""
 
     def __init__(self, targets: dict, totals: dict):
-        self.totals = {k: v for k, v in totals.items() if k != "total"}
+        self.totals = {k: v for k, v in totals.items() if k != TOTAL}
         self.targets = targets
 
     def build_targets(self) -> dict:
@@ -73,7 +74,7 @@ class ChartBuilder:
         }
 
     def _translate_saving_title(self, name):
-        return _("Savings") if name == "savings" else name
+        return _("Savings") if name == SAVINGS else name
 
     def build_expenses(self) -> list[dict]:
         data = self._sort_chart_data(self.totals)

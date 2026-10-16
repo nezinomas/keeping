@@ -1,6 +1,12 @@
+from types import SimpleNamespace
+
 import pytest
 from django.core.exceptions import ImproperlyConfigured
+from django.urls import URLResolver, get_resolver
+from django.utils.module_loading import import_string
+from vanilla import CreateView
 
+from ...mixins.formset import FormsetMixin
 from ...mixins.queryset import GetQuerysetMixin
 
 
@@ -13,76 +19,51 @@ class DummyService:
         return f"data_for_{self.user.username}"
 
 
-class TestView(GetQuerysetMixin):
-    """A clean instance for us to inject properties into during tests."""
-
+class QuerysetView(GetQuerysetMixin):
     pass
 
 
 def test_missing_service_class_raises_improperly_configured():
-    """If service_class is None, it must halt execution."""
-    view = TestView()
+    view = QuerysetView()
 
     with pytest.raises(ImproperlyConfigured) as exc_info:
         view.get_queryset()
 
     assert (
-        "[project.core.tests.mixins.test_queryset.TestView] is missing a data source."
+        "[project.core.tests.mixins.test_queryset.QuerysetView] is missing a data source."
         in str(exc_info.value)
     )
 
 
 def test_service_class_is_not_callable(mocker):
-    """
-    If a developer accidentally sets service_class to a string or instance,
-    it should fail.
-    """
-    view = TestView()
+    view = QuerysetView()
     view.service_class = "IncomeModelService"
     view.request = mocker.Mock()
 
     with pytest.raises(TypeError):
-        # Trying to instantiate a string will raise a TypeError
         view.get_queryset()
 
 
-def test_missing_request_object_crashes_predictably():
-    """
-    In Django, .setup() attaches the request to the View.
-    If get_queryset is called too early, it should raise an AttributeError.
-    """
-    view = TestView()
+@pytest.mark.parametrize(
+    "attrs, missing",
+    [
+        pytest.param({}, "request", id="no_request"),
+        pytest.param({"request": SimpleNamespace()}, "user", id="no_user"),
+    ],
+)
+def test_get_queryset_without_request_user_raises(attrs, missing):
+    view = QuerysetView()
     view.service_class = DummyService
+    vars(view).update(attrs)
 
     with pytest.raises(AttributeError) as exc_info:
         view.get_queryset()
 
-    assert "has no attribute 'request'" in str(exc_info.value)
-
-
-def test_missing_user_on_request_crashes_predictably(mocker):
-    """
-    If the authentication middleware fails and request.user is missing,
-    it must crash.
-    """
-    view = TestView()
-    view.service_class = DummyService
-
-    # Create a request but delete the user attribute
-    mock_request = mocker.Mock(spec=[])
-    view.request = mock_request
-
-    with pytest.raises(AttributeError) as exc_info:
-        view.get_queryset()
-
-    assert "has no attribute 'user'" in str(exc_info.value)
+    assert f"has no attribute '{missing}'" in str(exc_info.value)
 
 
 def test_get_queryset_returns_secure_service_objects(mocker):
-    """
-    It must successfully instantiate the service and return the objects property.
-    """
-    view = TestView()
+    view = QuerysetView()
     view.service_class = DummyService
 
     mock_request = mocker.Mock()
@@ -94,21 +75,50 @@ def test_get_queryset_returns_secure_service_objects(mocker):
     assert actual == "data_for_admin"
 
 
-def test_service_is_instantiated_with_exact_user(mocker):
-    """
-    SPY TEST: We must prove that the mixin explicitly passes `request.user`
-    into the service, and nothing else.
-    """
-    view = TestView()
+def _view_classes(patterns):
+    for pattern in patterns:
+        if isinstance(pattern, URLResolver):
+            yield from _view_classes(pattern.url_patterns)
+            continue
 
-    spy_service_class = mocker.Mock()
-    view.service_class = spy_service_class
+        if view_class := getattr(pattern.callback, "view_class", False):
+            yield view_class
 
-    mock_request = mocker.Mock()
-    view.request = mock_request
 
-    view.get_queryset()
+def _get_queryset_reads(view):
+    # a CreateView never calls get_queryset
+    return view.get_queryset is GetQuerysetMixin.get_queryset and not issubclass(
+        view, CreateView
+    )
 
-    # Service MUST have been called exactly once,
-    # and exactly with the request.user object.
-    spy_service_class.assert_called_once_with(mock_request.user)
+
+# A view's service_class is read when one of these holds for it.
+SERVICE_CLASS_READERS = {
+    "GetQuerysetMixin.get_queryset": _get_queryset_reads,
+    "FormsetMixin": lambda view: issubclass(view, FormsetMixin),
+    # by path: core's tests import no app
+    "PlanQuerySetMixin": lambda view: issubclass(
+        view, import_string("project.plans.mixins.views.PlanQuerySetMixin")
+    ),
+}
+
+
+def _sets_service_class(view):
+    return any(
+        "service_class" in vars(cls)
+        for cls in view.__mro__
+        if cls is not GetQuerysetMixin
+    )
+
+
+def test_a_view_sets_service_class_only_where_it_is_read():
+    views = set(_view_classes(get_resolver().url_patterns))
+
+    unread = sorted(
+        f"{view.__module__}.{view.__qualname__}"
+        for view in views
+        if _sets_service_class(view)
+        and not any(reads(view) for reads in SERVICE_CLASS_READERS.values())
+    )
+
+    assert not unread, "service_class read by nothing:\n" + "\n".join(unread)

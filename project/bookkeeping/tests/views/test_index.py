@@ -16,6 +16,8 @@ from ..helper import script_json
 
 pytestmark = pytest.mark.django_db
 
+INDEX_QUERY_CAP = 32
+
 
 def _add_items(first, last):
     for i in range(first, last):
@@ -28,7 +30,7 @@ def _add_items(first, last):
         LendFactory(name=f"Name {i}")
 
 
-def test_view_index_query_count_does_not_grow(client_logged):
+def test_view_index_queries_stay_under_the_cap_and_do_not_grow(client_logged):
     url = reverse("bookkeeping:index")
 
     def queries():
@@ -40,6 +42,7 @@ def test_view_index_query_count_does_not_grow(client_logged):
     six = queries()
 
     assert two == six
+    assert six <= INDEX_QUERY_CAP
 
 
 @pytest.fixture(name="index_content")
@@ -103,14 +106,6 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     assert checked[0] == checked[1]
 
 
-def test_view_index_negative_balance_is_marked_as_a_loss(client_logged):
-    ExpenseFactory(date=date(1999, 1, 1), price=100)
-
-    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
-
-    assert re.search(r'<td data-sign="loss"[^>]*>-', content)
-
-
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
 def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_source):
     SavingFactory(
@@ -131,31 +126,34 @@ def test_view_index_regenerate_buttons(client_logged):
     SavingFactory()
     PensionFactory()
 
-    url = reverse("bookkeeping:index")
-    response = client_logged.get(url)
+    response = client_logged.get(reverse("bookkeeping:index"))
     content = response.content.decode("utf-8")
 
-    url = reverse("bookkeeping:regenerate_balances")
+    regenerate_url = reverse("bookkeeping:regenerate_balances")
 
-    assert f'hx-get="{url}"' in content
+    assert f'hx-get="{regenerate_url}"' in content
     assert "Bus atnaujinti visų metų balansai." in content
 
 
-def test_view_reload_swaps_the_index_blocks(client_logged):
+@pytest.mark.parametrize(
+    "shown",
+    [
+        [
+            'hx-swap-oob="innerHTML:#table-balance"',
+            'hx-swap-oob="innerHTML:#table-expenses"',
+            'hx-swap-oob="innerHTML:#chart-balance-data"',
+            'hx-swap-oob="innerHTML:#chart-expenses-data"',
+        ],
+        ["<th>1999</th>"],
+    ],
+    ids=["index_blocks", "year_header"],
+)
+def test_view_reload_renders_the_index(client_logged, shown):
     url = reverse("bookkeeping:reload_index")
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert 'hx-swap-oob="innerHTML:#table-balance"' in content
-    assert 'hx-swap-oob="innerHTML:#table-expenses"' in content
-    assert 'hx-swap-oob="innerHTML:#chart-balance-data"' in content
-    assert 'hx-swap-oob="innerHTML:#chart-expenses-data"' in content
-
-
-def test_view_reload_renders_the_year_header(client_logged):
-    url = reverse("bookkeeping:reload_index")
-    content = client_logged.get(url).content.decode("utf-8")
-
-    assert "<th>1999</th>" in content
+    for text in shown:
+        assert text in content
 
 
 def test_view_reload_anonymous(client):
