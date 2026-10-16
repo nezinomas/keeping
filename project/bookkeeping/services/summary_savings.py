@@ -78,8 +78,12 @@ class Context:
     charts: dict = field(default_factory=dict, init=False)
     pointers: list = field(default_factory=list, init=False)
 
-    def add_chart(self, pointer, data, records):
-        self.charts[pointer] = data
+    def add_chart(self, pointer, chart):
+        records = len(chart["categories"])
+        if not records:
+            return
+
+        self.charts[pointer] = chart
         self.records += records
         self.pointers.append(pointer)
 
@@ -157,23 +161,18 @@ def make_chart(
     return asdict(chart)
 
 
-def update_context(context, chart, chart_pointer):
-    if records := len(chart["categories"]):
-        context.add_chart(chart_pointer, chart, records)
-
-
 def load_service(data, maps, today: date, switched: Mapping = NO_SWITCHES):
     context = Context()
 
-    for i in maps:
-        data_args = [data[x] for x in i.keys]
+    for chart_keys in maps:
+        data_args = [data[x] for x in chart_keys.keys]
         chart = make_chart(
-            i.title,
+            chart_keys.title,
             *data_args,
             today=today,
-            switched=switched.get(i.pointer, NO_SWITCHES),
+            switched=switched.get(chart_keys.pointer, NO_SWITCHES),
         )
-        update_context(context, chart, i.pointer)
+        context.add_chart(chart_keys.pointer, chart)
 
     return asdict(context)
 

@@ -27,10 +27,17 @@ class SavingTypeForm(UserTodayMixin, CloseNotBeforeRowsMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._set_widgets()
+        self._overwrite_default_queries()
+        self._translate_fields()
+
+    def _set_widgets(self):
         self.fields["closed"].widget = YearPickerWidget()
 
+    def _overwrite_default_queries(self):
         pin(self.fields["journal"], self.user.journal)
 
+    def _translate_fields(self):
         self.fields["title"].label = _("Fund")
         self.fields["closed"].label = _("Closed")
         self.fields["type"].label = _("Type")

@@ -9,7 +9,7 @@ from ..core.lib import date as core_date
 from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.form_fields import CommaFloatField, PreloadedModelChoiceField
 from ..core.lib.form_widgets import DatePickerWidget
-from ..core.mixins.forms import ClosedYearMixin
+from ..core.mixins.forms import ClosedYearMixin, UserTodayMixin
 from ..expenses.services.model_services import ExpenseTypeModelService
 from ..pensions.models import PensionType
 from ..savings.forms import FUND_CLOSED
@@ -17,7 +17,7 @@ from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
-class WorthForm(PriceToCentsFormMixin, forms.ModelForm):
+class WorthForm(UserTodayMixin, PriceToCentsFormMixin, forms.ModelForm):
     # the fund field is declared, not in Meta.fields: model validation would
     # query it once per form; the formset hands every form the same funds
     price_fields = ("price",)
@@ -27,12 +27,14 @@ class WorthForm(PriceToCentsFormMixin, forms.ModelForm):
         fields = ["date", "price"]
         labels = {"date": ""}
 
-    def __init__(self, *args, user, funds, today, now, **kwargs):
+    def __init__(self, *args, funds, now, **kwargs):
         super().__init__(*args, **kwargs)
         self.now = now
 
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_date_with_user_year(user, today)
+        self.fields["date"].initial = core_date.set_date_with_user_year(
+            self.user, self.today
+        )
         self.fields[self.fund_field].preload(funds)
 
     @property
@@ -88,15 +90,14 @@ class PensionWorthForm(WorthForm):
         model = PensionWorth
 
 
-class SummaryExpensesForm(forms.Form):
+class SummaryExpensesForm(UserTodayMixin, forms.Form):
     types = forms.MultipleChoiceField(required=False)
 
-    def __init__(self, *args, user, **kwargs):
-        kwargs.pop("today")
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         choices = []
-        for expense_type in ExpenseTypeModelService(user).objects:
+        for expense_type in ExpenseTypeModelService(self.user).objects:
             choices.append((expense_type.id, expense_type.title))
 
             choices.extend(

@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.db.models import Case, Count, F, IntegerField, Q, Sum, Value, When
+from django.db.models import Case, F, IntegerField, Q, Sum, Value, When
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
 from ...core.lib.date import last_months_window
@@ -104,7 +104,6 @@ class SavingModelService(SumMixin, DatedModelService):
             .values("saving_type")
             .annotate(date=TruncMonth("date"))
             .values("date")
-            .annotate(c=Count("id"))
             .annotate(sum=Sum("price"))
             .order_by("saving_type__title", "date")
             .values("date", "sum", title=F("saving_type__title"))

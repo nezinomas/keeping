@@ -4,12 +4,12 @@ from django.utils.translation import gettext as _
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import pin
 from ..core.lib.form_widgets import DatePickerWidget
-from ..core.mixins.forms import YearBetweenMixin
+from ..core.mixins.forms import UserTodayMixin, YearBetweenMixin
 from .models import Count, CountType
 from .services.model_services import CountTypeModelService
 
 
-class CountForm(YearBetweenMixin, forms.ModelForm):
+class CountForm(UserTodayMixin, YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Count
         fields = ["user", "date", "quantity", "count_type"]
@@ -17,8 +17,6 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "count_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        self.today = kwargs.pop("today")
         self.counter_type = kwargs.pop("counter_type", "")
 
         super().__init__(*args, **kwargs)
@@ -51,16 +49,14 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
         self.fields["count_type"].label = _("Count type")
 
 
-class CountTypeForm(forms.ModelForm):
+class CountTypeForm(UserTodayMixin, forms.ModelForm):
     class Meta:
         model = CountType
         fields = ["user", "title"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        pin(self.fields["user"], user)
+        pin(self.fields["user"], self.user)
 
         self.fields["title"].label = _("Title")

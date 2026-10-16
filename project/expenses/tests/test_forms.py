@@ -396,6 +396,33 @@ def test_expense_name_choices_mixin_instance_type_fills_names(main_user):
     assert list(form.fields["expense_name"].queryset) == [n]
 
 
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("title", "Pavadinimas"),
+        ("necessary", "Būtina"),
+    ],
+)
+def test_expense_type_form_labels(main_user, field, label):
+    form = ExpenseTypeForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("parent", "Išlaidų rūšis"),
+        ("title", "Išlaidų pavadinimas"),
+        ("valid_for", "Galioja"),
+    ],
+)
+def test_expense_name_form_labels(main_user, field, label):
+    form = ExpenseNameForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
 def test_expense_type_valid_data(main_user):
     form = ExpenseTypeForm(
         user=main_user, today=TODAY, data={"title": "Title", "necessary": True}

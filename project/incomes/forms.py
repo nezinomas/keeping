@@ -64,7 +64,12 @@ class IncomeTypeForm(UserTodayMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._overwrite_default_queries()
+        self._translate_fields()
+
+    def _overwrite_default_queries(self):
         pin(self.fields["journal"], self.user.journal)
 
+    def _translate_fields(self):
         self.fields["title"].label = _("Incomes type")
         self.fields["type"].label = _("Type")
