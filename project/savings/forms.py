@@ -2,6 +2,7 @@ from django import forms
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
+from ..accounts.forms import ACCOUNT_CLOSED
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceNeverEmptyFormMixin, PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
@@ -41,7 +42,10 @@ class SavingForm(
     YearBetweenMixin,
     forms.ModelForm,
 ):
-    closed_fields = {"saving_type": (FUND_CLOSED, "date")}
+    closed_fields = {
+        "saving_type": (FUND_CLOSED, "date"),
+        "account": (ACCOUNT_CLOSED, "date"),
+    }
     price_fields = ("price", "fee")
     price = CommaFloatField(min_value=0, required=False)
     fee = CommaFloatField(min_value=0, required=False)

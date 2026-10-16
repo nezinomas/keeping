@@ -3,6 +3,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from ..accounts.forms import ACCOUNT_CLOSED
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import NeverEmptyFormMixin, PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
@@ -11,9 +12,7 @@ from ..core.lib.form_widgets import DatePickerWidget
 from ..core.lib.utils import int_or_zero
 from ..core.mixins.forms import ClosedYearMixin, YearBetweenMixin
 from ..savings.forms import FUND_CLOSED
-from ..savings.services.model_services import (
-    SavingTypeModelService,
-)
+from ..savings.services.model_services import SavingTypeModelService
 from .close_rules import CloseBox
 from .models import SavingChange, SavingClose, Transaction
 
@@ -29,7 +28,13 @@ def set_to_account_choices(form, service):
         to_account.queryset = service.items().exclude(pk=from_account_pk)
 
 
-class TransactionForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
+class TransactionForm(
+    ClosedYearMixin, PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm
+):
+    closed_fields = {
+        "from_account": (ACCOUNT_CLOSED, "date"),
+        "to_account": (ACCOUNT_CLOSED, "date"),
+    }
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 
@@ -114,7 +119,10 @@ class SavingCloseForm(
     YearBetweenMixin,
     forms.ModelForm,
 ):
-    closed_fields = {"from_account": (FUND_CLOSED, "date")}
+    closed_fields = {
+        "from_account": (FUND_CLOSED, "date"),
+        "to_account": (ACCOUNT_CLOSED, "date"),
+    }
     price_fields = ("price", "fee")
     _never_empty = ("fee",)
 

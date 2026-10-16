@@ -204,6 +204,71 @@ def test_form_date_after_the_fund_closed(main_user, name, field, error_field):
     assert form.errors == {error_field: ["Fondas uždarytas 1999."]}
 
 
+ACCOUNT_ERROR = (
+    "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 1999."
+)
+
+
+@pytest.mark.parametrize(
+    "name, fields, posted, errors",
+    [
+        pytest.param(
+            "saving_close",
+            ["to_account"],
+            "2000-03-01",
+            {"date": [ACCOUNT_ERROR]},
+            id="sell_into",
+        ),
+        pytest.param(
+            "transaction",
+            ["from_account"],
+            "2000-03-01",
+            {"date": [ACCOUNT_ERROR]},
+            id="transfer_from",
+        ),
+        pytest.param(
+            "transaction",
+            ["to_account"],
+            "2000-03-01",
+            {"date": [ACCOUNT_ERROR]},
+            id="transfer_to",
+        ),
+        pytest.param(
+            "transaction",
+            ["from_account", "to_account"],
+            "2000-03-01",
+            {"date": [ACCOUNT_ERROR, ACCOUNT_ERROR]},
+            id="transfer_both",
+        ),
+        pytest.param(
+            "saving_close", ["to_account"], "1999-12-31", {}, id="sell_into_closed_year"
+        ),
+        pytest.param(
+            "transaction",
+            ["from_account", "to_account"],
+            "1999-12-31",
+            {},
+            id="transfer_closed_year",
+        ),
+    ],
+)
+def test_form_date_after_the_account_closed(main_user, name, fields, posted, errors):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
+    for field in fields:
+        closed = {"from_account": a_from, "to_account": a_to}[field]
+        closed.closed = 1999
+        closed.save()
+
+    form = kind.form(
+        user=main_user,
+        today=TODAY,
+        data=_post(a_from, a_to, date=posted, price="1.0"),
+    )
+
+    assert form.errors == errors
+
+
 @pytest.mark.parametrize("name", KINDS)
 def test_form_blank_data(main_user, name):
     form = KINDS[name].form(user=main_user, today=TODAY, data={})

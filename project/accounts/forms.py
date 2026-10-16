@@ -1,9 +1,15 @@
 from django import forms
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from ..core.lib.form_fields import pin
 from ..core.lib.form_widgets import YearPickerWidget
 from .models import Account
+
+ACCOUNT_CLOSED = gettext_lazy(
+    "The date cannot be later than the account closure date. "
+    "The account was closed in %(year)s."
+)
 
 
 class AccountForm(forms.ModelForm):
