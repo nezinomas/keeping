@@ -2731,6 +2731,10 @@ msgstr "iš sąskaitos"
 msgid "Fund was closed in %(year)s."
 msgstr "Fondas uždarytas %(year)s."
 
+#, python-format
+msgid "Cannot close before %(year)s: there are records in that year."
+msgstr "Negalima uždaryti anksčiau nei %(year)s: tais metais yra įrašų."
+
 msgid "The same funds are selected."
 msgstr "Pasirinkti vienodi fondai."
 
