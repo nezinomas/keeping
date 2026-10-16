@@ -299,3 +299,19 @@ def test_removing_the_latest_year_keeps_every_other_owners_rows():
     assert _years(AccountBalance, account=seb) == [1999, 2000]
     assert _years(AccountBalance, account=ib) == []
     assert AccountBalance.objects.get(account=seb, year=2000).balance == 100
+
+
+def test_closing_and_reopening_an_account_resyncs_its_years():
+    seb = AccountFactory(title="SEB")
+    IncomeFactory(account=seb, price=100, date=date(1999, 1, 1))
+    # another account's row carries the journal's years on to 2002
+    IncomeFactory(account=AccountFactory(title="IB"), price=50, date=date(2001, 1, 1))
+    assert _years(AccountBalance, account=seb) == [1999, 2000, 2001, 2002]
+
+    seb.closed = 1999
+    seb.save()
+    assert _years(AccountBalance, account=seb) == [1999]
+
+    seb.closed = None
+    seb.save()
+    assert _years(AccountBalance, account=seb) == [1999, 2000, 2001, 2002]
