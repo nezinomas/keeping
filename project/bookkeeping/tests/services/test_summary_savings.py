@@ -47,6 +47,7 @@ def test_chart_data_with_hypothesis(data):
     assert len(actual["invested"]) == len(years)
     assert len(actual["profit"]) == len(years)
     assert len(actual["total"]) == len(years)
+    assert len(actual["proc"]) == len(years)
     for year, total in zip(years, actual["total"], strict=True):
         assert total == sum(row["total"] for row in data if row["year"] == year)
     past = {row["year"] for row in data if row["year"] <= TODAY.year}

@@ -86,7 +86,8 @@ class SavingModelService(SumMixin, DatedModelService):
         ).annotate(title=Value("savings_account_fee"))
 
     def spent_last_months(self, today: date, months: int = 6):
-        """`last_months` with the account-charged fees, which leave on top of it."""
+        """The savings of the `months` whole months before `today`'s, with the
+        account-charged fees, which leave on top of them."""
         return self._in_last_months(today, months).aggregate(
             sum=Coalesce(Sum(self._cash_out()), 0)
         )
@@ -100,7 +101,6 @@ class SavingModelService(SumMixin, DatedModelService):
     def sum_by_month_and_type(self, year: int):
         return (
             self.objects.filter(date__year=year)
-            .annotate(cnt=Count("saving_type"))
             .values("saving_type")
             .annotate(date=TruncMonth("date"))
             .values("date")
@@ -118,12 +118,6 @@ class SavingModelService(SumMixin, DatedModelService):
     def sum_by_day(self, year: int, month: int):
         return self.day_sum(self.objects, year=year, month=month).annotate(
             title=Value(SAVINGS)
-        )
-
-    def last_months(self, today: date, months: int = 6):
-        """The savings of the `months` whole months before `today`'s."""
-        return self._in_last_months(today, months).aggregate(
-            sum=Coalesce(Sum("price"), 0)
         )
 
     def incomes(self):
