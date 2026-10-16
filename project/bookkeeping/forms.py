@@ -9,8 +9,10 @@ from ..core.lib import date as core_date
 from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.form_fields import CommaFloatField, PreloadedModelChoiceField
 from ..core.lib.form_widgets import DatePickerWidget
+from ..core.mixins.forms import ClosedYearMixin
 from ..expenses.services.model_services import ExpenseTypeModelService
 from ..pensions.models import PensionType
+from ..savings.forms import FUND_CLOSED
 from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
 
@@ -51,21 +53,8 @@ class WorthForm(PriceToCentsFormMixin, forms.ModelForm):
         return cleaned
 
 
-class ClosedFundMixin:
-    def clean(self):
-        cleaned = super().clean()
-        dt = cleaned.get("date")
-        fund = cleaned.get(self.fund_field)
-        if not dt or not fund or not fund.closed:
-            return cleaned
-
-        if dt.year > fund.closed:
-            self.add_error("date", self.closed_message % {"year": fund.closed})
-        return cleaned
-
-
-class SavingWorthForm(ClosedFundMixin, WorthForm):
-    closed_message = gettext_lazy("Fund was closed in %(year)s.")
+class SavingWorthForm(ClosedYearMixin, WorthForm):
+    closed_fields = {"saving_type": (FUND_CLOSED, "date")}
     duplicate_message = gettext_lazy("The same funds are selected.")
     saving_type = PreloadedModelChoiceField(
         queryset=SavingType.objects.none(), label=""
@@ -76,8 +65,10 @@ class SavingWorthForm(ClosedFundMixin, WorthForm):
         model = SavingWorth
 
 
-class AccountWorthForm(ClosedFundMixin, WorthForm):
-    closed_message = gettext_lazy("Account was closed in %(year)s.")
+class AccountWorthForm(ClosedYearMixin, WorthForm):
+    closed_fields = {
+        "account": (gettext_lazy("Account was closed in %(year)s."), "date")
+    }
     duplicate_message = gettext_lazy("The same accounts are selected.")
     account = PreloadedModelChoiceField(queryset=Account.objects.none(), label="")
     field_order = ["date", "account", "price"]

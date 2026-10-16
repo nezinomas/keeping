@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceNeverEmptyFormMixin, PriceToCentsFormMixin
@@ -9,6 +10,8 @@ from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Saving, SavingType
 from .services.model_services import SavingTypeModelService
+
+FUND_CLOSED = gettext_lazy("Fund was closed in %(year)s.")
 
 
 class SavingTypeForm(forms.ModelForm):
