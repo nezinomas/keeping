@@ -1,13 +1,17 @@
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 
 from ...accounts.tests.factories import AccountFactory
+from ...bookkeeping.tests.factories import SavingWorthFactory
+from ...core.tests.utils import count_queries
 from ...journals.tests.factories import JournalFactory
+from ...plans.tests.factories import SavingPlanFactory
+from ...transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
 from ...users.tests.factories import UserFactory
 from ..forms import SavingForm, SavingTypeForm
 from ..models import SavingType
-from .factories import SavingTypeFactory
+from .factories import SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -75,6 +79,73 @@ def test_saving_type_with_no_close_year_saves_open(main_user, closed):
 
     assert form.is_valid()
     assert form.save().closed is None
+
+
+FUND_ROWS = {
+    "buy": lambda fund, year: SavingFactory(saving_type=fund, date=date(year, 6, 1)),
+    "sell": lambda fund, year: SavingCloseFactory(
+        from_account=fund, date=date(year, 6, 1)
+    ),
+    "switch_out": lambda fund, year: SavingChangeFactory(
+        from_account=fund, date=date(year, 6, 1)
+    ),
+    "switch_in": lambda fund, year: SavingChangeFactory(
+        to_account=fund, date=date(year, 6, 1)
+    ),
+    "worth": lambda fund, year: SavingWorthFactory(
+        saving_type=fund,
+        date=datetime(year, 6, 1, tzinfo=UTC),
+    ),
+    "plan": lambda fund, year: SavingPlanFactory(saving_type=fund, year=year),
+}
+
+
+def _fund_form(user, fund, closed):
+    return SavingTypeForm(
+        user=user,
+        today=TODAY,
+        instance=fund,
+        data={
+            "title": fund.title,
+            "closed": closed,
+            "type": "funds",
+            "fee_source": "investment",
+        },
+    )
+
+
+@pytest.mark.parametrize("row", FUND_ROWS)
+@pytest.mark.parametrize(
+    "closed, errors",
+    [
+        (
+            "2000",
+            {"closed": ["Negalima uždaryti anksčiau nei 2001: tais metais yra įrašų."]},
+        ),
+        ("2001", {}),
+        ("2005", {}),
+        ("", {}),
+    ],
+)
+def test_saving_type_close_year_not_before_its_rows(main_user, row, closed, errors):
+    fund = SavingTypeFactory()
+    FUND_ROWS[row](fund, 1999)
+    FUND_ROWS[row](fund, 2001)
+
+    assert _fund_form(main_user, fund, closed).errors == errors
+
+
+def test_saving_type_close_year_query_count(main_user):
+    def queries(fund, rows):
+        for year in range(1999, 1999 + rows):
+            for make in FUND_ROWS.values():
+                make(fund, year)
+        form = _fund_form(main_user, fund, "2010")
+        return count_queries(form.is_valid)
+
+    assert queries(SavingTypeFactory(title="F2"), 2) == queries(
+        SavingTypeFactory(title="F6"), 6
+    )
 
 
 def test_saving_type_fee_source_field(main_user):

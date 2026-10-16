@@ -6,7 +6,11 @@ from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
 from ...core.lib.table_columns import SAVINGS
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService, DatedModelService
+from ...core.services.model_services import (
+    BaseModelService,
+    DatedModelService,
+    max_year,
+)
 from .. import models
 
 
@@ -25,6 +29,20 @@ class SavingTypeModelService(BaseModelService):
     def items(self, year=None):
         year = year or self.user.selected_year()
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
+
+    def latest_row_year(self, fund: models.SavingType) -> int:
+        if not fund.pk:
+            return 0
+
+        year = ExtractYear("date")
+        return max_year(
+            (fund.saving_set, year),
+            (fund.savings_close_from, year),
+            (fund.savings_change_from, year),
+            (fund.savings_change_to, year),
+            (fund.savings_worth, year),
+            (fund.savingplan_set, F("year")),
+        )
 
 
 class SavingModelService(SumMixin, DatedModelService):

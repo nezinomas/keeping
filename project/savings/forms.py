@@ -8,31 +8,38 @@ from ..core.lib.convert_price import PriceNeverEmptyFormMixin, PriceToCentsFormM
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
-from ..core.mixins.forms import ClosedYearMixin, YearBetweenMixin
+from ..core.mixins.forms import (
+    ClosedYearMixin,
+    CloseNotBeforeRowsMixin,
+    YearBetweenMixin,
+)
 from .models import Saving, SavingType
 from .services.model_services import SavingTypeModelService
 
 FUND_CLOSED = gettext_lazy("Fund was closed in %(year)s.")
 
 
-class SavingTypeForm(forms.ModelForm):
+class SavingTypeForm(CloseNotBeforeRowsMixin, forms.ModelForm):
     class Meta:
         model = SavingType
         fields = ["journal", "title", "type", "fee_source", "closed"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user")
+        self.user = kwargs.pop("user")
         kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["closed"].widget = YearPickerWidget()
 
-        pin(self.fields["journal"], user.journal)
+        pin(self.fields["journal"], self.user.journal)
 
         self.fields["title"].label = _("Fund")
         self.fields["closed"].label = _("Closed")
         self.fields["type"].label = _("Type")
         self.fields["fee_source"].label = _("Fee charged")
+
+    def latest_row_year(self):
+        return SavingTypeModelService(self.user).latest_row_year(self.instance)
 
 
 class SavingForm(
