@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
+from ..accounts import models as account
 from ..core.services.signals_service import journal_user
 from ..debts import models as debt
 from ..debts.services.model_services import DebtModelService
@@ -28,6 +29,8 @@ from . import models as bookkeeping
 @receiver(post_save, sender=debt.Debt)
 @receiver(post_delete, sender=debt.Debt)
 @receiver(post_save, sender=bookkeeping.AccountWorth)
+# closing an account drops its later years
+@receiver(post_save, sender=account.Account)
 def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
     balance_sources.sync_accounts(journal_user(instance))
 
