@@ -1,10 +1,11 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
 
 from django.db.models import Max
 
 from ...savings.models import SavingType
-from ..close_rules import KEEP, CloseRule
+from ..close_rules import KEEP, CloseRule, Removed
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,11 @@ class FundCloseYear:
 
         # no type save: the move's receiver syncs savings once, after this
         SavingType.objects.filter(pk=fund_pk).update(closed=closed)
+
+    @classmethod
+    def follow_removed(cls, removed: Iterable[Removed]) -> None:
+        for move in removed:
+            cls.follow(move.fund_pk, move)
 
     @classmethod
     def is_closing_move(cls, fund_pk: int, day: date) -> bool:

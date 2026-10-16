@@ -13,7 +13,7 @@ from ..core.lib.utils import int_or_zero
 from ..core.mixins.forms import ClosedYearMixin, YearBetweenMixin
 from ..savings.forms import FUND_CLOSED
 from ..savings.services.model_services import SavingTypeModelService
-from .close_rules import CloseBox
+from .close_rules import CLOSE, KEEP, REOPEN, CloseRule
 from .models import SavingChange, SavingClose, Transaction
 from .services.close_year import FundCloseYear
 
@@ -96,14 +96,22 @@ class CloseFromAccountMixin:
             )
 
     def save(self, *args, **kwargs):
-        ticked = self.cleaned_data["close"]
-        changed = "close" in self.changed_data
-        # the box was rendered for the fund it left: on the new one only a tick speaks
-        if "from_account" in self.changed_data:
-            changed = ticked
-        self.instance.close_rule = CloseBox(changed, ticked)
+        self.instance.close_rule = self._close_rule()
 
         return super().save(*args, **kwargs)
+
+    def _close_rule(self) -> CloseRule:
+        # the box was rendered for the fund it left: on the new one only a tick speaks
+        moved = "from_account" in self.changed_data
+        box_changed = "close" in self.changed_data
+
+        if self.cleaned_data["close"] and (moved or box_changed):
+            return CLOSE
+
+        if moved or not box_changed:
+            return KEEP
+
+        return REOPEN
 
 
 class SavingCloseForm(
