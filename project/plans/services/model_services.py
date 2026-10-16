@@ -1,12 +1,13 @@
-from abc import abstractmethod
 from collections import defaultdict
+from collections.abc import Callable, Hashable, Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
-from django.db.models import F, Sum
+from django.db.models import F, QuerySet, Sum
 from django.utils.translation import gettext_lazy as _
 
+from ...core.lib.table_columns import SAVINGS
 from ...core.services.model_services import DatedModelService
-from ...expenses.services.model_services import ExpenseTypeModelService
 from .. import models
 
 
@@ -17,10 +18,7 @@ class PlanModelService(DatedModelService):
     def items(self):
         return self.objects
 
-    @abstractmethod
-    def pivot_table(self, year: int): ...
-
-    def generic_pivot_table(self, year: int, key_func):
+    def generic_pivot_table(self, year: int, key_func: Callable[[Any], Hashable]):
         grouped = defaultdict(dict)
         # Meta.ordering sets the order of the table's rows
         for plan in self.year(year):
@@ -70,8 +68,11 @@ class ExpensePlanModelService(PlanModelService):
             table[expense_type] = months
         return tables
 
-    def summed_by_month(self, year, necessary=False):
-        return super().summed_by_month(year).filter(expense_type__necessary=necessary)
+    def everyday_by_month(self, year: int):
+        return self.summed_by_month(year).filter(expense_type__necessary=False)
+
+    def necessary_by_month(self, year: int):
+        return self.summed_by_month(year).filter(expense_type__necessary=True)
 
 
 class SavingPlanModelService(PlanModelService):
@@ -104,50 +105,47 @@ class NecessaryPlanModelService(PlanModelService):
         )
 
 
-class PlanAggregatorService:
-    def __init__(self, user):
-        self.user = user
+@dataclass
+class MonthTargets:
+    """What the plans set for each Expense type, and for savings, in one month."""
 
-    def get_monthly_plan_targets(self, year: int, month: int) -> dict:
-        targets = self._initialize_targets()
+    type_titles: Sequence[str]
+    expense_plans: QuerySet
+    necessary_plans: QuerySet
+    saving_plans: QuerySet
+    month: int
 
-        for service in (ExpensePlanModelService, NecessaryPlanModelService):
-            self._add_type_plans(targets, service(self.user), year, month)
-        self._add_saving_plans(targets, year, month)
-
-        return targets
-
-    def _initialize_targets(self) -> dict:
-        expense_types = (
-            ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
-        )
-        targets = {title: 0 for title in expense_types}
-        targets["savings"] = 0
-        return targets
-
-    @staticmethod
-    def _add_type_plans(
-        targets: dict,
-        service: ExpensePlanModelService | NecessaryPlanModelService,
-        year: int,
+    @classmethod
+    def for_month(
+        cls,
+        type_titles: Sequence[str],
+        expense_plans: QuerySet,
+        necessary_plans: QuerySet,
+        saving_plans: QuerySet,
         month: int,
-    ):
-        rows = (
-            service.year(year)
-            .filter(month=month)
+    ) -> dict[str, int]:
+        return cls(
+            type_titles, expense_plans, necessary_plans, saving_plans, month
+        )._targets()
+
+    def _targets(self) -> dict[str, int]:
+        targets = dict.fromkeys(self.type_titles, 0)
+
+        for plans in (self.expense_plans, self.necessary_plans):
+            for title, total in self._totals_by_type_title(plans):
+                if title in targets:
+                    targets[title] += total
+
+        targets[SAVINGS] = self.saving_plans.filter(month=self.month).aggregate(
+            total=Sum("price", default=0)
+        )["total"]
+
+        return targets
+
+    def _totals_by_type_title(self, plans: QuerySet):
+        return (
+            plans.filter(month=self.month)
             .values(type_title=F("expense_type__title"))
             .annotate(total=Sum("price", default=0))
+            .values_list("type_title", "total")
         )
-        for row in rows:
-            if row["type_title"] not in targets:
-                continue
-            targets[row["type_title"]] += row["total"]
-
-    def _add_saving_plans(self, targets: dict, year: int, month: int):
-        savings = (
-            SavingPlanModelService(self.user)
-            .year(year)
-            .filter(month=month)
-            .aggregate(total=Sum("price", default=0))
-        )
-        targets["savings"] += savings["total"]

@@ -44,7 +44,7 @@ def test_monthly_stats(drink_type, stdav, qty, expect_qty, expect_vol):
     ]
 
     converter = DrinkConverter(drink_type)
-    obj = DrinkStats(converter, data, today=date(1999, 12, 31))
+    obj = DrinkStats(converter, data, year=1999, today=date(1999, 12, 31))
     stats = obj.monthly
 
     assert stats.total_quantity == expect_qty
@@ -52,8 +52,15 @@ def test_monthly_stats(drink_type, stdav, qty, expect_qty, expect_vol):
     assert len(stats.avg_daily_volume) == 12
 
 
-def test_monthly_stats_no_data(drink_converter):
-    obj = DrinkStats(drink_converter, today=date(1999, 12, 31))
+@pytest.mark.parametrize(
+    "today",
+    [
+        pytest.param(date(1999, 12, 31), id="last_day_of_the_year"),
+        pytest.param(date(2005, 3, 1), id="a_past_year_spans_all_twelve_months"),
+    ],
+)
+def test_monthly_stats_no_data(drink_converter, today):
+    obj = DrinkStats(drink_converter, year=1999, today=today)
     stats = obj.monthly
 
     assert stats.total_quantity == [0.0] * 12
@@ -71,7 +78,7 @@ def test_monthly_stats_no_data(drink_converter):
 def test_monthly_stats_end_at_the_month_reached(today, months):
     data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
 
-    stats = DrinkStats(DrinkConverter("beer"), data, today=today).monthly
+    stats = DrinkStats(DrinkConverter("beer"), data, year=1999, today=today).monthly
 
     assert stats.avg_daily_volume[7] == 0.0  # August has begun
     assert len(stats.avg_daily_volume) == months
@@ -83,7 +90,9 @@ def test_monthly_stats_end_at_the_month_reached(today, months):
 def test_monthly_stats_carry_the_std_av_they_summed():
     data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
 
-    stats = DrinkStats(DrinkConverter("beer"), data, today=date(1999, 12, 31)).monthly
+    stats = DrinkStats(
+        DrinkConverter("beer"), data, year=1999, today=date(1999, 12, 31)
+    ).monthly
 
     assert stats.total_stdav[0] == 2.5
     assert stats.total_stdav[1] == 0.0
@@ -92,7 +101,9 @@ def test_monthly_stats_carry_the_std_av_they_summed():
 def test_yearly_std_av_is_summed_not_rebuilt_from_the_shown_quantity():
     data = [DataRow(date=date(1999, 1, 1), qty=0.1 * 0.4, stdav=0.1)]
 
-    stats = DrinkStats(DrinkConverter("beer"), data, today=date(1999, 12, 31)).yearly
+    stats = DrinkStats(
+        DrinkConverter("beer"), data, year=1999, today=date(1999, 12, 31)
+    ).yearly
 
     assert stats.stdav == 0.1
 
@@ -102,7 +113,9 @@ def test_monthly_stats_shows_std_av_as_typed():
     sit 10x above the Drink Target drawn across it."""
     data = [DataRow(date=date(1999, 1, 1), qty=5, stdav=5)]
 
-    stats = DrinkStats(DrinkConverter("stdav"), data, today=date(1999, 12, 31)).monthly
+    stats = DrinkStats(
+        DrinkConverter("stdav"), data, year=1999, today=date(1999, 12, 31)
+    ).monthly
 
     assert stats.total_volume[0] == 5.0
     assert stats.avg_daily_volume[0] == pytest.approx(5 / 31)
@@ -111,7 +124,9 @@ def test_monthly_stats_shows_std_av_as_typed():
 def test_yearly_stats_shows_std_av_as_typed():
     data = [DataRow(date=date(1999, 1, 1), qty=5, stdav=5)]
 
-    stats = DrinkStats(DrinkConverter("stdav"), data, today=date(1999, 1, 1)).yearly
+    stats = DrinkStats(
+        DrinkConverter("stdav"), data, year=1999, today=date(1999, 1, 1)
+    ).yearly
 
     assert stats.avg_daily_volume == 5.0
 
@@ -119,11 +134,11 @@ def test_yearly_stats_shows_std_av_as_typed():
 @pytest.mark.parametrize(
     "year, today, expect_avg_volume, expect_total_qty",
     [
-        (1999, date(1999, 1, 1), 500.0, 1.0),  # First day of year
-        (1999, date(1999, 1, 31), 16.13, 1.0),  # End of January
-        (1999, date(1999, 12, 31), 2.74, 2.0),  # End of year
-        (1999, date(2000, 1, 1), 2.74, 2.0),  # Next year (past year)
-        (2000, date(2000, 12, 31), 2.73, 2.0),  # Leap year (366 days)
+        pytest.param(1999, date(1999, 1, 1), 500.0, 1.0, id="first_day_of_year"),
+        pytest.param(1999, date(1999, 1, 31), 16.13, 1.0, id="end_of_january"),
+        pytest.param(1999, date(1999, 12, 31), 2.74, 2.0, id="end_of_year"),
+        pytest.param(1999, date(2000, 1, 1), 2.74, 2.0, id="a_past_year"),
+        pytest.param(2000, date(2000, 12, 31), 2.73, 2.0, id="leap_year"),
     ],
 )
 def test_yearly_stats(year, today, expect_avg_volume, expect_total_qty):
@@ -133,7 +148,7 @@ def test_yearly_stats(year, today, expect_avg_volume, expect_total_qty):
     ]
 
     converter = DrinkConverter("beer")
-    obj = DrinkStats(converter, data, today=today)
+    obj = DrinkStats(converter, data, year=year, today=today)
     stats = obj.yearly
 
     assert round(stats.avg_daily_volume, 2) == expect_avg_volume
@@ -141,7 +156,7 @@ def test_yearly_stats(year, today, expect_avg_volume, expect_total_qty):
 
 
 def test_yearly_stats_no_data(drink_converter):
-    obj = DrinkStats(drink_converter, today=date(1999, 12, 31))
+    obj = DrinkStats(drink_converter, year=1999, today=date(1999, 12, 31))
     stats = obj.yearly
 
     assert stats.avg_daily_volume == 0.0
@@ -155,33 +170,19 @@ def test_yearly_stats_no_data(drink_converter):
 def test_yearly_stats_pure_alcohol(drink_converter, today):
     data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
 
-    obj = DrinkStats(drink_converter, data, today=today)
+    obj = DrinkStats(drink_converter, data, year=1999, today=today)
 
     assert obj.yearly.total_quantity == 1.0
     assert obj.yearly.stdav == 2.5
     assert obj.yearly.pure_alcohol_liters == 0.025
 
 
-@pytest.mark.parametrize(
-    "data, expect_year",
-    [
-        pytest.param([], 2005, id="falls_back_to_today_when_empty"),
-        pytest.param(
-            [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)],
-            1999,
-            id="comes_from_the_data",
-        ),
-    ],
-)
-def test_year(drink_converter, data, expect_year):
-    obj = DrinkStats(drink_converter, data, today=date(2005, 3, 1))
+def test_year_is_the_year_asked_for_when_empty(drink_converter):
+    obj = DrinkStats(drink_converter, year=1999, today=date(2005, 3, 1))
 
-    assert obj.year == expect_year
+    assert obj.year == 1999
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        YearOverYear
-# -------------------------------------------------------------------------------------
 @pytest.mark.parametrize(
     "current, previous, expect",
     [(1.0, 2.0, True), (2.0, 1.0, False), (2.0, 2.0, True)],

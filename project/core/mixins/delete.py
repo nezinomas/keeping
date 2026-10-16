@@ -1,11 +1,14 @@
 from django_htmx.http import HttpResponseClientRedirect
 
 from ..lib.utils import http_htmx_response
-from .create_update import HxResponseMixin
+from .htmx import HxResponseMixin
 
 
 class DeleteMixin(HxResponseMixin):
     hx_trigger_django = "reload"
+
+    url = ""
+    modal_form_title = ""
 
     def get_context_data(self, **kwargs):
         context = {

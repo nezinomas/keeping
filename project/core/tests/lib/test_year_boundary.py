@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import date
 
 import pytest
-import time_machine
 
 from ...lib.year_boundary import YearBoundary
 
@@ -16,37 +15,6 @@ class Row:
 
 def _row(dt: date) -> Row:
     return Row(date=dt)
-
-
-@time_machine.travel("2026-06-15")
-def test_year_comes_from_the_first_record():
-    assert YearBoundary.from_records([_row(date(2025, 3, 1))]).year == 2025
-
-
-@time_machine.travel("2026-06-15")
-def test_year_falls_back_to_today_without_records():
-    assert YearBoundary.from_records().year == 2026
-
-
-@time_machine.travel("2026-06-15")
-def test_today_can_be_given_instead_of_the_clock():
-    boundary = YearBoundary.from_records(today=date(2019, 5, 4))
-
-    assert boundary.year == 2019
-    assert boundary.today == date(2019, 5, 4)
-
-
-@time_machine.travel("2026-06-15")
-def test_for_year_takes_the_year_the_caller_already_knows():
-    boundary = YearBoundary.for_year(2021)
-
-    assert boundary.year == 2021
-    assert boundary.today == date(2026, 6, 15)
-
-
-@time_machine.travel("2026-06-15")
-def test_for_year_without_a_year_is_the_year_running_now():
-    assert YearBoundary.for_year().year == 2026
 
 
 @pytest.mark.parametrize(

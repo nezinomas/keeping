@@ -1,8 +1,7 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from zoneinfo import ZoneInfo
 
 import pytest
-import time_machine
 
 from ....accounts.tests.factories import AccountFactory
 from ....pensions.tests.factories import PensionTypeFactory
@@ -12,6 +11,9 @@ from ..factories import SavingTypeFactory
 from ..helper import worth_form
 
 pytestmark = pytest.mark.django_db
+
+TODAY = date(1999, 2, 2)
+NOW = datetime(1999, 2, 2, 3, 2, 1, tzinfo=timezone.utc)
 
 
 WORTH_FORMS = pytest.mark.parametrize(
@@ -28,7 +30,7 @@ WORTH_FORMS = pytest.mark.parametrize(
 
 @WORTH_FORMS
 def test_worth_form_fields(main_user, form_class, factory, field):
-    form = worth_form(form_class, main_user).as_p()
+    form = worth_form(form_class, main_user, today=TODAY, now=NOW).as_p()
 
     assert '<input type="text" name="price"' in form
     assert f'<select name="{field}"' in form
@@ -43,13 +45,14 @@ def test_worth_form_fields(main_user, form_class, factory, field):
         pytest.param("0", 0, id="reset"),
     ],
 )
-@time_machine.travel("1999-2-2 03:02:01")
 def test_worth_form_valid_data(main_user, form_class, factory, field, price, cents):
     related = factory()
 
     form = worth_form(
         form_class,
         main_user,
+        today=TODAY,
+        now=NOW,
         data={"date": "1999-1-2", "price": price, field: related.pk},
     )
     assert form.is_valid(), form.errors
@@ -62,8 +65,17 @@ def test_worth_form_valid_data(main_user, form_class, factory, field, price, cen
 
 
 @WORTH_FORMS
+def test_worth_form_date_starts_at_today_in_the_users_year(
+    main_user, form_class, factory, field
+):
+    form = worth_form(form_class, main_user, today=date(2005, 3, 4), now=NOW)
+
+    assert form["date"].value() == datetime(main_user.year, 3, 4)
+
+
+@WORTH_FORMS
 def test_worth_form_blank_data(main_user, form_class, factory, field):
-    form = worth_form(form_class, main_user, data={})
+    form = worth_form(form_class, main_user, today=TODAY, now=NOW, data={})
 
     assert not form.is_valid()
 
@@ -105,6 +117,8 @@ def test_worth_form_date_after_the_fund_closed(
     form = worth_form(
         form_class,
         main_user,
+        today=TODAY,
+        now=NOW,
         data={"date": date, "price": "1.0", field: fund.pk},
     )
 
@@ -124,11 +138,12 @@ def test_a_worth_counts_in_the_year_it_was_picked_for(picked, clock, main_user):
     form = worth_form(
         SavingWorthForm,
         main_user,
+        today=TODAY,
+        now=clock.astimezone(timezone.utc),
         data={"date": picked, "price": "1", "saving_type": SavingTypeFactory().pk},
     )
-    with time_machine.travel(clock, tick=False):
-        assert form.is_valid()
-        form.save()
+    assert form.is_valid()
+    form.save()
 
     actual = SavingWorthModelService(main_user).have()
 

@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Case, Count, F, IntegerField, Q, Sum, Value, When
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
+from ...core.lib.table_columns import SAVINGS
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService, DatedModelService
 from .. import models
@@ -22,7 +23,7 @@ class SavingTypeModelService(BaseModelService):
         return self.objects.none()
 
     def items(self, year=None):
-        year = year or self.user.year
+        year = year or self.user.selected_year()
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
 
@@ -42,7 +43,7 @@ class SavingModelService(SumMixin, DatedModelService):
         return self.year_sum(self.objects)
 
     def sum_by_month(self, year: int):
-        return self.month_sum(self.objects, year).annotate(title=Value("savings"))
+        return self.month_sum(self.objects, year).annotate(title=Value(SAVINGS))
 
     def cash_flow_by_month(self, year: int):
         """The savings series and the account fees on top of it, in one query."""
@@ -105,7 +106,7 @@ class SavingModelService(SumMixin, DatedModelService):
 
     def sum_by_day(self, year: int, month: int):
         return self.day_sum(self.objects, year=year, month=month).annotate(
-            title=Value("savings")
+            title=Value(SAVINGS)
         )
 
     def last_months(self, months: int = 6):

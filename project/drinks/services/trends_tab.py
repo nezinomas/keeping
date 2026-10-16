@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 
 from django.utils.translation import gettext as _
 
@@ -40,13 +41,9 @@ class TrendCumulativeViewModel(ChartViewModel):
 
 
 class TrendsTab:
-    """Deep module calculating multi-year drinking trends, cumulative
-    consumption projections, and trend direction cards.
-    """
-
     @classmethod
-    def build(cls, user, year: int) -> dict:
-        records = ConsumptionYear(user, year)
+    def build(cls, user, year: int, today: date) -> dict:
+        records = ConsumptionYear(user, year, today)
         target = records.target.qty
 
         stats = TrendStats(
@@ -55,6 +52,7 @@ class TrendsTab:
             past_daily=records.previous.daily,
             target=target,
             year=year,
+            today=today,
         )
 
         builder = TrendsBuilder(drink_stats=stats, target=target)

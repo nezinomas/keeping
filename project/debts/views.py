@@ -10,7 +10,7 @@ from ..core.mixins.views import (
     TemplateViewMixin,
     UpdateViewMixin,
 )
-from . import forms
+from . import forms, models
 from .services.model_services import DebtModelService, DebtReturnModelService
 
 
@@ -52,16 +52,16 @@ class Index(TemplateViewMixin):
         context.update(
             {
                 "borrow": rendered_content(
-                    self.request, DebtLists, **{"debt_type": "borrow"}
+                    self.request, DebtLists, debt_type=models.Debt.DebtType.BORROW
                 ),
                 "borrow_return": rendered_content(
-                    self.request, DebtReturnLists, **{"debt_type": "borrow"}
+                    self.request, DebtReturnLists, debt_type=models.Debt.DebtType.BORROW
                 ),
                 "lend": rendered_content(
-                    self.request, DebtLists, **{"debt_type": "lend"}
+                    self.request, DebtLists, debt_type=models.Debt.DebtType.LEND
                 ),
                 "lend_return": rendered_content(
-                    self.request, DebtReturnLists, **{"debt_type": "lend"}
+                    self.request, DebtReturnLists, debt_type=models.Debt.DebtType.LEND
                 ),
             }
         )
@@ -73,19 +73,18 @@ class DebtLists(ListViewMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return DebtModelService(user, self.kwargs["debt_type"]).year(user.year)
+        service = DebtModelService(user, self.kwargs["debt_type"])
+        return service.year(user.selected_year())
 
 
 class DebtNew(AddDebtTypeMixin, DebtMixin, CreateViewMixin):
     url_name = "new"
-    service_class = DebtModelService
     form_class = forms.DebtForm
     modal_form_title = _("Debt")
 
 
 class DebtUpdate(PriceToFloatViewMixin, AddDebtTypeMixin, DebtMixin, UpdateViewMixin):
     url_name = "update"
-    service_class = DebtModelService
     form_class = forms.DebtForm
     modal_form_title = _("Debt")
 
@@ -95,7 +94,6 @@ class DebtUpdate(PriceToFloatViewMixin, AddDebtTypeMixin, DebtMixin, UpdateViewM
 
 class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
     url_name = "delete"
-    service_class = DebtModelService
     modal_form_title = _("Delete debt")
 
     def get_queryset(self):
@@ -104,16 +102,15 @@ class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
 
 class DebtReturnLists(ListViewMixin):
     template_name = "debts/debtreturn_list.html"
-    service_class = DebtReturnModelService
 
     def get_queryset(self):
         user = self.request.user
-        return DebtReturnModelService(user, self.kwargs["debt_type"]).year(user.year)
+        service = DebtReturnModelService(user, self.kwargs["debt_type"])
+        return service.year(user.selected_year())
 
 
 class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
     url_name = "return_new"
-    service_class = DebtReturnModelService
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
 
@@ -122,7 +119,6 @@ class DebtReturnUpdate(
     PriceToFloatViewMixin, AddDebtTypeMixin, DebtReturnMixin, UpdateViewMixin
 ):
     url_name = "return_update"
-    service_class = DebtReturnModelService
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
 
@@ -134,7 +130,6 @@ class DebtReturnUpdate(
 
 class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
     url_name = "return_delete"
-    service_class = DebtReturnModelService
     modal_form_title = _("Delete debt repayment")
 
     def get_queryset(self):

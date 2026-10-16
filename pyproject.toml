@@ -68,9 +68,14 @@ select = [
     "R",
     "I",
     "F",
+    "PLC0415",
 ]
 
 [tool.ruff.lint.per-file-ignores]
+# AppConfig.ready() imports its signals
+"**/apps.py" = [
+    "PLC0415",
+]
 "**/migrations/*" = [
     "E501",
 ]

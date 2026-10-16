@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 from django.utils.translation import gettext as _
 
 from ...lib.drinks_risk import HEAVY_DAY_STDAV
@@ -282,12 +281,11 @@ def test_resolve_of_a_count_spans_back_from_the_header_year(qty, expected):
 
 
 # TypicalYear.build
-@time_machine.travel("2026-07-15")
 def test_build_draws_the_header_year_alone_until_a_range_is_asked_for(main_user):
     DrinkFactory(date=date(2015, 1, 5), stdav=5)
     DrinkFactory(date=date(2025, 1, 5), stdav=5)
 
-    actual = TypicalYear.build(main_user, 2025)
+    actual = TypicalYear.build(main_user, 2025, date(2026, 7, 15))
 
     assert actual.year.label == "2025"
     # one January, the header year's, not the two the records span
@@ -297,7 +295,6 @@ def test_build_draws_the_header_year_alone_until_a_range_is_asked_for(main_user)
     assert actual.layers == [actual.year]
 
 
-@time_machine.travel("2026-07-15")
 @pytest.mark.parametrize(
     "drink_years, pooled, year_from, year_to",
     [
@@ -316,29 +313,27 @@ def test_build_pools_the_years_the_range_asks_for(
     for year in drink_years:
         DrinkFactory(date=date(year, 1, 5), stdav=5)
 
-    actual = TypicalYear.build(main_user, 2025, pooled)
+    actual = TypicalYear.build(main_user, 2025, date(2026, 7, 15), pooled)
 
     assert actual.year_from == year_from
     assert actual.year_to == year_to
     assert actual.pooled.drinking_day_share[0] == round(2 / 62 * 100, 1)
 
 
-@time_machine.travel("2026-07-15")
 def test_build_of_a_header_year_with_no_records_draws_the_pooled_layer_alone(main_user):
     DrinkFactory(date=date(2015, 1, 5), stdav=5)
 
-    actual = TypicalYear.build(main_user, 2025, PooledRange())
+    actual = TypicalYear.build(main_user, 2025, date(2026, 7, 15), PooledRange())
 
     assert not actual.year.has_data
     assert actual.layers == [actual.pooled]
 
 
-@time_machine.travel("2026-07-15")
 def test_build_counts_drinking_days_not_rows(main_user):
     DrinkFactory(date=date(2020, 1, 5), stdav=5)
     DrinkFactory(date=date(2020, 1, 5), stdav=5)
 
-    actual = TypicalYear.build(main_user, 2020)
+    actual = TypicalYear.build(main_user, 2020, date(2026, 7, 15))
 
     assert actual.year.drinking_day_share[0] == round(1 / 31 * 100, 1)
     assert actual.year.intensity[0] == 10.0
@@ -352,7 +347,7 @@ def test_build_costs_one_query_when_nothing_is_pooled(
         DrinkFactory(date=date(year, 3, 5), stdav=5)
 
     with django_assert_num_queries(1):
-        TypicalYear.build(main_user, 2020)
+        TypicalYear.build(main_user, 2020, date(2026, 7, 15))
 
 
 @pytest.mark.parametrize("years", [1, 5])
@@ -363,34 +358,32 @@ def test_build_costs_one_query_per_layer_however_many_years(
         DrinkFactory(date=date(year, 3, 5), stdav=5)
 
     with django_assert_num_queries(2):
-        TypicalYear.build(main_user, 2020, PooledRange())
+        TypicalYear.build(main_user, 2020, date(2026, 7, 15), PooledRange())
 
 
 @pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
-@time_machine.travel("2026-07-15")
 def test_build_is_the_same_chart_under_every_drink_type(drink_type, main_user):
     # both series are unit-free or Std Av, so the drink-type dropdown must not
     # reach this chart at all
     main_user.drink_type = drink_type
     DrinkFactory(date=date(2020, 8, 5), stdav=11.2)
 
-    actual = TypicalYear.build(main_user, 2020)
+    actual = TypicalYear.build(main_user, 2020, date(2026, 7, 15))
 
     assert actual.year.intensity[7] == 11.2
     assert actual.year.drinking_day_share[7] == round(1 / 31 * 100, 1)
 
 
 def test_build_without_records_has_no_data(main_user):
-    actual = TypicalYear.build(main_user, 2020, PooledRange())
+    actual = TypicalYear.build(main_user, 2020, date(2026, 7, 15), PooledRange())
 
     assert not actual.has_data
     assert actual.year_from == 0
 
 
-@time_machine.travel("2026-07-15")
 def test_build_stops_the_running_year_at_today(main_user):
     DrinkFactory(date=date(2026, 7, 5), stdav=5)
 
-    actual = TypicalYear.build(main_user, 2026)
+    actual = TypicalYear.build(main_user, 2026, date(2026, 7, 15))
 
     assert len(actual.year.drinking_day_share) == 7

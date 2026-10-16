@@ -1,6 +1,20 @@
-class AddUserToKwargsMixin:
+from datetime import date
+
+from django.utils.functional import cached_property
+
+
+class TodayMixin:
+    """The one today every figure and form of a request is computed from."""
+
+    @cached_property
+    def today(self) -> date:
+        return date.today()
+
+
+class FormKwargsMixin(TodayMixin):
     def get_form_kwargs(self, **kwargs):
         kwargs["user"] = self.request.user
+        kwargs["today"] = self.today
         return kwargs
 
     def get_form(self, data=None, files=None, **kwargs):

@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 from django.utils.translation import gettext as _
 
 from ...users.tests.factories import UserFactory
@@ -17,16 +16,11 @@ from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 
-
-# -------------------------------------------------------------------------------------
-#                                                                                 Drink
-# -------------------------------------------------------------------------------------
-def test_drink_init(main_user):
-    DrinkForm(user=main_user)
+TODAY = date(1999, 1, 1)
 
 
 def test_drink_init_fields(main_user):
-    form = DrinkForm(user=main_user).as_p()
+    form = DrinkForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<input type="text" name="stdav"' in form
@@ -36,7 +30,7 @@ def test_drink_init_fields(main_user):
 
 
 def test_drink_quantity_rewrites_a_decimal_comma(main_user):
-    form = DrinkForm(user=main_user).as_p()
+    form = DrinkForm(user=main_user, today=TODAY).as_p()
 
     assert 'inputmode="decimal"' in form
     assert "@keyup=" in form
@@ -50,14 +44,16 @@ def test_drink_quantity_accepts_every_shape_the_widget_allows(main_user, typed):
     # the keyup filter leaves digits and one dot, so a trailing or leading dot
     # is reachable and has to parse
     form = DrinkForm(
-        user=main_user, data={"date": "1999-01-01", "option": "beer", "stdav": typed}
+        user=main_user,
+        today=TODAY,
+        data={"date": "1999-01-01", "option": "beer", "stdav": typed},
     )
 
     assert form.is_valid(), form.errors
 
 
 def test_drink_help_text(main_user):
-    form = DrinkForm(user=main_user).as_p()
+    form = DrinkForm(user=main_user, today=TODAY).as_p()
 
     assert "1 Alus = 0.5L" in form
     assert "1 Vynas = 0.75L" in form
@@ -65,11 +61,10 @@ def test_drink_help_text(main_user):
     assert "Įvedus daugiau nei 20, bus manoma kad tai yra mililitrai" in form
 
 
-@time_machine.travel("1974-1-1")
 def test_drink_year_initial_value(main_user):
     UserFactory()
 
-    form = DrinkForm(user=main_user).as_p()
+    form = DrinkForm(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
@@ -77,7 +72,7 @@ def test_drink_year_initial_value(main_user):
 def test_drink_option_initial_value(main_user):
     UserFactory()
 
-    form = DrinkForm(user=main_user).as_p()
+    form = DrinkForm(user=main_user, today=TODAY).as_p()
 
     assert '<option value="beer" selected>Alus</option>' in form
 
@@ -87,6 +82,7 @@ def test_drink_valid_data(mocker, main_user):
 
     form = DrinkForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "1999-01-01",
             "stdav": 1.0,
@@ -130,6 +126,7 @@ def test_drink_recalculate_ml_on_save(
 
     form = DrinkForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "1999-01-01",
             "stdav": ml,
@@ -146,13 +143,13 @@ def test_drink_recalculate_ml_on_save(
     assert actual.converted_from_ml == expect_converted_from_ml
 
 
-@time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
 def test_drink_invalid_date(mocker, main_user, year):
     mocker.patch("project.drinks.forms.App_name", "Counter Type")
 
     form = DrinkForm(
         user=main_user,
+        today=date(1999, 2, 2),
         data={
             "date": f"{year}-01-01",
             "stdav": 1.0,
@@ -166,7 +163,7 @@ def test_drink_invalid_date(mocker, main_user, year):
 
 
 def test_drink_blank_data(main_user):
-    form = DrinkForm(user=main_user, data={})
+    form = DrinkForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -176,12 +173,9 @@ def test_drink_blank_data(main_user):
     assert "option" in form.errors
 
 
-# -------------------------------------------------------------------------------------
-#                                                                             Quick Add
-# -------------------------------------------------------------------------------------
 def test_quick_add_reads_the_quantity_the_bar_posts(main_user):
     form = QuickAddForm.from_post(
-        {"quantity": "2.5", "option": "beer", "date": "1999-01-01"}, main_user
+        {"quantity": "2.5", "option": "beer", "date": "1999-01-01"}, main_user, TODAY
     )
 
     assert form.is_valid(), form.errors
@@ -191,24 +185,27 @@ def test_quick_add_reads_the_quantity_the_bar_posts(main_user):
 def test_quick_add_without_an_option_falls_back_to_the_users_drink_type(main_user):
     main_user.drink_type = "wine"
 
-    form = QuickAddForm.from_post({"quantity": "1", "date": "1999-01-01"}, main_user)
+    form = QuickAddForm.from_post(
+        {"quantity": "1", "date": "1999-01-01"}, main_user, TODAY
+    )
 
     assert form.is_valid(), form.errors
     assert form.cleaned_data["option"] == "wine"
 
 
-@time_machine.travel("1999-01-01 12:05:04")
 def test_quick_add_without_a_date_falls_back_to_the_header_year(main_user):
     main_user.year = 1999
 
-    form = QuickAddForm.from_post({"quantity": "1", "option": "beer"}, main_user)
+    form = QuickAddForm.from_post({"quantity": "1", "option": "beer"}, main_user, TODAY)
 
     assert form.is_valid(), form.errors
     assert form.cleaned_data["date"] == date(1999, 1, 1)
 
 
 def test_quick_add_without_a_quantity_is_invalid(main_user):
-    form = QuickAddForm.from_post({"option": "beer", "date": "1999-01-01"}, main_user)
+    form = QuickAddForm.from_post(
+        {"option": "beer", "date": "1999-01-01"}, main_user, TODAY
+    )
 
     assert not form.is_valid()
     assert "stdav" in form.errors
@@ -216,22 +213,15 @@ def test_quick_add_without_a_quantity_is_invalid(main_user):
 
 def test_quick_add_saves_a_drink(main_user):
     form = QuickAddForm.from_post(
-        {"quantity": "1", "option": "beer", "date": "1999-01-01"}, main_user
+        {"quantity": "1", "option": "beer", "date": "1999-01-01"}, main_user, TODAY
     )
     form.save()
 
     assert Drink.objects.count() == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Drink Target
-# -------------------------------------------------------------------------------------
-def test_drink_target_init(main_user):
-    DrinkTargetForm(user=main_user)
-
-
 def test_drink_target_init_fields(main_user):
-    form = DrinkTargetForm(user=main_user).as_p()
+    form = DrinkTargetForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="year"' in form
     assert '<input type="text" name="quantity"' in form
@@ -240,7 +230,7 @@ def test_drink_target_init_fields(main_user):
 
 
 def test_drink_target_quantity_rewrites_a_decimal_comma(main_user):
-    form = DrinkTargetForm(user=main_user).as_p()
+    form = DrinkTargetForm(user=main_user, today=TODAY).as_p()
 
     assert 'inputmode="decimal"' in form
     assert "@keyup=" in form
@@ -249,11 +239,10 @@ def test_drink_target_quantity_rewrites_a_decimal_comma(main_user):
     assert r"^(\d*\.?\d*).*" in form
 
 
-@time_machine.travel("1974-1-1")
 def test_drink_target_year_initial_value(main_user):
     UserFactory()
 
-    form = DrinkTargetForm(user=main_user).as_p()
+    form = DrinkTargetForm(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert '<input type="text" name="year" value="1999"' in form
 
@@ -268,7 +257,9 @@ def test_drink_target_year_initial_value(main_user):
 )
 def test_drink_target_valid_data(main_user, type, qty, expect):
     form = DrinkTargetForm(
-        user=main_user, data={"year": 1974, "quantity": qty, "drink_type": type}
+        user=main_user,
+        today=TODAY,
+        data={"year": 1974, "quantity": qty, "drink_type": type},
     )
 
     assert form.is_valid()
@@ -289,7 +280,9 @@ def test_drink_target_valid_data(main_user, type, qty, expect):
 )
 def test_drink_target_valid_data_year_field(main_user, year):
     form = DrinkTargetForm(
-        user=main_user, data={"year": year, "quantity": 1, "drink_type": "beer"}
+        user=main_user,
+        today=TODAY,
+        data={"year": year, "quantity": 1, "drink_type": "beer"},
     )
 
     assert form.is_valid()
@@ -302,7 +295,9 @@ def test_drink_target_valid_data_year_field(main_user, year):
 def test_drink_target_year_validation(main_user):
     DrinkTargetFactory()
 
-    form = DrinkTargetForm(user=main_user, data={"year": 1999, "quantity": 200})
+    form = DrinkTargetForm(
+        user=main_user, today=TODAY, data={"year": 1999, "quantity": 200}
+    )
 
     assert not form.is_valid()
 
@@ -310,7 +305,7 @@ def test_drink_target_year_validation(main_user):
 
 
 def test_drink_target_blank_data(main_user):
-    form = DrinkTargetForm(user=main_user, data={})
+    form = DrinkTargetForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -320,23 +315,33 @@ def test_drink_target_blank_data(main_user):
     assert "drink_type" in form.errors
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Drink Filter
-# -------------------------------------------------------------------------------------
-def test_drink_filter_init():
-    DrinkCompareForm()
+@pytest.mark.parametrize(
+    ("form_class", "data"),
+    [
+        (DrinkForm, {"date": "1999-01-01", "stdav": 1.0, "option": "beer"}),
+        (DrinkTargetForm, {"year": 2000, "quantity": 1, "drink_type": "beer"}),
+    ],
+    ids=["drink", "drink_target"],
+)
+def test_a_posted_user_is_ignored(main_user, second_user, form_class, data):
+    form = form_class(
+        user=main_user, today=TODAY, data={**data, "user": second_user.pk}
+    )
+
+    assert form.is_valid()
+
+    assert form.save().user == main_user
 
 
-def test_drink_filter_init_fields():
-    form = DrinkCompareForm().as_p()
+def test_drink_filter_init_fields(main_user):
+    form = DrinkCompareForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="number" name="year1"' in form
     assert '<input type="number" name="year2"' in form
 
 
-@time_machine.travel("1999-01-01 12:05:04")
-def test_drink_filter_initial_values():
-    form = DrinkCompareForm().as_p()
+def test_drink_filter_initial_values(main_user):
+    form = DrinkCompareForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="number" name="year2" value="1999"' in form
 
@@ -358,6 +363,7 @@ def test_drink_filter_initial_values():
 def test_drink_filter_form_invalid(main_user, year1, year2):
     form = DrinkCompareForm(
         user=main_user,
+        today=TODAY,
         data={
             "year1": year1,
             "year2": year2,
@@ -383,6 +389,7 @@ def test_drink_filter_clean_years_fields(main_user, year1, year2, valid):
 
     form = DrinkCompareForm(
         user=main_user,
+        today=TODAY,
         data={
             "year1": year1,
             "year2": year2,
@@ -392,15 +399,8 @@ def test_drink_filter_clean_years_fields(main_user, year1, year2, valid):
     assert form.is_valid() == valid
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Typical Year
-# -------------------------------------------------------------------------------------
-def test_typical_year_init():
-    TypicalYearForm()
-
-
-def test_typical_year_init_fields():
-    form = TypicalYearForm().as_p()
+def test_typical_year_init_fields(main_user):
+    form = TypicalYearForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="number" name="year_from"' in form
     assert '<input type="number" name="year_to"' in form
@@ -412,7 +412,7 @@ def test_typical_year_boxes_open_on_the_users_full_span(main_user):
     DrinkFactory(date=date(1999, 1, 1))
     DrinkFactory(date=date(2005, 1, 1))
 
-    form = TypicalYearForm(user=main_user).as_p()
+    form = TypicalYearForm(user=main_user, today=TODAY).as_p()
 
     assert 'name="year_from" value="1999"' in form
     assert 'name="year_to" value="2005"' in form
@@ -433,6 +433,7 @@ def test_typical_year_boxes_open_on_the_users_full_span(main_user):
 def test_typical_year_form_invalid(main_user, year_from, year_to):
     form = TypicalYearForm(
         user=main_user,
+        today=TODAY,
         data={
             "year_from": year_from,
             "year_to": year_to,
@@ -460,6 +461,7 @@ def test_typical_year_clean_years_fields(main_user, year_from, year_to, valid):
 
     form = TypicalYearForm(
         user=main_user,
+        today=TODAY,
         data={
             "year_from": year_from,
             "year_to": year_to,
@@ -475,18 +477,19 @@ def test_typical_year_reversed_range_is_rejected_not_swapped(main_user):
     DrinkFactory(date=date(2000, 1, 1))
     DrinkFactory(date=date(2003, 1, 1))
 
-    form = TypicalYearForm(user=main_user, data={"year_from": 2003, "year_to": 2000})
+    form = TypicalYearForm(
+        user=main_user, today=TODAY, data={"year_from": 2003, "year_to": 2000}
+    )
 
     assert not form.is_valid()
     assert form.errors["year_from"] == [_("Years must be in order")]
     assert "year_to" not in form.errors
 
 
-@time_machine.travel("1999-01-01 12:05:04")
 def test_drink_filter_opens_on_the_header_year(main_user):
     """The boxes follow the year in the header, not the calendar year."""
     main_user.year = 2000
 
-    form = DrinkCompareForm(user=main_user).as_p()
+    form = DrinkCompareForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="number" name="year2" value="2000"' in form

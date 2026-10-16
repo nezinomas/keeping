@@ -32,11 +32,11 @@ from .tabs import DEFAULT_TAB, TABS, DetailedTab
 class ReloadIndexContextDataMixin:
     def get_context_data(self, **kwargs):
         user = self.request.user
-        ind = services.index.load_service(user)
+        ind = services.index.load_service(user, date.today())
         exp = services.expenses.load_service(user)
 
         context = {
-            "year": user.year,
+            "year": user.selected_year(),
             "averages": ind.averages_context(),
             "borrow": ind.borrow_context(),
             "lend": ind.lend_context(),
@@ -92,7 +92,7 @@ class Accounts(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = services.accounts.load_service(user, user.year)
+        context = services.accounts.load_service(user, user.selected_year())
 
         return super().get_context_data(**kwargs) | context
 
@@ -112,7 +112,7 @@ class Savings(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = services.savings.load_service(user, user.year)
+        context = services.savings.load_service(user, user.selected_year())
         return super().get_context_data(**kwargs) | context
 
 
@@ -131,7 +131,7 @@ class Pensions(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = services.pensions.load_service(user, user.year)
+        context = services.pensions.load_service(user, user.selected_year())
 
         return super().get_context_data(**kwargs) | context
 
@@ -151,7 +151,7 @@ class Wealth(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = services.wealth.load_service(user, user.year)
+        context = services.wealth.load_service(user, user.selected_year())
         return super().get_context_data(**kwargs) | context
 
 
@@ -159,7 +159,7 @@ class Forecast(TemplateViewMixin):
     template_name = "bookkeeping/includes/forecast.html"
 
     def get_context_data(self, **kwargs):
-        context = services.forecast.load_service(self.request.user)
+        context = services.forecast.load_service(self.request.user, date.today())
 
         return super().get_context_data(**kwargs) | context
 
@@ -169,7 +169,7 @@ class NoIncomes(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = no_incomes.load_service(user, user.year)
+        context = no_incomes.load_service(user, user.selected_year())
 
         return super().get_context_data(**kwargs) | context
 
@@ -180,7 +180,7 @@ class Month(MonthMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         self.set_month()
 
-        context = services.month.load_service(self.request.user)
+        context = services.month.load_service(self.request.user, date.today())
 
         return super().get_context_data(**kwargs) | context
 
@@ -255,7 +255,7 @@ class Summary(TemplateViewMixin):
     template_name = "bookkeeping/summary.html"
 
     def get_context_data(self, **kwargs):
-        context = services.chart_summary.load_service(self.request.user)
+        context = services.chart_summary.load_service(self.request.user, date.today())
         return super().get_context_data(**kwargs) | context
 
 
@@ -271,7 +271,9 @@ class SummarySavingsAndIncomes(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings_and_incomes.html"
 
     def get_context_data(self, **kwargs):
-        context = services.summary_savings_and_incomes.load_service(self.request.user)
+        context = services.summary_savings_and_incomes.load_service(
+            self.request.user, date.today()
+        )
         return super().get_context_data(**kwargs) | context
 
 
@@ -297,7 +299,7 @@ class ExpandDayExpenses(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         obj = services.expand_day.ExpandDayService(
-            self.request.user, self.kwargs.get("date") or date(1974, 1, 1)
+            self.request.user, self.kwargs["date"]
         )
 
         return super().get_context_data(**kwargs) | obj.context()

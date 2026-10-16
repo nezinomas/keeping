@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from ...expenses.forms import ExpenseForm
@@ -7,11 +9,13 @@ from ...transactions.forms import SavingCloseForm, TransactionForm
 from ..forms import AccountForm
 from .factories import AccountFactory
 
+TODAY = date(1999, 2, 2)
+
 pytestmark = pytest.mark.django_db
 
 
 def test_account_form_has_fields(main_user):
-    form = AccountForm(user=main_user).as_p()
+    form = AccountForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<input type="number" name="order"' in form
@@ -31,6 +35,7 @@ def test_account_valid_data(main_user, closed):
             "closed": closed,
         },
         user=main_user,
+        today=TODAY,
     )
 
     assert form.is_valid()
@@ -44,7 +49,7 @@ def test_account_valid_data(main_user, closed):
 
 
 def test_account_blank_data(main_user):
-    form = AccountForm(user=main_user, data={})
+    form = AccountForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -55,7 +60,7 @@ def test_account_blank_data(main_user):
 def test_account_identical_title_names_the_existing_one(main_user):
     AccountFactory(title="Būstas")
 
-    form = AccountForm(user=main_user, data={"title": "Būstas"})
+    form = AccountForm(user=main_user, today=TODAY, data={"title": "Būstas"})
 
     assert not form.is_valid()
     assert form.errors["title"] == ["„Būstas“ jau yra."]
@@ -87,7 +92,7 @@ def test_account_closed_in_year(main_user, form_class, field, year, closed_liste
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
 
-    actual = str(form_class(user=main_user, data={})[field])
+    actual = str(form_class(user=main_user, today=TODAY, data={})[field])
 
     assert "S1" in actual
     assert ("S2" in actual) is closed_listed
@@ -104,14 +109,14 @@ def test_transaction_to_account_lists_no_account(main_user, year):
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
 
-    actual = str(TransactionForm(user=main_user, data={})["to_account"])
+    actual = str(TransactionForm(user=main_user, today=TODAY, data={})["to_account"])
 
     assert "S1" not in actual
     assert "S2" not in actual
 
 
 def test_account_title_empty_slug(main_user):
-    form = AccountForm(user=main_user, data={"title": "..."})
+    form = AccountForm(user=main_user, today=TODAY, data={"title": "..."})
 
     assert not form.is_valid()
 
@@ -120,27 +125,13 @@ def test_account_title_empty_slug(main_user):
     ]
 
 
-def test_account_create_ignores_a_posted_journal(main_user, second_user):
-    form = AccountForm(
-        user=main_user,
-        data={
-            "journal": second_user.journal.pk,
-            "title": "Title",
-            "order": "1",
-            "closed": "",
-        },
-    )
-
-    assert form.is_valid()
-
-    assert form.save().journal == main_user.journal
-
-
-def test_account_edit_ignores_a_posted_journal(main_user, second_user):
-    obj = AccountFactory(title="Mine", journal=main_user.journal)
+@pytest.mark.parametrize("editing", [False, True], ids=["create", "edit"])
+def test_account_ignores_a_posted_journal(main_user, second_user, editing):
+    obj = AccountFactory(title="Mine", journal=main_user.journal) if editing else None
 
     form = AccountForm(
         user=main_user,
+        today=TODAY,
         instance=obj,
         data={
             "journal": second_user.journal.pk,
@@ -152,7 +143,4 @@ def test_account_edit_ignores_a_posted_journal(main_user, second_user):
 
     assert form.is_valid()
 
-    form.save()
-    obj.refresh_from_db()
-
-    assert obj.journal == main_user.journal
+    assert form.save().journal == main_user.journal

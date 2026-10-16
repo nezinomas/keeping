@@ -10,9 +10,10 @@ from .model_services import DrinkModelService, DrinkTargetDTO, DrinkTargetModelS
 class ConsumptionYear:
     """One user's year of Drinks in canonical Std Av; every reader is cached."""
 
-    def __init__(self, user, year: int):
+    def __init__(self, user, year: int, today: date):
         self.user = user
         self.year = year
+        self.today = today
 
     @cached_property
     def converter(self) -> DrinkConverter:
@@ -38,25 +39,17 @@ class ConsumptionYear:
     @cached_property
     def earlier(self) -> PastRecord | NoPastRecord:
         """The last Drink before the year, so its first Gap reaches back."""
-        latest = self._service.latest_date_before(self.year)
-        if latest is None:
-            return NoPastRecord()
-
-        return PastRecord(latest)
+        return self._service.latest_record_before(self.year)
 
     @cached_property
     def latest(self) -> PastRecord | NoPastRecord:
         """The last Drink on or before today, none later than the year's end."""
-        through = min(date.today(), date(self.year, 12, 31))
-        latest = self._service.latest_date(through)
-        if latest is None:
-            return NoPastRecord()
-
-        return PastRecord(latest)
+        through = min(self.today, date(self.year, 12, 31))
+        return self._service.latest_record(through)
 
     @cached_property
     def previous(self) -> "ConsumptionYear":
-        return ConsumptionYear(self.user, self.year - 1)
+        return ConsumptionYear(self.user, self.year - 1, self.today)
 
     @property
     def has_data(self) -> bool:

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 
 from django.utils.translation import gettext as _
 
@@ -33,12 +34,14 @@ class HabitsTab:
     """Recurring shape: which days a user drinks on, and how heavily when they do."""
 
     @classmethod
-    def build(cls, user, year: int) -> dict:
-        records = ConsumptionYear(user, year)
+    def build(cls, user, year: int, today: date) -> dict:
+        records = ConsumptionYear(user, year, today)
 
         stats = FrequencyStats(
             current_daily=records.daily,
             past_daily=records.previous.daily,
+            year=year,
+            today=today,
         )
         builder = HabitsBuilder(frequency_stats=stats)
 

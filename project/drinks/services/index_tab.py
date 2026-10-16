@@ -93,26 +93,33 @@ class StdAvViewModel:
 
 class IndexTab:
     @classmethod
-    def build(cls, user, year: int) -> dict:
-        records = ConsumptionYear(user, year)
+    def build(cls, user, year: int, today: dt_date) -> dict:
+        records = ConsumptionYear(user, year, today)
         target = records.target
+        limit = NoDailyLimit()
+        if target.qty:
+            limit = DailyLimit(target.qty)
 
-        boundary = YearBoundary.for_year(year)
+        boundary = YearBoundary(year, today)
 
         builder = IndexBuilder(
             converter=records.converter,
             drink_stats=DrinkStats(
-                records.converter, records.monthly, today=boundary.today
+                records.converter, records.monthly, year=year, today=boundary.today
             ),
             previous_stats=DrinkStats(
                 records.converter,
                 records.previous.daily,
+                year=year - 1,
                 today=boundary.previous_end_date,
             ),
             frequency_stats=FrequencyStats(
-                current_daily=records.daily, past_daily=records.previous.daily
+                current_daily=records.daily,
+                past_daily=records.previous.daily,
+                year=year,
+                today=boundary.today,
             ),
-            target=target.qty,
+            limit=limit,
             target_id=target.target_id,
             latest=records.latest,
             today=boundary.today,
@@ -145,11 +152,11 @@ class IndexBuilder:
         today: dt_date,
         previous_stats: DrinkStats,
         frequency_stats: FrequencyStats,
-        target: float = 0.0,
+        limit: DailyLimit | NoDailyLimit = NoDailyLimit(),
         target_id: int = 0,
         latest: PastRecord | NoPastRecord = NoPastRecord(),
     ):
-        self._target = target
+        self._limit = limit
         self._target_id = target_id
         self._latest = latest
         self._today = today
@@ -167,14 +174,10 @@ class IndexBuilder:
 
     def chart_consumption(self) -> ConsumptionChartViewModel:
         unit = self._converter.display_unit
-        limit = NoDailyLimit()
-        if self._target:
-            limit = DailyLimit(self._target)
-
         return ConsumptionChartViewModel(
             categories=list(month_names().values()),
             data=self._drink_stats.monthly.avg_daily_volume,
-            limit=limit,
+            limit=self._limit,
             avg=self._drink_stats.yearly.avg_daily_volume,
             decimals=self._converter.display_decimals,
             text={
@@ -304,7 +307,7 @@ class IndexBuilder:
         if comparison.has_past:
             explanation += (self._arrow_note(),)
 
-        if not self._target and not comparison.has_past:
+        if not self._limit.is_set and not comparison.has_past:
             return StatCard(
                 title=title,
                 value=value,
@@ -313,7 +316,7 @@ class IndexBuilder:
                 explanation=explanation,
             )
 
-        if not self._target:
+        if not self._limit.is_set:
             return ComparisonStatCard(
                 title,
                 improving=comparison.improving,
@@ -323,8 +326,8 @@ class IndexBuilder:
                 explanation=explanation,
             )
 
-        under_limit = avg <= self._target
-        diff = f"{abs(self._target - avg):.{decimals}f}"
+        under_limit = avg <= self._limit.amount
+        diff = f"{abs(self._limit.amount - avg):.{decimals}f}"
         direction = _("under the limit") if under_limit else _("over the limit")
         limit_note = f"{diff} {direction}"
 
@@ -385,7 +388,7 @@ class IndexBuilder:
         title = _("Daily limit")
         label = _("Goal for the year")
 
-        if not self._target:
+        if not self._limit.is_set:
             return EmptyStatCard(
                 title=title,
                 note=_("No limit set"),
@@ -397,7 +400,7 @@ class IndexBuilder:
 
         return StatCard(
             title=title,
-            value=f"{self._target:.{decimals}f}",
+            value=f"{self._limit.amount:.{decimals}f}",
             unit=self._converter.figure_unit,
             note=_("%(amount)s per year") % {"amount": self._target_a_year()},
             edit_url=reverse("drinks:target_update", kwargs={"pk": self._target_id}),
@@ -407,7 +410,7 @@ class IndexBuilder:
     def _target_a_year(self) -> str:
         """A daily limit as the year it adds up to, in the unit a total takes."""
         days = ydays(self._drink_stats.year)
-        total = self._converter.display_to_total(self._target * days)
+        total = self._converter.display_to_total(self._limit.amount * days)
 
         return f"{floatformat(total, 1)} {self._converter.total_unit}"
 
@@ -453,7 +456,7 @@ class IndexBuilder:
         )
 
     def _get_period_counts(self, year: int) -> tuple[int, int, int]:
-        boundary = YearBoundary.for_year(year, self._today)
+        boundary = YearBoundary(year, self._today)
 
         return (
             boundary.days_elapsed,

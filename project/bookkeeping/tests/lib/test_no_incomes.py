@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
-from hypothesis import example, given
+from hypothesis import given
 from hypothesis import strategies as st
 
 from ...lib.no_incomes import NoIncomes
@@ -25,6 +25,17 @@ UNNECESSARY = st.lists(st.sampled_from(["X", "Y", "Z", "Taupymas"]), max_size=4)
 MONTHS = st.integers(1, 24)
 
 
+def _data(expenses, savings, unnecessary):
+    return SimpleNamespace(
+        account_sum=4,
+        fund_sum=2,
+        pension_sum=1,
+        expenses=expenses,
+        savings=savings,
+        unnecessary=unnecessary,
+    )
+
+
 @pytest.fixture(name="no_incomes_data")
 def fixture_data():
     return SimpleNamespace(
@@ -37,33 +48,43 @@ def fixture_data():
     )
 
 
-def test_no_incomes_empty_savings_leave_expenses_alone(no_incomes_data):
-    no_incomes_data.unnecessary = ["Z"]
-    obj = NoIncomes(no_incomes_data, 1)
+@pytest.mark.parametrize(
+    "savings, unnecessary, months, expect",
+    [
+        pytest.param({"sum": 2}, ["Z", "Taupymas"], 1, 9, id="cut-one-month"),
+        pytest.param({"sum": 2}, ["Z", "Taupymas"], 6, 1.5, id="cut-six-months"),
+        pytest.param({"sum": 2}, ["Taupymas"], 1, 9, id="no-expense-cut-one-month"),
+        pytest.param({"sum": 2}, ["Taupymas"], 6, 1.5, id="no-expense-cut-six-months"),
+        pytest.param({}, [], 1, 7, id="no-savings-one-month"),
+        pytest.param({}, [], 6, 1.17, id="no-savings-six-months"),
+    ],
+)
+def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_incomes_data):
+    no_incomes_data.savings = savings
+    no_incomes_data.unnecessary = unnecessary
+    obj = NoIncomes(no_incomes_data, months)
 
-    assert obj.avg_expenses == 7
-    assert obj.cut_sum == 4
+    assert round(obj.avg_expenses, 2) == expect
 
 
 @given(expenses=EXPENSES, savings=SAVINGS, unnecessary=UNNECESSARY, months=MONTHS)
-@example(XYZ, {"sum": 2}, ["Z", "Taupymas"], 1)
-@example(XYZ, {"sum": 2}, ["Z", "Taupymas"], 6)
-@example(XYZ, {"sum": 2}, ["Taupymas"], 1)
-@example(XYZ, {"sum": 2}, ["Taupymas"], 6)
-@example(XYZ, {}, [], 1)
-@example(XYZ, {}, [], 6)
-def test_no_incomes_avg_expenses(expenses, savings, unnecessary, months):
-    data = SimpleNamespace(
-        account_sum=4,
-        fund_sum=2,
-        pension_sum=1,
-        expenses=expenses,
-        savings=savings,
-        unnecessary=unnecessary,
-    )
-    spent = sum(x["sum"] for x in expenses) + savings.get("sum", 0)
+def test_avg_expenses_halves_over_twice_the_months(
+    expenses, savings, unnecessary, months
+):
+    data = _data(expenses, savings, unnecessary)
 
-    assert NoIncomes(data, months).avg_expenses == spent / months
+    actual = NoIncomes(data, 2 * months).avg_expenses
+
+    assert actual == pytest.approx(NoIncomes(data, months).avg_expenses / 2)
+
+
+@given(expenses=EXPENSES, savings=SAVINGS, unnecessary=UNNECESSARY, months=MONTHS)
+def test_avg_expenses_ignores_what_is_unnecessary(
+    expenses, savings, unnecessary, months
+):
+    actual = NoIncomes(_data(expenses, savings, unnecessary), months).avg_expenses
+
+    assert actual == NoIncomes(_data(expenses, savings, []), months).avg_expenses
 
 
 @pytest.mark.parametrize(
@@ -90,6 +111,7 @@ def test_no_incomes_summary(no_incomes_data):
 
     actual = NoIncomes(no_incomes_data, 6).summary
 
+    assert len(actual) == 3
     assert actual[0]["title"] == "Pinigai, €"
     assert actual[0]["money_fund"] == 6
     assert actual[0]["money_fund_pension"] == 7
@@ -106,62 +128,45 @@ def test_no_incomes_summary(no_incomes_data):
     assert actual[2]["price"] is False
 
 
-@pytest.fixture
-def no_incomes_data_class():
-    return SimpleNamespace(
-        account_sum=1000,
-        fund_sum=500,
-        pension_sum=200,
-        expenses=[
-            {"title": "Expense 1", "sum": 100},
-            {"title": "Expense 2", "sum": 200},
-            {"title": "Expense 3", "sum": 300},
-        ],
-        savings={"sum": 500},
-        unnecessary=["Expense 2"],
-    )
+@pytest.mark.parametrize(
+    "expenses, savings, unnecessary, months, expect_avg, expect_cut",
+    [
+        pytest.param(
+            [
+                {"title": "Expense 1", "sum": 100},
+                {"title": "Expense 2", "sum": 200},
+                {"title": "Expense 3", "sum": 300},
+            ],
+            {"sum": 500},
+            ["Expense 2"],
+            12,
+            (100 + 200 + 300 + 500) / 12,
+            (200 + 500) / 12,
+            id="standard-data",
+        ),
+        pytest.param(
+            [{"title": "Expense 1", "sum": 100}],
+            {"sum": 0},
+            ["Null Expense"],
+            1,
+            100.0,
+            0.0,
+            id="unnecessary-title-matches-no-expense",
+        ),
+        pytest.param(XYZ, {}, ["Z"], 1, 7, 4, id="empty-savings-leave-expenses-alone"),
+    ],
+)
+def test_no_incomes_avg_and_cut_of_other_expenses(
+    no_incomes_data, expenses, savings, unnecessary, months, expect_avg, expect_cut
+):
+    no_incomes_data.expenses = expenses
+    no_incomes_data.savings = savings
+    no_incomes_data.unnecessary = unnecessary
 
+    obj = NoIncomes(no_incomes_data, months)
 
-def test_summary_property(no_incomes_data_class):
-    no_incomes = NoIncomes(no_incomes_data_class, months=12)
-    summary = no_incomes.summary
-
-    assert len(summary) == 3
-    assert summary[0]["title"] == "Pinigai, €"
-    assert summary[0]["money_fund"] == 1500
-    assert summary[0]["money_fund_pension"] == 1700
-
-    assert summary[1]["title"] == "Nekeičiant išlaidų, mėn"
-    assert summary[1]["money_fund"] == 1500 / no_incomes.avg_expenses
-    assert summary[1]["money_fund_pension"] == 1700 / no_incomes.avg_expenses
-
-    assert summary[2]["title"] == "Sumažinus išlaidas, mėn"
-    assert summary[2]["money_fund"] == 1500 / (
-        no_incomes.avg_expenses - no_incomes.cut_sum
-    )
-    assert summary[2]["money_fund_pension"] == 1700 / (
-        no_incomes.avg_expenses - no_incomes.cut_sum
-    )
-
-
-def test_calc_method_handles_standard_data(no_incomes_data_class):
-    no_incomes = NoIncomes(no_incomes_data_class, months=12)
-
-    assert no_incomes.avg_expenses == (100 + 200 + 300 + 500) / 12
-    assert no_incomes.cut_sum == (200 + 500) / 12
-
-
-def test_unnecessary_title_matching_no_expense_cuts_nothing(no_incomes_data_class):
-    no_incomes_data_class.expenses = [
-        {"title": "Expense 1", "sum": 100},
-    ]
-    no_incomes_data_class.savings = {"sum": 0}
-    no_incomes_data_class.unnecessary = ["Null Expense"]
-
-    no_incomes = NoIncomes(no_incomes_data_class, months=1)
-
-    assert no_incomes.avg_expenses == 100.0
-    assert no_incomes.cut_sum == 0.0
+    assert obj.avg_expenses == expect_avg
+    assert obj.cut_sum == expect_cut
 
 
 @pytest.mark.parametrize(

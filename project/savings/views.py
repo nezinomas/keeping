@@ -31,15 +31,13 @@ class Index(TemplateViewMixin):
 
 class Lists(ListViewMixin):
     template_name = "savings/saving_list.html"
-    service_class = SavingModelService
 
     def get_queryset(self):
         user = self.request.user
-        return SavingModelService(user).year(user.year)
+        return SavingModelService(user).year(user.selected_year())
 
 
 class New(CreateViewMixin):
-    service_class = SavingModelService
     form_class = forms.SavingForm
     hx_trigger_form = "reload"
     success_url = reverse_lazy("savings:list")
@@ -62,7 +60,6 @@ class Delete(DeleteViewMixin):
 
 class TypeLists(ListViewMixin):
     template_name = "savings/savingtype_list.html"
-    service_class = SavingTypeModelService
 
     def get_queryset(self):
         return (
@@ -73,7 +70,6 @@ class TypeLists(ListViewMixin):
 
 
 class TypeNew(CreateViewMixin):
-    service_class = SavingTypeModelService
     form_class = forms.SavingTypeForm
     url_name = "type_new"
     hx_trigger_django = "afterType"

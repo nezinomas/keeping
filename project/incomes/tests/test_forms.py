@@ -1,17 +1,18 @@
 from datetime import date
 
 import pytest
-import time_machine
 
 from ...accounts.tests.factories import AccountFactory
 from ..forms import IncomeForm, IncomeTypeForm
 from .factories import IncomeTypeFactory
 
+TODAY = date(2000, 2, 2)
+
 pytestmark = pytest.mark.django_db
 
 
 def test_income_type_init_fields(main_user):
-    form = IncomeTypeForm(user=main_user).as_p()
+    form = IncomeTypeForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<select name="type"' in form
@@ -21,6 +22,7 @@ def test_income_type_init_fields(main_user):
 def test_income_type_valid_data(main_user):
     form = IncomeTypeForm(
         user=main_user,
+        today=TODAY,
         data={
             "title": "Title",
             "type": "salary",
@@ -37,7 +39,7 @@ def test_income_type_valid_data(main_user):
 
 
 def test_income_type_blank_data(main_user):
-    form = IncomeTypeForm(user=main_user, data={})
+    form = IncomeTypeForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -52,7 +54,7 @@ def test_income_type_blank_data(main_user):
     ids=["null", "too_long", "too_short"],
 )
 def test_income_type_title_rejected(main_user, title):
-    form = IncomeTypeForm(user=main_user, data={"title": title})
+    form = IncomeTypeForm(user=main_user, today=TODAY, data={"title": title})
 
     assert not form.is_valid()
 
@@ -75,15 +77,16 @@ def test_income_type_title_error(main_user, title, existing, message):
     for existing_title in existing:
         IncomeTypeFactory(title=existing_title)
 
-    form = IncomeTypeForm(user=main_user, data={"title": title, "type": "salary"})
+    form = IncomeTypeForm(
+        user=main_user, today=TODAY, data={"title": title, "type": "salary"}
+    )
 
     assert not form.is_valid()
     assert form.errors["title"] == [message]
 
 
-@time_machine.travel("1974-01-01")
 def test_income_year_initial_value(main_user):
-    form = IncomeForm(user=main_user).as_p()
+    form = IncomeForm(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
@@ -92,7 +95,7 @@ def test_income_select_first_account(main_user, second_user):
     a2 = AccountFactory(title="A2")
     AccountFactory(title="A1", journal=second_user.journal)
 
-    form = IncomeForm(user=main_user).as_p()
+    form = IncomeForm(user=main_user, today=TODAY).as_p()
 
     expect = f'<option value="{a2.pk}" selected>{a2}</option>'
     assert expect in form
@@ -107,6 +110,7 @@ def test_income_valid_data(main_user, posted, cents):
 
     form = IncomeForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "2000-01-01",
             "price": posted,
@@ -127,34 +131,8 @@ def test_income_valid_data(main_user, posted, cents):
     assert data.income_type.title == t.title
 
 
-@pytest.mark.parametrize(
-    ("posted", "errors"),
-    [
-        ("1999-12-31", {}),
-        ("2000-12-31", {}),
-        ("2001-01-01", {"date": ["Metai negali būti didesni nei 2000"]}),
-    ],
-)
-def test_income_insert_only_one_year_to_future(main_user, posted, errors):
-    a = AccountFactory()
-    t = IncomeTypeFactory()
-
-    with time_machine.travel("1999-6-15"):
-        form = IncomeForm(
-            user=main_user,
-            data={
-                "date": posted,
-                "price": "1.0",
-                "remark": "remark",
-                "account": a.pk,
-                "income_type": t.pk,
-            },
-        )
-        assert form.errors == errors
-
-
 def test_income_blank_data(main_user):
-    form = IncomeForm(user=main_user, data={})
+    form = IncomeForm(user=main_user, today=TODAY, data={})
 
     assert not form.is_valid()
 
@@ -170,6 +148,7 @@ def test_income_price_null(main_user):
 
     form = IncomeForm(
         user=main_user,
+        today=TODAY,
         data={
             "date": "2000-01-01",
             "price": "0",
@@ -191,6 +170,7 @@ def test_income_type_ignores_a_posted_journal(main_user, second_user, editing):
 
     form = IncomeTypeForm(
         user=main_user,
+        today=TODAY,
         instance=obj,
         data={"journal": second_user.journal.pk, "title": "Mine", "type": "salary"},
     )
@@ -216,7 +196,7 @@ def test_income_rejects_an_account_or_type_of_another_journal(
     }
     data[field] = foreign[field].pk
 
-    form = IncomeForm(user=main_user, data=data)
+    form = IncomeForm(user=main_user, today=TODAY, data=data)
 
     assert not form.is_valid()
     assert field in form.errors

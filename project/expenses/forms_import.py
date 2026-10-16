@@ -30,13 +30,14 @@ class ReceiptUploadForm(_JournalAccountChoicesMixin, forms.Form):
     date = forms.DateField(widget=DatePickerWidget())
     account = forms.ModelChoiceField(queryset=Account.objects.none())
 
-    def __init__(self, *args, user, **kwargs):
+    def __init__(self, *args, user, today, **kwargs):
         self.user = user
         super().__init__(*args, **kwargs)
 
         accounts = self._limit_account_to_journal()
-        self.fields["date"].initial = set_date_with_user_year(user)
-        self.fields["account"].initial = accounts.first()
+        self.fields["date"].initial = set_date_with_user_year(user, today)
+        if account := accounts.first():
+            self.fields["account"].initial = account
         self._translate_fields()
 
     def _translate_fields(self):

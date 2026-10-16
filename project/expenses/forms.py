@@ -1,5 +1,4 @@
 import contextlib
-from datetime import datetime
 from urllib.parse import urlencode
 
 from django import forms
@@ -8,11 +7,13 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
+from ..core.lib import table_columns
 from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField
+from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.lib.utils import int_or_zero
+from ..core.mixins.forms import YearNotLaterMixin
 from .models import DEFAULT_QUANTITY, Expense, ExpenseName, ExpenseType
 from .services.model_services import (
     ExpenseNameModelService,
@@ -24,7 +25,7 @@ class ExpenseNameChoicesMixin:
     """Needs self.user set by the form before its methods are called."""
 
     def names_year(self):
-        return self.user.year
+        return self.user.selected_year()
 
     def _posted_expense_type_pk(self):
         return int_or_zero(self.data.get(self.add_prefix("expense_type")))
@@ -61,8 +62,9 @@ class ExpenseNameChoicesMixin:
         params = {}
         if self.prefix:
             params["prefix"] = self.prefix
-        if self.names_year() != self.user.year:
-            params["year"] = self.names_year()
+        names_year = self.names_year()
+        if names_year != self.user.selected_year():
+            params["year"] = names_year
 
         if params:
             url = f"{url}?{urlencode(params)}"
@@ -75,7 +77,12 @@ class ExpenseNameChoicesMixin:
         expense_type.widget.attrs["hx-trigger"] = "change"
 
 
-class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelForm):
+class ExpenseForm(
+    ExpenseNameChoicesMixin,
+    PriceToCentsFormMixin,
+    YearNotLaterMixin,
+    forms.ModelForm,
+):
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
     quantity = forms.IntegerField(min_value=1, initial=DEFAULT_QUANTITY)
@@ -112,6 +119,7 @@ class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelFor
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -123,24 +131,24 @@ class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelFor
 
         self.fields["date"].widget = DatePickerWidget()
 
-        self.fields["price"].widget = forms.TextInput(
-            attrs={"readonly": True, "class": "disabled"}
-        )
+        self.fields["price"].widget = forms.TextInput(attrs={"readonly": True})
         self.fields["remark"].widget.attrs["rows"] = 3
 
     def _initial_fields_values(self):
         if self.instance.pk:
             return
 
-        self.fields["date"].initial = set_date_with_user_year(self.user)
-        self.fields["account"].initial = AccountModelService(self.user).items().first()
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
+        if account := AccountModelService(self.user).items().first():
+            self.fields["account"].initial = account
         self.fields["price"].initial = "0.00"
 
     def _overwrite_account_query(self):
-        qs = AccountModelService(self.user).items()
+        service = AccountModelService(self.user)
+        qs = service.items()
 
         if self.instance.pk:
-            qs = AccountModelService(self.user).items(self.instance.date.year)
+            qs = service.items_in(self.instance.date.year)
 
         self.fields["account"].queryset = qs
 
@@ -162,21 +170,22 @@ class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelFor
         self.fields["attachment"].label = _("Attachment")
 
     def clean_exception(self):
-        data = self.cleaned_data
+        exception = self.cleaned_data["exception"]
 
-        _exception = data.get("exception")
-        _expense_type = data.get("expense_type")
+        if not exception or "expense_type" not in self.cleaned_data:
+            return exception
 
-        if _exception and _expense_type and _expense_type.necessary:
+        expense_type = self.cleaned_data["expense_type"]
+        if expense_type.necessary:
             msg = _(
                 "The %(title)s is 'Necessary', so it can't be marked as 'Exeption'"
-            ) % {"title": _expense_type.title}
-            raise forms.ValidationError(msg)
+            ) % {"title": expense_type.title}
+            raise ValidationError(msg)
 
-        return _exception
+        return exception
 
     def clean_attachment(self):
-        image = self.cleaned_data.get("attachment", False)
+        image = self.cleaned_data["attachment"]
 
         with contextlib.suppress(FileNotFoundError):
             if image and image.size > 4 * 1024 * 1024:
@@ -184,36 +193,22 @@ class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelFor
 
         return image
 
-    def clean_date(self):
-        dt = self.cleaned_data["date"]
-
-        year_user = self.user.year
-        year_instance = dt.year
-        year_now = datetime.now().year
-
-        diff = 1
-        if (year_instance - year_now) > diff:
-            year_msg = year_user + diff
-            self.add_error(
-                "date",
-                _("Year cannot be later than %(year)s") % ({"year": year_msg}),
-            )
-
-        return dt
-
     def clean(self):
         cleaned_data = super().clean()
 
-        account = cleaned_data.get("account")
+        if "account" not in cleaned_data or "date" not in cleaned_data:
+            return cleaned_data
 
-        if not account or not account.closed or "date" not in cleaned_data:
+        account = cleaned_data["account"]
+        if not account.closed:
             return cleaned_data
 
         if cleaned_data["date"].year > account.closed:
             self.add_error(
                 "date",
                 _(
-                    "The date cannot be later than the account closure date. The account was closed in %(year)s."  # noqa: E501
+                    "The date cannot be later than the account closure date. "
+                    "The account was closed in %(year)s."
                 )
                 % ({"year": account.closed}),
             )
@@ -228,14 +223,21 @@ class ExpenseTypeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["journal"].initial = user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
+        pin(self.fields["journal"], user.journal)
 
         self.fields["title"].label = _("Title")
         self.fields["necessary"].label = _("Necessary")
+
+    def clean_title(self):
+        title = self.cleaned_data["title"]
+
+        if title in table_columns.RESERVED:
+            raise ValidationError(_("This title is reserved."))
+
+        return title
 
 
 class ExpenseNameForm(forms.ModelForm):
@@ -251,6 +253,7 @@ class ExpenseNameForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["parent"].queryset = ExpenseTypeModelService(user).items()
