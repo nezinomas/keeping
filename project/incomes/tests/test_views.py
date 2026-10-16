@@ -6,9 +6,10 @@ import pytest
 import time_machine
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
+from ...core.tests.utils import view_for
 from .. import models, views
 from ..tabs import TABS
 from .factories import Income, IncomeFactory, IncomeTypeFactory
@@ -16,89 +17,75 @@ from .factories import Income, IncomeFactory, IncomeTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                      Incomes
-# ----------------------------------------------------------------------------
-def test_incomes_index_func():
-    view = resolve("/incomes/")
-
-    assert views.TabIndex == view.func.view_class
-
-
-def test_incomes_lists_func():
-    view = resolve("/incomes/lists/")
-
-    assert views.Lists == view.func.view_class
-
-
-def test_incomes_data_func():
-    view = resolve("/incomes/data/")
-
-    assert views.TabData == view.func.view_class
-
-
-def test_incomes_new_func():
-    view = resolve("/incomes/new/")
-
-    assert views.New == view.func.view_class
-
-
-def test_incomes_update_func():
-    view = resolve("/incomes/update/1/")
-
-    assert views.Update == view.func.view_class
-
-
-def test_types_tab_func():
-    view = resolve("/incomes/types/")
-
-    assert views.TabTypes == view.func.view_class
-
-
-def test_types_new_func():
-    view = resolve("/incomes/type/new/")
-
-    assert views.TypeNew == view.func.view_class
-
-
-def test_types_update_func():
-    view = resolve("/incomes/type/update/1/")
-
-    assert views.TypeUpdate == view.func.view_class
+def _update_data(income, on="1999-12-31"):
+    return {
+        "price": "150",
+        "date": on,
+        "remark": "Pastaba",
+        "account": income.account.pk,
+        "income_type": income.income_type.pk,
+    }
 
 
 @time_machine.travel("2000-01-01")
-def test_income_load_form(client_logged):
-    url = reverse("incomes:new")
+@pytest.mark.parametrize(
+    "url_of, expected_of",
+    [
+        (
+            lambda i: reverse("incomes:new"),
+            lambda i: ['data-hx-trigger-form="reload"', "1999-01-01"],
+        ),
+        (
+            lambda i: reverse("incomes:update", kwargs={"pk": i.pk}),
+            lambda i: [
+                '<input type="text" name="date" value="1999-01-01"',
+                '<input type="text" name="price" value="77.77"',
+                f'<option value="{i.account.pk}" selected>Account1</option>',
+                f'<option value="{i.income_type.pk}" selected>Income Type</option>',
+                "Pastaba</textarea>",
+            ],
+        ),
+    ],
+    ids=["new", "update"],
+)
+def test_income_load_form(client_logged, url_of, expected_of):
+    income = IncomeFactory(price=7777, remark="Pastaba")
+    url = url_of(income)
 
-    response = client_logged.get(url)
+    actual = client_logged.get(url).content.decode("utf-8")
 
-    actual = response.content.decode("utf-8")
-
-    assert response.status_code == 200
     assert f'hx-post="{url}"' in actual
-    assert "1999-01-01" in actual
+    for text in expected_of(income):
+        assert text in actual
 
 
-def test_income_save(client_logged):
-    a = AccountFactory()
-    i = IncomeTypeFactory()
+@pytest.mark.parametrize(
+    "name, data, shown",
+    [
+        (
+            "incomes:new",
+            {"date": "1999-01-01", "price": "111"},
+            ["1999-01-01", "111", "Account1", "Income Type"],
+        ),
+        ("incomes:type_new", {"title": "TTT", "type": "salary"}, ["TTT"]),
+        ("incomes:type_update", {"title": "TTT", "type": "other"}, ["TTT"]),
+    ],
+    ids=["income", "type", "type_update"],
+)
+def test_save_follows_to_the_list_showing_the_row(client_logged, name, data, shown):
+    income_type = IncomeTypeFactory()
+    # the type forms ignore the account and income type they do not ask for
+    posted = data | {"account": AccountFactory().pk, "income_type": income_type.pk}
+    kwargs = {"pk": income_type.pk} if name == "incomes:type_update" else {}
 
-    data = {"date": "1999-01-01", "price": "111", "account": a.pk, "income_type": i.pk}
-
-    url = reverse("incomes:new")
-
-    response = client_logged.post(url, data, follow=True)
+    response = client_logged.post(reverse(name, kwargs=kwargs), posted, follow=True)
 
     actual = response.content.decode("utf-8")
-
-    assert "1999-01-01" in actual
-    assert "111" in actual
-    assert "Account1" in actual
-    assert "Income Type" in actual
+    for text in shown:
+        assert text in actual
 
 
-def test_income_save_status_code(client_logged):
+def test_income_save_htmx_answers_204_and_stores_the_row(client_logged):
     a = AccountFactory()
     i = IncomeTypeFactory()
 
@@ -108,35 +95,40 @@ def test_income_save_status_code(client_logged):
 
     response = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
 
+    actual = models.Income.objects.get()
     assert response.status_code == 204
+    assert "HX-Trigger" not in response.headers
+    assert actual.date == date(1999, 1, 1)
+    assert actual.price == 111 * 100
+    assert actual.account == a
+    assert actual.income_type == i
 
 
-def test_income_save_invalid_data(client_logged):
-    data = {"date": "x", "price": "x", "account": "x", "income_type": "x"}
+@pytest.mark.parametrize(
+    "name, data, model, error",
+    [
+        (
+            "incomes:new",
+            {"date": "x", "price": "x", "account": "x", "income_type": "x"},
+            models.Income,
+            "Įveskite skaičių.",
+        ),
+        (
+            "incomes:type_new",
+            {"title": ""},
+            models.IncomeType,
+            "Šis laukas yra privalomas.",
+        ),
+    ],
+    ids=["income", "type"],
+)
+def test_invalid_data_shows_the_error_and_saves_nothing(
+    client_logged, name, data, model, error
+):
+    response = client_logged.post(reverse(name), data)
 
-    url = reverse("incomes:new")
-
-    response = client_logged.post(url, data)
-
-    actual = response.context["form"]
-
-    assert not actual.is_valid()
-
-
-def test_income_load_update_form(client_logged):
-    i = IncomeFactory(price=7777)
-    url = reverse("incomes:update", kwargs={"pk": i.pk})
-
-    response = client_logged.get(url)
-
-    actual = response.content.decode()
-
-    assert f'hx-post="{url}"' in actual
-    assert '<input type="text" name="date" value="1999-01-01"' in actual
-    assert '<input type="text" name="price" value="77.77"' in actual
-    assert '<option value="1" selected>Account1</option>' in actual
-    assert '<option value="1" selected>Income Type</option>' in actual
-    assert "remark" in actual
+    assert error in response.content.decode()
+    assert model.objects.count() == 0
 
 
 def test_income_not_load_other_journal(client_logged, second_user):
@@ -151,91 +143,36 @@ def test_income_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_income_update_to_another_year(client_logged):
+def test_income_update_htmx_response(client_logged):
     income = IncomeFactory()
 
-    data = {
-        "price": "150",
-        "date": "2010-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
     url = reverse("incomes:update", kwargs={"pk": income.pk})
-    client_logged.post(url, data, follow=True)
+    response = client_logged.post(
+        url, _update_data(income), **{"HTTP_HX-Request": "true"}
+    )
+
+    assert response.status_code == 204
+    assert response.headers["HX-Trigger"] == '{"reload": {}}'
+
+
+@pytest.mark.parametrize(
+    "stored, posted, today",
+    [
+        (date(1999, 1, 1), "1999-12-31", "2000-03-03"),
+        (date(1999, 1, 1), "2010-12-31", "2010-06-01"),
+        (date(1974, 12, 12), "1997-12-12", "2000-03-03"),
+    ],
+    ids=["same_year", "another_year", "past_record"],
+)
+def test_income_update_stores_the_posted_row(client_logged, stored, posted, today):
+    income = IncomeFactory(date=stored)
+    url = reverse("incomes:update", kwargs={"pk": income.pk})
+
+    with time_machine.travel(today):
+        client_logged.post(url, _update_data(income, posted), follow=True)
 
     actual = models.Income.objects.get(pk=income.pk)
-    assert actual.date == date(2010, 12, 31)
-
-
-def test_income_update(client_logged):
-    income = IncomeFactory()
-
-    data = {
-        "price": "150",
-        "date": "1999-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
-    url = reverse("incomes:update", kwargs={"pk": income.pk})
-    client_logged.post(url, data, follow=True)
-
-    actual = models.Income.objects.get(pk=income.pk)
-    assert actual.date == date(1999, 12, 31)
-    assert actual.price == 150 * 100
-    assert actual.remark == "Pastaba"
-
-
-def test_income_update_status_code(client_logged):
-    income = IncomeFactory()
-
-    data = {
-        "price": "150",
-        "date": "1999-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
-    url = reverse("incomes:update", kwargs={"pk": income.pk})
-    request = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
-
-    assert request.status_code == 204
-
-
-def test_income_update_htmx_trigger_value(client_logged):
-    income = IncomeFactory()
-
-    data = {
-        "price": "150",
-        "date": "1999-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
-    url = reverse("incomes:update", kwargs={"pk": income.pk})
-    request = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
-
-    assert request.headers["HX-Trigger"] == '{"reload": {}}'
-
-
-@time_machine.travel("2000-03-03")
-def test_income_update_past_record(main_user, client_logged):
-    main_user.year = 2000
-    i = IncomeFactory(date=date(1974, 12, 12))
-
-    data = {
-        "price": "150",
-        "date": "1997-12-12",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
-    url = reverse("incomes:update", kwargs={"pk": i.pk})
-    client_logged.post(url, data, follow=True)
-
-    actual = models.Income.objects.get(pk=i.pk)
-    assert actual.date == date(1997, 12, 12)
+    assert actual.date == date.fromisoformat(posted)
     assert actual.price == 150 * 100
     assert actual.account.title == "Account1"
     assert actual.income_type.title == "Income Type"
@@ -250,22 +187,20 @@ def test_incomes_data_search_form(client_logged):
     assert reverse("incomes:search") in response
 
 
-def test_incomes_list_renders_the_rows_alone(client_logged):
+@pytest.mark.parametrize(
+    "url, has_subnav",
+    [("incomes:list", False), ("incomes:tab_data", True)],
+    ids=["list", "tab_data"],
+)
+def test_incomes_list_shows_the_price_with_the_subnav_only_on_the_tab(
+    client_logged, url, has_subnav
+):
     IncomeFactory()
 
-    content = client_logged.get(reverse("incomes:list")).content.decode()
+    content = client_logged.get(reverse(url)).content.decode()
 
     assert "10,00</td>" in content
-    assert '<nav class="subnav">' not in content
-
-
-def test_incomes_list_price_value(client_logged):
-    IncomeFactory()
-
-    url = reverse("incomes:tab_data")
-    response = client_logged.get(url).content.decode("utf-8")
-
-    assert "10,00</td>" in response
+    assert ('<nav class="subnav">' in content) is has_subnav
 
 
 @pytest.mark.parametrize(
@@ -285,25 +220,6 @@ def test_list_and_search_render_the_same_type_and_account_cells(
 
     assert '<td class="text-left">Alga</td>' in content
     assert '<td class="text-left">Kasa</td>' in content
-
-
-# -------------------------------------------------------------------------------------
-#                                                                         Income Delete
-# -------------------------------------------------------------------------------------
-def test_view_incomes_delete_func():
-    view = resolve("/incomes/delete/1/")
-
-    assert views.Delete is view.func.view_class
-
-
-def test_view_incomes_delete_200(client_logged):
-    p = IncomeFactory()
-
-    url = reverse("incomes:delete", kwargs={"pk": p.pk})
-
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_view_incomes_delete_load_form(client_logged):
@@ -352,39 +268,20 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
     assert Income.objects.all().count() == 1
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Income Type
-# ----------------------------------------------------------------------------
-def test_type_load_form_200(client_logged):
-    url = reverse("incomes:type_new")
-
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_type_load_form(client_logged):
-    url = reverse("incomes:type_new")
+@pytest.mark.parametrize(
+    "name, with_pk",
+    [("incomes:type_new", False), ("incomes:type_update", True)],
+    ids=["new", "update"],
+)
+def test_type_load_form(client_logged, name, with_pk):
+    kwargs = {"pk": IncomeTypeFactory().pk} if with_pk else {}
+    url = reverse(name, kwargs=kwargs)
 
     response = client_logged.get(url)
     actual = response.content.decode()
 
     assert f'hx-post="{url}"' in actual
-
-
-def test_type_save(client_logged):
-    data = {
-        "title": "TTT",
-        "type": "salary",
-    }
-
-    url = reverse("incomes:type_new")
-
-    response = client_logged.post(url, data, follow=True)
-
-    actual = response.content.decode("utf-8")
-
-    assert "TTT" in actual
+    assert 'data-hx-trigger-form=""' in actual
 
 
 def test_type_save_htmx_trigger_value(client_logged):
@@ -394,41 +291,6 @@ def test_type_save_htmx_trigger_value(client_logged):
     response = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
 
     assert response.headers["HX-Trigger"] == '{"reload": {}}'
-
-
-def test_type_save_invalid_data(client_logged):
-    data = {"title": ""}
-
-    url = reverse("incomes:type_new")
-
-    response = client_logged.post(url, data)
-
-    form = response.context.get("form")
-
-    assert not form.is_valid()
-
-
-def test_type_update_load_form(client_logged):
-    income = IncomeTypeFactory()
-
-    url = reverse("incomes:type_update", kwargs={"pk": income.pk})
-
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-
-
-def test_type_update(client_logged):
-    income = IncomeTypeFactory()
-
-    data = {"title": "TTT", "type": "other"}
-    url = reverse("incomes:type_update", kwargs={"pk": income.pk})
-
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
-
-    assert "TTT" in actual
 
 
 def test_income_type_not_load_other_journal(client_logged, second_user):
@@ -441,79 +303,39 @@ def test_income_type_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_view_index_200(client_logged):
-    response = client_logged.get("/incomes/")
-
-    assert response.status_code == 200
-
-
-# -------------------------------------------------------------------------------------
-#                                                                        Incomes Search
-# -------------------------------------------------------------------------------------
-def test_search_func():
-    view = resolve("/incomes/search/")
-
-    assert views.Search == view.func.view_class
-
-
-def test_search_get_200(client_logged):
-    url = reverse("incomes:search")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_search_not_found(client_logged):
+@pytest.mark.parametrize(
+    "search, shown",
+    [("xxx", ["Nieko nerasta"]), ("1999 type", ["1999-01-01", "remark"])],
+    ids=["not_found", "found"],
+)
+def test_search_answers_the_matches_or_nothing_found(client_logged, search, shown):
     IncomeFactory()
 
-    url = reverse("incomes:search")
-    response = client_logged.get(url, {"search": "xxx"})
+    response = client_logged.get(reverse("incomes:search"), {"search": search})
+
     actual = response.content.decode("utf-8")
-
-    assert "Nieko nerasta" in actual
-
-
-def test_search_found(client_logged):
-    IncomeFactory()
-
-    url = reverse("incomes:search")
-    response = client_logged.get(url, {"search": "1999 type"})
-    actual = response.content.decode("utf-8")
-
-    assert "1999-01-01" in actual
-    assert "remark" in actual
+    for text in shown:
+        assert text in actual
 
 
-def test_search_pagination_first_page(client_logged):
+@pytest.mark.parametrize(
+    "query, expected",
+    [({"search": "1999 type"}, 50), ({"page": 2, "search": "type"}, 1)],
+    ids=["first_page", "second_page"],
+)
+def test_search_pagination(client_logged, query, expected):
     a = AccountFactory()
     t = IncomeTypeFactory()
     i = IncomeFactory.build_batch(51, account=a, income_type=t)
     Income.objects.bulk_create(i)
 
     url = reverse("incomes:search")
-    response = client_logged.get(url, {"search": "1999 type"})
+    response = client_logged.get(url, query)
     actual = response.content.decode("utf-8")
 
-    assert actual.count("Income Type") == 50
+    assert actual.count("Income Type") == expected
 
 
-def test_search_pagination_second_page(client_logged):
-    a = AccountFactory()
-    t = IncomeTypeFactory()
-    i = IncomeFactory.build_batch(51, account=a, income_type=t)
-    Income.objects.bulk_create(i)
-
-    url = reverse("incomes:search")
-
-    response = client_logged.get(url, {"page": 2, "search": "type"})
-    actual = response.content.decode("utf-8")
-
-    assert actual.count("Income Type") == 1
-
-
-# -------------------------------------------------------------------------------------
-#                                                                                 Tabs
-# -------------------------------------------------------------------------------------
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
 def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
     content = client_logged.get(tab.url).content.decode()
@@ -562,18 +384,23 @@ def test_nav_offers_every_tab(client_logged):
         assert f'hx-get="{tab.url}"' in content
 
 
-def test_browser_title_names_the_open_tab(client_logged):
-    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+@pytest.mark.parametrize(
+    "url_name, heading",
+    [
+        pytest.param(
+            "incomes:tab_types", "<title>Pajamos | Rūšys</title>", id="browser_title"
+        ),
+        pytest.param(
+            "incomes:tab_index",
+            '<h2 class="panel__title">Pajamos per mėnesį</h2>',
+            id="months_panel_title",
+        ),
+    ],
+)
+def test_tab_states_its_title(client_logged, url_name, heading):
+    content = client_logged.get(reverse(url_name)).content.decode()
 
-    assert "<title>Pajamos | Rūšys</title>" in content
-
-
-def test_types_tab_lists_the_income_types(client_logged):
-    IncomeTypeFactory(title="Alga")
-
-    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
-
-    assert "Alga" in content
+    assert heading in content
 
 
 @time_machine.travel("1999-09-15")
@@ -661,12 +488,6 @@ def test_the_add_type_pill_waits_for_the_types_tab(client_logged):
     assert "Pridėti pajamų rūšį" in content
 
 
-def test_overview_titles_the_months_panel(client_logged):
-    content = client_logged.get(reverse("incomes:tab_index")).content.decode()
-
-    assert '<h2 class="panel__title">Pajamos per mėnesį</h2>' in content
-
-
 @time_machine.travel("1999-09-15")
 def test_overview_states_the_year_in_three_cards(client_logged):
     alga = IncomeTypeFactory(title="Alga")
@@ -732,3 +553,26 @@ def test_tab_query_count_does_not_grow_with_the_incomes(client_logged, tab):
     six = _tab_queries(client_logged, tab)
 
     assert six == two
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabIndex).get_context_data(),
+            id="tab_index",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.Lists).get_queryset(), id="list"
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabTypes).get_context_data(),
+            id="tab_types",
+        ),
+    ],
+)
+def test_a_user_with_no_year_raises(rf, main_user, call):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        call(rf, main_user)

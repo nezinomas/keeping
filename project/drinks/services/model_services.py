@@ -1,10 +1,10 @@
-import contextlib
 from dataclasses import dataclass
 from datetime import date
 
 from django.db.models import Count, F, QuerySet, Sum
 from django.db.models.functions import ExtractMonth, ExtractYear
 
+from ...core.lib.day_stats import NoPastRecord, PastRecord
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import DatedModelService
 from .. import models
@@ -56,38 +56,36 @@ class DrinkModelService(SumMixin, DatedModelService):
             self.objects.values_list("date__year", flat=True).order_by().distinct()
         )
 
-    def latest_date(self, year: int) -> date | None:
-        """Date of the last record in `year`, or None when the year is empty."""
-        with contextlib.suppress(models.Drink.DoesNotExist):
-            return self.year(year).latest().date
+    def latest_record(self, through: date) -> PastRecord | NoPastRecord:
+        """The last Drink on or before `through`, or NoPastRecord."""
+        return self._past_record(self.objects.filter(date__lte=through))
 
-        return None
+    def latest_record_before(self, year: int) -> PastRecord | NoPastRecord:
+        """The last Drink in any year before `year`, or NoPastRecord."""
+        return self._past_record(self.objects.filter(date__year__lt=year))
 
-    def latest_date_before(self, year: int) -> date | None:
-        """Date of the last record in any year before `year`."""
-        with contextlib.suppress(models.Drink.DoesNotExist):
-            return self.objects.filter(date__year__lt=year).latest().date
+    @staticmethod
+    def _past_record(qs: QuerySet) -> PastRecord | NoPastRecord:
+        latest = qs.order_by("-date").values_list("date", flat=True).first()
+        if latest is None:
+            return NoPastRecord()
 
-        return None
+        return PastRecord(latest)
 
-    def sum_by_year(self, year: int | None = None) -> QuerySet:
+    def sum_by_year(self) -> QuerySet:
         """
         Returns rows of: {'year': int, 'stdav': float, 'qty': float}
         """
         return self.year_sum(
-            self.objects, year=year, sum_annotation="stdav", sum_column="stdav"
+            self.objects, sum_annotation="stdav", sum_column="stdav"
         ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
-    def sum_by_month(self, year: int, month: int | None = None) -> QuerySet:
+    def sum_by_month(self, year: int) -> QuerySet:
         """
         Returns rows of: {'date': datetime.date, 'stdav': float, 'qty': float}
         """
         return self.month_sum(
-            self.objects,
-            year=year,
-            month=month,
-            sum_annotation="stdav",
-            sum_column="stdav",
+            self.objects, year=year, sum_annotation="stdav", sum_column="stdav"
         ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
     def sum_by_year_month(self, year_from: int = 0, year_to: int = 0) -> QuerySet:
@@ -116,16 +114,12 @@ class DrinkModelService(SumMixin, DatedModelService):
             .order_by("year", "month")
         )
 
-    def sum_by_day(self, year: int, month: int | None = None) -> QuerySet:
+    def sum_by_day(self, year: int) -> QuerySet:
         """
         Returns rows of: {'date': datetime.date, 'stdav': float, 'qty': float}
         """
         return self.day_sum(
-            self.objects,
-            year=year,
-            month=month,
-            sum_annotation="stdav",
-            sum_column="stdav",
+            self.objects, year=year, sum_annotation="stdav", sum_column="stdav"
         ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
 

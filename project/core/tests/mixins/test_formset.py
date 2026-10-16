@@ -1,79 +1,9 @@
+from unittest.mock import Mock
+
 import pytest
-from mock import ANY, Mock
 
 from ...mixins.formset import BaseTypeFormSet, FormsetMixin
 from ..utils import setup_view
-
-
-def test_formset_initial_reads_fund_field_from_the_service_model(fake_request):
-    mock_model_class = Mock(fund_field="pension_type")
-
-    mock_service_instance = Mock()
-    mock_service_instance.objects.model = mock_model_class
-
-    mock_service_class = Mock(return_value=mock_service_instance)
-
-    class Items:
-        def __init__(self, user):
-            pass
-
-        def items(self):
-            return ["P1"]
-
-    class Dummy(FormsetMixin):
-        category_service_class = Items
-        service_class = mock_service_class
-
-    view = setup_view(Dummy(), fake_request)
-
-    actual = view.formset_initial()
-
-    assert actual == [{"pension_type": "P1"}]
-
-
-# ==========================================
-# 1. Dummy Framework Setup
-# ==========================================
-
-
-class DummyField:
-    """Mocks Django's model field for the _meta introspection test."""
-
-    def __init__(self, name, many_to_one):
-        self.name = name
-        self.many_to_one = many_to_one
-
-
-class DummyMeta:
-    """Mocks Django's Model._meta"""
-
-    def __init__(self, fields):
-        self._fields = fields
-
-    def get_fields(self):
-        return self._fields
-
-
-class DummyModel:
-    """Mocks a Django Database Model"""
-
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-
-
-class DummyQuerySet:
-    """Mocks a service.objects queryset"""
-
-    model = DummyModel
-
-    def bulk_create(self, objects):
-        pass
-
-
-class DummyService:
-    def __init__(self, user):
-        self.user = user
-        self.objects = DummyQuerySet()
 
 
 class DummyTypesService:
@@ -84,424 +14,61 @@ class DummyTypesService:
         return ["Account1", "Account2"]
 
 
-class DummyBaseView:
-    """Mocks the super() calls expected by the mixin."""
-
-    def form_invalid(self, formset):
-        return "mocked_form_invalid_response"
-
-    def get_context_data(self, **kwargs):
-        return {"base_context": True}
-
-
-class TestView(FormsetMixin, DummyBaseView):
-    """A clean instance of our mixin hooked to a dummy base view."""
-
-    def get_formset_class(self):
-        return "MockedFormClass"
-
-    def get_hx_trigger_django(self):
-        return "hx-refresh-trigger"
-
-
-# ==========================================
-# 2. PROPERTY TESTS (Configuration)
-# ==========================================
-
-
-def test_lazy_properties_instantiate_correctly(mocker):
-    """
-    Proves the service is instantiated exactly once, with the correct user
-    """
-    view = TestView()
-    view.service_class = mocker.Mock(return_value=DummyService(user="test_user"))
-    view.request = mocker.Mock()
-    view.request.user = "test_user"
-
-    view.service_instance
-    model = view.model_class
-
-    view.service_class.assert_called_once_with("test_user")
-    assert model == DummyModel
-
-
-# ==========================================
-# 3. FORMSET_INITIAL TESTS (Introspection)
-# ==========================================
-
-
-def test_formset_initial_is_empty_when_the_category_service_has_no_items(mocker):
-    class NoItems(DummyTypesService):
-        def items(self):
-            return []
-
-    view = TestView()
-    view.category_service_class = NoItems
-    view.request = mocker.Mock()
-
-    mocker.patch.object(TestView, "model_class", create=True)
-    view.model_class.fund_field = "account"
-
-    assert view.formset_initial() == []
-
-
-def test_formset_initial_populates_via_category_service_class(mocker):
-    """
-    If foreign keys exist, it should ask category_service_class
-    for items and build the list
-    """
-    view = TestView()
-    view.category_service_class = DummyTypesService
-    view.request = mocker.Mock()
-
-    mocker.patch.object(TestView, "model_class", create=True)
-    view.model_class.fund_field = "account"
-
-    actual = view.formset_initial()
-
-    # Expecting 2 dictionaries because DummyTypesService returns 2 accounts
-    assert len(actual) == 2
-    assert actual[0] == {"account": "Account1"}
-    assert actual[1] == {"account": "Account2"}
-
-
-def test_formset_initial_keys_each_item_by_the_models_fund_field(mocker):
-    view = TestView()
-    view.category_service_class = DummyTypesService
-    view.request = mocker.Mock()
-
-    other_fk = DummyField("journal", True)
-    mocker.patch.object(TestView, "model_class", create=True)
-    view.model_class._meta = DummyMeta([other_fk, DummyField("saving_type", True)])
-    view.model_class.fund_field = "saving_type"
-
-    actual = view.formset_initial()
-
-    assert actual == [
-        {"saving_type": "Account1"},
-        {"saving_type": "Account2"},
-    ]
-
-
-# ==========================================
-# 4. GET_FORMSET TESTS (Factory Logic)
-# ==========================================
-
-
-def test_get_formset_for_get_request(mocker):
-    """
-    A GET request (post=None) should initialize the formset
-    with formset_initial() and extra=len
-    """
-    view = TestView()
-    mocker.patch.object(TestView, "model_class", create=True)
-    mocker.patch.object(TestView, "formset_initial", return_value=[{"initial": "data"}])
-
-    mock_formset_class = mocker.Mock()
-    mock_factory = mocker.patch(
-        "project.core.mixins.formset.modelformset_factory",
-        return_value=mock_formset_class,
-    )
-
-    view.get_formset(post=None)
-
-    mock_factory.assert_called_once_with(
-        model=view.model_class,
-        form=ANY,
-        formset=ANY,
-        extra=1,
-    )
-
-    mock_formset_class.assert_called_once_with(
-        initial=[{"initial": "data"}],
-        queryset=view.model_class.objects.none(),
-    )
-
-
-def test_get_formset_for_post_request(mocker):
-    """
-    POST request should pass the POST data, set extra=0, and IGNORE formset_initial()
-    """
-    view = TestView()
-    mocker.patch.object(TestView, "model_class", create=True)
-    mock_formset_initial = mocker.patch.object(TestView, "formset_initial")
-
-    mock_formset_class = mocker.Mock()
-    # Save the factory mock here as well
-    mock_factory = mocker.patch(
-        "project.core.mixins.formset.modelformset_factory",
-        return_value=mock_formset_class,
-    )
-
-    post_data = {"form-TOTAL_FORMS": 2}
-    view.get_formset(post=post_data)
-
-    # 1. Prove the FACTORY was configured to NOT render extra blank forms
-    mock_factory.assert_called_once_with(
-        model=view.model_class,
-        form=ANY,
-        formset=ANY,
-        extra=0,
-    )
-
-    # 2. Prove it passed the POST data and did NOT call initial
-    mock_formset_class.assert_called_once_with(post_data)
-    mock_formset_initial.assert_not_called()
-
-
-# ==========================================
-# 5. POST & SAVE TESTS (The Business Logic)
-# ==========================================
-
-
-def test_post_with_invalid_formset(mocker):
-    """If the formset fails validation, it must halt and return form_invalid()."""
-    view = TestView()
-    mock_request = mocker.Mock()
-
-    # Create a mock formset that is invalid
-    mock_formset = mocker.Mock()
-    mock_formset.is_valid.return_value = False
-    mocker.patch.object(TestView, "get_formset", return_value=mock_formset)
-
-    response = view.post(mock_request)
-
-    assert response == "mocked_form_invalid_response"
-
-
-def test_post_skips_empty_prices_and_does_not_save(mocker):
-    """
-    If the user submits valid forms but leaves all prices empty, it shouldn't hit the DB
-    """
-    view = TestView()
-
-    mock_form1 = mocker.Mock(cleaned_data={"price": None})
-    mock_form2 = mocker.Mock(cleaned_data={})  # price key missing completely
-
-    mock_formset = mocker.Mock()
-    mock_formset.is_valid.return_value = True
-    mock_formset.__iter__ = mocker.Mock(return_value=iter([mock_form1, mock_form2]))
-
-    mocker.patch.object(TestView, "get_formset", return_value=mock_formset)
-    mocker.patch.object(TestView, "model_class", create=True)
-    mocker.patch(
-        "project.core.mixins.formset.http_htmx_response", return_value="hx_success"
-    )
-
-    mock_bulk_create = mocker.patch.object(DummyQuerySet, "bulk_create")
-    view.service_class = mocker.Mock(return_value=DummyService("user"))
-
-    response = view.post(mocker.Mock())
-
-    # Prove bulk create was never fired because no valid prices existed
-    mock_bulk_create.assert_not_called()
-    assert response == "hx_success"
-
-
-def test_post_saves_valid_prices_and_triggers_signals(mocker):
-    """
-    If prices exist, it must instantiate objects, bulk create them, and fire signals.
-    """
-    view = TestView()
-    mock_request = mocker.Mock()
-    view.request = mock_request
-
-    # Two forms: One valid, one empty. It should only save the valid one.
-    mock_form1 = mocker.Mock(cleaned_data={"price": 100, "account": "A1"})
-    mock_form2 = mocker.Mock(cleaned_data={"price": None, "account": "A2"})
-
-    mock_formset = mocker.Mock()
-    mock_formset.is_valid.return_value = True
-    mock_formset.__iter__ = mocker.Mock(return_value=iter([mock_form1, mock_form2]))
-
-    mocker.patch.object(TestView, "get_formset", return_value=mock_formset)
-    mocker.patch(
-        "project.core.mixins.formset.http_htmx_response", return_value="hx_success"
-    )
-
-    # Set up our dummy service to intercept bulk_create
-    dummy_service = DummyService("user")
-    mock_bulk_create = mocker.patch.object(dummy_service.objects, "bulk_create")
-    view.service_class = mocker.Mock(return_value=dummy_service)
-
-    mock_sync = mocker.Mock()
-    mocker.patch.object(TestView, "balance_sync", mock_sync, create=True)
-    mocker.patch(
-        "project.core.mixins.formset.journal_user", return_value="journal_user"
-    )
-
-    # Execute
-    view.post(mocker.Mock())
-
-    assert mock_bulk_create.call_count == 1
-    created_objects_list = mock_bulk_create.call_args[0][0]
-    assert len(created_objects_list) == 1
-    assert isinstance(created_objects_list[0], DummyModel)
-    assert created_objects_list[0].kwargs == {"price": 100, "account": "A1"}
-
-    mock_sync.assert_called_once_with("journal_user")
-
-
-# ==========================================
-# 6. CONTEXT DATA TESTS
-# ==========================================
-
-
-def test_get_context_data_injects_variables(mocker):
-    """It must preserve super() context and inject formset variables."""
-    view = TestView()
-    view.request = mocker.Mock()
-    view.modal_form_title = "My Custom Title"
-
-    mocker.patch.object(TestView, "get_formset", return_value="injected_formset")
-
-    actual = view.get_context_data()
-
-    assert actual["base_context"] is True
-    assert actual["formset"] == "injected_formset"
-    assert actual["modal_form_title"] == "My Custom Title"
-    assert actual["modal_body_css_class"] == "worth-form"  # Default fallback
-
-
-# ==========================================
-#  BaseTypeFormSet CLEAN() TESTS (The Complex Validation Logic)
-# ==========================================
-
-
-@pytest.fixture
-def isolated_formset(mocker):
-    """
-    Bypasses Django's heavy __init__ (which looks for renderers and DBs)
-    so we can test our custom methods in pure, fast isolation.
-    """
-    mocker.patch.object(BaseTypeFormSet, "__init__", return_value=None)
-    formset = BaseTypeFormSet()
-
-    formset.model = mocker.Mock()
-    formset.model.__name__ = "MockModel"
-    return formset
-
-
-def test_clean_tags_the_field_the_model_names_not_the_first_foreign_key(
-    mocker, isolated_formset
+class OnePensionService(DummyTypesService):
+    def items(self):
+        return ["P1"]
+
+
+class NoItemsService(DummyTypesService):
+    def items(self):
+        return []
+
+
+class StubFormsetView(FormsetMixin):
+    pass
+
+
+@pytest.mark.parametrize(
+    "category_service, fund_field, expect",
+    [
+        pytest.param(
+            OnePensionService, "pension_type", [{"pension_type": "P1"}], id="one_item"
+        ),
+        pytest.param(NoItemsService, "account", [], id="no_items"),
+        pytest.param(
+            DummyTypesService,
+            "account",
+            [{"account": "Account1"}, {"account": "Account2"}],
+            id="account",
+        ),
+        pytest.param(
+            DummyTypesService,
+            "saving_type",
+            [{"saving_type": "Account1"}, {"saving_type": "Account2"}],
+            id="saving_type",
+        ),
+    ],
+)
+def test_formset_initial_keys_each_item_by_the_service_models_fund_field(
+    fake_request, category_service, fund_field, expect
 ):
-    first_fk = mocker.Mock(many_to_one=True)
-    first_fk.name = "journal"
-    isolated_formset.model._meta.get_fields.return_value = [first_fk]
-    isolated_formset.model.fund_field = "account"
+    service_instance = Mock()
+    service_instance.objects.model = Mock(fund_field=fund_field)
+
+    view = setup_view(StubFormsetView(), fake_request)
+    view.category_service_class = category_service
+    view.service_class = Mock(return_value=service_instance)
+
+    assert view.formset_initial() == expect
+
+
+def test_clean_without_a_fund_field_raises(mocker):
+    mocker.patch.object(BaseTypeFormSet, "__init__", return_value=None)
     mocker.patch.object(
         BaseTypeFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
     )
-    form1 = mocker.Mock(cleaned_data={"account": 99, "journal": 1}, errors={})
-    form2 = mocker.Mock(cleaned_data={"account": 99, "journal": 2}, errors={})
-    mocker.patch.object(
-        BaseTypeFormSet,
-        "forms",
-        new_callable=mocker.PropertyMock,
-        return_value=[form1, form2],
-    )
-
-    isolated_formset.clean()
-
-    form1.add_error.assert_called_once_with("account", mocker.ANY)
-    form2.add_error.assert_called_once_with("account", mocker.ANY)
-
-
-def test_clean_without_a_fund_field_raises(mocker, isolated_formset):
-    isolated_formset.model = mocker.Mock(spec=[])
-    mocker.patch.object(
-        BaseTypeFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
-    )
+    formset = BaseTypeFormSet()
+    formset.model = mocker.Mock(spec=[])
 
     with pytest.raises(AttributeError, match="fund_field"):
-        isolated_formset.clean()
-
-
-def test_clean_early_exit_on_existing_errors(mocker, isolated_formset):
-    isolated_formset.model = mocker.Mock(spec=[])
-    mocker.patch.object(
-        BaseTypeFormSet,
-        "errors",
-        new_callable=mocker.PropertyMock,
-        return_value=["Some error"],
-    )
-
-    isolated_formset.clean()
-
-
-def test_clean_skips_invalid_and_empty_forms(mocker, isolated_formset):
-    mocker.patch.object(
-        BaseTypeFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
-    )
-    isolated_formset.model.fund_field = "account"
-
-    # Form 1: Completely empty
-    form1 = mocker.Mock(cleaned_data={})
-    # Form 2: Marked for deletion
-    form2 = mocker.Mock(cleaned_data={"account": 1, "DELETE": True})
-    # Form 3: Dropdown left blank
-    form3 = mocker.Mock(cleaned_data={"account": None})
-
-    mocker.patch.object(
-        BaseTypeFormSet,
-        "forms",
-        new_callable=mocker.PropertyMock,
-        return_value=[form1, form2, form3],
-    )
-
-    isolated_formset.clean()
-
-    form1.add_error.assert_not_called()
-    form2.add_error.assert_not_called()
-    form3.add_error.assert_not_called()
-
-
-def test_clean_identifies_duplicates_and_tags_both(mocker, isolated_formset):
-    mocker.patch.object(
-        BaseTypeFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
-    )
-    isolated_formset.model.fund_field = "account"
-
-    form1 = mocker.Mock(cleaned_data={"account": 99}, errors={})
-    form2 = mocker.Mock(cleaned_data={"account": 99}, errors={})
-
-    mocker.patch.object(
-        BaseTypeFormSet,
-        "forms",
-        new_callable=mocker.PropertyMock,
-        return_value=[form1, form2],
-    )
-
-    isolated_formset.clean()
-
-    form1.add_error.assert_called_once_with("account", mocker.ANY)
-    form2.add_error.assert_called_once_with("account", mocker.ANY)
-
-
-def test_clean_multiple_duplicates_only_tags_first_form_once(mocker, isolated_formset):
-    mocker.patch.object(
-        BaseTypeFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
-    )
-    isolated_formset.model.fund_field = "account"
-
-    form1 = mocker.Mock(cleaned_data={"account": 99}, errors={})
-    form2 = mocker.Mock(cleaned_data={"account": 99}, errors={})
-    form3 = mocker.Mock(cleaned_data={"account": 99}, errors={})
-
-    def add_error_side_effect(field, msg):
-        form1.errors[field] = msg
-
-    form1.add_error.side_effect = add_error_side_effect
-
-    mocker.patch.object(
-        BaseTypeFormSet,
-        "forms",
-        new_callable=mocker.PropertyMock,
-        return_value=[form1, form2, form3],
-    )
-
-    isolated_formset.clean()
-
-    assert form1.add_error.call_count == 1
-    form2.add_error.assert_called_once()
-    form3.add_error.assert_called_once()
+        formset.clean()

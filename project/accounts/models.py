@@ -19,7 +19,6 @@ class Account(TitleAbstract):
     )
 
     class Meta:
-        unique_together = ["journal", "title"]
         ordering = ["order", "title"]
         constraints = [
             models.UniqueConstraint(

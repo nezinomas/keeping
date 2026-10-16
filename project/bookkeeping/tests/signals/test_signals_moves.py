@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 import time_machine
 
@@ -42,6 +44,7 @@ def _ticked_form(main_user, move):
     )
     form = FORMS[move](
         user=main_user,
+        today=date(1999, 1, 1),
         data={
             "date": "1999-01-01",
             "from_account": fund.pk,
@@ -125,6 +128,7 @@ def test_form_unticked_box_is_not_applied_to_a_later_save_of_the_row(main_user, 
     )
     form = FORMS[move](
         user=main_user,
+        today=date(1999, 1, 1),
         data={
             "date": "1999-01-01",
             "from_account": fund.pk,

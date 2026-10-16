@@ -9,9 +9,6 @@ from ..factories import BookFactory, BookTargetFactory
 pytestmark = pytest.mark.django_db
 
 
-# -------------------------------------------------------------------------------------
-#                                                                     ChartFinishedData
-# -------------------------------------------------------------------------------------
 def test_data_targets_no_data(main_user):
     actual = ChartFinishedData(main_user).targets
 
@@ -45,9 +42,6 @@ def test_data_finished(main_user):
     assert actual == {1998: 1, 2000: 2}
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         ChartFinished
-# -------------------------------------------------------------------------------------
 @pytest.fixture(name="finished")
 def fixture_finished():
     return {1111: 1, 2222: 2, 3333: 3}
@@ -71,31 +65,25 @@ def test_chart_context():
     assert "chart_column_color" not in actual
 
 
-def test_chart_context_categories(finished, targets):
+@pytest.mark.parametrize(
+    ("key", "expected"),
+    [
+        ("categories", [1111, 2222, 3333]),
+        ("targets", [11, 0, 33]),
+        (
+            "data",
+            [
+                {"y": 1, "target": 11},
+                {"y": 2, "target": 0},
+                {"y": 3, "target": 33},
+            ],
+        ),
+    ],
+    ids=["categories", "targets", "data"],
+)
+def test_chart_context_values(finished, targets, key, expected):
     data = SimpleNamespace(finished=finished, targets=targets)
 
     actual = ChartFinished(data).context()
-    actual = actual["categories"]
 
-    assert actual == [1111, 2222, 3333]
-
-
-def test_chart_context_targets(finished, targets):
-    data = SimpleNamespace(finished=finished, targets=targets)
-
-    actual = ChartFinished(data).context()
-    actual = actual["targets"]
-
-    assert actual == [11, 0, 33]
-
-
-def test_chart_context_data(finished, targets):
-    data = SimpleNamespace(finished=finished, targets=targets)
-
-    actual = ChartFinished(data).context()
-
-    assert actual["data"] == [
-        {"y": 1, "target": 11},
-        {"y": 2, "target": 0},
-        {"y": 3, "target": 33},
-    ]
+    assert actual[key] == expected

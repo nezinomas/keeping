@@ -5,6 +5,8 @@ from ....bookkeeping.tests.factories import (
     PensionWorthFactory,
     SavingWorthFactory,
 )
+from ....core.services import signals_service
+from ....core.services.signals_service import journal_user, sync
 from ....debts.tests.factories import BorrowFactory, BorrowReturnFactory
 from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
@@ -16,8 +18,6 @@ from ....transactions.tests.factories import (
     TransactionFactory,
 )
 from ....users.tests.factories import UserFactory
-from ...services import signals_service
-from ...services.signals_service import journal_user, sync
 
 pytestmark = pytest.mark.django_db
 

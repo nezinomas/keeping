@@ -26,7 +26,7 @@ class ChartFinished:
         self._targets = data.targets
 
     def context(self):
-        data = self._make_serries_data()
+        data = self._make_series_data()
 
         return {
             "categories": list(self._finished.keys()),
@@ -34,7 +34,7 @@ class ChartFinished:
             "targets": list(map(operator.itemgetter("target"), data)),
         }
 
-    def _make_serries_data(self):
+    def _make_series_data(self):
         return [
             {
                 "y": cnt,

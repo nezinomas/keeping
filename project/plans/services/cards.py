@@ -14,7 +14,13 @@ from ...core.lib.stat_card import (
     LevelStatCard,
     StatCard,
 )
-from ..lib.calc_day_sum import OVER, DataDto, PlanCalculateDaySum
+from ..lib.calc_day_sum import (
+    OVER,
+    CalcRow,
+    DataDto,
+    InputRow,
+    PlanCalculateDaySum,
+)
 
 MONTHS = 12
 
@@ -64,7 +70,7 @@ class IncomeCards:
         if not total:
             return EmptyStatCard(title)
 
-        cents = PlanCalculateDaySum(self.data).incomes_avg["1"]
+        cents = PlanCalculateDaySum(self.data).row(CalcRow.INCOMES_AVG)["1"]
 
         return StatCard(title=title, value=_whole_euros(cents))
 
@@ -139,10 +145,12 @@ class DayCards:
         if not _sum(self.data.incomes):
             return EmptyStatCard(title)
 
-        return StatCard(title=title, value=_euros_and_cents(calc.day_calced[month]))
+        return StatCard(
+            title=title, value=_euros_and_cents(calc.row(CalcRow.SUM_PER_DAY)[month])
+        )
 
     def _day_plan(self, title: str, calc: PlanCalculateDaySum, month: str) -> Card:
-        cents = calc.day_input[month]
+        cents = calc.row(InputRow.DAY_PLAN)[month]
         if not cents:
             return EmptyStatCard(title)
 

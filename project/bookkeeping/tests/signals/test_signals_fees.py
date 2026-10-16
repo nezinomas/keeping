@@ -171,22 +171,20 @@ def test_saving_a_saving_type_leaves_every_balance_unchanged():
 
 
 # fee charged to the account
-def test_account_charged_fee_is_debited_with_the_price():
+@pytest.mark.parametrize(
+    "price, fee, expect",
+    [
+        pytest.param(200, 3, 203, id="is_debited_with_the_price"),
+        pytest.param(0, 100, 100, id="only_purchase_debits_its_fee"),
+    ],
+)
+def test_account_charged_fee_is_debited(price, fee, expect):
     account = AccountFactory(title="IB")
     vall = SavingTypeFactory(title="VALL", fee_source=SavingType.FeeSource.ACCOUNT)
 
-    SavingFactory(account=account, saving_type=vall, price=200, fee=3)
+    SavingFactory(account=account, saving_type=vall, price=price, fee=fee)
 
-    assert _account_balance(account).expenses == 203
-
-
-def test_account_charged_fee_only_purchase_debits_its_fee():
-    account = AccountFactory(title="IB")
-    vall = SavingTypeFactory(title="VALL", fee_source=SavingType.FeeSource.ACCOUNT)
-
-    SavingFactory(account=account, saving_type=vall, price=0, fee=100)
-
-    assert _account_balance(account).expenses == 100
+    assert _account_balance(account).expenses == expect
 
 
 def test_one_account_paying_both_fee_sources():

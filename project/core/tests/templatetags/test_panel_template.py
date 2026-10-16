@@ -1,3 +1,4 @@
+import pytest
 from django.template import engines
 from django_cotton.compiler_regex import CottonCompiler
 
@@ -25,12 +26,6 @@ def test_a_subtitle_renders_when_given():
     content = _render('<c-panel title="Suvartota" subtitle="Antraštė">slot</c-panel>')
 
     assert '<p class="panel__subtitle">Antraštė</p>' in content
-
-
-def test_no_subtitle_element_when_none_is_given():
-    content = _render('<c-panel title="Suvartota">slot</c-panel>')
-
-    assert "panel__subtitle" not in content
 
 
 def test_an_id_attribute_lands_on_the_section():
@@ -67,7 +62,14 @@ def test_a_hint_renders_a_question_tip_inside_the_title():
     assert '<i class="bi bi-question-circle"></i>' in content
 
 
-def test_no_hint_element_when_none_is_given():
+@pytest.mark.parametrize(
+    "element",
+    [
+        pytest.param("panel__subtitle", id="subtitle"),
+        pytest.param("panel__hint", id="hint"),
+    ],
+)
+def test_no_optional_element_when_none_is_given(element):
     content = _render('<c-panel title="Suvartota">slot</c-panel>')
 
-    assert "panel__hint" not in content
+    assert element not in content

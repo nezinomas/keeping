@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
+from datetime import date
 
 from django.utils.translation import gettext as _
 
-from ...core.lib.date import years
+from ...core.lib.date import years_to_date
 from ...incomes.services.model_services import IncomeModelService
 from ...savings.services.model_services import SavingModelService
 from ...users.models import User
@@ -20,37 +21,36 @@ class Data:
 
 
 class Service:
-    def __init__(self, user: User, data: Data):
-        self.user = user
+    def __init__(self, data: Data, years: list[int]):
+        self._years = years
         self._incomes = data.incomes
         self._savings = data.savings
 
     def chart_data(self):
-        _categories = years(self.user)[:-1]
-        _incomes = {x["year"]: x["sum"] for x in self._incomes}
-        _savings = {x["year"]: x["sum"] for x in self._savings}
+        incomes_by_year = {x["year"]: x["sum"] for x in self._incomes}
+        savings_by_year = {x["year"]: x["sum"] for x in self._savings}
 
-        _income_values, _saving_values, _percent_values = [], [], []
-        for year in _categories:
-            _income = _incomes.get(year, 0)
-            _saving = _savings.get(year, 0)
-            _percent = (_saving * 100) / _income if _income else 0
+        incomes, savings, percents = [], [], []
+        for year in self._years:
+            income = incomes_by_year.get(year, 0)
+            saving = savings_by_year.get(year, 0)
+            percent = (saving * 100) / income if income else 0
 
-            _income_values.append(_income)
-            _saving_values.append(_saving)
-            _percent_values.append(_percent)
+            incomes.append(income)
+            savings.append(saving)
+            percents.append(percent)
 
         return {
-            "categories": _categories,
-            "incomes": _income_values,
-            "savings": _saving_values,
-            "percents": _percent_values,
+            "categories": self._years,
+            "incomes": incomes,
+            "savings": savings,
+            "percents": percents,
         }
 
 
-def load_service(user: User) -> dict:
+def load_service(user: User, today: date) -> dict:
     data = Data(user)
-    obj = Service(user, data)
+    obj = Service(data, years_to_date(user, today))
 
     text = {
         "text": {

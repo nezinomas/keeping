@@ -29,7 +29,6 @@ def test_quick_add_post_creates_drink(client_logged):
 
     drink = models.Drink.objects.last()
     assert drink.option == "beer"
-    # 2.5 units of beer = 2.5 / 0.4 stdav = 6.25 stdav (based on beer ratio of 0.4)
     assert drink.stdav == pytest.approx(6.25, rel=0.01)
 
 
@@ -115,7 +114,6 @@ def test_quick_add_post_omits_date_uses_set_date_with_user_year(
 
         assert response.status_code == 204
         drink = models.Drink.objects.last()
-        # set_date_with_user_year should default to today when viewing current year
         assert drink.date.year == 1999
 
 
@@ -126,31 +124,37 @@ def quantity_input(html):
     return html[start : html.index(">", start) + 1]
 
 
-def test_quick_add_quantity_input_is_a_text_field(client_logged):
-    url = reverse("drinks:index")
-    response = client_logged.get(url)
-    html = response.content.decode("utf-8")
-
-    assert 'inputmode="decimal"' in quantity_input(html)
-
-
-def test_quick_add_quantity_rewrites_a_decimal_comma_on_the_model(client_logged):
-    url = reverse("drinks:index")
-    response = client_logged.get(url)
-    html = response.content.decode("utf-8")
-
-    assert "quantity.replace(',', '.')" in quantity_input(html)
-
-
-def test_quick_add_quantity_drops_what_is_not_a_number(client_logged):
-    # 150b answered 422 with an empty body, so the sheet said nothing at all —
-    # and a second dot is no more parseable than a letter
+@pytest.mark.parametrize(
+    "expected",
+    [
+        pytest.param(
+            ('inputmode="decimal"',), id="quick_add_quantity_input_is_a_text_field"
+        ),
+        pytest.param(
+            ("quantity.replace(',', '.')",),
+            id="quick_add_quantity_rewrites_a_decimal_comma_on_the_model",
+        ),
+        # a second dot is no more parseable than a letter
+        pytest.param(
+            ("[^0-9.]", r"^(\d*\.?\d*).*"),
+            id="quick_add_quantity_drops_what_is_not_a_number",
+        ),
+        # a native spin button is not focusable either; the arrow keys are the path
+        pytest.param(
+            ('@keydown.up.prevent="step(1)"', '@keydown.down.prevent="step(-1)"'),
+            id="quick_add_quantity_steps_from_the_keyboard",
+        ),
+    ],
+)
+def test_quick_add_quantity_input_reads_a_decimal_and_steps_from_the_keyboard(
+    client_logged, expected
+):
     url = reverse("drinks:index")
     response = client_logged.get(url)
     tag = quantity_input(response.content.decode("utf-8"))
 
-    assert "[^0-9.]" in tag
-    assert r"^(\d*\.?\d*).*" in tag
+    for part in expected:
+        assert part in tag
 
 
 def test_quick_add_quantity_arrows_step_by_drink_type(client_logged):
@@ -164,16 +168,6 @@ def test_quick_add_quantity_arrows_step_by_drink_type(client_logged):
     assert 'class="quick-add__spin-down"' in html
     assert '@click="step(1)"' in html
     assert '@click="step(-1)"' in html
-
-
-def test_quick_add_quantity_steps_from_the_keyboard(client_logged):
-    # a native spin button is not focusable either; the arrow keys are the path
-    url = reverse("drinks:index")
-    response = client_logged.get(url)
-    tag = quantity_input(response.content.decode("utf-8"))
-
-    assert '@keydown.up.prevent="step(1)"' in tag
-    assert '@keydown.down.prevent="step(-1)"' in tag
 
 
 def test_quick_add_fields_run_day_then_drink_type_then_quantity(client_logged):

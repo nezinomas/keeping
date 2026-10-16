@@ -2,26 +2,13 @@ from datetime import date
 
 import pytest
 import time_machine
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ....incomes.tests.factories import IncomeFactory
 from ....savings.tests.factories import SavingFactory
-from ... import views
+from ..helper import script_json
 
 pytestmark = pytest.mark.django_db
-
-
-def test_view_func():
-    view = resolve("/summary/savings_and_incomes/")
-
-    assert views.SummarySavingsAndIncomes == view.func.view_class
-
-
-def test_view_200(client_logged):
-    url = reverse("bookkeeping:summary_savings_and_incomes")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_view_no_logged_user(client):
@@ -31,85 +18,47 @@ def test_view_no_logged_user(client):
     assert response.status_code == 302
 
 
-def test_view_context(client_logged):
-    url = reverse("bookkeeping:summary_savings_and_incomes")
-    response = client_logged.get(url)
-
-    actual = response.context
-
-    assert "chart_data" in actual
-
-
 @time_machine.travel("2000-1-1")
-def test_view_context_categories(main_user, client_logged):
-    IncomeFactory(date=date(2000, 1, 1))
+@pytest.mark.parametrize(
+    "incomes, savings, expected",
+    [
+        pytest.param(
+            {2000: 1},
+            {},
+            {"categories": [1999, 2000]},
+            id="categories",
+        ),
+        pytest.param(
+            {1999: 1, 2000: 2},
+            {},
+            {"incomes": [1, 2]},
+            id="incomes",
+        ),
+        pytest.param({1999: 1}, {}, {"incomes": [1, 0]}, id="incomes_one_empty_year"),
+        pytest.param({}, {1999: 1, 2000: 2}, {"savings": [1, 2]}, id="savings"),
+        pytest.param({}, {1999: 1}, {"savings": [1, 0]}, id="savings_one_empty_year"),
+        pytest.param(
+            {1999: 10},
+            {1999: 1},
+            {
+                "categories": [1999, 2000],
+                "incomes": [10, 0],
+                "savings": [1, 0],
+                "percents": [10, 0],
+            },
+            id="percents",
+        ),
+    ],
+)
+def test_view_renders_its_chart_data(client_logged, incomes, savings, expected):
+    for year, price in incomes.items():
+        IncomeFactory(date=date(year, 1, 1), price=price)
+    for year, price in savings.items():
+        SavingFactory(date=date(year, 1, 1), price=price, fee=0)
 
     url = reverse("bookkeeping:summary_savings_and_incomes")
-    response = client_logged.get(url)
+    content = client_logged.get(url).content.decode()
+    data = script_json(content, "chart-data")
 
-    actual = response.context
-
-    assert actual["chart_data"]["categories"] == [1999, 2000]
-
-
-@time_machine.travel("2000-1-1")
-def test_view_context_incomes(client_logged):
-    IncomeFactory(date=date(1999, 1, 1), price=1)
-    IncomeFactory(date=date(2000, 1, 1), price=2)
-
-    url = reverse("bookkeeping:summary_savings_and_incomes")
-    response = client_logged.get(url)
-
-    actual = response.context
-
-    assert actual["chart_data"]["incomes"] == [1, 2]
-
-
-@time_machine.travel("2000-1-1")
-def test_view_context_incomes_one_empty_year(client_logged):
-    IncomeFactory(date=date(1999, 1, 1), price=1)
-
-    url = reverse("bookkeeping:summary_savings_and_incomes")
-    response = client_logged.get(url)
-
-    actual = response.context
-
-    assert actual["chart_data"]["incomes"] == [1, 0]
-
-
-@time_machine.travel("2000-1-1")
-def test_view_context_savings(client_logged):
-    SavingFactory(date=date(1999, 1, 1), price=1, fee=0)
-    SavingFactory(date=date(2000, 1, 1), price=2, fee=0)
-
-    url = reverse("bookkeeping:summary_savings_and_incomes")
-    response = client_logged.get(url)
-
-    actual = response.context
-
-    assert actual["chart_data"]["savings"] == [1, 2]
-
-
-@time_machine.travel("2000-1-1")
-def test_view_contex_savings_one_empty_year(client_logged):
-    SavingFactory(date=date(1999, 1, 1), price=1, fee=0)
-
-    url = reverse("bookkeeping:summary_savings_and_incomes")
-    response = client_logged.get(url)
-
-    actual = response.context
-
-    assert actual["chart_data"]["savings"] == [1, 0]
-
-
-@time_machine.travel("2000-1-1")
-def test_view_context_percents(client_logged):
-    IncomeFactory(date=date(1999, 1, 1), price=10)
-    SavingFactory(date=date(1999, 1, 1), price=1, fee=0)
-
-    url = reverse("bookkeeping:summary_savings_and_incomes")
-    response = client_logged.get(url)
-
-    actual = response.context
-
-    assert actual["chart_data"]["percents"] == [10, 0]
+    assert {key: data[key] for key in expected} == expected
+    assert "<th>1999</th>" in content

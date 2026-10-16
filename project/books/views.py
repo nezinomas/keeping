@@ -1,10 +1,12 @@
 from typing import cast
+from urllib.parse import urlencode
 
 from django.urls import reverse, reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.paginator import CountlessPaginator
+from ..core.mixins.search import PER_PAGE
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -17,7 +19,10 @@ from ..core.mixins.views import (
 from ..users.models import User
 from . import forms, services
 from .services.model_services import BookModelService, BookTargetModelService
+from .services.search import search_books
 from .tabs import DEFAULT_TAB, TABS, BookTab
+
+ALL_RECORDS = "all"
 
 
 class TabViewMixin(CoreTabViewMixin):
@@ -44,55 +49,42 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            "cards": services.Cards.build(user, cast(int, user.year)),
+            "cards": services.Cards.build(user, user.selected_year()),
             "chart": chart.context(),
         }
 
 
 class Lists(ListViewMixin):
     template_name = "books/book_list.html"
-    service_class = BookModelService
-    per_page = 50
 
     def get_queryset(self):
         user = cast(User, self.request.user)
-        year = cast(int, user.year)
         service = BookModelService(user)
-        return service.objects if self.scope else service.year(year)
+        if self.all_records:
+            return service.objects
+        return service.year(user.selected_year())
 
     @property
-    def scope(self) -> str:
-        scope = ""
-        if self.request.GET.get("scope") == "all":
-            scope = "all"
-        return scope
+    def all_records(self) -> bool:
+        return self.request.GET.get("scope") == ALL_RECORDS
 
     def get_context_data(self, **kwargs):
-        page = int(self.request.GET.get("page", 1))
-        sql = self.get_queryset()
+        total = self.object_list.count()
         paginator = CountlessPaginator(
-            query=sql, total_records=len(sql), per_page=self.per_page
+            query=self.object_list, total_records=total, per_page=PER_PAGE
         )
-        page_range = paginator.get_elided_page_range(page=page)
+        page_obj, paginator_object = paginator.paging(self.request.GET.get("page", 1))
 
-        # all records lists every year, so an empty one has no year to name
-        notice = _("No records")
-        if not self.scope:
-            notice = _("No records in <b>%(year)s</b>.") % {
-                "year": cast(User, self.request.user).year
-            }
+        scope = ""
+        if self.all_records:
+            scope = ALL_RECORDS
 
         context = {
-            "notice": notice,
-            "object_list": paginator.get_page(page),
+            "object_list": page_obj,
             "url": reverse("books:list"),
-            "scope": self.scope,
-            "first_item": paginator.count - paginator.per_page * (page - 1),
-            "paginator_object": {
-                "total_pages": paginator.total_pages,
-                "page_range": page_range,
-                "ELLIPSIS": paginator.ELLIPSIS,
-            },
+            "scope": scope,
+            "countdown_from": total - page_obj.start_index() + 1,
+            "paginator_object": paginator_object,
         }
 
         return super().get_context_data(**kwargs) | context
@@ -103,13 +95,12 @@ class TabData(TabViewMixin, Lists):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.scope:
-            context["tab_url"] = f"{self.tab.url}?scope={self.scope}"
+        if self.all_records:
+            context["tab_url"] = f"{self.tab.url}?{urlencode({'scope': ALL_RECORDS})}"
         return context
 
 
 class New(CreateViewMixin):
-    service_class = BookModelService
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     modal_form_title = _("New book")
@@ -132,13 +123,10 @@ class Delete(DeleteViewMixin):
 
 class Search(SearchViewMixin):
     template_name = "books/book_list.html"
-    per_page = 50
-
-    search_method = "search_books"
+    search_method = staticmethod(search_books)
 
 
 class TargetNew(CreateViewMixin):
-    service_class = BookTargetModelService
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
     url_name = "target_new"

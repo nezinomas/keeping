@@ -3,40 +3,30 @@ from django.contrib.auth.models import AnonymousUser
 
 from ...services.model_services import AccountBalanceModelService, AccountModelService
 
-
-def test_balance_init_raises_if_no_user():
-    with pytest.raises(ValueError, match="User required"):
-        AccountBalanceModelService(user=None)
+SERVICES = [AccountModelService, AccountBalanceModelService]
 
 
-def test_balance_init_raises_if_anonymous_user():
-    anon = AnonymousUser()
-    with pytest.raises(ValueError, match="Authenticated user required"):
-        AccountBalanceModelService(user=anon)
-
-
-@pytest.mark.django_db
-def test_balance_init_succeeds_with_real_user(main_user):
-    # No need to save — just check __init__
-    AccountBalanceModelService(user=main_user)
-
-
-def test_account_init_raises_if_no_user():
-    with pytest.raises(ValueError, match="User required"):
-        AccountModelService(user=None)
-
-
-def test_account_init_raises_if_anonymous_user():
-    anon = AnonymousUser()
-    with pytest.raises(ValueError, match="Authenticated user required"):
-        AccountModelService(user=anon)
-
-
-@pytest.mark.django_db
-def test_account_init_succeeds_with_real_user(main_user):
-    # No need to save — just check __init__
-    AccountModelService(user=main_user)
+@pytest.mark.parametrize("service", SERVICES, ids=["account", "balance"])
+@pytest.mark.parametrize(
+    "user, message",
+    [
+        (None, "User required"),
+        (AnonymousUser(), "Authenticated user required"),
+    ],
+    ids=["no_user", "anonymous_user"],
+)
+def test_init_raises_without_a_real_user(service, user, message):
+    with pytest.raises(ValueError, match=message):
+        service(user=user)
 
 
 def test_account_model_service_promises_no_year():
     assert not hasattr(AccountModelService, "year")
+
+
+@pytest.mark.django_db
+def test_a_user_with_no_year_raises(main_user):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        AccountModelService(main_user).items()

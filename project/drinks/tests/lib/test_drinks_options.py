@@ -1,5 +1,7 @@
 import polars as pl
 import pytest
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib.drink_types import DrinkType
 from ...lib.drinks_options import (
@@ -8,6 +10,10 @@ from ...lib.drinks_options import (
     DrinkTypeSpec,
     stdav_to_alcohol,
 )
+from .drink_specs import STDAV_PER_SERVING
+
+DRINK_TYPES = st.sampled_from(DrinkType.values)
+SERVINGS = st.floats(min_value=0.01, max_value=1000, allow_nan=False)
 
 
 def test_every_drink_type_has_a_spec():
@@ -184,28 +190,39 @@ def test_display_to_total(drink_type, value, expect):
     assert actual == expect
 
 
-@pytest.mark.parametrize(
-    "servings, from_, to, expect",
-    [
-        (1, "beer", "beer", 1),
-        (1, "beer", "wine", 0.31),
-        (1, "beer", "vodka", 0.06),
-        (1, "beer", "stdav", 2.5),
-        (1, "wine", "beer", 3.2),
-        (1, "wine", "wine", 1),
-        (1, "wine", "vodka", 0.2),
-        (1, "wine", "stdav", 8),
-        (1, "vodka", "beer", 16),
-        (1, "vodka", "wine", 5),
-        (1, "vodka", "vodka", 1),
-        (1, "vodka", "stdav", 40),
-    ],
-)
-def test_servings_read_in_another_drink_type(servings, from_, to, expect):
+def _read_in(servings, from_, to):
     stdav = DrinkConverter(from_).servings_to_stdav(servings)
-    actual = DrinkConverter(to).stdav_to_servings(stdav)
 
-    assert round(actual, 2) == expect
+    return DrinkConverter(to).stdav_to_servings(stdav)
+
+
+@given(servings=SERVINGS, from_=DRINK_TYPES, to=DRINK_TYPES)
+@example(servings=1, from_="beer", to="beer")
+@example(servings=1, from_="beer", to="wine")
+@example(servings=1, from_="beer", to="vodka")
+@example(servings=1, from_="beer", to="stdav")
+@example(servings=1, from_="wine", to="beer")
+@example(servings=1, from_="wine", to="wine")
+@example(servings=1, from_="wine", to="vodka")
+@example(servings=1, from_="wine", to="stdav")
+@example(servings=1, from_="vodka", to="beer")
+@example(servings=1, from_="vodka", to="wine")
+@example(servings=1, from_="vodka", to="vodka")
+@example(servings=1, from_="vodka", to="stdav")
+def test_servings_read_in_another_drink_type(servings, from_, to):
+    expect = servings * STDAV_PER_SERVING[from_] / STDAV_PER_SERVING[to]
+
+    actual = _read_in(servings, from_, to)
+
+    assert actual == pytest.approx(expect)
+    assert _read_in(actual, to, from_) == pytest.approx(servings)
+
+
+@given(servings=SERVINGS, a=DRINK_TYPES, b=DRINK_TYPES, c=DRINK_TYPES)
+def test_servings_read_through_a_third_drink_type_are_unchanged(servings, a, b, c):
+    via_b = _read_in(_read_in(servings, a, b), b, c)
+
+    assert via_b == pytest.approx(_read_in(servings, a, c))
 
 
 @pytest.mark.parametrize(

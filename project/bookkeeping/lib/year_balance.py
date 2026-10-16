@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 
 from ...core.lib.year_boundary import YearBoundary
@@ -6,25 +8,10 @@ from .balance_base import BalanceBase
 
 
 class YearBalance(BalanceBase):
-    def __init__(self, data: MakeDataFrame, amount_start: int = 0):
-        """
-        data: MakeDataFrame object
-
-        amount_start: year start worth amount
-
-        awailable keys in data:
-            incomes,
-            expenses,
-            savings,
-            savings_close,
-            savings_account_fee (optional),
-            borrow,
-            borrow_return,
-            lend,
-            lend_return
-        """
+    def __init__(self, data: MakeDataFrame, amount_start: int = 0, *, today: date):
         self.year = data.date_range.year
         self._amount_start = amount_start
+        self._today = today
         self._balance = self._calc_balance_and_money_flow(data.data)
 
         super().__init__(self._balance)
@@ -52,13 +39,12 @@ class YearBalance(BalanceBase):
 
     @property
     def avg_expenses(self) -> float:
-        boundary = YearBoundary.for_year(self.year)
+        boundary = YearBoundary(self.year, self._today)
 
         # a year still running averages over the months it has reached; a
         # finished one falls through to the base average over months with data
         if boundary.is_current:
             months = boundary.end_date.month
-            # self._data is from base class
             df = self._data.select(
                 pl.col("expenses").filter(pl.col("date").dt.month() <= months).sum()
             )

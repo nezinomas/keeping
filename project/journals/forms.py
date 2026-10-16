@@ -4,10 +4,15 @@ from json.decoder import JSONDecodeError
 
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 from ..expenses.services.model_services import ExpenseTypeModelService
 from .models import Journal
+
+
+def pks_json(choices):
+    return json.dumps(list(choices.values_list("pk", flat=True)))
 
 
 class UnnecessaryForm(forms.Form):
@@ -17,7 +22,8 @@ class UnnecessaryForm(forms.Form):
     savings = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["choices"].queryset = ExpenseTypeModelService(self.user).objects
@@ -33,16 +39,20 @@ class UnnecessaryForm(forms.Form):
         self.fields["savings"].label = _("Savings")
         self.fields["choices"].label = False
 
+    def clean_choices(self):
+        choices = self.cleaned_data["choices"]
+
+        column = Journal._meta.get_field("unnecessary_expenses")
+        if len(pks_json(choices)) > column.max_length:
+            raise ValidationError(_("Too many expense types selected."))
+
+        return choices
+
     def save(self):
         journal = self.user.journal
 
-        choices = None
-        if self.cleaned_data.get("choices"):
-            choices = list(self.cleaned_data["choices"].values_list("pk", flat=True))
-            choices = json.dumps(choices)
-
-        journal.unnecessary_expenses = choices
-        journal.unnecessary_savings = self.cleaned_data.get("savings")
+        journal.unnecessary_expenses = pks_json(self.cleaned_data["choices"])
+        journal.unnecessary_savings = self.cleaned_data["savings"]
 
         journal.save()
 
@@ -52,7 +62,8 @@ class SettingsForm(forms.Form):
     title = forms.CharField(validators=Journal._meta.get_field("title").validators)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         journal = self.user.journal

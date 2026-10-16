@@ -10,7 +10,7 @@
         <button type="button" class="button-close modal-close" aria-label="{% translate 'Close' %}"></button>
     </div>
 
-    <div class="modal-body {{modal_body_css_class}}">
+    <div class="modal-body {% block modal_body_class %}{% endblock modal_body_class %}">
         {% block form %}
             <c-form-errors :errors=form.non_field_errors />
             <c-form-body :form=form />

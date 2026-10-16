@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 from django.views import View
 from django_htmx.http import HttpResponseClientRedirect
 
+from ...core.mixins.kwargs import TodayMixin
 from ..forms_import import ReceiptUploadForm, ReviewFormSet, ReviewReceiptForm
 from ..receipts.errors import UnreadableReceiptTextError, UnrecognisedReceiptError
 from ..receipts.reader import ReceiptReader
@@ -30,16 +31,19 @@ def _review_context(
     }
 
 
-class Import(View):
+class Import(TodayMixin, View):
     template_name = "expenses/import.html"
 
     def get(self, request):
-        form = ReceiptUploadForm(user=request.user)
+        form = ReceiptUploadForm(user=request.user, today=self.today)
         return render(request, self.template_name, {"upload_form": form})
 
     def post(self, request):
         upload_form = ReceiptUploadForm(
-            user=request.user, data=request.POST, files=request.FILES
+            user=request.user,
+            today=self.today,
+            data=request.POST,
+            files=request.FILES,
         )
         if not upload_form.is_valid():
             return render(request, UPLOAD_TEMPLATE, {"upload_form": upload_form})
@@ -94,7 +98,7 @@ class ImportSave(View):
         receipt_form = ReviewReceiptForm(user=request.user, data=request.POST)
         receipt_valid = receipt_form.is_valid()
 
-        year = request.user.year
+        year = request.user.selected_year()
         if receipt_valid:
             year = receipt_form.cleaned_data["date"].year
 

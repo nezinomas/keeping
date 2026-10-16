@@ -23,7 +23,7 @@
         {% url 'books:delete' object.id as url_delete %}
 
         <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% if not object.ended %} currently-reading-book{% endif %}">
-            <td class="text-left">{% firstof first_item|sub:forloop.counter0 forloop.counter %}</td>
+            <td class="text-left">{% if countdown_from %}{{ countdown_from|sub:forloop.counter0 }}{% else %}{{ forloop.counter }}{% endif %}</td>
             <td class="text-left">{{ object.author }}</td>
             <td class="text-left">„{{ object.title }}”</td>
             <td class="text-left">{{ object.remark }}</td>
@@ -43,6 +43,14 @@
 
 <!-- the Lists view states the year, or states nothing when ?scope=all widened the
      table past having one; a search gets its own notice from SearchMixin -->
-<div class="alert alert-warning">{{ notice|safe }}</div>
+<div class="alert alert-warning">
+{% if notice %}
+    {{ notice }}
+{% elif scope %}
+    {% translate "No records" %}
+{% else %}
+    {% blocktranslate with year=request.user.year %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+{% endif %}
+</div>
 
 {% endif %}

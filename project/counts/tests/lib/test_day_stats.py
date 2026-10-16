@@ -1,8 +1,6 @@
-import tempfile
 from datetime import date
 
 import pytest
-from django.test import override_settings
 
 from ....core.lib.day_stats import Stats
 from ...services.model_services import CountModelService
@@ -10,7 +8,6 @@ from ..factories import CountFactory
 
 
 @pytest.fixture(name="data_db")
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def fixture_data_db():
     CountFactory(date=date(1998, 1, 1), quantity=1.0)
     CountFactory(date=date(1999, 12, 3), quantity=1.0)

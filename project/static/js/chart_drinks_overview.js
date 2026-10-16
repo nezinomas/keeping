@@ -11,8 +11,41 @@ function chartOverview(consumptionId, quantityId, containerId) {
     const avgLineColor = "var(--skin-ink-muted)";
     const avgTextColor = "var(--skin-ink-muted)";
 
-    const avgLabelY = (consumption.target - 50 <= consumption.avg && consumption.avg <= consumption.target) ? 15 : -5;
-    const targetLabelY = (consumption.avg - 50 <= consumption.target && consumption.target <= consumption.avg) ? 15 : -5;
+    // without a Drink Target the chart draws no Limit rule and no harm zone
+    const limit = consumption.limit;
+    const avgLabelY = (limit.is_set && limit.amount - 50 <= consumption.avg && consumption.avg <= limit.amount) ? 15 : -5;
+    const targetLabelY = (consumption.avg - 50 <= limit.amount && limit.amount <= consumption.avg) ? 15 : -5;
+
+    const limitRule = limit.is_set ? [{
+        // the Limit is the one rule that governs a colour: the
+        // area above it turns, so the rule wears the same harm
+        color: "var(--skin-harm)",
+        width: 1.5,
+        dashStyle: "Dash",
+        value: limit.amount,
+        zIndex: 10,
+        label: Object.assign(
+            paperRuleLabel(
+                `${consumption.text.limit}: ${limit.amount.toFixed(consumption.decimals)}`,
+                "var(--skin-harm)"
+            ),
+            // the two rules step apart when they nearly coincide
+            { y: targetLabelY - 8 }
+        )
+    }] : [];
+
+    // under the Limit is the baseline reading, so it is the data
+    // hue; over it is the only part of the year that gets harm
+    const dataZone = {
+        color: "var(--skin-data)",
+        fillColor: "var(--skin-data-wash)"
+    };
+    const zones = limit.is_set
+        ? [Object.assign({ value: limit.amount }, dataZone), {
+            color: "var(--skin-harm)",
+            fillColor: "var(--skin-harm-wash)"
+        }]
+        : [dataZone];
 
     Highcharts.chart(containerId, Highcharts.merge(paper.base, {
         xAxis: paper.xAxis(consumption.categories),
@@ -30,23 +63,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         value: 0,
                         zIndex: 10,
                     },
-                    {
-                        // the Limit is the one rule that governs a colour: the
-                        // area above it turns, so the rule wears the same harm
-                        color: "var(--skin-harm)",
-                        width: 1.5,
-                        dashStyle: "Dash",
-                        value: consumption.target,
-                        zIndex: 10,
-                        label: Object.assign(
-                            paperRuleLabel(
-                                `${consumption.text.limit}: ${consumption.target.toFixed(consumption.decimals)}`,
-                                "var(--skin-harm)"
-                            ),
-                            // the two rules step apart when they nearly coincide
-                            { y: targetLabelY - 8 }
-                        )
-                    },
+                    ...limitRule,
                     {
                         color: avgLineColor,
                         width: 1.5,
@@ -72,7 +89,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
         ],
         series: [
             {
-                // TOP: filled area, split-coloured at the limit
+                // TOP: filled area, split-coloured at the limit when there is one
                 type: "area",
                 yAxis: 0,
                 opacity: 0.85,
@@ -85,19 +102,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                 // which belongs to Year Comparison
                 color: "var(--skin-data)",
                 zoneAxis: "y",
-                // under the Limit is the baseline reading, so it is the data
-                // hue; over it is the only part of the year that gets harm
-                zones: [
-                    {
-                        value: consumption.target,
-                        color: "var(--skin-data)",
-                        fillColor: "var(--skin-data-wash)"
-                    },
-                    {
-                        color: "var(--skin-harm)",
-                        fillColor: "var(--skin-harm-wash)"
-                    }
-                ],
+                zones: zones,
                 marker: {
                     enabled: true,
                     radius: 2.5,

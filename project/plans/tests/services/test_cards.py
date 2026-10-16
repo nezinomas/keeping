@@ -5,7 +5,7 @@ from django.test.utils import CaptureQueriesContext
 
 from ....core.lib.convert_price import int_cents_to_float
 from ....core.lib.stat_card import EMPTY, HIGH, NEUTRAL
-from ...lib.calc_day_sum import DataDto, PlanCalculateDaySum, PlanCollectData
+from ...lib.calc_day_sum import CalcRow, DataDto, PlanCalculateDaySum, PlanCollectData
 from ...services.cards import DayCards, ExpenseCards, IncomeCards, SavingCards
 from ..factories import ExpensePlanFactory, NecessaryPlanFactory
 
@@ -70,7 +70,7 @@ def test_income_cards_median_equals_calc_day_sum_row_one():
     incomes = [1000] * 11 + [100_000]
     data = _data(incomes=incomes)
 
-    expected = PlanCalculateDaySum(data).incomes_avg["1"]
+    expected = PlanCalculateDaySum(data).row(CalcRow.INCOMES_AVG)["1"]
 
     card = _card(IncomeCards.build(data), "Mėnesio mediana")
 
@@ -346,7 +346,7 @@ def test_day_cards_sum_per_day_shows_even_when_negative():
         incomes=[100] * 12, expenses_necessary=[100_000] * 12, per_day=[3000] * 12
     )
 
-    expected = PlanCalculateDaySum(data).day_calced["6"]
+    expected = PlanCalculateDaySum(data).row(CalcRow.SUM_PER_DAY)["6"]
 
     card = _card(DayCards.build(data, 6), "Suma dienai šį mėnesį")
 

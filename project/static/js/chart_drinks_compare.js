@@ -52,11 +52,11 @@ function chartCompare(idData, idContainer) {
             }
         },
         // the last year in is the newest, so it is the darkest and the heaviest
-        series: chartData.serries.map(function (series, index) {
-            const count = chartData.serries.length;
+        series: chartData.series.map(function (year, index) {
+            const count = chartData.series.length;
             const newest = index === count - 1;
 
-            return Object.assign({}, series, {
+            return Object.assign({}, year, {
                 color: drinksYearColor(index, count),
                 lineWidth: newest ? 2.5 : 1.5,
             });

@@ -1,6 +1,7 @@
 from django.utils.translation import gettext as _
 
 from .dtos import WealthDto
+from .providers import WealthDataProvider
 
 
 class WealthPresenter:
@@ -31,8 +32,6 @@ def build_context(dto: WealthDto) -> dict:
 
 
 def load_service(user, year: int) -> dict:
-    from .providers import WealthDataProvider
-
     provider = WealthDataProvider(user, year)
     dto = provider.get_wealth_data()
     return build_context(dto)

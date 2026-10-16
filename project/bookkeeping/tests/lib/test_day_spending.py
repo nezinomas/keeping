@@ -3,10 +3,11 @@ from types import SimpleNamespace
 
 import polars as pl
 import pytest
-import time_machine
 
 from ...lib.day_spending import DaySpending
 from ...lib.make_dataframe import MakeDataFrame, MonthDays
+
+TODAY = date(1999, 1, 2)
 
 
 @pytest.fixture(name="df")
@@ -33,25 +34,23 @@ def fixture_necessary():
     return ["N"]
 
 
-@pytest.fixture(name="df_for_average_calculation")
-def fixture_df_for_average_calculation():
-    return pl.DataFrame(
-        [
-            {"total": 11, "date": date(1999, 1, 1)},
-            {"total": 21, "date": date(1999, 1, 2)},
-            {"total": 31, "date": date(1999, 1, 3)},
-            {"total": 41, "date": date(1999, 1, 31)},
-        ]
+@pytest.fixture(name="sparse_month")
+def fixture_sparse_month():
+    days = [date(1999, 1, 1), date(1999, 1, 2), date(1999, 1, 3), date(1999, 1, 31)]
+    return SimpleNamespace(
+        data=pl.DataFrame({"date": days, "O": [11, 21, 31, 41]}),
+        exceptions=pl.DataFrame({"date": days, "sum": [0, 0, 0, 0]}),
+        date_range=MonthDays(1999, 1),
     )
 
 
-@time_machine.travel("1999-1-2")
 def test_avg_per_day(df, necessary):
     obj = DaySpending(
         expense=df,
         necessary=necessary,
         per_day=25,
         free=200,
+        today=TODAY,
     )
 
     actual = obj.avg_per_day
@@ -59,64 +58,52 @@ def test_avg_per_day(df, necessary):
     assert 115 == actual
 
 
-def test_spending_first_day(df, necessary):
+@pytest.mark.parametrize(
+    "index, day_date, day, full",
+    [
+        pytest.param(0, date(1999, 1, 1), -100, -100, id="first_day"),
+        pytest.param(1, date(1999, 1, 2), -80, -180, id="second_day"),
+    ],
+)
+def test_spending_day_and_full_leave_out_necessary_and_exceptions(
+    df, necessary, index, day_date, day, full
+):
     obj = DaySpending(
         expense=df,
         necessary=necessary,
         per_day=25,
         free=200,
+        today=TODAY,
     )
 
     actual = obj.spending
 
-    assert actual[0]["date"] == date(1999, 1, 1)
-    assert actual[0]["day"] == -100
-    assert actual[0]["full"] == -100
+    assert actual[index]["date"] == day_date
+    assert actual[index]["day"] == day
+    assert actual[index]["full"] == full
 
 
-def test_spending_second_day(df, necessary):
-    obj = DaySpending(
-        expense=df,
-        necessary=necessary,
-        per_day=25,
-        free=200,
-    )
-
-    actual = obj.spending
-
-    assert actual[1]["date"] == date(1999, 1, 2)
-    assert actual[1]["day"] == -80
-    assert actual[1]["full"] == -180
-
-
-def test_spending_first_day_necessary_empty(df):
+@pytest.mark.parametrize(
+    "per_day, free, expect",
+    [
+        pytest.param(25, 200, -1099, id="first_day_necessary_empty"),
+        pytest.param(0, 0, -1124, id="first_day_all_empty"),
+    ],
+)
+def test_spending_first_day_without_necessary(df, per_day, free, expect):
     obj = DaySpending(
         expense=df,
         necessary=[],
-        per_day=25,
-        free=200,
+        per_day=per_day,
+        free=free,
+        today=TODAY,
     )
 
     actual = obj.spending
 
     assert actual[0]["date"] == date(1999, 1, 1)
-    assert actual[0]["day"] == -1099
-    assert actual[0]["full"] == -1099
-
-
-def test_spending_first_day_all_empty(df):
-    obj = DaySpending(
-        expense=df,
-        necessary=[],
-        per_day=0,
-        free=0,
-    )
-
-    actual = obj.spending
-
-    assert actual[0]["date"] == date(1999, 1, 1)
-    assert actual[0]["day"] == -1124
-    assert actual[0]["full"] == -1124
+    assert actual[0]["day"] == expect
+    assert actual[0]["full"] == expect
 
 
 def test_spending_balance_expenses_empty():
@@ -129,77 +116,31 @@ def test_spending_balance_expenses_empty():
         necessary=[],
         per_day=0,
         free=0,
+        today=TODAY,
     )
 
-    actual = obj.spending
-
-    for x in actual:
-        assert x["total"] == 0
-        assert x["teoretical"] == 0
-        assert x["real"] == 0
-        assert x["day"] == 0
-        assert x["full"] == 0
+    assert obj.spending == []
 
 
-@time_machine.travel("1999-1-2")
-def test_average_month_two_days(df_for_average_calculation):
-    o = DaySpending(
-        expense=SimpleNamespace(
-            data=pl.DataFrame(),
-            exceptions=pl.DataFrame(),
-            date_range=MonthDays(1999, 1),
-        ),
-        necessary=[],
-        per_day=0,
-        free=0,
+@pytest.mark.parametrize(
+    "today, expect",
+    [
+        pytest.param(date(1999, 1, 2), 16, id="average_month_two_days"),
+        pytest.param(date(1999, 1, 31), 3.35, id="average_month_last_day"),
+        pytest.param(date(1974, 1, 1), 3.35, id="average_month_other_year"),
+    ],
+)
+def test_average_month_over_the_days_reached(sparse_month, today, expect):
+    obj = DaySpending(
+        expense=sparse_month, necessary=[], per_day=0, free=0, today=today
     )
+    actual = obj.avg_per_day
 
-    o._spending = df_for_average_calculation
-
-    actual = o.avg_per_day
-    assert 16 == actual
-
-
-@time_machine.travel("1999-1-31")
-def test_average_month_last_day(df_for_average_calculation):
-    o = DaySpending(
-        expense=SimpleNamespace(
-            data=pl.DataFrame(),
-            exceptions=pl.DataFrame(),
-            date_range=MonthDays(1999, 1),
-        ),
-        necessary=[],
-        per_day=0,
-        free=0,
-    )
-
-    o._spending = df_for_average_calculation
-    actual = o.avg_per_day
-
-    assert round(actual, 2) == 3.35
-
-
-@time_machine.travel("1974-1-1")
-def test_average_month_other_year(df_for_average_calculation):
-    o = DaySpending(
-        expense=SimpleNamespace(
-            data=pl.DataFrame(),
-            exceptions=pl.DataFrame(),
-            date_range=MonthDays(1999, 1),
-        ),
-        necessary=[],
-        per_day=0,
-        free=0,
-    )
-
-    o._spending = df_for_average_calculation
-    actual = o.avg_per_day
-
-    assert round(actual, 2) == 3.35
+    assert round(actual, 2) == expect
 
 
 def test_average_month_empty_dataframe():
-    o = DaySpending(
+    obj = DaySpending(
         expense=SimpleNamespace(
             data=pl.DataFrame(),
             exceptions=pl.DataFrame(),
@@ -208,15 +149,12 @@ def test_average_month_empty_dataframe():
         necessary=[],
         per_day=0,
         free=0,
+        today=TODAY,
     )
 
-    o._spending = pl.DataFrame()
-    actual = o.avg_per_day
-
-    assert actual == 0
+    assert obj.avg_per_day == 0
 
 
-@time_machine.travel("1999-1-2")
 def test_spending_reads_the_month_named_by_caller():
     rows = [
         {"date": date(1999, 1, 1), "title": "N", "sum": 999, "exception_sum": 0},
@@ -230,6 +168,7 @@ def test_spending_reads_the_month_named_by_caller():
         necessary=["N"],
         per_day=25,
         free=200,
+        today=TODAY,
     )
 
     first, second = obj.spending[:2]
@@ -243,4 +182,4 @@ def test_spending_refuses_a_year_frame():
     frame = MakeDataFrame.for_year(1999, rows, columns=["O"])
 
     with pytest.raises(TypeError, match="month frame"):
-        DaySpending(expense=frame, necessary=[], per_day=25, free=200)
+        DaySpending(expense=frame, necessary=[], per_day=25, free=200, today=TODAY)

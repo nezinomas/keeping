@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext as _
 
+from ..core.lib.form_fields import pin
 from ..core.lib.form_widgets import YearPickerWidget
 from .models import Account
 
@@ -13,15 +14,13 @@ class AccountForm(forms.ModelForm):
     field_order = ["title", "order", "closed"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
+        user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["closed"].widget = YearPickerWidget()
 
-        # journal input
-        self.fields["journal"].initial = user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
+        pin(self.fields["journal"], user.journal)
 
         self.fields["title"].label = _("Account title")
         self.fields["closed"].label = _("Closed")

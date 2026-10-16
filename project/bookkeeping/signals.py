@@ -4,7 +4,7 @@ from django.dispatch import receiver
 
 from ..core.services.signals_service import journal_user
 from ..debts import models as debt
-from ..debts.services.model_services import DebtReturnModelService
+from ..debts.services.model_services import DebtModelService
 from ..expenses import models as expense
 from ..incomes import models as income
 from ..pensions import models as pension
@@ -27,8 +27,6 @@ from . import models as bookkeeping
 @receiver(post_delete, sender=transaction.SavingClose)
 @receiver(post_save, sender=debt.Debt)
 @receiver(post_delete, sender=debt.Debt)
-@receiver(post_save, sender=debt.DebtReturn)
-@receiver(post_delete, sender=debt.DebtReturn)
 @receiver(post_save, sender=bookkeeping.AccountWorth)
 def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
     balance_sources.sync_accounts(journal_user(instance))
@@ -36,17 +34,16 @@ def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
 
 @receiver(post_save, sender=debt.DebtReturn)
 @receiver(post_delete, sender=debt.DebtReturn)
-def update_debt_model(sender: object, instance: models.Model, *args, **kwargs):
-    user = journal_user(instance.debt)
-    debt_type = instance.debt.debt_type
+def debt_return_signal(sender: object, instance: debt.DebtReturn, **kwargs):
+    # deleting a Debt syncs the accounts once itself, whatever number of returns go
+    if isinstance(kwargs.get("origin"), debt.Debt):
+        return
 
-    total_return = DebtReturnModelService(user, debt_type).total_returned_for_debt(
-        instance
+    balance_sources.sync_accounts(journal_user(instance))
+    # every debt of the type: a return moved to another debt changes the one it left
+    DebtModelService.sync_returned(
+        instance.debt.journal_id, debt.Debt.DebtType(instance.debt.debt_type)
     )
-
-    debt_row = debt.Debt.objects.get(pk=instance.debt.pk)
-    debt_row.returned = total_return
-    debt_row.save(update_fields=["returned"])
 
 
 # A type's fee source and close year change its balances.
@@ -93,7 +90,11 @@ def pension_type_signal(sender: object, instance: pension.PensionType, *args, **
 
 @receiver(post_save, sender=income.Income)
 @receiver(post_save, sender=expense.Expense)
-def update_journal_first_record(sender, instance, created, **kwargs):
+def update_journal_first_record(
+    sender: type[models.Model],
+    instance: income.Income | expense.Expense,
+    **kwargs,
+):
     journal = instance.journal
 
     if journal.first_record > instance.date:

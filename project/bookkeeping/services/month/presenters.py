@@ -1,8 +1,10 @@
 import itertools as it
+from datetime import date
 from functools import cached_property
 
 from ....core.lib.date import current_day
-from ....plans.lib.calc_day_sum import PlanCalculateDaySum
+from ....core.lib.table_columns import SAVINGS, TOTAL
+from ....plans.lib.calc_day_sum import CalcRow, InputRow, PlanCalculateDaySum
 from ....users.models import User
 from ...lib.day_spending import DaySpending
 from ...lib.make_dataframe import MakeDataFrame
@@ -12,10 +14,11 @@ from .providers import MonthDataProvider
 
 
 class MonthContextPresenter:
-    def __init__(self, year, month, dto: MonthDataDTO):
+    def __init__(self, year, month, dto: MonthDataDTO, today: date):
         self.year = year
         self.month = month
         self.dto = dto
+        self.today = today
 
     @cached_property
     def month_table(self) -> MonthTableBuilder:
@@ -45,14 +48,15 @@ class MonthContextPresenter:
         return DaySpending(
             expense=expense_df_object,
             necessary=self.dto.necessary_expense_types,
-            per_day=self.plans.day_input,
-            free=self.plans.expenses_free,
+            per_day=self.plans.row(InputRow.DAY_PLAN),
+            free=self.plans.row(CalcRow.EXPENSES_FREE),
+            today=self.today,
         )
 
     @cached_property
     def totals(self) -> dict:
-        _exp = self.month_table.total_row.get("total", 0)
-        _sav = self.month_table.total_row.get("savings", 0)
+        _exp = self.month_table.total_row.get(TOTAL, 0)
+        _sav = self.month_table.total_row.get(SAVINGS, 0)
 
         return {
             "income": self.dto.incomes,
@@ -88,16 +92,17 @@ class MonthContextPresenter:
             ),
         )
 
+        savings = self.plans.row(InputRow.SAVINGS)
         plan_state = InfoState(
-            income=self.plans.incomes,
+            income=self.plans.row(InputRow.INCOMES),
             expense=(
-                self.plans.expenses_necessary
-                + self.plans.expenses_free
-                - self.plans.savings
+                self.plans.row(CalcRow.EXPENSES_NECESSARY)
+                + self.plans.row(CalcRow.EXPENSES_FREE)
+                - savings
             ),
-            saving=self.plans.savings,
-            per_day=self.plans.day_input,
-            balance=self.plans.remains,
+            saving=savings,
+            per_day=self.plans.row(InputRow.DAY_PLAN),
+            balance=self.plans.row(CalcRow.REMAINS),
         )
 
         return InfoBuilder.build(fact=fact_state, plan=plan_state)
@@ -107,17 +112,17 @@ class MonthContextPresenter:
         return ChartBuilder(targets=self.dto.targets, totals=self.month_table.total_row)
 
 
-def load_service(user: User) -> dict:
-    year = user.year
+def load_service(user: User, today: date) -> dict:
+    year = user.selected_year()
     month = user.month
 
     dto = MonthDataProvider(user).get_data()
 
-    presenter = MonthContextPresenter(year, month, dto)
+    presenter = MonthContextPresenter(year, month, dto, today)
 
     return {
         "month_table": {
-            "day": current_day(year, month, False),
+            "day": current_day(year, month, today, return_past_day=False),
             "expenses": it.zip_longest(
                 presenter.tables["main_table"], presenter.tables["spending_table"]
             ),

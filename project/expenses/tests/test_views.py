@@ -1,124 +1,118 @@
 from datetime import date
+from unittest.mock import patch
 
 import pytest
 import time_machine
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.utils import change_profile_year, clean_content
+from ...core.tests.utils import change_profile_year, clean_content, view_for
+from ...users.views import Login
 from .. import models
-from ..views import expenses, expenses_name, expenses_type
+from ..forms import ExpenseNameChoicesMixin
+from ..forms_import import ReviewLineForm
+from ..views import expenses_import
+from ..views.expenses import Lists, LoadExpenseName
 from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture()
-def _db_data():
-    ExpenseTypeFactory.reset_sequence()
-    ExpenseNameFactory(title="F")
-    ExpenseNameFactory(title="S", valid_for=1999)
+def type_with_two_names():
+    expense_type = ExpenseTypeFactory()
+    ExpenseNameFactory(title="F", parent=expense_type)
+    ExpenseNameFactory(title="S", parent=expense_type, valid_for=1999)
+    return expense_type
 
 
-# -------------------------------------------------------------------------------------
-#                                                                               Expense
-# -------------------------------------------------------------------------------------
-def test_expenses_index_func():
-    view = resolve("/expenses/")
-
-    assert expenses.Index == view.func.view_class
-
-
-def test_expenses_index_alternative_func():
-    view = resolve("/expenses/5/")
-
-    assert expenses.Index == view.func.view_class
-
-
-def test_expenses_index_200(client_logged):
-    url = reverse("expenses:index")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_expenses_index_alternative_200(client_logged):
-    url = reverse("expenses:index", kwargs={"month": 1})
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
+@pytest.mark.parametrize(
+    "kwargs, expected",
+    [
+        pytest.param({}, 2, id="no_month"),
+        pytest.param({"month": 3}, 3, id="month_kwarg"),
+    ],
+)
 @time_machine.travel("1999-02-08")
-def test_expenses_index_context(client_logged):
-    ExpenseFactory(date=date(1999, 1, 1))
-    ExpenseFactory(date=date(1999, 2, 7))
-
-    url = reverse("expenses:index")
+def test_expenses_index_context(client_logged, kwargs, expected):
+    url = reverse("expenses:index", kwargs=kwargs)
     actual = client_logged.get(url).context["month"]
 
-    assert actual == 2
+    assert actual == expected
 
 
-@time_machine.travel("1999-02-08")
-def test_expenses_index_alternative_context(client_logged):
-    ExpenseFactory(date=date(1999, 1, 1))
-    ExpenseFactory(date=date(1999, 2, 7))
+@pytest.mark.parametrize(
+    "today, dates, kwargs, expected",
+    [
+        pytest.param(
+            "1999-02-08",
+            [date(1999, 1, 1), date(1999, 2, 7)],
+            {},
+            [date(1999, 2, 7)],
+            id="no_month_is_this_month",
+        ),
+        pytest.param(
+            "1999-02-08",
+            [date(1999, 1, 1), date(1999, 2, 7)],
+            {"month": 1},
+            [date(1999, 1, 1)],
+            id="month_kwarg",
+        ),
+        pytest.param(
+            "1999-01-01",
+            [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)],
+            {},
+            [date(1999, 1, 1)],
+            id="no_month_in_user_year",
+        ),
+        pytest.param(
+            "1999-02-01",
+            [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)],
+            {"month": 1},
+            [date(1999, 1, 1)],
+            id="january",
+        ),
+        pytest.param(
+            "1999-01-01",
+            [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)],
+            {"month": 13},
+            [date(1999, 1, 1), date(1999, 2, 1)],
+            id="all_year",
+        ),
+        pytest.param(
+            "1999-01-01",
+            [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)],
+            {"month": 133},
+            [date(1999, 1, 1), date(1999, 2, 1)],
+            id="any_number_is_all_year",
+        ),
+    ],
+)
+def test_expenses_list_filters_by_month(client_logged, today, dates, kwargs, expected):
+    for expense_date in dates:
+        ExpenseFactory(date=expense_date)
 
-    url = reverse("expenses:index", kwargs={"month": 2})
-    actual = client_logged.get(url).context["month"]
+    url = reverse("expenses:list", kwargs=kwargs)
+    with time_machine.travel(today):
+        actual = client_logged.get(url).context["object_list"]
 
-    assert actual == 2
-
-
-def test_expenses_lists_func():
-    view = resolve("/expenses/list/")
-
-    assert expenses.Lists == view.func.view_class
+    assert sorted(row["date"] for row in actual) == expected
 
 
-def test_expenses_lists_alternative_func():
-    view = resolve("/expenses/list/1/")
+@pytest.mark.parametrize(
+    "month, expected",
+    [
+        pytest.param(1, "<b>1</b> mėnesį įrašų nėra", id="month"),
+        pytest.param(12, "<b>12</b> mėnesį įrašų nėra", id="december"),
+        pytest.param(13, "<b>1999</b> metais įrašų nėra", id="all_year"),
+        pytest.param(14, "<b>1999</b> metais įrašų nėra", id="above_all_year"),
+    ],
+)
+def test_expenses_list_empty_notice(client_logged, month, expected):
+    url = reverse("expenses:list", kwargs={"month": month})
+    actual = client_logged.get(url).content.decode("utf-8")
 
-    assert expenses.Lists == view.func.view_class
-
-
-def test_expenses_lists_200(client_logged):
-    url = reverse("expenses:list")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_expenses_lists_alternative_200(client_logged):
-    url = reverse("expenses:list", kwargs={"month": 1})
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-@time_machine.travel("1999-02-08")
-def test_expenses_lists_context(client_logged):
-    ExpenseFactory(date=date(1999, 1, 1))
-    ExpenseFactory(date=date(1999, 2, 7))
-
-    url = reverse("expenses:list")
-    actual = client_logged.get(url).context["object_list"]
-
-    assert len(actual) == 1
-    assert actual[0]["date"] == date(1999, 2, 7)
-
-
-@time_machine.travel("1999-02-08")
-def test_expenses_lists_alternative_context(client_logged):
-    ExpenseFactory(date=date(1999, 1, 1))
-    ExpenseFactory(date=date(1999, 2, 7))
-
-    url = reverse("expenses:list", kwargs={"month": 2})
-    actual = client_logged.get(url).context["object_list"]
-
-    assert len(actual) == 1
-    assert actual[0]["date"] == date(1999, 2, 7)
+    assert expected in actual
 
 
 def test_expenses_lists_302(client):
@@ -126,18 +120,6 @@ def test_expenses_lists_302(client):
     response = client.get(url)
 
     assert response.status_code == 302
-
-
-def test_expenses_new_func():
-    view = resolve("/expenses/new/")
-
-    assert expenses.New == view.func.view_class
-
-
-def test_expenses_update_func():
-    view = resolve("/expenses/update/1/")
-
-    assert expenses.Update == view.func.view_class
 
 
 @time_machine.travel("1974-08-08")
@@ -166,17 +148,17 @@ def test_expenses_new_form_file_control_speaks_the_app_language(client_logged):
 
 
 def test_expenses_save(client_logged):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory()
+    account = AccountFactory()
+    expense_type = ExpenseTypeFactory()
+    expense_name = ExpenseNameFactory()
 
     data = {
         "date": "1999-01-01",
         "price": 0.01,
         "quantity": 33,
-        "account": a.pk,
-        "expense_type": t.pk,
-        "expense_name": n.pk,
+        "account": account.pk,
+        "expense_type": expense_type.pk,
+        "expense_name": expense_name.pk,
     }
 
     url = reverse("expenses:new")
@@ -208,9 +190,9 @@ def test_expenses_save_invalid_data(client_logged):
 
 
 def test_expenses_load_update_form(client_logged):
-    e = ExpenseFactory()
+    expense = ExpenseFactory()
 
-    url = reverse("expenses:update", kwargs={"pk": e.pk})
+    url = reverse("expenses:update", kwargs={"pk": expense.pk})
     response = client_logged.get(url)
     actual = clean_content(response.content.decode("utf-8"))
 
@@ -218,76 +200,95 @@ def test_expenses_load_update_form(client_logged):
     assert "Atnaujinti ir uždaryti</button>" in actual
 
 
-def test_expenses_load_update_form_instance_field_values(client_logged):
-    e = ExpenseFactory(price=1)
-
-    url = reverse("expenses:update", kwargs={"pk": e.pk})
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert form.instance.date == date(1999, 1, 1)
-    assert form.instance.price == 0.01
-    assert form.instance.quantity == 13
-    assert form.instance.expense_type.title == "Expense Type"
-    assert form.instance.expense_name.title == "Expense Name"
-    assert form.instance.remark == "Remark"
-
-
 def test_expenses_load_update_form_field_values(client_logged):
-    e = ExpenseFactory(price=1)
+    expense = ExpenseFactory(price=1)
 
-    url = reverse("expenses:update", kwargs={"pk": e.pk})
+    url = reverse("expenses:update", kwargs={"pk": expense.pk})
     response = client_logged.get(url)
+    instance = response.context["form"].instance
     form = response.context["form"].as_p()
 
+    assert instance.date == date(1999, 1, 1)
+    assert instance.price == 0.01
+    assert instance.quantity == 13
+    assert instance.expense_type.title == "Expense Type"
+    assert instance.expense_name.title == "Expense Name"
+    assert instance.remark == "Remark"
     assert '<input type="text" name="date" value="1999-01-01"' in form
-    assert '<option value="1" selected>Account1</option>' in form
-    assert '<option value="1" selected>Expense Type</option>' in form
-    assert '<option value="1" selected>Expense Name</option>' in form
+    assert f'<option value="{expense.account.pk}" selected>Account1</option>' in form
+    assert (
+        f'<option value="{expense.expense_type.pk}" selected>Expense Type</option>'
+        in form
+    )
+    assert (
+        f'<option value="{expense.expense_name.pk}" selected>Expense Name</option>'
+        in form
+    )
     assert '<input type="number" name="quantity" value="13"' in form
     assert '<input type="text" name="price" value="0.01"' in form
 
 
 def test_expenses_update_to_another_year(client_logged):
-    e = ExpenseFactory()
+    expense = ExpenseFactory()
 
     data = {
         "price": "150",
         "quantity": 13,
         "date": "2010-12-31",
         "remark": "Pastaba",
-        "account": 1,
-        "expense_type": 1,
-        "expense_name": 1,
+        "account": expense.account.pk,
+        "expense_type": expense.expense_type.pk,
+        "expense_name": expense.expense_name.pk,
     }
-    url = reverse("expenses:update", kwargs={"pk": e.pk})
+    url = reverse("expenses:update", kwargs={"pk": expense.pk})
 
     client_logged.post(url, data)
 
-    actual = models.Expense.objects.get(pk=e.pk)
+    actual = models.Expense.objects.get(pk=expense.pk)
     assert actual.date == date(2010, 12, 31)
     assert actual.quantity == 13
 
 
-def test_expenses_update(client_logged):
-    e = ExpenseFactory()
+@pytest.mark.parametrize(
+    "created, price, posted_date, expected_price",
+    [
+        pytest.param({}, 150, "1999-12-31", 15_000, id="saves_posted_values"),
+        pytest.param(
+            {"date": date(2000, 3, 3), "price": 477},
+            4.89,
+            "2000-03-04",
+            489,
+            id="float_price_is_whole_cents",
+        ),
+        pytest.param(
+            {"date": date(1974, 12, 12)},
+            0.01,
+            "1998-12-12",
+            1,
+            id="past_record",
+        ),
+    ],
+)
+@time_machine.travel("2000-03-03")
+def test_expenses_update(client_logged, created, price, posted_date, expected_price):
+    expense = ExpenseFactory(**created)
 
     data = {
-        "price": 150,
+        "price": price,
         "quantity": 33,
-        "date": "1999-12-31",
+        "date": posted_date,
         "remark": "Pastaba",
-        "account": 1,
-        "expense_type": e.expense_type.pk,
-        "expense_name": e.expense_name.pk,
+        "account": expense.account.pk,
+        "expense_type": expense.expense_type.pk,
+        "expense_name": expense.expense_name.pk,
     }
-    url = reverse("expenses:update", kwargs={"pk": e.pk})
+    url = reverse("expenses:update", kwargs={"pk": expense.pk})
 
     client_logged.post(url, data)
 
-    actual = models.Expense.objects.get(pk=e.pk)
-    assert actual.date == date(1999, 12, 31)
-    assert actual.price == 15_000
+    actual = models.Expense.objects.get(pk=expense.pk)
+    assert actual.date == date.fromisoformat(posted_date)
+    assert actual.price == expected_price
     assert actual.quantity == 33
     assert actual.account.title == "Account1"
     assert actual.expense_type.title == "Expense Type"
@@ -295,9 +296,36 @@ def test_expenses_update(client_logged):
     assert actual.remark == "Pastaba"
 
 
-def test_expenses_update_price_for_closed_account(client_logged, main_user):
-    main_user.year = 2023
+@time_machine.travel("2000-03-03")
+def test_expenses_update_type_and_name(client_logged):
+    expense = ExpenseFactory()
+    new_type = ExpenseTypeFactory(title="XXX")
+    new_name = ExpenseNameFactory(title="YYY", parent=new_type)
 
+    data = {
+        "price": 150,
+        "quantity": 33,
+        "date": "1999-12-31",
+        "remark": "Pastaba",
+        "account": expense.account.pk,
+        "expense_type": new_type.pk,
+        "expense_name": new_name.pk,
+    }
+    url = reverse("expenses:update", kwargs={"pk": expense.pk})
+
+    client_logged.post(url, data)
+
+    actual = models.Expense.objects.get(pk=expense.pk)
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == 15_000
+    assert actual.quantity == 33
+    assert actual.account.title == "Account1"
+    assert actual.expense_type.title == "XXX"
+    assert actual.expense_name.title == "YYY"
+    assert actual.remark == "Pastaba"
+
+
+def test_expenses_update_price_for_closed_account(client_logged):
     account = AccountFactory(title="XXX", closed=2000)
     expense = ExpenseFactory(account=account, date=date(1999, 1, 1))
 
@@ -324,11 +352,9 @@ def test_expenses_update_price_for_closed_account(client_logged, main_user):
     assert actual.remark == "Pastaba"
 
 
-def test_expenses_update_with_closed_account_date_greated_than_closed_value(
-    client_logged, main_user
+def test_expenses_update_with_closed_account_date_greater_than_closed_value(
+    client_logged,
 ):
-    main_user.year = 2023
-
     account = AccountFactory(title="XXX", closed=2000)
     expense = ExpenseFactory(account=account, date=date(1999, 1, 1))
 
@@ -353,103 +379,24 @@ def test_expenses_update_with_closed_account_date_greated_than_closed_value(
     )
 
 
-def test_expenses_update_price_with_489(client_logged):
-    e = ExpenseFactory(date=date.today(), price=477)
-
-    data = {
-        "price": 4.89,
-        "quantity": 33,
-        "date": "2000-03-04",
-        "remark": "Pastaba",
-        "account": 1,
-        "expense_type": e.expense_type.pk,
-        "expense_name": e.expense_name.pk,
-    }
-    url = reverse("expenses:update", kwargs={"pk": e.pk})
-
-    client_logged.post(url, data, follow=True)
-
-    actual = models.Expense.objects.get(pk=e.pk)
-    assert actual.date == date(2000, 3, 4)
-    assert actual.price == 489
-    assert actual.quantity == 33
-    assert actual.account.title == "Account1"
-    assert actual.expense_type.title == "Expense Type"
-    assert actual.expense_name.title == "Expense Name"
-    assert actual.remark == "Pastaba"
-
-
-def test_expenses_update_type_and_name(client_logged):
-    e = ExpenseFactory()
-    t = ExpenseTypeFactory(title="XXX")
-    n = ExpenseNameFactory(title="YYY", parent=t)
-
-    data = {
-        "price": 150,
-        "quantity": 33,
-        "date": "1999-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "expense_type": t.pk,
-        "expense_name": n.pk,
-    }
-    url = reverse("expenses:update", kwargs={"pk": e.pk})
-
-    client_logged.post(url, data, follow=True)
-
-    actual = models.Expense.objects.get(pk=e.pk)
-    assert actual.date == date(1999, 12, 31)
-    assert actual.price == 15_000
-    assert actual.quantity == 33
-    assert actual.account.title == "Account1"
-    assert actual.expense_type.title == "XXX"
-    assert actual.expense_name.title == "YYY"
-    assert actual.remark == "Pastaba"
-
-
 def test_expenses_not_load_other_journal(client_logged, second_user):
-    a1 = AccountFactory(title="a1")
-    a2 = AccountFactory(journal=second_user.journal, title="a2")
-    et1 = ExpenseTypeFactory(title="xxx")
-    et2 = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
+    own_account = AccountFactory(title="a1")
+    other_account = AccountFactory(journal=second_user.journal, title="a2")
+    own_type = ExpenseTypeFactory(title="xxx")
+    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
 
-    ExpenseFactory(expense_type=et1, account=a1)
-    e2 = ExpenseFactory(expense_type=et2, account=a2, price=666)
+    ExpenseFactory(expense_type=own_type, account=own_account)
+    other_expense = ExpenseFactory(
+        expense_type=other_type, account=other_account, price=666
+    )
 
-    url = reverse("expenses:update", kwargs={"pk": e2.pk})
+    url = reverse("expenses:update", kwargs={"pk": other_expense.pk})
     response = client_logged.get(url)
 
     form = response.content.decode("utf-8")
 
-    assert et2.title not in form
-    assert str(e2.price) not in form
-
-
-@time_machine.travel("2000-03-03")
-def test_expenses_update_past_record(main_user, client_logged):
-    main_user.year = 2000
-    e = ExpenseFactory(date=date(1974, 12, 12))
-
-    data = {
-        "price": 0.01,
-        "quantity": 33,
-        "date": "1998-12-12",
-        "remark": "Pastaba",
-        "account": 1,
-        "expense_type": 1,
-        "expense_name": 1,
-    }
-    url = reverse("expenses:update", kwargs={"pk": e.pk})
-    client_logged.post(url, data, follow=True)
-
-    actual = models.Expense.objects.get(pk=e.pk)
-    assert actual.date == date(1998, 12, 12)
-    assert actual.price == 1
-    assert actual.quantity == 33
-    assert actual.account.title == "Account1"
-    assert actual.expense_type.title == "Expense Type"
-    assert actual.expense_name.title == "Expense Name"
-    assert actual.remark == "Pastaba"
+    assert other_type.title not in form
+    assert str(other_expense.price) not in form
 
 
 def test_expenses_index_search_form(client_logged):
@@ -460,106 +407,32 @@ def test_expenses_index_search_form(client_logged):
     assert reverse("expenses:search") in response
 
 
+@pytest.mark.parametrize(
+    "price, expected",
+    [
+        pytest.param(7777, "77,77", id="converted"),
+        pytest.param(100_000, "1.000,00", id="with_thousands"),
+    ],
+)
 @time_machine.travel("1999-1-1")
-def test_expenses_list_month_not_set(client_logged):
-    ExpenseFactory(date=date(1998, 1, 1))
-    ExpenseFactory(date=date(1999, 1, 1))
-    ExpenseFactory(date=date(1999, 2, 1))
-
-    url = reverse("expenses:list")
-    actual = client_logged.get(url).context["object_list"]
-
-    assert len(actual) == 1
-    assert actual[0]["date"] == date(1999, 1, 1)
-
-
-@time_machine.travel("1999-1-1")
-def test_expenses_list_january(client_logged):
-    ExpenseFactory(date=date(1998, 1, 1))
-    ExpenseFactory(date=date(1999, 1, 1))
-    ExpenseFactory(date=date(1999, 2, 1))
-
-    url = reverse("expenses:list", kwargs={"month": 1})
-    actual = client_logged.get(url).context["object_list"]
-
-    assert len(actual) == 1
-    assert actual[0]["date"] == date(1999, 1, 1)
-
-
-@time_machine.travel("1999-1-1")
-def test_expenses_list_all(client_logged):
-    ExpenseFactory(date=date(1998, 1, 1))
-    ExpenseFactory(date=date(1999, 1, 1))
-    ExpenseFactory(date=date(1999, 2, 1))
-
-    url = reverse("expenses:list", kwargs={"month": 13})
-    actual = client_logged.get(url).context["object_list"]
-
-    assert len(actual) == 2
-
-
-@time_machine.travel("1999-1-1")
-def test_expenses_list_all_any_num(client_logged):
-    ExpenseFactory(date=date(1998, 1, 1))
-    ExpenseFactory(date=date(1999, 1, 1))
-    ExpenseFactory(date=date(1999, 2, 1))
-
-    url = reverse("expenses:list", kwargs={"month": 133})
-    actual = client_logged.get(url).context["object_list"]
-
-    assert len(actual) == 2
-
-
-@time_machine.travel("1999-1-1")
-def test_expenses_list_price_converted(client_logged):
-    ExpenseFactory(price=7777)
+def test_expenses_list_price_converted(client_logged, price, expected):
+    ExpenseFactory(price=price)
 
     url = reverse("expenses:list", kwargs={"month": 1})
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert "77,77" in actual
-
-
-@time_machine.travel("1999-1-1")
-def test_expenses_list_price_converted_with_thousands(client_logged):
-    ExpenseFactory(price=100_000)
-
-    url = reverse("expenses:list", kwargs={"month": 1})
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "1.000,00" in actual
-
-
-# -------------------------------------------------------------------------------------
-#                                                                        Expense Delete
-# -------------------------------------------------------------------------------------
-def test_view_expenses_delete_func():
-    view = resolve("/expenses/delete/1/")
-
-    assert expenses.Delete is view.func.view_class
-
-
-def test_view_expenses_delete_200(client_logged):
-    p = ExpenseFactory()
-
-    url = reverse("expenses:delete", kwargs={"pk": p.pk})
-
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
+    assert expected in actual
 
 
 def test_view_expenses_delete_load_form(client_logged):
-    p = ExpenseFactory()
+    expense = ExpenseFactory()
 
-    url = reverse("expenses:delete", kwargs={"pk": p.pk})
+    url = reverse("expenses:delete", kwargs={"pk": expense.pk})
     response = client_logged.get(url)
 
     actual = response.content.decode("utf-8")
 
-    assert response.status_code == 200
     assert f'hx-post="{url}"' in actual
     assert '<form method="POST"' in actual
     assert (
@@ -569,10 +442,10 @@ def test_view_expenses_delete_load_form(client_logged):
 
 
 def test_view_expenses_delete(client_logged):
-    p = ExpenseFactory()
+    expense = ExpenseFactory()
 
     assert models.Expense.objects.all().count() == 1
-    url = reverse("expenses:delete", kwargs={"pk": p.pk})
+    url = reverse("expenses:delete", kwargs={"pk": expense.pk})
 
     client_logged.post(url)
 
@@ -580,113 +453,73 @@ def test_view_expenses_delete(client_logged):
 
 
 def test_expenses_delete_other_journal_get_form(client_logged, second_user):
-    it2 = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = ExpenseFactory(
-        expense_type=it2,
+    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
+    other_expense = ExpenseFactory(
+        expense_type=other_type,
         account=AccountFactory(title="A2", journal=second_user.journal),
         price=666,
     )
 
-    url = reverse("expenses:delete", kwargs={"pk": i2.pk})
+    url = reverse("expenses:delete", kwargs={"pk": other_expense.pk})
     response = client_logged.get(url)
 
     assert response.status_code == 404
 
 
 def test_expenses_delete_other_journal_post_form(client_logged, second_user):
-    it2 = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = ExpenseFactory(
-        expense_type=it2,
+    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
+    other_expense = ExpenseFactory(
+        expense_type=other_type,
         account=AccountFactory(title="A2", journal=second_user.journal),
         price=666,
     )
 
-    url = reverse("expenses:delete", kwargs={"pk": i2.pk})
+    url = reverse("expenses:delete", kwargs={"pk": other_expense.pk})
     client_logged.post(url)
 
     assert models.Expense.objects.all().count() == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                           ExpenseType
-# -------------------------------------------------------------------------------------
-def test_expenses_type_new_func():
-    view = resolve("/expenses/type/new/")
-
-    assert expenses_type.New == view.func.view_class
-
-
-def test_expenses_type_update_func():
-    view = resolve("/expenses/type/update/1/")
-
-    assert expenses_type.Update == view.func.view_class
-
-
 def test_expense_type_not_load_other_journal(client_logged, second_user):
     ExpenseTypeFactory(title="xxx")
-    obj = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
+    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
 
-    url = reverse("expenses:type_update", kwargs={"pk": obj.pk})
+    url = reverse("expenses:type_update", kwargs={"pk": other_type.pk})
     response = client_logged.get(url)
 
     form = response.content.decode("utf-8")
 
-    assert obj.title not in form
+    assert other_type.title not in form
 
 
-def test_expense_type_new_load_form(client_logged):
-    url = reverse("expenses:type_new")
-
-    response = client_logged.get(url)
-
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-
-
-def test_expense_type_updae_load_form(client_logged):
-    obj = ExpenseTypeFactory()
-
-    url = reverse("expenses:type_update", kwargs={"pk": obj.pk})
-
-    response = client_logged.get(url)
-
-    actual = response.content.decode("utf-8")
+@pytest.mark.parametrize(
+    "url_name",
+    [
+        pytest.param("expenses:type_new", id="type_new"),
+        pytest.param("expenses:name_new", id="name_new"),
+    ],
+)
+def test_expense_new_form_posts_to_its_url(client_logged, url_name):
+    url = reverse(url_name)
+    actual = client_logged.get(url).content.decode("utf-8")
 
     assert f'hx-post="{url}"' in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                                           ExpenseName
-# -------------------------------------------------------------------------------------
-def test_expenses_name_new_func():
-    view = resolve("/expenses/name/new/")
+def test_expense_type_update_form_posts_to_its_url(client_logged):
+    expense_type = ExpenseTypeFactory()
 
-    assert expenses_name.New == view.func.view_class
-
-
-def test_expenses_name_update_func():
-    view = resolve("/expenses/name/update/1/")
-
-    assert expenses_name.Update == view.func.view_class
-
-
-def test_expense_name_new_load_form(client_logged):
-    url = reverse("expenses:name_new")
-    ExpenseTypeFactory()
-
-    response = client_logged.get(url)
-
-    actual = response.content.decode("utf-8")
+    url = reverse("expenses:type_update", kwargs={"pk": expense_type.pk})
+    actual = client_logged.get(url).content.decode("utf-8")
 
     assert f'hx-post="{url}"' in actual
 
 
 def test_expense_name_save_data(client_logged):
     url = reverse("expenses:name_new")
-    p = ExpenseTypeFactory()
+    expense_type = ExpenseTypeFactory()
 
-    data = {"title": "TTT", "parent": p.pk}
+    data = {"title": "TTT", "parent": expense_type.pk}
 
     response = client_logged.post(url, data, follow=True)
 
@@ -708,9 +541,9 @@ def test_expense_name_save_invalid_data(client_logged):
 
 
 def test_expense_name_load_for_form_for_update(client_logged):
-    e = ExpenseNameFactory(title="XXX")
+    expense_name = ExpenseNameFactory(title="XXX")
 
-    url = reverse("expenses:name_update", kwargs={"pk": e.pk})
+    url = reverse("expenses:name_update", kwargs={"pk": expense_name.pk})
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -719,10 +552,10 @@ def test_expense_name_load_for_form_for_update(client_logged):
 
 
 def test_expense_name_update(client_logged):
-    e = ExpenseNameFactory()
+    expense_name = ExpenseNameFactory()
 
-    data = {"title": "TTT", "valid_for": 2000, "parent": e.parent.pk}
-    url = reverse("expenses:name_update", kwargs={"pk": e.pk})
+    data = {"title": "TTT", "valid_for": 2000, "parent": expense_name.parent.pk}
+    url = reverse("expenses:name_update", kwargs={"pk": expense_name.pk})
 
     response = client_logged.post(url, data, follow=True)
 
@@ -732,56 +565,48 @@ def test_expense_name_update(client_logged):
 
 
 def test_expense_name_not_load_other_journal(client_logged, second_user):
-    et1 = ExpenseTypeFactory(title="xxx")
-    et2 = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
+    own_type = ExpenseTypeFactory(title="xxx")
+    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
 
-    ExpenseNameFactory(parent=et1)
-    obj = ExpenseNameFactory(parent=et2)
+    ExpenseNameFactory(parent=own_type)
+    other_name = ExpenseNameFactory(parent=other_type)
 
-    url = reverse("expenses:name_update", kwargs={"pk": obj.pk})
+    url = reverse("expenses:name_update", kwargs={"pk": other_name.pk})
     response = client_logged.get(url)
 
     actual = response.content.decode("utf-8")
 
-    assert obj.title not in actual
-    assert et2.title not in actual
+    assert other_name.title not in actual
+    assert other_type.title not in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       LoadExpenseName
-# -------------------------------------------------------------------------------------
-def test_load_expenses_name_new_func():
-    actual = resolve("/expenses/load_expense_name/")
-
-    assert expenses.LoadExpenseName is actual.func.view_class
-
-
-def test_load_expense_name_status_code(client_logged):
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": 1})
-
-    assert response.status_code == 200
-
-
-def test_load_expense_name_isnull_count(client_logged, _db_data):
+def test_load_expense_name_isnull_count(client_logged, type_with_two_names):
     change_profile_year(client_logged)
 
     url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": 1})
+    response = client_logged.get(url, {"expense_type": type_with_two_names.pk})
 
     assert response.context["object_list"].count() == 1
 
 
-def test_load_expense_name_all(client_logged, _db_data):
+def test_load_expense_name_all(client_logged, type_with_two_names):
     url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": 1})
+    response = client_logged.get(url, {"expense_type": type_with_two_names.pk})
 
     assert response.context["object_list"].count() == 2
 
 
-def test_load_expense_name_select_empty_parent(client_logged, _db_data):
+@pytest.mark.usefixtures("type_with_two_names")
+@pytest.mark.parametrize(
+    "expense_type",
+    [
+        pytest.param("", id="empty_parent"),
+        pytest.param("abc", id="type_not_integer"),
+    ],
+)
+def test_load_expense_name_without_a_type_is_missing(client_logged, expense_type):
     url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": ""})
+    response = client_logged.get(url, {"expense_type": expense_type})
 
     assert response.context["object_list"] == []
 
@@ -792,116 +617,94 @@ def test_load_expense_name_must_logged(client):
     response = client.get(url, follow=True)
 
     assert response.status_code == 200
-
-    from ...users.views import Login
-
     assert response.resolver_match.func.view_class is Login
 
 
-def test_load_expense_name_prefix(client_logged):
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="N", parent=t)
+@pytest.mark.parametrize(
+    "names, type_field, params, expected",
+    [
+        pytest.param(
+            [{"title": "N"}],
+            "form-3-expense_type",
+            {"prefix": "form-3"},
+            ["N"],
+            id="prefix",
+        ),
+        pytest.param(
+            [{"title": "N"}],
+            "expense_type",
+            {"prefix": "form-3"},
+            [],
+            id="prefix_reads_only_prefixed_field",
+        ),
+        pytest.param(
+            [{"title": "N-default"}, {"title": "N-2005", "valid_for": 2005}],
+            "expense_type",
+            {"year": 2005},
+            ["N-2005", "N-default"],
+            id="year",
+        ),
+        pytest.param(
+            [{"title": "N-2005", "valid_for": 2005}],
+            "expense_type",
+            {"year": 2006},
+            [],
+            id="year_excludes_other_year",
+        ),
+        pytest.param(
+            [{"title": "N", "valid_for": 2005}],
+            "form-3-expense_type",
+            {"prefix": "form-3", "year": 2005},
+            ["N"],
+            id="prefix_and_year",
+        ),
+        pytest.param(
+            [{"title": "N"}],
+            "expense_type",
+            {"year": "abc"},
+            ["N"],
+            id="year_not_integer_falls_back_to_user_year",
+        ),
+    ],
+)
+def test_load_expense_name_reads_prefix_and_year(
+    client_logged, names, type_field, params, expected
+):
+    expense_type = ExpenseTypeFactory()
+    for name in names:
+        ExpenseNameFactory(parent=expense_type, **name)
 
     url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"prefix": "form-3", "form-3-expense_type": t.pk})
+    response = client_logged.get(url, {type_field: expense_type.pk} | params)
 
-    assert list(response.context["object_list"]) == [n]
-
-
-def test_load_expense_name_prefix_reads_only_prefixed_field(client_logged):
-    t = ExpenseTypeFactory()
-    ExpenseNameFactory(title="N", parent=t)
-
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"prefix": "form-3", "expense_type": t.pk})
-
-    assert response.context["object_list"] == []
-
-
-def test_load_expense_name_year(client_logged):
-    t = ExpenseTypeFactory()
-    n_default = ExpenseNameFactory(title="N-default", parent=t)
-    n_2005 = ExpenseNameFactory(title="N-2005", parent=t, valid_for=2005)
-
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": t.pk, "year": 2005})
-
-    assert set(response.context["object_list"]) == {n_default, n_2005}
-
-
-def test_load_expense_name_year_excludes_other_year(client_logged):
-    t = ExpenseTypeFactory()
-    ExpenseNameFactory(title="N-2005", parent=t, valid_for=2005)
-
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": t.pk, "year": 2006})
-
-    assert list(response.context["object_list"]) == []
-
-
-def test_load_expense_name_prefix_and_year(client_logged):
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="N", parent=t, valid_for=2005)
-
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(
-        url,
-        {"prefix": "form-3", "form-3-expense_type": t.pk, "year": 2005},
-    )
-
-    assert list(response.context["object_list"]) == [n]
-
-
-def test_load_expense_name_type_not_integer_is_missing(client_logged):
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": "abc"})
-
-    assert response.context["object_list"] == []
-
-
-def test_load_expense_name_year_not_integer_falls_back_to_user_year(client_logged):
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="N", parent=t)
-
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": t.pk, "year": "abc"})
-
-    assert list(response.context["object_list"]) == [n]
+    actual = sorted(name.title for name in response.context["object_list"])
+    assert actual == expected
 
 
 def test_load_expense_name_other_journal_type_yields_no_names(
     client_logged, second_user
 ):
-    t = ExpenseTypeFactory(journal=second_user.journal)
-    ExpenseNameFactory(title="N", parent=t)
+    other_type = ExpenseTypeFactory(journal=second_user.journal)
+    ExpenseNameFactory(title="N", parent=other_type)
 
     url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": t.pk})
+    response = client_logged.get(url, {"expense_type": other_type.pk})
 
     assert response.context["object_list"].count() == 0
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       Expenses Search
-# -------------------------------------------------------------------------------------
-def test_search_func():
-    view = resolve("/expenses/search/")
-
-    assert expenses.Search == view.func.view_class
-
-
-def test_search_get_200(client_logged):
-    url = reverse("expenses:search")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_search_not_found(client_logged):
+@pytest.mark.parametrize(
+    "query",
+    [
+        pytest.param({"search": "xxx"}, id="no_match"),
+        pytest.param({}, id="no_search_given"),
+    ],
+)
+def test_search_not_found(client_logged, query):
     ExpenseFactory()
 
     url = reverse("expenses:search")
-    response = client_logged.get(url, {"search": "xxx"})
+    response = client_logged.get(url, query)
     actual = response.content.decode("utf-8")
 
     assert "Nieko nerasta" in actual
@@ -918,35 +721,30 @@ def test_search_found(client_logged):
     assert "Remark" in actual
 
 
-def test_search_pagination_first_page(client_logged):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory()
-    i = ExpenseFactory.build_batch(51, account=a, expense_type=t, expense_name=n)
-    models.Expense.objects.bulk_create(i)
+@pytest.mark.parametrize(
+    "query, expected",
+    [
+        pytest.param({"search": "type"}, 50, id="first_page"),
+        pytest.param({"page": 2, "search": "type"}, 1, id="second_page"),
+    ],
+)
+def test_search_pagination(client_logged, query, expected):
+    account = AccountFactory()
+    expense_type = ExpenseTypeFactory()
+    expense_name = ExpenseNameFactory()
+    expenses = ExpenseFactory.build_batch(
+        51, account=account, expense_type=expense_type, expense_name=expense_name
+    )
+    models.Expense.objects.bulk_create(expenses)
 
     url = reverse("expenses:search")
-    response = client_logged.get(url, {"search": "type"})
+    response = client_logged.get(url, query)
     actual = response.context["object_list"]
 
-    assert len(actual) == 50
+    assert len(actual) == expected
 
 
-def test_search_pagination_second_page(client_logged):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory()
-    i = ExpenseFactory.build_batch(51, account=a, expense_type=t, expense_name=n)
-    models.Expense.objects.bulk_create(i)
-
-    url = reverse("expenses:search")
-    response = client_logged.get(url, {"page": 2, "search": "type"})
-    actual = response.context["object_list"]
-
-    assert len(actual) == 1
-
-
-def test_seach_statistic(client_logged):
+def test_search_statistic(client_logged):
     ExpenseFactory(price=100)
     ExpenseFactory(price=200, quantity=2, remark="xxx")
     ExpenseFactory(price=300, quantity=3, remark="xxx")
@@ -959,15 +757,54 @@ def test_seach_statistic(client_logged):
     assert response.context["average"] == 100
 
 
-def test_seach_statistic_not_found(client_logged):
+def test_search_statistic_not_found(client_logged):
     ExpenseFactory(price=100)
     ExpenseFactory(price=200, quantity=2)
     ExpenseFactory(price=300, quantity=3)
 
     url = reverse("expenses:search")
     response = client_logged.get(url, {"page": 2, "search": "xxx"})
+    actual = response.content.decode("utf-8")
 
-    assert not response.context["sum_price"]
-    assert not response.context["sum_quantity"]
-    assert not response.context["average"]
-    assert response.context["count"] == 0
+    assert "Nieko nerasta" in actual
+    assert "search-statistic" not in actual
+
+
+def _get(view):
+    return view.get(view.request)
+
+
+def _import_save(rf, user):
+    request = rf.post("/")
+    request.user = user
+
+    # the receipt form's account read raises first
+    with patch.object(expenses_import, "ReviewReceiptForm"):
+        return expenses_import.ImportSave().post(request)
+
+
+class _Names(ExpenseNameChoicesMixin):
+    def __init__(self, user):
+        self.user = user
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        pytest.param(lambda rf, u: view_for(rf, u, Lists).get_queryset(), id="list"),
+        pytest.param(
+            lambda rf, u: _get(view_for(rf, u, LoadExpenseName, "/?expense_type=1")),
+            id="load_expense_name",
+        ),
+        pytest.param(lambda rf, u: _Names(u).names_year(), id="names_year"),
+        pytest.param(lambda rf, u: _import_save(rf, u), id="import_save"),
+        pytest.param(
+            lambda rf, u: ReviewLineForm(user=u, year=1999), id="review_line_form"
+        ),
+    ],
+)
+def test_a_user_with_no_year_raises(rf, main_user, call):
+    main_user.year = None
+
+    with pytest.raises(ValueError, match="has no year"):
+        call(rf, main_user)

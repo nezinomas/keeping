@@ -2,11 +2,14 @@ from datetime import date
 
 import pytest
 
+from ....core.lib.day_stats import NoPastRecord, PastRecord
 from ...lib.drinks_stats import DataRow
 from ...services.consumption_year import ConsumptionYear
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
+
+TODAY = date(2000, 1, 1)
 
 
 @pytest.fixture(name="_records")
@@ -19,7 +22,7 @@ def fixture_records(second_user):
 
 
 def test_daily_returns_data_rows(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).daily
+    actual = ConsumptionYear(main_user, 1999, TODAY).daily
 
     assert all(isinstance(row, DataRow) for row in actual)
     assert [row.date for row in actual] == [date(1999, 1, 1), date(1999, 2, 10)]
@@ -27,99 +30,111 @@ def test_daily_returns_data_rows(main_user, _records):
 
 
 def test_daily_rows_stay_dicts_for_core_modules(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).daily_rows
+    actual = ConsumptionYear(main_user, 1999, TODAY).daily_rows
 
     assert all(isinstance(row, dict) for row in actual)
     assert set(actual[0]) == {"date", "stdav", "qty"}
 
 
 def test_monthly_returns_data_rows(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).monthly
+    actual = ConsumptionYear(main_user, 1999, TODAY).monthly
 
     assert all(isinstance(row, DataRow) for row in actual)
     assert [row.stdav for row in actual] == [2.5, 2.0]
 
 
-def test_only_the_users_own_records(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).daily
-
-    assert len(actual) == 2
-
-
 def test_empty_year(main_user, _records):
-    records = ConsumptionYear(main_user, 2000)
+    records = ConsumptionYear(main_user, 2000, TODAY)
 
     assert records.daily == []
     assert records.monthly == []
-    assert records.has_data is False
 
 
-def test_has_data(main_user, _records):
-    assert ConsumptionYear(main_user, 1999).has_data is True
+@pytest.mark.parametrize("year, expect", [(1999, True), (2000, False)])
+def test_has_data(year, expect, main_user, _records):
+    assert ConsumptionYear(main_user, year, TODAY).has_data is expect
 
 
 def test_converter_follows_the_users_drink_type(main_user):
     main_user.drink_type = "wine"
     main_user.save()
 
-    actual = ConsumptionYear(main_user, 1999).converter
+    actual = ConsumptionYear(main_user, 1999, TODAY).converter
 
     assert actual.drink_type == "wine"
     assert actual.servings_to_stdav(1) == 8
 
 
-def test_last_recorded_date(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).last_recorded_date
+@pytest.mark.parametrize(
+    "year, today, expect",
+    [
+        pytest.param(
+            1999, date(2000, 1, 1), PastRecord(date(1999, 2, 10)), id="record_this_year"
+        ),
+        pytest.param(
+            2000, date(2001, 1, 1), PastRecord(date(1999, 2, 10)), id="one_before"
+        ),
+        pytest.param(1997, date(2000, 1, 1), NoPastRecord(), id="none_at_all"),
+        pytest.param(
+            1999,
+            date(1999, 1, 5),
+            PastRecord(date(1999, 1, 1)),
+            id="a_later_drink_is_not_yet_the_latest",
+        ),
+        pytest.param(
+            2001,
+            date(1999, 1, 5),
+            PastRecord(date(1999, 1, 1)),
+            id="a_year_ahead_reads_back_to_today",
+        ),
+        pytest.param(
+            1999, date(1998, 12, 1), NoPastRecord(), id="nothing_on_or_before_today"
+        ),
+    ],
+)
+def test_latest(year, today, expect, main_user, _records):
+    assert ConsumptionYear(main_user, year, today).latest == expect
 
-    assert actual == date(1999, 2, 10)
 
-
-def test_last_recorded_date_when_year_is_empty(main_user, _records):
-    assert ConsumptionYear(main_user, 2000).last_recorded_date is None
-
-
-def test_last_recorded_date_before(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).last_recorded_date_before
-
-    assert actual == date(1998, 12, 20)
-
-
-def test_last_recorded_date_before_when_nothing_earlier(main_user, _records):
-    assert ConsumptionYear(main_user, 1998).last_recorded_date_before is None
+@pytest.mark.parametrize(
+    "year, expect",
+    [
+        pytest.param(1999, PastRecord(date(1998, 12, 20)), id="one_before"),
+        pytest.param(1998, NoPastRecord(), id="nothing_earlier"),
+        pytest.param(2000, PastRecord(date(1999, 2, 10)), id="the_last_of_several"),
+    ],
+)
+def test_earlier(year, expect, main_user, _records):
+    assert ConsumptionYear(main_user, year, TODAY).earlier == expect
 
 
 def test_previous_is_the_year_before(main_user, _records):
-    records = ConsumptionYear(main_user, 1999)
+    records = ConsumptionYear(main_user, 1999, TODAY)
 
     assert records.previous.year == 1998
     assert [row.date for row in records.previous.daily] == [date(1998, 12, 20)]
 
 
-def test_previous_carries_the_same_user(main_user, _records):
-    records = ConsumptionYear(main_user, 1999)
+@pytest.mark.parametrize(
+    "target_years, has_data, qty",
+    [
+        pytest.param([1999], True, 500.0, id="set"),
+        pytest.param([], False, 0.0, id="none_set"),
+    ],
+)
+def test_target(target_years, has_data, qty, main_user):
+    for year in target_years:
+        DrinkTargetFactory(year=year, quantity=500, drink_type="beer")
 
-    assert records.previous.user == main_user
+    actual = ConsumptionYear(main_user, 1999, TODAY).target
 
-
-def test_target(main_user):
-    DrinkTargetFactory(year=1999, quantity=500, drink_type="beer")
-
-    actual = ConsumptionYear(main_user, 1999).target
-
-    assert actual.has_data is True
-    assert actual.qty == 500.0
-
-
-def test_target_when_none_set(main_user):
-    actual = ConsumptionYear(main_user, 1999).target
-
-    assert actual.has_data is False
-    assert actual.qty == 0.0
-    assert actual.target_id == 0
+    assert actual.has_data is has_data
+    assert actual.qty == qty
+    assert (actual.target_id == 0) is (not has_data)
 
 
 def test_readers_are_cached(main_user, _records, django_assert_num_queries):
-    records = ConsumptionYear(main_user, 1999)
+    records = ConsumptionYear(main_user, 1999, TODAY)
 
     with django_assert_num_queries(1):
         records.daily

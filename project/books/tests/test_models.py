@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 from django.core.validators import ValidationError
+from django.db import IntegrityError
 
 from ...users.tests.factories import UserFactory
 from ..models import BookTarget
@@ -72,8 +73,9 @@ def test_book_finished_one_year(main_user):
     assert actual == [{"year": 1999, "cnt": 2}]
 
 
-def test_book_finished_one_year_no_data(main_user):
-    actual = list(BookModelService(main_user).finished(year=1999))
+@pytest.mark.parametrize("kwargs", [{"year": 1999}, {}], ids=["one_year", "all_years"])
+def test_book_finished_no_data(main_user, kwargs):
+    actual = list(BookModelService(main_user).finished(**kwargs))
 
     assert actual == []
 
@@ -92,12 +94,6 @@ def test_book_finished_all_years(main_user):
     assert actual == [{"year": 1998, "cnt": 1}, {"year": 1999, "cnt": 2}]
 
 
-def test_book_finished_all_years_no_data(main_user):
-    actual = list(BookModelService(main_user).finished())
-
-    assert actual == []
-
-
 def test_book_reading(main_user):
     BookFactory()
     BookFactory(started=date(1000, 1, 1))
@@ -110,9 +106,6 @@ def test_book_reading(main_user):
     assert actual == {"reading": 2}
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Book Target
-# ----------------------------------------------------------------------------
 def test_book_target_str():
     actual = BookTargetFactory.build()
 
@@ -153,16 +146,17 @@ def test_book_target_year(main_user):
 def test_book_target_year_positive():
     actual = BookTargetFactory.build(year=-2000)
 
-    try:
+    with pytest.raises(ValidationError) as error:
         actual.full_clean()
-    except ValidationError as e:
-        assert "year" in e.message_dict
+
+    assert "year" in error.value.message_dict
 
 
-@pytest.mark.xfail(raises=Exception)
-def test_book_target_year_unique():
-    BookTargetFactory(year=1999)
-    BookTargetFactory(year=1999)
+def test_book_target_year_unique(main_user):
+    BookTargetFactory(year=1999, user=main_user)
+
+    with pytest.raises(IntegrityError):
+        BookTargetFactory(year=1999, user=main_user)
 
 
 def test_book_target_ordering():

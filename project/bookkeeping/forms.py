@@ -1,162 +1,119 @@
 from datetime import datetime, timezone
-from typing import Callable
 
 from django import forms
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
-from ..accounts.services.model_services import (
-    AccountModelService,
-)
+from ..accounts.models import Account
 from ..core.lib import date as core_date
 from ..core.lib.convert_price import PriceToCentsFormMixin
-from ..core.lib.form_fields import CommaFloatField
+from ..core.lib.form_fields import CommaFloatField, PreloadedModelChoiceField
 from ..core.lib.form_widgets import DatePickerWidget
 from ..expenses.services.model_services import ExpenseTypeModelService
-from ..pensions.services.model_services import PensionTypeModelService
-from ..savings.services.model_services import SavingTypeModelService
+from ..pensions.models import PensionType
+from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
-def clean_date_and_closed(account: str, cleaned: dict, add_error: Callable) -> dict:
-    dt = cleaned.get("date")
-    if not dt:
-        return cleaned
+class WorthForm(PriceToCentsFormMixin, forms.ModelForm):
+    # the fund field is declared, not in Meta.fields: model validation would
+    # query it once per form; the formset hands every form the same funds
+    price_fields = ("price",)
+    price = CommaFloatField(min_value=0, required=False, label="")
 
-    account = cleaned.get(account)
-    if not account or not account.closed:
-        return cleaned
+    class Meta:
+        fields = ["date", "price"]
+        labels = {"date": ""}
 
-    if dt.year > account.closed:
-        add_error(
-            "date", _("Account was closed in %(year)s.") % ({"year": account.closed})
-        )
-    return cleaned
+    def __init__(self, *args, user, funds, today, now, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.now = now
 
+        self.fields["date"].widget = DatePickerWidget()
+        self.fields["date"].initial = core_date.set_date_with_user_year(user, today)
+        self.fields[self.fund_field].preload(funds)
 
-class DateFieldMixin:
+    @property
+    def fund_field(self):
+        return self._meta.model.fund_field
+
     def clean_date(self):
-        dt = self.cleaned_data["date"]
-        now = datetime.now()
-        return datetime(
-            dt.year,
-            dt.month,
-            dt.day,
-            now.hour,
-            now.minute,
-            now.second,
+        return datetime.combine(
+            self.cleaned_data["date"],
+            self.now.time().replace(microsecond=0),
             tzinfo=timezone.utc,
         )
 
+    def clean(self):
+        cleaned = super().clean()
+        if fund := cleaned.get(self.fund_field):
+            setattr(self.instance, self.fund_field, fund)
+        return cleaned
 
-class SavingWorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
-    price_fields = ("price",)
-    price = CommaFloatField(min_value=0, required=False)
 
-    class Meta:
+class ClosedFundMixin:
+    def clean(self):
+        cleaned = super().clean()
+        dt = cleaned.get("date")
+        fund = cleaned.get(self.fund_field)
+        if not dt or not fund or not fund.closed:
+            return cleaned
+
+        if dt.year > fund.closed:
+            self.add_error("date", self.closed_message % {"year": fund.closed})
+        return cleaned
+
+
+class SavingWorthForm(ClosedFundMixin, WorthForm):
+    closed_message = gettext_lazy("Fund was closed in %(year)s.")
+    duplicate_message = gettext_lazy("The same funds are selected.")
+    saving_type = PreloadedModelChoiceField(
+        queryset=SavingType.objects.none(), label=""
+    )
+    field_order = ["date", "saving_type", "price"]
+
+    class Meta(WorthForm.Meta):
         model = SavingWorth
-        fields = ["date", "saving_type", "price"]
-
-        labels = {
-            "date": "",
-            "saving_type": "",
-            "price": "",
-        }
-
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
-        super().__init__(*args, **kwargs)
-
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_date_with_user_year(self.user)
-
-        # overwrite FK
-        self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
-
-        self.fields["price"].label = ""
-
-    def clean(self):
-        cleaned = super().clean()
-        return clean_date_and_closed("saving_type", cleaned, self.add_error)
 
 
-class AccountWorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
-    price_fields = ("price",)
-    price = CommaFloatField(min_value=0, required=False)
+class AccountWorthForm(ClosedFundMixin, WorthForm):
+    closed_message = gettext_lazy("Account was closed in %(year)s.")
+    duplicate_message = gettext_lazy("The same accounts are selected.")
+    account = PreloadedModelChoiceField(queryset=Account.objects.none(), label="")
+    field_order = ["date", "account", "price"]
 
-    class Meta:
+    class Meta(WorthForm.Meta):
         model = AccountWorth
-        fields = ["date", "account", "price"]
-
-        labels = {
-            "date": "",
-            "account": "",
-            "price": "",
-        }
-
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
-        super().__init__(*args, **kwargs)
-
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_date_with_user_year(self.user)
-
-        # overwrite FK
-        self.fields["account"].queryset = AccountModelService(self.user).items()
-
-        self.fields["price"].label = ""
-
-    def clean(self):
-        cleaned = super().clean()
-        return clean_date_and_closed("account", cleaned, self.add_error)
 
 
-class PensionWorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
-    price_fields = ("price",)
-    price = CommaFloatField(min_value=0, required=False)
+class PensionWorthForm(WorthForm):
+    duplicate_message = gettext_lazy("The same pensions are selected.")
+    pension_type = PreloadedModelChoiceField(
+        queryset=PensionType.objects.none(), label=""
+    )
+    field_order = ["date", "pension_type", "price"]
 
-    class Meta:
+    class Meta(WorthForm.Meta):
         model = PensionWorth
-        fields = ["date", "pension_type", "price"]
-
-        labels = {
-            "date": "",
-            "pension_type": "",
-            "price": "",
-        }
-
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
-        super().__init__(*args, **kwargs)
-
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_date_with_user_year(self.user)
-
-        # overwrite FK
-        self.fields["pension_type"].queryset = PensionTypeModelService(
-            self.user
-        ).objects
-
-        self.fields["price"].label = ""
 
 
 class SummaryExpensesForm(forms.Form):
     types = forms.MultipleChoiceField(required=False)
 
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+    def __init__(self, *args, user, **kwargs):
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         choices = []
-        for _type in ExpenseTypeModelService(self.user).objects:
-            choices.append((_type.id, _type.title))
+        for expense_type in ExpenseTypeModelService(user).objects:
+            choices.append((expense_type.id, expense_type.title))
 
             choices.extend(
-                (f"{_type.id}:{_name.id}", _name.title)
-                for _name in _type.expensename_set.all()
+                (f"{expense_type.id}:{name.id}", name.title)
+                for name in expense_type.expensename_set.all()
             )
 
         self.fields["types"].choices = choices
-        self.fields["types"].label = None
 
     def clean(self):
         cleaned_data = super().clean()

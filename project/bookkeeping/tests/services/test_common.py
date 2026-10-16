@@ -1,33 +1,31 @@
+from datetime import date
+
 import pytest
-import time_machine
 
 from ...services import common
 
-pytestmark = pytest.mark.django_db
 
+@pytest.mark.parametrize(
+    "qs, today, expect",
+    [
+        pytest.param(
+            [{"year": 2000, "sum": 12}],
+            date(2000, 2, 5),
+            [6],
+            id="average_current_year",
+        ),
+        pytest.param(
+            [{"year": 2000, "sum": 12}], date(2001, 2, 5), [1], id="average_past_year"
+        ),
+        pytest.param(
+            [{"year": 1999, "sum": 12}, {"year": 2000, "sum": 12}],
+            date(2000, 2, 5),
+            [1, 6],
+            id="average_past_and_current_year",
+        ),
+    ],
+)
+def test_average_of_a_year_by_months_it_has_had(qs, today, expect):
+    actual = common.average(qs, today)
 
-@time_machine.travel("2000-2-5")
-def test_average_current_year():
-    qs = [{"year": 2000, "sum": 12}]
-
-    actual = common.average(qs)
-
-    assert actual == [6]
-
-
-@time_machine.travel("2001-2-5")
-def test_average_past_year():
-    qs = [{"year": 2000, "sum": 12}]
-
-    actual = common.average(qs)
-
-    assert actual == [1]
-
-
-@time_machine.travel("2000-2-5")
-def test_average():
-    qs = [{"year": 1999, "sum": 12}, {"year": 2000, "sum": 12}]
-
-    actual = common.average(qs)
-
-    assert actual == [1, 6]
+    assert actual == expect

@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import partial
 from typing import Any, cast
 
 from django.http import HttpResponse
@@ -18,6 +19,7 @@ from ...core.mixins.views import (
 from ...users.models import User
 from .. import forms
 from ..apps import App_name
+from ..services import search
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
@@ -40,15 +42,21 @@ class Index(GetMonthMixin, TemplateViewMixin):
 
 class Lists(GetMonthMixin, ListViewMixin):
     template_name = "expenses/expense_list.html"
-    service_class = ExpenseModelService
+
+    def calendar_month(self) -> int:
+        month = self.get_month()
+        # tab 13 lists every month
+        if month not in range(1, 13):
+            return 0
+        return month
 
     def get_queryset(self):
-        month = self.get_month()
+        month = self.calendar_month()
         user = cast(User, self.request.user)
-        year = cast(int, user.year)
+        year = user.selected_year()
         service = ExpenseModelService(user)
         qs = service.year(year)
-        if month in range(1, 13):
+        if month:
             qs = qs.filter(date__month=month)
 
         data = service.expenses_list(qs)
@@ -56,22 +64,11 @@ class Lists(GetMonthMixin, ListViewMixin):
         return add_fast_urls(data=data, app_name=App_name)
 
     def get_context_data(self, **kwargs):
-        month = self.get_month()
-
-        notice = _("There are no records for month <b>%(month)s</b>.") % {
-            "month": month
-        }
-        if month == 13 or not month:
-            notice = _("No records in <b>%(year)s</b>.") % {
-                "year": cast(User, self.request.user).year
-            }
-
-        context = {"notice": notice}
+        context = {"notice_month": self.calendar_month()}
         return super().get_context_data(**kwargs) | context | get_action_buttons_html()
 
 
 class New(CreateViewMixin):
-    service_class = ExpenseModelService
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_form = "reload"
@@ -96,14 +93,13 @@ class Delete(DeleteViewMixin):
 
 class Search(SearchViewMixin):
     template_name = "expenses/expense_list.html"
-    search_method = "search_expenses"
-    per_page = 50
-    use_fast_urls = True
+    search_method = staticmethod(search.search_expenses)
+    search_totals = staticmethod(search.search_totals)
+    search_rows = staticmethod(partial(add_fast_urls, app_name=App_name))
 
 
 class LoadExpenseName(ListViewMixin):
     template_name = "core/dropdown.html"
-    object_list = []
 
     def get(self, request, *args, **kwargs) -> HttpResponse:
         field = "expense_type"
@@ -111,15 +107,13 @@ class LoadExpenseName(ListViewMixin):
             field = f"{prefix}-expense_type"
 
         expense_type_pk = int_or_zero(request.GET.get(field))
-        if not expense_type_pk:
-            return self.render_to_response({"object_list": self.object_list})
-
-        year = int_or_zero(request.GET.get("year")) or request.user.year
-
-        self.object_list = (
-            ExpenseNameModelService(request.user)
-            .year(year)
-            .filter(parent=expense_type_pk)
-        )
+        self.object_list = []
+        if expense_type_pk:
+            year = int_or_zero(request.GET.get("year")) or request.user.selected_year()
+            self.object_list = (
+                ExpenseNameModelService(request.user)
+                .year(year)
+                .filter(parent=expense_type_pk)
+            )
 
         return self.render_to_response({"object_list": self.object_list})

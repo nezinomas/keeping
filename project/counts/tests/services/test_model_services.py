@@ -4,38 +4,25 @@ from django.contrib.auth.models import AnonymousUser
 from ...services.model_services import CountModelService, CountTypeModelService
 
 
-def test_count_init_raises_if_no_user():
-    with pytest.raises(ValueError, match="User required"):
-        CountModelService(user=None)
-
-
-def test_count_init_raises_if_anonymous_user():
-    anon = AnonymousUser()
-    with pytest.raises(ValueError, match="Authenticated user required"):
-        CountModelService(user=anon)
-
-
-@pytest.mark.django_db
-def test_count_init_succeeds_with_real_user(main_user):
-    # No need to save — just check __init__
-    CountModelService(user=main_user)
-
-
-def test_count_type_init_raises_if_no_user():
-    with pytest.raises(ValueError, match="User required"):
-        CountTypeModelService(user=None)
-
-
-def test_count_type_init_raises_if_anonymous_user():
-    anon = AnonymousUser()
-    with pytest.raises(ValueError, match="Authenticated user required"):
-        CountTypeModelService(user=anon)
-
-
-@pytest.mark.django_db
-def test_count_type_init_succeeds_with_real_user(main_user):
-    # No need to save — just check __init__
-    CountTypeModelService(user=main_user)
+@pytest.mark.parametrize(
+    "service",
+    [
+        pytest.param(CountModelService, id="count"),
+        pytest.param(CountTypeModelService, id="count_type"),
+    ],
+)
+@pytest.mark.parametrize(
+    "user, message",
+    [
+        pytest.param(None, "User required", id="no_user"),
+        pytest.param(
+            AnonymousUser(), "Authenticated user required", id="anonymous_user"
+        ),
+    ],
+)
+def test_init_raises_without_a_real_user(service, user, message):
+    with pytest.raises(ValueError, match=message):
+        service(user=user)
 
 
 def test_count_type_model_service_promises_no_year():

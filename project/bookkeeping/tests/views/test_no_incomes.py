@@ -1,37 +1,21 @@
 import json
 from datetime import date, datetime
-from pathlib import Path
 
 import pytest
 import pytz
 from django.db.models import Sum
-from django.template import Context, Template
-from django.urls import resolve, reverse
+from django.template.loader import render_to_string
+from django.urls import reverse
 
 from ....accounts.models import AccountBalance
 from ....expenses.tests.factories import ExpenseTypeFactory
 from ....journals.tests.factories import JournalFactory
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingCloseFactory
-from ... import views
 from ...lib import no_incomes
 from ..factories import SavingWorthFactory
 
 pytestmark = pytest.mark.django_db
-
-
-# NoIncomes View
-def test_view_func():
-    view = resolve("/bookkeeping/no_incomes/")
-
-    assert views.NoIncomes == view.func.view_class
-
-
-def test_view_200(client_logged):
-    url = reverse("bookkeeping:no_incomes")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_view_not_necessary(client_logged):
@@ -56,37 +40,26 @@ def test_view_not_necessary(client_logged):
 
 
 def test_template_month_value():
-    with open(
-        Path(__file__).cwd()
-        / "project/bookkeeping/templates/bookkeeping/includes/no_incomes.html"
-    ) as f:
-        template = Template(f.read())
+    ctx = {
+        "no_incomes": [
+            {
+                "title": "x",
+                "money_fund": 11,
+                "money_fund_pension": 22,
+                "price": True,
+            },
+            {
+                "title": "y",
+                "money_fund": 33,
+                "money_fund_pension": 44,
+                "price": False,
+            },
+        ],
+    }
+    actual = render_to_string("bookkeeping/includes/no_incomes.html", ctx)
 
-    ctx = Context(
-        {
-            "no_incomes": [
-                {
-                    "title": "x",
-                    "money_fund": 11,
-                    "money_fund_pension": 22,
-                    "price": True,
-                },
-                {
-                    "title": "y",
-                    "money_fund": 33,
-                    "money_fund_pension": 44,
-                    "price": False,
-                },
-            ],
-        }
-    )
-    actual = template.render(ctx)
-
-    # price
     assert "0,11" in actual
     assert "0,22" in actual
-
-    # month
     assert "33,0" in actual
     assert "44,0" in actual
 

@@ -2,8 +2,11 @@ from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from ...lib.signals import Accounts
+from .strategies import rows
 
 
 @pytest.fixture(name="incomes")
@@ -120,7 +123,6 @@ def test_table(incomes, expenses, have, types):
     assert actual[3]["delta"] == -155
     assert actual[3]["latest_check"] == datetime(2000, 1, 4, 3, 2, 1)
 
-    # future year=2001
     assert actual[4]["category_id"] == 1
     assert actual[4]["year"] == 2001
     assert actual[4]["past"] == 170
@@ -131,7 +133,6 @@ def test_table(incomes, expenses, have, types):
     assert actual[4]["delta"] == -155
     assert actual[4]["latest_check"] == datetime(2000, 1, 4, 3, 2, 1)
 
-    # second account
     assert actual[5]["category_id"] == 2
     assert actual[5]["year"] == 1999
     assert actual[5]["past"] == 0
@@ -152,7 +153,6 @@ def test_table(incomes, expenses, have, types):
     assert actual[6]["delta"] == -195
     assert actual[6]["latest_check"] == datetime(2000, 1, 6, 3, 2, 1)
 
-    # future year=2001
     assert actual[7]["category_id"] == 2
     assert actual[7]["year"] == 2001
     assert actual[7]["past"] == 220
@@ -598,3 +598,49 @@ def test_table_only_have(have, types):
     assert actual[5]["have"] == 25
     assert actual[5]["delta"] == 25
     assert actual[5]["latest_check"] == datetime(2000, 1, 6, 3, 2, 1)
+
+
+@given(
+    st.lists(rows("incomes"), min_size=1, max_size=12),
+    st.lists(rows("expenses"), max_size=12),
+    st.lists(
+        rows("have", latest_check=st.just(datetime(1995, 1, 1))),
+        max_size=6,
+        unique_by=lambda x: (x["category_id"], x["year"]),
+    ),
+)
+def test_table_year_balance_follows_the_year_before(incomes, expenses, have):
+    types = [SimpleNamespace(pk=pk, closed=None) for pk in (1, 2, 3)]
+    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
+    actual = Accounts(data).df.collect().to_dicts()
+    previous = {}
+
+    def total(source, column, row):
+        return sum(
+            x[column]
+            for x in source
+            if x["category_id"] == row["category_id"] and x["year"] == row["year"]
+        )
+
+    def worth(row):
+        checked = [
+            x
+            for x in have
+            if x["category_id"] == row["category_id"] and x["year"] <= row["year"]
+        ]
+        return max(checked, key=lambda x: x["year"])["have"] if checked else 0
+
+    assert actual
+    for row in actual:
+        before = previous.get(
+            row["category_id"], {"year": row["year"] - 1, "balance": 0}
+        )
+
+        assert row["year"] == before["year"] + 1
+        assert row["incomes"] == total(incomes, "incomes", row)
+        assert row["expenses"] == total(expenses, "expenses", row)
+        assert row["have"] == worth(row)
+        assert row["past"] == before["balance"]
+        assert row["balance"] == row["past"] + row["incomes"] - row["expenses"]
+        assert row["delta"] == row["have"] - row["balance"]
+        previous[row["category_id"]] = row

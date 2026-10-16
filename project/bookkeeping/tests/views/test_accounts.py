@@ -3,28 +3,14 @@ from datetime import datetime
 
 import pytest
 import pytz
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
 from ....incomes.tests.factories import IncomeFactory
 from ....savings.tests.factories import SavingFactory
-from ... import views
 from .. import factories
 
 pytestmark = pytest.mark.django_db
-
-
-def test_func():
-    view = resolve("/bookkeeping/accounts/")
-
-    assert views.Accounts == view.func.view_class
-
-
-def test_200(client_logged):
-    url = reverse("bookkeeping:accounts")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_302(client):

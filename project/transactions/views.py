@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ..accounts import views as accounts_views
 from ..core.lib.convert_price import PriceToFloatViewMixin
-from ..core.lib.utils import rendered_content
+from ..core.lib.utils import int_or_zero, rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -38,35 +38,25 @@ class Index(TemplateViewMixin):
 
 class LoadSavingType(ListViewMixin):
     template_name = "core/dropdown.html"
-    object_list = []
 
     def get(self, request, *args, **kwargs):
-        pk = request.GET.get("from_account")
+        pk = int_or_zero(request.GET.get("from_account"))
+        if not pk:
+            return self.render_to_response({"object_list": []})
 
-        try:
-            pk = int(pk)
-        except (ValueError, TypeError):
-            pk = None
-
-        if pk:
-            self.object_list = (
-                SavingTypeModelService(request.user).items().exclude(pk=pk)
-            )
-
-        return self.render_to_response({"object_list": self.object_list})
+        items = SavingTypeModelService(request.user).items().exclude(pk=pk)
+        return self.render_to_response({"object_list": items})
 
 
 class Lists(ListViewMixin):
     template_name = "transactions/transaction_list.html"
-    service_class = TransactionModelService
 
     def get_queryset(self):
         user = self.request.user
-        return TransactionModelService(user).year(user.year)
+        return TransactionModelService(user).year(user.selected_year())
 
 
 class New(CreateViewMixin):
-    service_class = TransactionModelService
     form_class = forms.TransactionForm
     hx_trigger_form = "afterTransaction"
     success_url = reverse_lazy("transactions:list")
@@ -90,21 +80,19 @@ class Delete(DeleteViewMixin):
 
 class SavingsCloseLists(ListViewMixin):
     template_name = "transactions/savingclose_list.html"
-    service_class = SavingCloseModelService
 
     def get_queryset(self):
         user = self.request.user
-        return SavingCloseModelService(user).year(year=user.year)
+        return SavingCloseModelService(user).year(year=user.selected_year())
 
 
 class SavingsCloseNew(CreateViewMixin):
-    service_class = SavingCloseModelService
     form_class = forms.SavingCloseForm
     hx_trigger_form = "afterClose"
     url_name = "savings_close_new"
 
     success_url = reverse_lazy("transactions:savings_close_list")
-    modal_form_title = _("Fund &rArr; Account")
+    modal_form_title = _("Fund ⇒ Account")
 
 
 class SavingsCloseUpdate(PriceToFloatViewMixin, UpdateViewMixin):
@@ -114,7 +102,7 @@ class SavingsCloseUpdate(PriceToFloatViewMixin, UpdateViewMixin):
     url_name = "savings_close_update"
 
     success_url = reverse_lazy("transactions:savings_close_list")
-    modal_form_title = _("Fund &rArr; Account")
+    modal_form_title = _("Fund ⇒ Account")
 
 
 class SavingsCloseDelete(DeleteViewMixin):
@@ -128,21 +116,19 @@ class SavingsCloseDelete(DeleteViewMixin):
 
 class SavingsChangeLists(ListViewMixin):
     template_name = "transactions/savingchange_list.html"
-    service_class = SavingChangeModelService
 
     def get_queryset(self):
         user = self.request.user
-        return SavingChangeModelService(user).year(year=user.year)
+        return SavingChangeModelService(user).year(year=user.selected_year())
 
 
 class SavingsChangeNew(CreateViewMixin):
-    service_class = SavingChangeModelService
     form_class = forms.SavingChangeForm
     hx_trigger_form = "afterChange"
     url_name = "savings_change_new"
 
     success_url = reverse_lazy("transactions:savings_change_list")
-    modal_form_title = _("Fund &hArr; Fund")
+    modal_form_title = _("Fund ⇔ Fund")
 
 
 class SavingsChangeUpdate(PriceToFloatViewMixin, UpdateViewMixin):
@@ -152,7 +138,7 @@ class SavingsChangeUpdate(PriceToFloatViewMixin, UpdateViewMixin):
     url_name = "savings_change_update"
 
     success_url = reverse_lazy("transactions:savings_change_list")
-    modal_form_title = _("Fund &hArr; Fund")
+    modal_form_title = _("Fund ⇔ Fund")
 
 
 class SavingsChangeDelete(DeleteViewMixin):

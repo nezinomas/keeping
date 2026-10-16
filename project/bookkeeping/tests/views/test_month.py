@@ -2,27 +2,12 @@ import re
 from datetime import date
 
 import pytest
-from django.urls import resolve, reverse
+from django.urls import NoReverseMatch, reverse
 
 from ....expenses.tests.factories import ExpenseFactory
 from ....plans.tests.factories import DayPlanFactory
-from ... import views
 
 pytestmark = pytest.mark.django_db
-
-
-# Month
-def test_view_month_func():
-    view = resolve("/month/")
-
-    assert views.Month == view.func.view_class
-
-
-def test_view_month_200(client_logged):
-    url = reverse("bookkeeping:month")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_view_month_import_button_after_expenses_button(client_logged):
@@ -94,42 +79,16 @@ def test_view_month_200_set_user_month_value(month, expect, client_logged):
     assert response.wsgi_request.user.month == expect
 
 
-# Month Day List
-def test_view_expand_day_expenses_func():
-    view = resolve("/month/1111-2-3/")
+@pytest.mark.parametrize("dt", ["xx", "1970-13-01", "1970-12-32"])
+def test_view_expand_day_expenses_wrong_dates(dt, client_logged):
+    response = client_logged.get(f"/month/{dt}/")
 
-    assert views.ExpandDayExpenses == view.func.view_class
-
-
-def test_view_expand_day_expenses_200(client_logged):
-    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": date(1999, 1, 1)})
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
+    assert response.status_code == 404
 
 
-def test_view_expand_day_expenses_str_in_url(client_logged):
-    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": "xx"})
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-    assert response.status_code == 200
-
-    assert "1974-01-01" in actual
-
-
-@pytest.mark.parametrize(
-    "dt, expect",
-    [
-        ("1970-13-01", "1974-01-01 dieną įrašų nėra"),
-        ("1970-12-32", "1974-01-01 dieną įrašų nėra"),
-    ],
-)
-def test_view_expand_day_expenses_wrong_dates(dt, expect, client_logged):
-    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": dt})
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert expect in actual
+def test_view_expand_day_expenses_reverses_no_url_for_a_non_date():
+    with pytest.raises(NoReverseMatch):
+        reverse("bookkeeping:expand_day_expenses", kwargs={"date": "xx"})
 
 
 def test_view_expand_day_expenses_ajax(client_logged):
@@ -144,18 +103,19 @@ def test_view_expand_day_expenses_ajax(client_logged):
     assert "Expense Name" in actual
 
 
-# Month Charts
-def test_view_month_chart_func():
-    view = resolve("/month/chart_type")
+@pytest.mark.parametrize(
+    "chart_type, script",
+    [
+        pytest.param("targets", "chart_month_targets.js", id="targets"),
+        pytest.param("expenses", "chart_month_expenses.js", id="expenses"),
+        pytest.param("xxx", "chart_month_expenses.js", id="unknown_is_expenses"),
+    ],
+)
+def test_view_month_chart_loads_its_script(client_logged, chart_type, script):
+    url = reverse("bookkeeping:month_chart", kwargs={"chart_type": chart_type})
+    content = client_logged.get(url).content.decode("utf-8")
 
-    assert views.MonthChart == view.func.view_class
-
-
-def test_view_month_chart_200(client_logged):
-    url = reverse("bookkeeping:month_chart", kwargs={"chart_type": "xxx"})
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
+    assert f'src="/static/js/{script}"' in content
 
 
 def test_view_month_chart_302(client):

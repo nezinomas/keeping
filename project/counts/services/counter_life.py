@@ -5,6 +5,7 @@ from functools import cached_property
 
 from django.db.models import F
 
+from ...core.lib.day_stats import NoPastRecord, PastRecord
 from ...core.lib.year_boundary import YearBoundary
 from ...users.models import User
 from ..lib.rhythm import Rhythm
@@ -22,7 +23,7 @@ class CounterLife:
     boundary: YearBoundary
 
     @classmethod
-    def read(cls, user: User, count_type: str) -> "CounterLife":
+    def read(cls, user: User, count_type: str, today: date) -> "CounterLife":
         return cls(
             user=user,
             count_type=count_type,
@@ -31,7 +32,7 @@ class CounterLife:
                 .items(count_type=count_type)
                 .values("date", qty=F("quantity"))
             ),
-            boundary=YearBoundary.for_year(user.year),
+            boundary=YearBoundary(user.selected_year(), today),
         )
 
     @cached_property
@@ -71,7 +72,7 @@ class CounterLife:
         return str(years[0]) if len(years) == 1 else f"{years[0]}–{years[-1]}"
 
     @cached_property
-    def past_latest(self) -> date | None:
+    def earlier(self) -> PastRecord | NoPastRecord:
         """The last Record before the year on view, so the year's first Gap
         reaches back into the year before it."""
         past = [
@@ -80,4 +81,7 @@ class CounterLife:
             if record["date"].year < self.boundary.year
         ]
 
-        return max(past) if past else None
+        if not past:
+            return NoPastRecord()
+
+        return PastRecord(max(past))

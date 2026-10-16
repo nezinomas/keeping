@@ -19,6 +19,12 @@ class User(AbstractUser):
     def __str__(self):
         return str(self.username)
 
+    def selected_year(self) -> int:
+        # NULL until the first login sets it
+        if self.year is None:
+            raise ValueError(f"{self} has no year")
+        return self.year
+
     def save(self, *args, **kwarg):
         # create a journal for the new user
         if not hasattr(self, "journal"):

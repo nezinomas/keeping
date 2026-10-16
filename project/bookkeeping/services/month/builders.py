@@ -5,13 +5,12 @@ from operator import itemgetter
 import polars as pl
 from django.utils.translation import gettext as _
 
+from ....core.lib.table_columns import DATE, SAVINGS, TOTAL
 from .dtos import InfoState
 
 
 class MonthTableBuilder:
-    """
-    Merges expenses and savings into a single Polars DataFrame representing the month
-    """
+    """Merges the month's expenses and savings into one DataFrame."""
 
     def __init__(self, expense_df: pl.DataFrame, saving_df: pl.DataFrame):
         self.df = self._build_table(expense_df, saving_df)
@@ -19,39 +18,39 @@ class MonthTableBuilder:
     def _build_table(
         self, expense_df: pl.DataFrame, saving_df: pl.DataFrame
     ) -> pl.DataFrame:
-        # If exists at least two columns (date + at least one expense type)
-        # create total column
-        if expense_df.shape[1] > 1:
+        has_expense_types = expense_df.shape[1] > 1
+
+        if has_expense_types:
             expense_df = expense_df.with_columns(
-                pl.sum_horizontal(pl.exclude("date")).alias("total")
+                pl.sum_horizontal(pl.exclude(DATE)).alias(TOTAL)
             )
 
         return expense_df.join(
-            saving_df, on="date", how="full", coalesce=True, nulls_equal=True
+            saving_df, on=DATE, how="full", coalesce=True, nulls_equal=True
         )
 
     @cached_property
     def table(self) -> list[dict]:
-        return [] if self.df.is_empty() else self.df.to_dicts()
+        return self.df.to_dicts()
 
     @cached_property
     def total_row(self) -> dict:
         if self.df.is_empty() or self.df.shape[1] == 1:
             return {}
-        return self.df.select(pl.exclude("date")).sum().to_dicts()[0]
+        return self.df.select(pl.exclude(DATE)).sum().to_dicts()[0]
 
 
 class ChartBuilder:
     """Formats financial data specifically for frontend charts."""
 
     def __init__(self, targets: dict, totals: dict):
-        self.totals = {k: v for k, v in totals.items() if k != "total"}
+        self.totals = {k: v for k, v in totals.items() if k != TOTAL}
         self.targets = targets
 
     def build_targets(self) -> dict:
         data = self._sort_chart_data(self.totals)
 
-        categories, data_target, data_fact, category_len = [], [], [], []
+        categories, data_target, data_fact, name_lengths = [], [], [], []
 
         for entry in data:
             name = entry["name"]
@@ -63,7 +62,7 @@ class ChartBuilder:
             data_target.append(target)
             data_fact.append({"y": entry["y"], "target": target})
 
-            category_len.append(len(name))
+            name_lengths.append(len(name))
 
         return {
             "categories": categories,
@@ -71,12 +70,11 @@ class ChartBuilder:
             "targetTitle": _("Plan"),
             "fact": data_fact,
             "factTitle": _("Fact"),
-            "max_category_len": max(category_len, default=0),
-            "category_len": len(categories),
+            "max_category_len": max(name_lengths, default=0),
         }
 
     def _translate_saving_title(self, name):
-        return _("Savings") if name == "savings" else name
+        return _("Savings") if name == SAVINGS else name
 
     def build_expenses(self) -> list[dict]:
         data = self._sort_chart_data(self.totals)

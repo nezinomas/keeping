@@ -1,16 +1,16 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.template.loader import render_to_string
-from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
+from ..core.lib.form_fields import pin
 from ..core.lib.form_widgets import (
     DatePickerWidget,
     DecimalCommaWidget,
     YearPickerWidget,
 )
-from ..core.mixins.forms import YearBetweenMixin
+from ..core.mixins.forms import OneTargetAYearMixin, YearBetweenMixin
 from .apps import App_name
 from .lib.drink_quantity import DrinkQuantity
 from .lib.drinks_options import MAX_BOTTLES
@@ -30,25 +30,21 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "option", "stdav"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.instance.counter_type = App_name
 
         self.date_field_settings()
-        self.user_field_settings()
+        pin(self.fields["user"], self.user)
         self.translations()
 
         self.recalculate_stdav_on_opening_form()
 
     def date_field_settings(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
-
-    def user_field_settings(self):
-        self.fields["user"].initial = self.user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
+        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
     def translations(self):
         self.fields["date"].label = _("Date")
@@ -81,20 +77,23 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
 class QuickAddForm(DrinkForm):
     @classmethod
-    def from_post(cls, post, user) -> "QuickAddForm":
+    def from_post(cls, post, user, today) -> "QuickAddForm":
         return cls(
             data={
                 "user": user.pk,
-                "date": post.get("date") or set_date_with_user_year(user),
+                "date": post.get("date") or set_date_with_user_year(user, today),
                 "option": post.get("option") or user.drink_type,
                 # the bar labels the box quantity; the model stores Std Av
                 "stdav": post.get("quantity"),
             },
             user=user,
+            today=today,
         )
 
 
-class DrinkTargetForm(forms.ModelForm):
+class DrinkTargetForm(OneTargetAYearMixin, forms.ModelForm):
+    target_service = DrinkTargetModelService
+
     class Meta:
         model = DrinkTarget
         fields = ["user", "year", "drink_type", "quantity"]
@@ -107,19 +106,15 @@ class DrinkTargetForm(forms.ModelForm):
     field_order = ["year", "drink_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
+        self.fields["year"].initial = self.user.selected_year()
 
-        self.user_field_settings()
+        pin(self.fields["user"], self.user)
 
         self.translations()
-
-    def user_field_settings(self):
-        self.fields["user"].initial = self.user
-        self.fields["user"].disabled = True
-        self.fields["user"].widget = forms.HiddenInput()
 
     def translations(self):
         self.fields["year"].label = _("Year")
@@ -129,19 +124,6 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields["quantity"].help_text = render_to_string(
             "drinks/includes/drink_target_quantity_help.html"
         )
-
-    def clean_year(self):
-        year = self.cleaned_data["year"]
-
-        if self.instance.pk:
-            return year
-
-        qs = DrinkTargetModelService(self.user).year(year)
-        if qs.exists():
-            msg = _("%(year)s already has a goal.") % {"year": year}
-            raise forms.ValidationError(msg)
-
-        return year
 
 
 class TypicalYearForm(forms.Form):
@@ -155,12 +137,13 @@ class TypicalYearForm(forms.Form):
     field_order = ["year_from", "year_to"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         # one query, read twice: the years propose the defaults here and decide
         # what is a real year in clean()
-        self._years = DrinkModelService(self.user).years() if self.user else []
+        self._years = DrinkModelService(self.user).years()
 
         self.fields["year_from"].label = ""
         self.fields["year_to"].label = ""
@@ -202,17 +185,15 @@ class DrinkCompareForm(forms.Form):
     field_order = ["year1", "year2"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
+        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["year1"].label = ""
         self.fields["year2"].label = ""
 
-        # initial values: the year in the header, which is not always the calendar
-        # one — the user can be looking at a year that has not started yet
-        self.fields["year2"].initial = (
-            getattr(self.user, "year", None) or timezone.now().year
-        )
+        # the header's year, which can be one that has not started yet
+        self.fields["year2"].initial = self.user.selected_year()
 
     def clean(self):
         cleaned = super().clean()
