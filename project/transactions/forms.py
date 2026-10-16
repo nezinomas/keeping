@@ -15,6 +15,7 @@ from ..savings.forms import FUND_CLOSED
 from ..savings.services.model_services import SavingTypeModelService
 from .close_rules import CloseBox
 from .models import SavingChange, SavingClose, Transaction
+from .services.close_year import FundCloseYear
 
 
 def set_to_account_choices(form, service):
@@ -89,26 +90,20 @@ class CloseFromAccountMixin:
         self.fields["close"].label = render_to_string(
             "transactions/includes/close_label.html"
         )
-        if self.instance.from_account_id and self.instance.from_account.closed:
-            self.fields["close"].initial = True
+        if self.instance.pk:
+            self.fields["close"].initial = FundCloseYear.is_closing_move(
+                self.instance.from_account_id, self.instance.date
+            )
 
     def save(self, *args, **kwargs):
-        previous_fund, previous_date = self._previous_move()
-
-        dates = (self.instance.date,)
-        if previous_fund == self.instance.from_account_id:
-            dates += (previous_date,)
-
-        self.instance.close_rule = CloseBox(self.cleaned_data["close"], dates)
+        ticked = self.cleaned_data["close"]
+        changed = "close" in self.changed_data
+        # the box was rendered for the fund it left: on the new one only a tick speaks
+        if "from_account" in self.changed_data:
+            changed = ticked
+        self.instance.close_rule = CloseBox(changed, ticked)
 
         return super().save(*args, **kwargs)
-
-    def _previous_move(self):
-        # a new move has no previous one; is_valid() already set its fund and date
-        if not self.instance.pk:
-            return self.instance.from_account_id, self.instance.date
-
-        return self.initial["from_account"], self.initial["date"]
 
 
 class SavingCloseForm(

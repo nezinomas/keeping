@@ -203,7 +203,7 @@ def _closed(fund):
 
 
 @pytest.mark.parametrize("move", MOVE_OUT)
-def test_deleting_the_closing_move_closes_the_fund_at_the_move_before(move):
+def test_deleting_the_closing_move_reopens_the_fund(move):
     fund = SavingTypeFactory(title="Fund", closed=YEAR + 1)
     buy(fund, 100000)
     MOVE_OUT[move](fund, date(YEAR, 6, 1))
@@ -211,7 +211,7 @@ def test_deleting_the_closing_move_closes_the_fund_at_the_move_before(move):
 
     closing.delete()
 
-    assert _closed(fund) == YEAR
+    assert _closed(fund) is None
 
 
 @pytest.mark.parametrize("move", MOVE_OUT)

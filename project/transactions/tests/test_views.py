@@ -8,8 +8,8 @@ from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.utils import clean_content, view_for
-from ...savings.models import SavingType
-from ...savings.tests.factories import SavingTypeFactory
+from ...savings.models import SavingBalance, SavingType
+from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...users.views import Login
 from .. import models, views
 from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
@@ -425,12 +425,22 @@ def _closed_fund_update_url(kind):
     return reverse(kind.update_url, kwargs={"pk": obj.pk})
 
 
+def _closed_fund_earlier_move_update_url(kind):
+    fund = SavingTypeFactory(closed=1999)
+    obj = kind.factory(from_account=fund)
+    kind.factory(from_account=fund, date=date(1999, 6, 1))
+    return reverse(kind.update_url, kwargs={"pk": obj.pk})
+
+
 @by_fund_move
 @pytest.mark.parametrize(
     "url_of, checked",
     [
         pytest.param(_new_url, 0, id="new"),
         pytest.param(_closed_fund_update_url, 1, id="update_of_a_closed_fund"),
+        pytest.param(
+            _closed_fund_earlier_move_update_url, 0, id="update_of_an_earlier_move"
+        ),
     ],
 )
 @time_machine.travel("1999-1-1")
@@ -470,6 +480,51 @@ def test_update_in_future_checkbox_value(client_logged, kind, closed, close, exp
 
     # the fund closes in the move's year, not in the year it is edited
     assert actual.closed == expect
+
+
+def _delete(client_logged, sell, other):
+    client_logged.post(reverse("transactions:savings_close_delete", args=[sell.pk]))
+
+
+def _move_to_another_fund(client_logged, sell, other):
+    data = {
+        "date": sell.date,
+        "price": "15",
+        "from_account": other.pk,
+        "to_account": sell.to_account.pk,
+    }
+    url = reverse("transactions:savings_close_update", args=[sell.pk])
+    client_logged.post(url, data)
+
+
+# a partial sell before the closing one does not become the close
+@pytest.mark.parametrize("edit", [_delete, _move_to_another_fund])
+@time_machine.travel("2024-1-1")
+def test_closing_sell_removed_reopens_the_fund(client_logged, edit):
+    bank = AccountFactory(title="Bank")
+    fund = SavingTypeFactory(title="Fund")
+    other = SavingTypeFactory(title="Other")
+    SavingFactory(account=bank, saving_type=fund, date=date(2020, 1, 1), price=1000)
+    SavingCloseFactory(
+        from_account=fund, to_account=bank, date=date(2021, 1, 1), price=100
+    )
+    SavingFactory(account=bank, saving_type=fund, date=date(2022, 1, 1), price=500)
+    data = {
+        "date": "2023-01-01",
+        "price": "15",
+        "from_account": fund.pk,
+        "to_account": bank.pk,
+        "close": "on",
+    }
+    client_logged.post(reverse("transactions:savings_close_new"), data)
+    sell = models.SavingClose.objects.get(date=date(2023, 1, 1))
+    assert SavingType.objects.get(pk=fund.pk).closed == 2023
+
+    edit(client_logged, sell, other)
+
+    assert SavingType.objects.get(pk=fund.pk).closed is None
+    years = SavingBalance.objects.filter(saving_type=fund).values_list("year")
+    assert {year for (year,) in years} >= {2020, 2021, 2022, 2023}
 
 
 def test_savings_change_not_show_other_journal_types(client_logged, second_user):

@@ -3,11 +3,13 @@ from typing import Callable, NamedTuple
 
 import pytest
 from django.db import connection
+from django.forms.models import model_to_dict
 from django.test.utils import CaptureQueriesContext
 
 from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping import balance_sources
+from ...savings.forms import SavingTypeForm
 from ...savings.models import SavingBalance, SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
@@ -541,31 +543,29 @@ def test_form_earlier_move_edited_keeps_the_fund_closed_in_its_last_year(
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(
-    main_user, move, fund, receiver
+@pytest.mark.parametrize(
+    "first_day, second_day",
+    [
+        pytest.param("1999-12-01", "1999-06-01", id="before_the_last"),
+        pytest.param("1999-06-01", "1999-12-01", id="after_the_last"),
+    ],
+)
+def test_form_new_unticked_move_keeps_the_fund_closed(
+    main_user, move, fund, receiver, first_day, second_day
 ):
-    _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
+    _saved_move(main_user, move, fund, receiver, first_day, True)
 
-    _saved_move(main_user, move, fund, receiver, "1999-06-01", False)
+    _saved_move(main_user, move, fund, receiver, second_day, False)
 
     fund.refresh_from_db()
     assert fund.closed == 1999
 
 
 @pytest.mark.parametrize("move", MOVES)
-@pytest.mark.parametrize(
-    "first_day, first_close, second_day",
-    [
-        pytest.param("1999-06-01", True, "1999-12-01", id="unticked_after_the_last"),
-        pytest.param("2000-12-01", False, "2000-06-01", id="unticked_before_the_last"),
-    ],
-)
-def test_form_new_unticked_move_leaves_the_fund_open(
-    main_user, move, fund, receiver, first_day, first_close, second_day
-):
-    _saved_move(main_user, move, fund, receiver, first_day, first_close)
+def test_form_new_unticked_move_leaves_the_fund_open(main_user, move, fund, receiver):
+    _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
 
-    _saved_move(main_user, move, fund, receiver, second_day, False)
+    _saved_move(main_user, move, fund, receiver, "2000-06-01", False)
 
     fund.refresh_from_db()
     assert fund.closed is None
@@ -588,20 +588,27 @@ def test_form_closing_move_moved_to_another_fund_reopens_the_first(
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_move_moved_away_leaves_the_first_closed_at_its_last_move(
-    main_user, move, receiver
+@pytest.mark.parametrize(
+    "second_closed",
+    [
+        pytest.param(None, id="onto_an_open_fund"),
+        pytest.param(2001, id="onto_a_closed"),
+    ],
+)
+def test_form_closing_move_moved_away_unticked_reopens_the_first(
+    main_user, move, receiver, second_closed
 ):
     first = SavingTypeFactory(title="First")
-    second = SavingTypeFactory(title="Second")
+    second = SavingTypeFactory(title="Second", closed=second_closed)
     _saved_move(main_user, move, first, receiver, "1999-06-01", False)
     row = _saved_move(main_user, move, first, receiver, "2000-12-01", True)
 
     _saved_move(main_user, move, second, receiver, "2000-12-01", False, row)
 
     first.refresh_from_db()
-    assert first.closed == 1999
+    assert first.closed is None
     second.refresh_from_db()
-    assert second.closed is None
+    assert second.closed == second_closed
 
 
 @pytest.mark.parametrize("move", MOVES)
@@ -617,6 +624,41 @@ def test_form_edit_of_an_earlier_move_does_not_write_a_closed_fund(
     assert _fund_updates(queries.captured_queries) == []
     fund.refresh_from_db()
     assert fund.closed == 1999
+
+
+@pytest.mark.parametrize("move", MOVES)
+@pytest.mark.parametrize(
+    "box",
+    [
+        pytest.param(lambda form: form["close"].initial, id="as_rendered"),
+        pytest.param(lambda form: False, id="unticked"),
+    ],
+)
+def test_form_edit_of_a_move_keeps_a_close_year_set_on_the_fund_form(
+    main_user, move, fund, receiver, box
+):
+    row = _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
+    fund_form = SavingTypeForm(
+        user=main_user,
+        today=TODAY,
+        instance=fund,
+        data=model_to_dict(fund) | {"closed": 2001},
+    )
+    assert fund_form.is_valid()
+    fund_form.save()
+
+    close = box(MOVES[move].form(user=main_user, today=TODAY, instance=row))
+    form = MOVES[move].form(
+        user=main_user,
+        today=TODAY,
+        instance=row,
+        data=_move_data(fund, receiver, "1999-01-01", close) | {"price": "6"},
+    )
+    assert form.is_valid()
+    form.save()
+
+    fund.refresh_from_db()
+    assert fund.closed == 2001
 
 
 @pytest.mark.parametrize("move", MOVES)
