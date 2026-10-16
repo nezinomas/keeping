@@ -1,9 +1,9 @@
-from datetime import date, timedelta
+from datetime import date
 
-from dateutil.relativedelta import relativedelta
 from django.db.models import Case, Count, F, IntegerField, Q, Sum, Value, When
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
+from ...core.lib.date import last_months_window
 from ...core.lib.table_columns import SAVINGS
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import (
@@ -85,22 +85,17 @@ class SavingModelService(SumMixin, DatedModelService):
             self._account_charged(), year, month, sum_column="fee"
         ).annotate(title=Value("savings_account_fee"))
 
-    def spent_last_months(self, months: int = 6):
+    def spent_last_months(self, today: date, months: int = 6):
         """`last_months` with the account-charged fees, which leave on top of it."""
-        return self._in_last_months(self.objects, months).aggregate(
+        return self._in_last_months(today, months).aggregate(
             sum=Coalesce(Sum(self._cash_out()), 0)
         )
 
     def _account_charged(self):
         return self.objects.filter(CHARGED, fee__gt=0)
 
-    def _in_last_months(self, qs, months: int):
-        start = date.today().replace(day=1) - timedelta(days=1)
-
-        # back months to past; if months=6 then end=2019-08-01
-        end = (start + timedelta(days=1)) - relativedelta(months=months)
-
-        return qs.filter(date__range=(end, start))
+    def _in_last_months(self, today: date, months: int):
+        return self.objects.filter(date__range=last_months_window(today, months))
 
     def sum_by_month_and_type(self, year: int):
         return (
@@ -125,14 +120,9 @@ class SavingModelService(SumMixin, DatedModelService):
             title=Value(SAVINGS)
         )
 
-    def last_months(self, months: int = 6):
-        """
-        Calculates the total sum of savings for the last `months` months.
-        If today is 2020-02-15 and months=6, it will calculate
-        the sum from 2019-08-01 to 2020-01-31.
-        - If there are no savings in that period, it will return 0.
-        """
-        return self._in_last_months(self.objects, months).aggregate(
+    def last_months(self, today: date, months: int = 6):
+        """The savings of the `months` whole months before `today`'s."""
+        return self._in_last_months(today, months).aggregate(
             sum=Coalesce(Sum("price"), 0)
         )
 

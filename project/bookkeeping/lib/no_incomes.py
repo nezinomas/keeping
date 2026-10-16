@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from datetime import date
 
 from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
@@ -93,7 +94,7 @@ class NoIncomes:
         return incomes / expenses if expenses else 0
 
 
-def load_service(user: User, year: int, months: int = 6) -> dict:
+def load_service(user: User, year: int, today: date, months: int = 6) -> dict:
 
     # 1. Fetch Unnecessary Titles
     unnecessary_ids = (
@@ -112,7 +113,7 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
     savings_data = {}
     if user.journal.unnecessary_savings:
         unnecessary_titles.append(str(_("Savings")))
-        savings_data = SavingModelService(user).spent_last_months(months=months)
+        savings_data = SavingModelService(user).spent_last_months(today, months)
 
     # 3. Build Pure Data Object
     data_payload = Data(
@@ -137,7 +138,7 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
                 "worth"
             ]
         ),
-        expenses=list(ExpenseModelService(user).last_months(months=months)),
+        expenses=list(ExpenseModelService(user).last_months(today, months)),
         savings=savings_data,
         unnecessary=unnecessary_titles,
     )

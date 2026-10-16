@@ -28,6 +28,8 @@ from .factories import (
 
 pytestmark = pytest.mark.django_db
 
+TODAY = date(1999, 6, 1)
+
 
 def test_expense_type_str():
     expense_type = ExpenseTypeFactory.build()
@@ -368,27 +370,24 @@ def test_month_name_sum(main_user):
 
 
 @factory.django.mute_signals(post_save)
-@time_machine.travel("1999-06-01")
 def test_expense_last_months(main_user):
     ExpenseFactory(date=date(1998, 11, 30), price=3)
     ExpenseFactory(date=date(1998, 12, 31), price=4)
     ExpenseFactory(date=date(1999, 1, 1), price=7)
 
-    actual = ExpenseModelService(main_user).last_months(6)
+    actual = ExpenseModelService(main_user).last_months(TODAY, 6)
 
     assert [(a["sum"], a["title"]) for a in actual] == [(11, "Expense Type")]
 
 
-@time_machine.travel("1999-06-01")
 @factory.django.mute_signals(post_save)
 def test_expense_last_months_empty_expenses(main_user):
     ExpenseTypeFactory()
 
-    actual = ExpenseModelService(main_user).last_months(6)
+    actual = ExpenseModelService(main_user).last_months(TODAY, 6)
     assert not actual
 
 
-@time_machine.travel("1999-06-01")
 @factory.django.mute_signals(post_save)
 def test_expense_last_months_one_of_expenses_empty(main_user):
     used_type = ExpenseTypeFactory(title="T1")
@@ -396,18 +395,17 @@ def test_expense_last_months_one_of_expenses_empty(main_user):
 
     ExpenseFactory(date=date(1999, 1, 1), price=3, expense_type=used_type)
 
-    actual = ExpenseModelService(main_user).last_months(6)
+    actual = ExpenseModelService(main_user).last_months(TODAY, 6)
 
     assert [(a["sum"], a["title"]) for a in actual] == [(3, "T1")]
 
 
 @factory.django.mute_signals(post_save)
-@time_machine.travel("1999-06-01")
 def test_expense_last_months_qs_count(main_user, django_assert_max_num_queries):
     ExpenseFactory(date=date(1999, 1, 1), price=2)
 
     with django_assert_max_num_queries(1):
-        list(ExpenseModelService(main_user).last_months())
+        list(ExpenseModelService(main_user).last_months(TODAY))
 
 
 @factory.django.mute_signals(post_save)
