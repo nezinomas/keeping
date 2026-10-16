@@ -13,6 +13,8 @@ from ...core.services.model_services import (
 )
 from .. import models
 
+CHARGED = Q(saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT)
+
 
 class SavingTypeModelService(BaseModelService):
     def get_queryset(self):
@@ -85,16 +87,12 @@ class SavingModelService(SumMixin, DatedModelService):
 
     def spent_last_months(self, months: int = 6):
         """`last_months` with the account-charged fees, which leave on top of it."""
-        charged = Q(saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT)
         return self._in_last_months(self.objects, months).aggregate(
-            sum=Coalesce(Sum("price"), 0) + Coalesce(Sum("fee", filter=charged), 0)
+            sum=Coalesce(Sum(self._cash_out()), 0)
         )
 
     def _account_charged(self):
-        return self.objects.filter(
-            saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
-            fee__gt=0,
-        )
+        return self.objects.filter(CHARGED, fee__gt=0)
 
     def _in_last_months(self, qs, months: int):
         start = date.today().replace(day=1) - timedelta(days=1)
@@ -168,10 +166,7 @@ class SavingModelService(SumMixin, DatedModelService):
     def _cash_out():
         """What a purchase takes from its account."""
         return Case(
-            When(
-                saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
-                then=F("price") + F("fee"),
-            ),
+            When(CHARGED, then=F("price") + F("fee")),
             default=F("price"),
             output_field=IntegerField(),
         )
