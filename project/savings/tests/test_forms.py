@@ -456,6 +456,36 @@ def test_saving_invalid_date(main_user, year):
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
+@pytest.mark.parametrize(
+    "posted, errors",
+    [
+        pytest.param(
+            "2000-01-01", {"date": ["Fondas uždarytas 1999."]}, id="after_closed"
+        ),
+        pytest.param("1999-12-31", {}, id="closed_year"),
+        pytest.param("1998-12-31", {}, id="before_closed"),
+    ],
+)
+def test_saving_date_after_the_fund_closed(main_user, posted, errors):
+    main_user.journal.first_record = date(1998, 1, 1)
+    main_user.journal.save()
+    a = AccountFactory()
+    t = SavingTypeFactory(closed=1999)
+
+    form = SavingForm(
+        user=main_user,
+        today=TODAY,
+        data={
+            "date": posted,
+            "price": "10",
+            "account": a.pk,
+            "saving_type": t.pk,
+        },
+    )
+
+    assert form.errors == errors
+
+
 def test_saving_blank_data(main_user):
     form = SavingForm(user=main_user, today=TODAY, data={})
 

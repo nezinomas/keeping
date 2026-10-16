@@ -9,7 +9,8 @@ from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.lib.utils import int_or_zero
-from ..core.mixins.forms import YearBetweenMixin
+from ..core.mixins.forms import ClosedYearMixin, YearBetweenMixin
+from ..savings.forms import FUND_CLOSED
 from ..savings.services.model_services import (
     SavingTypeModelService,
 )
@@ -106,12 +107,14 @@ class CloseFromAccountMixin:
 
 
 class SavingCloseForm(
+    ClosedYearMixin,
     NeverEmptyFormMixin,
     CloseFromAccountMixin,
     PriceToCentsFormMixin,
     YearBetweenMixin,
     forms.ModelForm,
 ):
+    closed_fields = {"from_account": (FUND_CLOSED, "date")}
     price_fields = ("price", "fee")
     _never_empty = ("fee",)
 
@@ -152,12 +155,17 @@ class SavingCloseForm(
 
 
 class SavingChangeForm(
+    ClosedYearMixin,
     NeverEmptyFormMixin,
     CloseFromAccountMixin,
     PriceToCentsFormMixin,
     YearBetweenMixin,
     forms.ModelForm,
 ):
+    closed_fields = {
+        "from_account": (FUND_CLOSED, "date"),
+        "to_account": (FUND_CLOSED, "to_account"),
+    }
     price_fields = ("price", "fee")
     _never_empty = ("fee",)
 

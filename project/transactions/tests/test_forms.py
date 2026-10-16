@@ -179,6 +179,31 @@ def test_form_invalid_date(main_user, name, year):
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
+@pytest.mark.parametrize(
+    "name, field, error_field",
+    [
+        pytest.param("saving_change", "to_account", "to_account", id="switch_into"),
+        pytest.param("saving_change", "from_account", "date", id="switch_out_of"),
+        pytest.param("saving_close", "from_account", "date", id="sell_out_of"),
+    ],
+)
+def test_form_date_after_the_fund_closed(main_user, name, field, error_field):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
+    closed = {"from_account": a_from, "to_account": a_to}[field]
+    closed.closed = 1999
+    closed.save()
+
+    form = kind.form(
+        user=main_user,
+        today=TODAY,
+        data=_post(a_from, a_to, date="2000-03-01", price="1.0"),
+    )
+
+    assert not form.is_valid()
+    assert form.errors == {error_field: ["Fondas uždarytas 1999."]}
+
+
 @pytest.mark.parametrize("name", KINDS)
 def test_form_blank_data(main_user, name):
     form = KINDS[name].form(user=main_user, today=TODAY, data={})
@@ -377,15 +402,21 @@ def test_form_unticked_close_does_not_write_an_open_fund(
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_edit_with_close_ticked_moves_the_close_year(
+def test_form_closing_move_edited_past_the_close_year_is_rejected(
     main_user, move, fund, receiver
 ):
     row = _saved_move(main_user, move, fund, receiver, "1999-01-01", True)
     assert SavingType.objects.get(pk=fund.pk).closed == 1999
 
-    _saved_move(main_user, move, fund, receiver, "2000-01-01", True, row)
+    form = MOVES[move].form(
+        user=main_user,
+        today=TODAY,
+        instance=row,
+        data=_move_data(fund, receiver, "2000-01-01", True),
+    )
 
-    assert SavingType.objects.get(pk=fund.pk).closed == 2000
+    assert form.errors == {"date": ["Fondas uždarytas 1999."]}
+    assert SavingType.objects.get(pk=fund.pk).closed == 1999
 
 
 @pytest.mark.parametrize("move", MOVES)

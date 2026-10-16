@@ -7,7 +7,7 @@ from ..core.lib.convert_price import PriceNeverEmptyFormMixin, PriceToCentsFormM
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField, pin
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
-from ..core.mixins.forms import YearBetweenMixin
+from ..core.mixins.forms import ClosedYearMixin, YearBetweenMixin
 from .models import Saving, SavingType
 from .services.model_services import SavingTypeModelService
 
@@ -35,8 +35,13 @@ class SavingTypeForm(forms.ModelForm):
 
 
 class SavingForm(
-    PriceToCentsFormMixin, PriceNeverEmptyFormMixin, YearBetweenMixin, forms.ModelForm
+    ClosedYearMixin,
+    PriceToCentsFormMixin,
+    PriceNeverEmptyFormMixin,
+    YearBetweenMixin,
+    forms.ModelForm,
 ):
+    closed_fields = {"saving_type": (FUND_CLOSED, "date")}
     price_fields = ("price", "fee")
     price = CommaFloatField(min_value=0, required=False)
     fee = CommaFloatField(min_value=0, required=False)
