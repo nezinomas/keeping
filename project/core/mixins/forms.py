@@ -56,6 +56,22 @@ class ClosedYearMixin:
         return cleaned
 
 
+class CloseNotBeforeRowsMixin:
+    # each form names latest_row_year(): core names no app
+
+    def clean_closed(self):
+        closed = self.cleaned_data["closed"]
+        if not closed:
+            return closed
+
+        latest = self.latest_row_year()
+        if closed < latest:
+            msg = _("Cannot close before %(year)s: there are records in that year.")
+            raise ValidationError(msg % {"year": latest})
+
+        return closed
+
+
 class YearNotLaterMixin:
     def clean_date(self):
         dt = self.cleaned_data["date"]
