@@ -31,7 +31,7 @@ class Chart:
     invested: list = field(init=False, default_factory=list)
     profit: list = field(init=False, default_factory=list)
     total: list = field(init=False, default_factory=list)
-    proc: float = field(init=False, default=0.0)
+    proc: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.text_total = _("Total")

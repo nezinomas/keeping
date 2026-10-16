@@ -225,7 +225,6 @@ def test_saving_years_sum(main_user):
             [(1999, 2)],
             id="year_sum",
         ),
-        pytest.param(lambda s: s.last_months(TODAY), {"sum": 2}, id="last_months"),
     ],
 )
 def test_saving_read_query_count(
@@ -306,28 +305,6 @@ def test_saving_months_sum_takes_no_month(main_user):
 def test_saving_query_count(main_user, django_assert_max_num_queries, query):
     with django_assert_max_num_queries(1):
         query(SavingModelService(main_user))
-
-
-@factory.django.mute_signals(post_save)
-@pytest.mark.parametrize(
-    "savings, expect",
-    [
-        (
-            [(date(1998, 11, 30), 3), (date(1998, 12, 31), 4), (date(1999, 1, 1), 7)],
-            11,
-        ),
-        ([], 0),
-    ],
-    ids=["sums_the_window", "empty_savings"],
-)
-def test_saving_last_months(main_user, savings, expect):
-    SavingTypeFactory()
-    for day, price in savings:
-        SavingFactory(date=day, price=price)
-
-    actual = SavingModelService(main_user).last_months(TODAY, 6)
-
-    assert actual["sum"] == expect
 
 
 @pytest.mark.parametrize("price, fee", [(150, 5), (10, 2)])
@@ -657,7 +634,6 @@ SAVINGS_SUMS = {
     "sum_by_day": lambda s: list(s.sum_by_day(1999, 1)),
     "sum_by_month_and_type": lambda s: list(s.sum_by_month_and_type(1999)),
     "sum_by_day_and_type": lambda s: list(s.sum_by_day_and_type(1999, 1)),
-    "last_months": lambda s: [s.last_months(TODAY, 6)],
 }
 
 

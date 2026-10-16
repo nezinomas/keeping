@@ -91,59 +91,31 @@ class NoIncomes:
         self.cut_sum = (cut_sum + savings_val) / self.months
 
     def _div(self, incomes: float, expenses: float) -> float:
-        return incomes / expenses if expenses else 0
+        return incomes / expenses if expenses else 0.0
 
 
 def load_service(user: User, year: int, today: date, months: int = 6) -> dict:
+    unnecessary = _unnecessary_expense_titles(user)
 
-    # 1. Fetch Unnecessary Titles
-    unnecessary_ids = (
-        json.loads(user.journal.unnecessary_expenses)
-        if user.journal.unnecessary_expenses
-        else []
-    )
-    unnecessary_titles = list(
-        ExpenseTypeModelService(user)
-        .items()
-        .filter(pk__in=unnecessary_ids)
-        .values_list("title", flat=True)
-    )
-
-    # 2. Fetch Savings
-    savings_data = {}
+    savings = {}
     if user.journal.unnecessary_savings:
-        unnecessary_titles.append(str(_("Savings")))
-        savings_data = SavingModelService(user).spent_last_months(today, months)
+        unnecessary.append(str(_("Savings")))
+        savings = SavingModelService(user).spent_last_months(today, months)
 
-    # 3. Build Pure Data Object
-    data_payload = Data(
+    data = Data(
         account_sum=(
             AccountBalanceModelService(user)
             .year(year)
             .aggregate(Sum("balance", default=0))["balance__sum"]
         ),
-        fund_sum=(
-            SavingBalanceModelService(user)
-            .items()
-            .filter(year=year, saving_type__type__in=["shares", "funds"])
-            .aggregate(worth=Sum("market_value", filter=FRESH_WORTH, default=0))[
-                "worth"
-            ]
-        ),
-        pension_sum=(
-            SavingBalanceModelService(user)
-            .items()
-            .filter(year=year, saving_type__type="pensions")
-            .aggregate(worth=Sum("market_value", filter=FRESH_WORTH, default=0))[
-                "worth"
-            ]
-        ),
+        fund_sum=_fresh_worth(user, year, ["shares", "funds"]),
+        pension_sum=_fresh_worth(user, year, ["pensions"]),
         expenses=list(ExpenseModelService(user).last_months(today, months)),
-        savings=savings_data,
-        unnecessary=unnecessary_titles,
+        savings=savings,
+        unnecessary=unnecessary,
     )
 
-    obj = NoIncomes(data_payload, months=months)
+    obj = NoIncomes(data, months=months)
 
     return {
         "no_incomes": obj.summary,
@@ -151,3 +123,23 @@ def load_service(user: User, year: int, today: date, months: int = 6) -> dict:
         "not_use": obj.unnecessary,
         "avg_expenses": obj.avg_expenses,
     }
+
+
+def _unnecessary_expense_titles(user: User) -> list[str]:
+    ids = json.loads(user.journal.unnecessary_expenses or "[]")
+
+    return list(
+        ExpenseTypeModelService(user)
+        .items()
+        .filter(pk__in=ids)
+        .values_list("title", flat=True)
+    )
+
+
+def _fresh_worth(user: User, year: int, types: list[str]) -> float:
+    return (
+        SavingBalanceModelService(user)
+        .items()
+        .filter(year=year, saving_type__type__in=types)
+        .aggregate(worth=Sum("market_value", filter=FRESH_WORTH, default=0))["worth"]
+    )
