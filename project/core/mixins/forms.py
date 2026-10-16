@@ -38,6 +38,24 @@ class OneTargetAYearMixin:
         return year
 
 
+class ClosedYearMixin:
+    # closed_fields = {field: (message with %(year)s, error field)}; core names no app
+
+    def clean(self):
+        cleaned = super().clean()
+        dt = cleaned.get("date")
+        if not dt:
+            return cleaned
+
+        for field, (message, error_field) in self.closed_fields.items():
+            value = cleaned.get(field)
+            if not value or not value.closed:
+                continue
+            if dt.year > value.closed:
+                self.add_error(error_field, message % {"year": value.closed})
+        return cleaned
+
+
 class YearNotLaterMixin:
     def clean_date(self):
         dt = self.cleaned_data["date"]
