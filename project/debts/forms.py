@@ -1,16 +1,17 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from ..accounts.forms import ACCOUNT_CLOSED
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceToCentsFormMixin, float_to_int_cents
-from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField, pin
-from ..core.lib.form_widgets import DatePickerWidget
-from ..core.mixins.forms import ClosedYearMixin, YearBetweenMixin
+from ..core.lib.form_fields import CommaFloatField, date_field, pin
+from ..core.mixins.forms import ClosedYearMixin, UserTodayMixin, YearBetweenMixin
 from . import models
 from .services.model_services import DebtModelService, DebtReturnModelService
+
+CANT_CLOSE = gettext_lazy("You can't close a debt that hasn't been returned.")
 
 
 def _other_party_label(debt_type):
@@ -20,26 +21,27 @@ def _other_party_label(debt_type):
     }[debt_type]
 
 
-class DebtFormMixin(ClosedYearMixin, PriceToCentsFormMixin, YearBetweenMixin):
+class DebtFormMixin(
+    UserTodayMixin, ClosedYearMixin, PriceToCentsFormMixin, YearBetweenMixin
+):
     """The date, account and remark every debt form sets up and checks the same way."""
 
     closed_fields = {"account": (ACCOUNT_CLOSED, "date")}
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        self.today = kwargs.pop("today")
         self.debt_type = kwargs.pop("debt_type")
 
         super().__init__(*args, **kwargs)
 
-        self.fields["remark"].widget.attrs["rows"] = 3
-
+        self.remark_field_settings()
         self.date_field_settings()
         self.account_field_settings()
 
+    def remark_field_settings(self):
+        self.fields["remark"].widget.attrs["rows"] = 3
+
     def date_field_settings(self):
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
+        date_field(self.fields["date"], self.user, self.today)
 
     def account_field_settings(self):
         accounts = AccountModelService(self.user).items()
@@ -80,37 +82,45 @@ class DebtForm(DebtFormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        name = cleaned_data.get("name")
-        closed = cleaned_data.get("closed")
-        price = cleaned_data.get("price")
+        self._check_name_unique(cleaned_data)
+        self._check_close(cleaned_data)
+        self._check_price(cleaned_data)
 
-        if (
-            not closed
-            and name != self.instance.name
-            and DebtModelService(self.user, self.debt_type)
-            .items()
-            .filter(name=name)
-            .exists()
-        ):
+        return cleaned_data
+
+    def _check_name_unique(self, cleaned_data):
+        name = cleaned_data.get("name")
+
+        if cleaned_data.get("closed") or name == self.instance.name:
+            return
+
+        taken = DebtModelService(self.user, self.debt_type).items().filter(name=name)
+        if taken.exists():
             self.add_error("name", _("The name must be unique."))
 
-        _msg_cant_close = _("You can't close a debt that hasn't been returned.")
-        if not self.instance.pk and closed:
-            self.add_error("closed", _msg_cant_close)
+    def _check_close(self, cleaned_data):
+        if not cleaned_data.get("closed"):
+            return
+
+        if not self.instance.pk:
+            self.add_error("closed", CANT_CLOSE)
+            return
 
         # an invalid price already has its field error and nothing to compare
         if "price" not in cleaned_data:
-            return cleaned_data
+            return
 
-        if self.instance.pk and closed and self.instance.returned != price:
-            self.add_error("closed", _msg_cant_close)
+        if self.instance.returned != cleaned_data["price"]:
+            self.add_error("closed", CANT_CLOSE)
 
-        if self.instance.pk and price < self.instance.returned:
+    def _check_price(self, cleaned_data):
+        if not self.instance.pk or "price" not in cleaned_data:
+            return
+
+        if cleaned_data["price"] < self.instance.returned:
             self.add_error(
                 "price", _("The debt can't be less than what has been returned.")
             )
-
-        return cleaned_data
 
 
 class DebtReturnForm(DebtFormMixin, forms.ModelForm):

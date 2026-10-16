@@ -10,11 +10,10 @@ from ..accounts.forms import ACCOUNT_CLOSED
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib import table_columns
 from ..core.lib.convert_price import PriceToCentsFormMixin
-from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField, pin
-from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
+from ..core.lib.form_fields import CommaFloatField, date_field, pin
+from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.utils import int_or_zero
-from ..core.mixins.forms import ClosedYearMixin, YearNotLaterMixin
+from ..core.mixins.forms import ClosedYearMixin, UserTodayMixin, YearNotLaterMixin
 from .models import DEFAULT_QUANTITY, Expense, ExpenseName, ExpenseType
 from .services.model_services import (
     ExpenseNameModelService,
@@ -79,6 +78,7 @@ class ExpenseNameChoicesMixin:
 
 
 class ExpenseForm(
+    UserTodayMixin,
     ClosedYearMixin,
     ExpenseNameChoicesMixin,
     PriceToCentsFormMixin,
@@ -121,8 +121,6 @@ class ExpenseForm(
     ]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -131,17 +129,18 @@ class ExpenseForm(
         self._overwrite_expense_name_query()
         self._set_htmx_attributes()
         self._translate_fields()
+        self._set_widgets()
 
-        self.fields["date"].widget = DatePickerWidget()
-
+    def _set_widgets(self):
         self.fields["price"].widget = forms.TextInput(attrs={"readonly": True})
         self.fields["remark"].widget.attrs["rows"] = 3
 
     def _initial_fields_values(self):
+        date_field(self.fields["date"], self.user, self.today)
+
         if self.instance.pk:
             return
 
-        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
         if account := AccountModelService(self.user).items().first():
             self.fields["account"].initial = account
         self.fields["price"].initial = "0.00"
@@ -197,17 +196,15 @@ class ExpenseForm(
         return image
 
 
-class ExpenseTypeForm(forms.ModelForm):
+class ExpenseTypeForm(UserTodayMixin, forms.ModelForm):
     class Meta:
         model = ExpenseType
         fields = ["journal", "title", "necessary"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        pin(self.fields["journal"], user.journal)
+        pin(self.fields["journal"], self.user.journal)
 
         self.fields["title"].label = _("Title")
         self.fields["necessary"].label = _("Necessary")
@@ -221,7 +218,7 @@ class ExpenseTypeForm(forms.ModelForm):
         return title
 
 
-class ExpenseNameForm(forms.ModelForm):
+class ExpenseNameForm(UserTodayMixin, forms.ModelForm):
     class Meta:
         model = ExpenseName
         fields = ["parent", "title", "valid_for"]
@@ -233,11 +230,9 @@ class ExpenseNameForm(forms.ModelForm):
     field_order = ["parent", "title", "valid_for"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["parent"].queryset = ExpenseTypeModelService(user).items()
+        self.fields["parent"].queryset = ExpenseTypeModelService(self.user).items()
 
         self.fields["parent"].label = _("Expense type")
         self.fields["title"].label = _("Expense name")

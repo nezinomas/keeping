@@ -50,6 +50,16 @@ def test_debt_initial_values(main_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
+@pytest.mark.parametrize(
+    "form_class", [forms.DebtForm, forms.DebtReturnForm], ids=lambda c: c.__name__
+)
+def test_debt_forms_date_and_remark_widgets(main_user, form_class):
+    form = form_class(user=main_user, today=TODAY, debt_type="lend")
+
+    assert form["date"].widget_type == "datepicker"
+    assert form["remark"].field.widget.attrs["rows"] == 3
+
+
 def test_debt_select_first_account(main_user, second_user):
     AccountFactory(title="A1", journal=second_user.journal)
 
@@ -259,9 +269,10 @@ def test_debt_cant_close(main_user):
     assert form.errors["closed"] == ["Negalite uždaryti dar negražintos skolos."]
 
 
+@pytest.mark.parametrize("closed", [False, True], ids=["open", "closed"])
 @pytest.mark.parametrize("price", ["abc", "0"])
-def test_debt_edit_with_an_invalid_price_is_a_field_error(main_user, price):
-    obj = factories.LendFactory(price=10000, returned=5000)
+def test_debt_edit_with_an_invalid_price_is_a_field_error(main_user, price, closed):
+    obj = factories.LendFactory(price=10000, returned=5000, closed=closed)
     data = model_to_dict(obj) | {"price": price}
 
     form = forms.DebtForm(

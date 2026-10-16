@@ -5,6 +5,7 @@ import pytest
 from django.db import connection
 from django.forms.models import model_to_dict
 from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
 
 from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
@@ -64,6 +65,41 @@ def test_form_fields(main_user, name):
 
     for field in KINDS[name].fields:
         assert field in form
+
+
+@pytest.mark.parametrize("name", KINDS)
+def test_form_date_widget(main_user, name):
+    form = KINDS[name].form(user=main_user, today=TODAY)
+
+    assert form["date"].widget_type == "datepicker"
+
+
+@pytest.mark.parametrize("name", KINDS)
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [("date", "Data"), ("from_account", "Iš sąskaitos"), ("to_account", "Į sąskaitą")],
+)
+def test_form_labels(main_user, name, field, label):
+    form = KINDS[name].form(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
+@pytest.mark.parametrize(
+    "name, url_name",
+    [
+        pytest.param("transaction", "accounts:load", id="transaction"),
+        pytest.param("saving_change", "transactions:load_saving_type", id="change"),
+    ],
+)
+def test_form_from_account_loads_the_to_accounts(main_user, name, url_name):
+    form = KINDS[name].form(user=main_user, today=TODAY)
+
+    html = str(form["from_account"])
+
+    assert f'hx-get="{reverse(url_name)}"' in html
+    assert 'hx-target="#id_to_account"' in html
+    assert 'hx-trigger="change"' in html
 
 
 @pytest.mark.parametrize("name", KINDS)
