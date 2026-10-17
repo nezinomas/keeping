@@ -217,31 +217,7 @@ def test_form_invalid_date(main_user, name, year):
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
-@pytest.mark.parametrize(
-    "name, field, error_field",
-    [
-        pytest.param("saving_change", "to_account", "to_account", id="switch_into"),
-        pytest.param("saving_change", "from_account", "date", id="switch_out_of"),
-        pytest.param("saving_close", "from_account", "date", id="sell_out_of"),
-    ],
-)
-def test_form_date_after_the_fund_closed(main_user, name, field, error_field):
-    kind = KINDS[name]
-    a_from, a_to = _parents(kind)
-    closed = {"from_account": a_from, "to_account": a_to}[field]
-    closed.closed = 1999
-    closed.save()
-
-    form = kind.form(
-        user=main_user,
-        today=TODAY,
-        data=_post(a_from, a_to, date="2000-03-01", price="1.0"),
-    )
-
-    assert not form.is_valid()
-    assert form.errors == {error_field: ["Fondas uždarytas 1999."]}
-
-
+FUND_ERROR = "Fondas uždarytas 1999."
 ACCOUNT_ERROR = (
     "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 1999."
 )
@@ -250,6 +226,27 @@ ACCOUNT_ERROR = (
 @pytest.mark.parametrize(
     "name, fields, posted, errors",
     [
+        pytest.param(
+            "saving_change",
+            ["to_account"],
+            "2000-03-01",
+            {"to_account": [FUND_ERROR]},
+            id="switch_into",
+        ),
+        pytest.param(
+            "saving_change",
+            ["from_account"],
+            "2000-03-01",
+            {"date": [FUND_ERROR]},
+            id="switch_out_of",
+        ),
+        pytest.param(
+            "saving_close",
+            ["from_account"],
+            "2000-03-01",
+            {"date": [FUND_ERROR]},
+            id="sell_out_of",
+        ),
         pytest.param(
             "saving_close",
             ["to_account"],
@@ -290,7 +287,7 @@ ACCOUNT_ERROR = (
         ),
     ],
 )
-def test_form_date_after_the_account_closed(main_user, name, fields, posted, errors):
+def test_form_date_after_the_parent_closed(main_user, name, fields, posted, errors):
     kind = KINDS[name]
     a_from, a_to = _parents(kind)
     for field in fields:

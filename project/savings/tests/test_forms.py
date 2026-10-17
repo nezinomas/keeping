@@ -507,56 +507,43 @@ def test_saving_invalid_date(main_user, year):
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
-@pytest.mark.parametrize(
-    "posted, errors",
-    [
-        pytest.param(
-            "2000-01-01", {"date": ["Fondas uždarytas 1999."]}, id="after_closed"
-        ),
-        pytest.param("1999-12-31", {}, id="closed_year"),
-        pytest.param("1998-12-31", {}, id="before_closed"),
-    ],
-)
-def test_saving_date_after_the_fund_closed(main_user, posted, errors):
-    main_user.journal.first_record = date(1998, 1, 1)
-    main_user.journal.save()
-    a = AccountFactory()
-    t = SavingTypeFactory(closed=1999)
-
-    form = SavingForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "date": posted,
-            "price": "10",
-            "account": a.pk,
-            "saving_type": t.pk,
-        },
-    )
-
-    assert form.errors == errors
-
-
+FUND_ERROR = "Fondas uždarytas 1999."
 ACCOUNT_ERROR = (
     "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 1999."
 )
 
 
 @pytest.mark.parametrize(
-    "fund_closed, posted, errors",
+    "fund_closed, account_closed, posted, errors",
     [
-        pytest.param(None, "2000-03-01", {"date": [ACCOUNT_ERROR]}, id="after_closed"),
-        pytest.param(None, "1999-12-31", {}, id="closed_year"),
         pytest.param(
+            1999, None, "2000-01-01", {"date": [FUND_ERROR]}, id="fund_after_closed"
+        ),
+        pytest.param(1999, None, "1999-12-31", {}, id="fund_closed_year"),
+        pytest.param(1999, None, "1998-12-31", {}, id="fund_before_closed"),
+        pytest.param(
+            None,
             1999,
             "2000-03-01",
-            {"date": ["Fondas uždarytas 1999.", ACCOUNT_ERROR]},
+            {"date": [ACCOUNT_ERROR]},
+            id="account_after_closed",
+        ),
+        pytest.param(None, 1999, "1999-12-31", {}, id="account_closed_year"),
+        pytest.param(
+            1999,
+            1999,
+            "2000-03-01",
+            {"date": [FUND_ERROR, ACCOUNT_ERROR]},
             id="fund_and_account_after_closed",
         ),
     ],
 )
-def test_saving_date_after_the_account_closed(main_user, fund_closed, posted, errors):
-    a = AccountFactory(closed=1999)
+def test_saving_date_after_the_parent_closed(
+    main_user, fund_closed, account_closed, posted, errors
+):
+    main_user.journal.first_record = date(1998, 1, 1)
+    main_user.journal.save()
+    a = AccountFactory(closed=account_closed)
     t = SavingTypeFactory(closed=fund_closed)
 
     form = SavingForm(
