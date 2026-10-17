@@ -1,9 +1,7 @@
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import pin
-from ..core.lib.form_widgets import DatePickerWidget
+from ..core.lib.form_fields import date_field, pin
 from ..core.mixins.forms import UserTodayMixin, YearBetweenMixin
 from .models import Count, CountType
 from .services.model_services import CountTypeModelService
@@ -26,8 +24,7 @@ class CountForm(UserTodayMixin, YearBetweenMixin, forms.ModelForm):
         self._translate_fields()
 
     def _initial_fields_values(self):
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
+        date_field(self.fields["date"], self.user, self.today)
         self.fields["quantity"].initial = 1
 
         if self.counter_type:

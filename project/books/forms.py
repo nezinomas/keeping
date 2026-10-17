@@ -1,8 +1,8 @@
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib.date import set_date_with_user_year, years_to_date
-from ..core.lib.form_fields import pin
+from ..core.lib.date import years_to_date
+from ..core.lib.form_fields import date_field, pin
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import OneTargetAYearMixin, UserTodayMixin, YearBetweenMixin
 from .models import Book, BookTarget
@@ -19,10 +19,8 @@ class BookForm(UserTodayMixin, YearBetweenMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["started"].widget = DatePickerWidget()
+        date_field(self.fields["started"], self.user, self.today)
         self.fields["ended"].widget = DatePickerWidget()
-
-        self.fields["started"].initial = set_date_with_user_year(self.user, self.today)
 
         pin(self.fields["user"], self.user)
 

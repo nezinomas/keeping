@@ -4,9 +4,8 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import pin
+from ..core.lib.form_fields import date_field, pin
 from ..core.lib.form_widgets import (
-    DatePickerWidget,
     DecimalCommaWidget,
     YearPickerWidget,
 )
@@ -41,8 +40,7 @@ class DrinkForm(UserTodayMixin, YearBetweenMixin, forms.ModelForm):
         self.recalculate_stdav_on_opening_form()
 
     def date_field_settings(self):
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
+        date_field(self.fields["date"], self.user, self.today)
 
     def translations(self):
         self.fields["date"].label = _("Date")
