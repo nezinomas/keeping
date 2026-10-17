@@ -5,7 +5,7 @@ from datetime import date
 from django.db.models import Max
 
 from ...savings.models import SavingType
-from ..close_rules import KEEP, CloseRule, Removed
+from ..close_rules import CloseRule, Removed
 
 
 @dataclass(frozen=True)
@@ -16,7 +16,7 @@ class FundCloseYear:
     fund: SavingType
 
     @classmethod
-    def follow(cls, fund_pk: int, close: CloseRule = KEEP) -> None:
+    def follow(cls, fund_pk: int, close: CloseRule) -> None:
         close_year = cls._load(fund_pk)
 
         closed = close.year(close_year.fund.closed, close_year.last_move)
