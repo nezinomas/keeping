@@ -69,6 +69,12 @@ def test_drink_year_initial_value(main_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
+def test_drink_date_widget(main_user):
+    form = DrinkForm(user=main_user, today=TODAY)
+
+    assert form["date"].widget_type == "datepicker"
+
+
 def test_drink_option_initial_value(main_user):
     UserFactory()
 

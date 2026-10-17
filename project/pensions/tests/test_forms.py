@@ -144,6 +144,12 @@ def test_pension_initial_date_is_today_in_the_users_year(main_user):
     assert '<input type="text" name="date" value="1999-03-04"' in form
 
 
+def test_pension_date_widget(main_user):
+    form = PensionForm(user=main_user, today=TODAY)
+
+    assert form["date"].widget_type == "datepicker"
+
+
 def test_pension_blank_data(main_user):
     form = PensionForm(user=main_user, today=TODAY, data={})
 

@@ -5,10 +5,12 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
 from ..accounts.models import Account
-from ..core.lib import date as core_date
 from ..core.lib.convert_price import PriceToCentsFormMixin
-from ..core.lib.form_fields import CommaFloatField, PreloadedModelChoiceField
-from ..core.lib.form_widgets import DatePickerWidget
+from ..core.lib.form_fields import (
+    CommaFloatField,
+    PreloadedModelChoiceField,
+    date_field,
+)
 from ..core.mixins.forms import ClosedYearMixin, UserTodayMixin
 from ..expenses.services.model_services import ExpenseTypeModelService
 from ..pensions.models import PensionType
@@ -31,10 +33,7 @@ class WorthForm(UserTodayMixin, PriceToCentsFormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.now = now
 
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_date_with_user_year(
-            self.user, self.today
-        )
+        date_field(self.fields["date"], self.user, self.today)
         self.fields[self.fund_field].preload(funds)
 
     @property
