@@ -497,9 +497,18 @@ def _move_to_another_fund(client_logged, sell, other):
 
 
 # a partial sell before the closing one does not become the close
-@pytest.mark.parametrize("edit", [_delete, _move_to_another_fund])
+# the grid ends a year after the journal's last savings row; a moved sell keeps 2023
+@pytest.mark.parametrize(
+    "edit, years_after",
+    [
+        pytest.param(_delete, {2020, 2021, 2022, 2023}, id="delete"),
+        pytest.param(
+            _move_to_another_fund, {2020, 2021, 2022, 2023, 2024}, id="move_away"
+        ),
+    ],
+)
 @time_machine.travel("2024-1-1")
-def test_closing_sell_removed_reopens_the_fund(client_logged, edit):
+def test_closing_sell_removed_reopens_the_fund(client_logged, edit, years_after):
     bank = AccountFactory(title="Bank")
     fund = SavingTypeFactory(title="Fund")
     other = SavingTypeFactory(title="Other")
@@ -523,7 +532,7 @@ def test_closing_sell_removed_reopens_the_fund(client_logged, edit):
 
     assert SavingType.objects.get(pk=fund.pk).closed is None
     years = SavingBalance.objects.filter(saving_type=fund).values_list("year")
-    assert {year for (year,) in years} >= {2020, 2021, 2022, 2023}
+    assert {year for (year,) in years} == years_after
 
 
 def test_savings_change_not_show_other_journal_types(client_logged, second_user):
