@@ -169,7 +169,7 @@ class NoIncomes(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = no_incomes.load_service(user, user.selected_year())
+        context = no_incomes.load_service(user, user.selected_year(), date.today())
 
         return super().get_context_data(**kwargs) | context
 
@@ -263,7 +263,7 @@ class SummarySavings(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings.html"
 
     def get_context_data(self, **kwargs):
-        context = services.summary_savings.load(self.request.user)
+        context = services.summary_savings.load(self.request.user, date.today())
         return super().get_context_data(**kwargs) | context
 
 

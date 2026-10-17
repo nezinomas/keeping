@@ -113,3 +113,17 @@ def test_ydays(year, expect):
     actual = lib_date.ydays(year)
 
     assert actual == expect
+
+
+@pytest.mark.parametrize(
+    "today, months, expect",
+    [
+        (date(2020, 2, 15), 6, (date(2019, 8, 1), date(2020, 1, 31))),
+        (date(1999, 6, 1), 6, (date(1998, 12, 1), date(1999, 5, 31))),
+        (date(2000, 3, 31), 1, (date(2000, 2, 1), date(2000, 2, 29))),
+    ],
+)
+def test_last_months_window(today, months, expect):
+    actual = lib_date.last_months_window(today, months)
+
+    assert actual == expect

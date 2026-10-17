@@ -5,6 +5,7 @@ import pytest
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
+from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import (
     AccountWorthFactory,
@@ -71,6 +72,7 @@ WIRING = {
         ["accounts", "debt"],
     ),
     "Pension": Wiring(PensionFactory, {}, ["pensions"], ["pensions"]),
+    "Account": Wiring(AccountFactory, {}, ["accounts"], []),
     "SavingType": Wiring(SavingTypeFactory, {}, ["accounts", "savings"], []),
     "PensionType": Wiring(PensionTypeFactory, {}, ["pensions"], []),
     "AccountWorth": Wiring(AccountWorthFactory, {}, ["accounts"], []),

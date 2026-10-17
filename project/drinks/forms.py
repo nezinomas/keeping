@@ -4,13 +4,12 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import pin
+from ..core.lib.form_fields import date_field, pin
 from ..core.lib.form_widgets import (
-    DatePickerWidget,
     DecimalCommaWidget,
     YearPickerWidget,
 )
-from ..core.mixins.forms import OneTargetAYearMixin, YearBetweenMixin
+from ..core.mixins.forms import OneTargetAYearMixin, UserTodayMixin, YearBetweenMixin
 from .apps import App_name
 from .lib.drink_quantity import DrinkQuantity
 from .lib.drinks_options import MAX_BOTTLES
@@ -18,7 +17,7 @@ from .models import Drink, DrinkTarget
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
 
-class DrinkForm(YearBetweenMixin, forms.ModelForm):
+class DrinkForm(UserTodayMixin, YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Drink
         fields = ["user", "date", "stdav", "option"]
@@ -30,8 +29,6 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "option", "stdav"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.instance.counter_type = App_name
@@ -43,8 +40,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.recalculate_stdav_on_opening_form()
 
     def date_field_settings(self):
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
+        date_field(self.fields["date"], self.user, self.today)
 
     def translations(self):
         self.fields["date"].label = _("Date")
@@ -91,7 +87,7 @@ class QuickAddForm(DrinkForm):
         )
 
 
-class DrinkTargetForm(OneTargetAYearMixin, forms.ModelForm):
+class DrinkTargetForm(UserTodayMixin, OneTargetAYearMixin, forms.ModelForm):
     target_service = DrinkTargetModelService
 
     class Meta:
@@ -106,8 +102,6 @@ class DrinkTargetForm(OneTargetAYearMixin, forms.ModelForm):
     field_order = ["year", "drink_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["year"].initial = self.user.selected_year()
@@ -126,7 +120,7 @@ class DrinkTargetForm(OneTargetAYearMixin, forms.ModelForm):
         )
 
 
-class TypicalYearForm(forms.Form):
+class TypicalYearForm(UserTodayMixin, forms.Form):
     year_from = forms.IntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2100)]
     )
@@ -137,8 +131,6 @@ class TypicalYearForm(forms.Form):
     field_order = ["year_from", "year_to"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         # one query, read twice: the years propose the defaults here and decide
@@ -174,7 +166,7 @@ class TypicalYearForm(forms.Form):
         return cleaned
 
 
-class DrinkCompareForm(forms.Form):
+class DrinkCompareForm(UserTodayMixin, forms.Form):
     year1 = forms.IntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2100)]
     )
@@ -185,8 +177,6 @@ class DrinkCompareForm(forms.Form):
     field_order = ["year1", "year2"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["year1"].label = ""

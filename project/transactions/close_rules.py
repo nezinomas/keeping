@@ -3,29 +3,48 @@ from datetime import date
 
 
 class KeepClose:
-    """No word from the user: a closed fund stays closed, at its last move."""
+    """No word from the user: the close year stays as it is."""
 
     def year(self, closed: int | None, last: date) -> int | None:
-        return last.year if closed else None
+        return closed
 
 
 KEEP = KeepClose()
 
 
-@dataclass(frozen=True)
-class CloseBox:
-    """The *Uždaryti* box as submitted with a move, and the move's dates in its fund:
-    after the save, and before it on an edit."""
+class CloseFund:
+    """The box ticked: the fund closes in its last move's year."""
 
-    ticked: bool
-    dates: tuple[date, ...]
+    def year(self, closed: int | None, last: date) -> int:
+        return last.year
+
+
+CLOSE = CloseFund()
+
+
+class ReopenFund:
+    """The box unticked on the closing move: the fund is open again."""
 
     def year(self, closed: int | None, last: date) -> int | None:
-        if self.ticked:
-            return last.year
+        return None
 
-        # unticked on the move that is, or was, the fund's last one
-        if max(self.dates) >= last:
+
+REOPEN = ReopenFund()
+
+
+@dataclass(frozen=True)
+class Removed:
+    """A move deleted from its fund, or moved to another, as loaded."""
+
+    fund_pk: int
+    day: date
+
+    def year(self, closed: int | None, last: date) -> int | None:
+        # strictly later: a move left on the same day is the closing move now
+        if self.day.year == closed and self.day > last:
             return None
 
-        return KEEP.year(closed, last)
+        return closed
+
+
+CloseRule = KeepClose | CloseFund | ReopenFund | Removed

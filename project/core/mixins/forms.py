@@ -1,10 +1,26 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from ..lib.date import latest_year, years
 
+CLOSE_BEFORE_ROWS = gettext_lazy(
+    "Cannot close before %(year)s: there are records in that year."
+)
+
+
+class UserTodayMixin:
+    """The user and today every view's form kwargs carry (`FormKwargsMixin`)."""
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        self.today = kwargs.pop("today")
+        super().__init__(*args, **kwargs)
+
 
 class YearBetweenMixin:
+    # needs UserTodayMixin's user and today
+
     def clean_date(self):
         dt = self.cleaned_data["date"]
         self.add_error_unless_year_between("date", years(self.user, self.today))
@@ -38,7 +54,42 @@ class OneTargetAYearMixin:
         return year
 
 
+class ClosedYearMixin:
+    # closed_fields = {field: (message with %(year)s, error field)}; core names no app
+
+    def clean(self):
+        cleaned = super().clean()
+        dt = cleaned.get("date")
+        if not dt:
+            return cleaned
+
+        for field, (message, error_field) in self.closed_fields.items():
+            value = cleaned.get(field)
+            if not value or not value.closed:
+                continue
+            if dt.year > value.closed:
+                self.add_error(error_field, message % {"year": value.closed})
+        return cleaned
+
+
+class CloseNotBeforeRowsMixin:
+    # each form names latest_row_year(): core names no app
+
+    def clean_closed(self):
+        closed = self.cleaned_data["closed"]
+        if not closed:
+            return closed
+
+        latest = self.latest_row_year()
+        if closed < latest:
+            raise ValidationError(CLOSE_BEFORE_ROWS % {"year": latest})
+
+        return closed
+
+
 class YearNotLaterMixin:
+    # needs UserTodayMixin's today
+
     def clean_date(self):
         dt = self.cleaned_data["date"]
 

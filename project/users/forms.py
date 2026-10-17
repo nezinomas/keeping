@@ -5,6 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
+from ..core.mixins.forms import UserTodayMixin
 from .models import User
 
 
@@ -36,12 +37,10 @@ class SignUpForm(UserCreationForm):
         return email
 
 
-class InviteForm(forms.Form):
+class InviteForm(UserTodayMixin, forms.Form):
     email = forms.EmailField(max_length=User._meta.get_field("email").max_length)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")

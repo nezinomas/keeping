@@ -9,6 +9,7 @@ from ..core.lib.date import monthnames
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
+from ..core.mixins.forms import UserTodayMixin
 from ..expenses.services.model_services import ExpenseTypeModelService
 from ..incomes.services.model_services import IncomeTypeModelService
 from ..savings.services.model_services import SavingTypeModelService
@@ -50,7 +51,7 @@ COPY_PLANS = {
 }
 
 
-class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
+class CommonPlanFormMixin(UserTodayMixin, PriceToCentsFormMixin, forms.ModelForm):
     price_fields = tuple(monthnames())
 
     january = CommaFloatField(**MONTH_FIELD_KWARGS)
@@ -72,9 +73,6 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        kwargs.pop("today")
-
         super().__init__(*args, **kwargs)
 
         self._setup_year_field()
@@ -289,7 +287,7 @@ class NecessaryPlanForm(CommonPlanFormMixin):
         self.fields["expense_type"].label = _("Expense type")
 
 
-class CopyPlanForm(forms.Form):
+class CopyPlanForm(UserTodayMixin, forms.Form):
     year_from = forms.IntegerField(
         widget=YearPickerWidget(),
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
@@ -300,11 +298,9 @@ class CopyPlanForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self._setup_initial_values(today)
+        self._setup_initial_values()
         self._translate_fields()
         self._add_copy_checkboxes()
 
@@ -343,9 +339,9 @@ class CopyPlanForm(forms.Form):
 
             service.objects.bulk_create(source_rows)
 
-    def _setup_initial_values(self, today):
-        self.fields["year_from"].initial = today.year
-        self.fields["year_to"].initial = today.year + 1
+    def _setup_initial_values(self):
+        self.fields["year_from"].initial = self.today.year
+        self.fields["year_to"].initial = self.today.year + 1
 
     def _translate_fields(self):
         self.fields["year_from"].label = _("Copy from")

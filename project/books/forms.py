@@ -1,15 +1,15 @@
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib.date import set_date_with_user_year, years_to_date
-from ..core.lib.form_fields import pin
+from ..core.lib.date import years_to_date
+from ..core.lib.form_fields import date_field, pin
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
-from ..core.mixins.forms import OneTargetAYearMixin, YearBetweenMixin
+from ..core.mixins.forms import OneTargetAYearMixin, UserTodayMixin, YearBetweenMixin
 from .models import Book, BookTarget
 from .services.model_services import BookTargetModelService
 
 
-class BookForm(YearBetweenMixin, forms.ModelForm):
+class BookForm(UserTodayMixin, YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Book
         fields = ["user", "started", "ended", "author", "title", "remark"]
@@ -17,14 +17,10 @@ class BookForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["started", "ended", "author", "title", "remark"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["started"].widget = DatePickerWidget()
+        date_field(self.fields["started"], self.user, self.today)
         self.fields["ended"].widget = DatePickerWidget()
-
-        self.fields["started"].initial = set_date_with_user_year(self.user, self.today)
 
         pin(self.fields["user"], self.user)
 
@@ -65,7 +61,7 @@ class BookForm(YearBetweenMixin, forms.ModelForm):
         return cleaned
 
 
-class BookTargetForm(OneTargetAYearMixin, forms.ModelForm):
+class BookTargetForm(UserTodayMixin, OneTargetAYearMixin, forms.ModelForm):
     target_service = BookTargetModelService
 
     class Meta:
@@ -77,8 +73,6 @@ class BookTargetForm(OneTargetAYearMixin, forms.ModelForm):
     field_order = ["year", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         pin(self.fields["user"], self.user)

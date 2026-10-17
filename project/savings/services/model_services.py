@@ -1,13 +1,31 @@
-from datetime import date, timedelta
+from datetime import date
 
-from dateutil.relativedelta import relativedelta
-from django.db.models import Case, Count, F, IntegerField, Q, Sum, Value, When
+from django.db.models import (
+    Case,
+    F,
+    IntegerField,
+    Model,
+    Q,
+    QuerySet,
+    Sum,
+    Value,
+    When,
+)
+from django.db.models.expressions import Combinable
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
+from ...core.lib.date import last_months_window
 from ...core.lib.table_columns import SAVINGS
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService, DatedModelService
+from ...core.services.model_services import (
+    BaseModelService,
+    DatedModelService,
+    max_year,
+)
 from .. import models
+
+CHARGED = Q(saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT)
+YearRows = tuple[tuple[QuerySet, Combinable], ...]
 
 
 class SavingTypeModelService(BaseModelService):
@@ -25,6 +43,46 @@ class SavingTypeModelService(BaseModelService):
     def items(self, year=None):
         year = year or self.user.selected_year()
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
+
+    def latest_row_year(self, fund: models.SavingType) -> int:
+        if not fund.pk:
+            return 0
+
+        return max_year(*_rows_but_moves(fund), *_moves(fund))
+
+    def latest_year_but_moves_without(
+        self, fund: models.SavingType, move: Model
+    ) -> int:
+        return max_year(*_without(_rows_but_moves(fund), move))
+
+    def last_move_year_without(self, fund: models.SavingType, move: Model) -> int:
+        return max_year(*_without(_moves(fund), move))
+
+
+def _rows_but_moves(fund: models.SavingType) -> YearRows:
+    year = ExtractYear("date")
+    return (
+        (fund.saving_set.all(), year),
+        (fund.savings_change_to.all(), year),
+        (fund.savings_worth.all(), year),
+        (fund.savingplan_set.all(), F("year")),
+    )
+
+
+def _moves(fund: models.SavingType) -> YearRows:
+    year = ExtractYear("date")
+    return (
+        (fund.savings_close_from.all(), year),
+        (fund.savings_change_from.all(), year),
+    )
+
+
+def _without(rows: YearRows, move: Model) -> YearRows:
+    # a sell and a switch may share a pk: `move` leaves only its own model's rows
+    return tuple(
+        (qs.exclude(pk=move.pk) if qs.model is type(move) else qs, year)
+        for qs, year in rows
+    )
 
 
 class SavingModelService(SumMixin, DatedModelService):
@@ -65,35 +123,25 @@ class SavingModelService(SumMixin, DatedModelService):
             self._account_charged(), year, month, sum_column="fee"
         ).annotate(title=Value("savings_account_fee"))
 
-    def spent_last_months(self, months: int = 6):
-        """`last_months` with the account-charged fees, which leave on top of it."""
-        charged = Q(saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT)
-        return self._in_last_months(self.objects, months).aggregate(
-            sum=Coalesce(Sum("price"), 0) + Coalesce(Sum("fee", filter=charged), 0)
+    def spent_last_months(self, today: date, months: int = 6):
+        """The savings of the `months` whole months before `today`'s, with the
+        account-charged fees, which leave on top of them."""
+        return self._in_last_months(today, months).aggregate(
+            sum=Coalesce(Sum(self._cash_out()), 0)
         )
 
     def _account_charged(self):
-        return self.objects.filter(
-            saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
-            fee__gt=0,
-        )
+        return self.objects.filter(CHARGED, fee__gt=0)
 
-    def _in_last_months(self, qs, months: int):
-        start = date.today().replace(day=1) - timedelta(days=1)
-
-        # back months to past; if months=6 then end=2019-08-01
-        end = (start + timedelta(days=1)) - relativedelta(months=months)
-
-        return qs.filter(date__range=(end, start))
+    def _in_last_months(self, today: date, months: int):
+        return self.objects.filter(date__range=last_months_window(today, months))
 
     def sum_by_month_and_type(self, year: int):
         return (
             self.objects.filter(date__year=year)
-            .annotate(cnt=Count("saving_type"))
             .values("saving_type")
             .annotate(date=TruncMonth("date"))
             .values("date")
-            .annotate(c=Count("id"))
             .annotate(sum=Sum("price"))
             .order_by("saving_type__title", "date")
             .values("date", "sum", title=F("saving_type__title"))
@@ -107,17 +155,6 @@ class SavingModelService(SumMixin, DatedModelService):
     def sum_by_day(self, year: int, month: int):
         return self.day_sum(self.objects, year=year, month=month).annotate(
             title=Value(SAVINGS)
-        )
-
-    def last_months(self, months: int = 6):
-        """
-        Calculates the total sum of savings for the last `months` months.
-        If today is 2020-02-15 and months=6, it will calculate
-        the sum from 2019-08-01 to 2020-01-31.
-        - If there are no savings in that period, it will return 0.
-        """
-        return self._in_last_months(self.objects, months).aggregate(
-            sum=Coalesce(Sum("price"), 0)
         )
 
     def incomes(self):
@@ -150,10 +187,7 @@ class SavingModelService(SumMixin, DatedModelService):
     def _cash_out():
         """What a purchase takes from its account."""
         return Case(
-            When(
-                saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
-                then=F("price") + F("fee"),
-            ),
+            When(CHARGED, then=F("price") + F("fee")),
             default=F("price"),
             output_field=IntegerField(),
         )
