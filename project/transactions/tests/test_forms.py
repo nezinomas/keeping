@@ -1,5 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Callable, NamedTuple
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.db import connection
@@ -10,10 +11,13 @@ from django.urls import reverse
 from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping import balance_sources
+from ...bookkeeping.tests.factories import SavingWorthFactory
+from ...plans.tests.factories import SavingPlanFactory
 from ...savings.forms import SavingTypeForm
 from ...savings.models import SavingBalance, SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
+from .factories import SavingChangeFactory, SavingCloseFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -517,6 +521,117 @@ def test_form_closing_move_edited_past_the_close_year_is_rejected(
 
     assert form.errors == {"date": ["Fondas uždarytas 1999."]}
     assert SavingType.objects.get(pk=fund.pk).closed == 1999
+
+
+FUND_ROWS_IN_2000 = {
+    "buy": lambda fund: SavingFactory(saving_type=fund, date=date(2000, 1, 1)),
+    "switch_in": lambda fund: SavingChangeFactory(
+        to_account=fund, date=date(2000, 1, 1)
+    ),
+    "worth": lambda fund: SavingWorthFactory(
+        saving_type=fund,
+        date=datetime(2000, 6, 1, 12, tzinfo=ZoneInfo("Europe/Vilnius")),
+    ),
+    "plan": lambda fund: SavingPlanFactory(saving_type=fund, year=2000),
+}
+CANT_CLOSE_BEFORE_2000 = {
+    "close": ["Negalima uždaryti anksčiau nei 2000: tais metais yra įrašų."]
+}
+OTHER_KIND = {
+    "sell": lambda fund, **kwargs: SavingChangeFactory(from_account=fund, **kwargs),
+    "switch": lambda fund, **kwargs: SavingCloseFactory(from_account=fund, **kwargs),
+}
+
+
+# each returns the move the ticked form edits; None for a new one, as Django takes it
+def _a_new_move(main_user, move, fund, receiver):
+    return None
+
+
+def _a_later_move_edited(main_user, move, fund, receiver):
+    return _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
+
+
+def _a_later_move_kept(main_user, move, fund, receiver):
+    _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
+
+
+def _a_later_move_of_the_other_kind_with_its_pk(main_user, move, fund, receiver):
+    edited = _saved_move(main_user, move, fund, receiver, "1999-03-01", False)
+    OTHER_KIND[move](fund, pk=edited.pk, date=date(2000, 12, 1))
+    return edited
+
+
+def _a_move_of_another_fund(main_user, move, fund, receiver):
+    elsewhere = SavingTypeFactory(title="Elsewhere")
+    return _saved_move(main_user, move, elsewhere, receiver, "1999-03-01", False)
+
+
+@pytest.mark.parametrize("move", MOVES)
+@pytest.mark.parametrize("row", FUND_ROWS_IN_2000)
+@pytest.mark.parametrize(
+    "setup, day, close, errors",
+    [
+        pytest.param(
+            _a_new_move, "1999-06-01", True, CANT_CLOSE_BEFORE_2000, id="before"
+        ),
+        pytest.param(
+            _a_later_move_edited,
+            "1999-06-01",
+            True,
+            CANT_CLOSE_BEFORE_2000,
+            id="edited_back",
+        ),
+        pytest.param(
+            _a_later_move_kept, "1999-06-01", True, {}, id="a_later_move_closes"
+        ),
+        pytest.param(
+            _a_later_move_of_the_other_kind_with_its_pk,
+            "1999-06-01",
+            True,
+            {},
+            id="a_later_move_of_the_other_kind_closes",
+        ),
+        pytest.param(
+            _a_move_of_another_fund,
+            "1999-06-01",
+            True,
+            CANT_CLOSE_BEFORE_2000,
+            id="moved_onto",
+        ),
+        pytest.param(_a_new_move, "2000-06-01", True, {}, id="in_the_row_year"),
+        pytest.param(_a_new_move, "1999-06-01", False, {}, id="unticked"),
+    ],
+)
+def test_form_tick_closing_before_a_fund_row(
+    main_user, move, fund, receiver, row, setup, day, close, errors
+):
+    edited = setup(main_user, move, fund, receiver)
+    FUND_ROWS_IN_2000[row](fund)
+
+    form = MOVES[move].form(
+        user=main_user,
+        today=TODAY,
+        instance=edited,
+        data=_move_data(fund, receiver, day, close),
+    )
+
+    assert form.errors == errors
+
+
+def test_form_switch_reversed_onto_its_old_target_can_close_it(main_user, fund):
+    source = SavingTypeFactory(title="Source")
+    target = SavingTypeFactory(title="Target")
+    switch = _saved_move(main_user, "switch", source, fund, "2000-12-01", False)
+
+    form = SavingChangeForm(
+        user=main_user,
+        today=TODAY,
+        instance=switch,
+        data=_move_data(fund, target, "1999-06-01", True),
+    )
+
+    assert form.errors == {}
 
 
 @pytest.mark.parametrize("move", MOVES)

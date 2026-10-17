@@ -1,7 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from ..lib.date import latest_year, years
+
+CLOSE_BEFORE_ROWS = gettext_lazy(
+    "Cannot close before %(year)s: there are records in that year."
+)
 
 
 class UserTodayMixin:
@@ -77,8 +82,7 @@ class CloseNotBeforeRowsMixin:
 
         latest = self.latest_row_year()
         if closed < latest:
-            msg = _("Cannot close before %(year)s: there are records in that year.")
-            raise ValidationError(msg % {"year": latest})
+            raise ValidationError(CLOSE_BEFORE_ROWS % {"year": latest})
 
         return closed
 

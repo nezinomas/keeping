@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -8,7 +9,12 @@ from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import NeverEmptyFormMixin, PriceToCentsFormMixin
 from ..core.lib.form_fields import CommaFloatField, date_field
 from ..core.lib.utils import int_or_zero
-from ..core.mixins.forms import ClosedYearMixin, UserTodayMixin, YearBetweenMixin
+from ..core.mixins.forms import (
+    CLOSE_BEFORE_ROWS,
+    ClosedYearMixin,
+    UserTodayMixin,
+    YearBetweenMixin,
+)
 from ..savings.forms import FUND_CLOSED
 from ..savings.services.model_services import SavingTypeModelService
 from .close_rules import CLOSE, KEEP, REOPEN, CloseRule
@@ -103,6 +109,26 @@ class CloseFromAccountMixin:
             self.fields["close"].initial = FundCloseYear.is_closing_move(
                 self.instance.from_account_id, self.instance.date
             )
+
+    def clean_close(self):
+        close = self.cleaned_data["close"]
+        if not {"date", "from_account"} <= self.cleaned_data.keys():
+            return close
+
+        if self._close_rule() is not CLOSE:
+            return close
+
+        fund = self.cleaned_data["from_account"]
+        rows = SavingTypeModelService(self.user)
+        closes_in = max(
+            self.cleaned_data["date"].year,
+            rows.last_move_year_without(fund, self.instance),
+        )
+        latest = rows.latest_year_but_moves_without(fund, self.instance)
+        if latest > closes_in:
+            raise ValidationError(CLOSE_BEFORE_ROWS % {"year": latest})
+
+        return close
 
     def save(self, *args, **kwargs):
         self.instance.close_rule = self._close_rule()
