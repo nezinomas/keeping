@@ -52,6 +52,13 @@ def test_form_year_initial_value(main_user, form_class, expected):
     assert expected in form
 
 
+@pytest.mark.parametrize("field", ["started", "ended"])
+def test_book_date_widgets(main_user, field):
+    form = BookForm(user=main_user, today=TODAY)
+
+    assert form[field].widget_type == "datepicker"
+
+
 @pytest.mark.parametrize(
     "ended",
     ["1999-01-31", "1999-01-01"],

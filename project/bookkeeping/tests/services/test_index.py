@@ -122,10 +122,16 @@ def test_debt_context(kind, context, titles, debt, debt_return):
 )
 def test_index_data_provider_amount_start(main_user, past_by_year, expect):
     main_user.year = 2026
+    # every account is saved before any balance row: an account's save re-syncs
+    accounts = {
+        (year, past): AccountFactory(title=f"{year}-{past}")
+        for year, pasts in past_by_year.items()
+        for past in pasts
+    }
     for year, pasts in past_by_year.items():
         for past in pasts:
             AccountBalanceFactory(
-                account=AccountFactory(title=f"{year}-{past}"),
+                account=accounts[year, past],
                 year=year,
                 past=past,
                 balance=past + 111,

@@ -3,6 +3,7 @@ from django.db import IntegrityError
 from django.urls import reverse
 
 from ...journals.tests.factories import JournalFactory
+from ...users.tests.factories import UserFactory
 from ..models import Account
 from ..services.model_services import AccountBalanceModelService, AccountModelService
 from .factories import AccountBalanceFactory, AccountFactory
@@ -64,11 +65,11 @@ def test_account_items_keep_the_accounts_open_in_the_users_year(main_user):
 
 
 def test_account_unique_for_journals():
-    j1 = JournalFactory(title="J1")
-    j2 = JournalFactory(title="J2")
-
-    Account.objects.create(title="T1", journal=j1)
-    Account.objects.create(title="T1", journal=j2)
+    # an account's save syncs its balances for the journal's user
+    for title in ("J1", "J2"):
+        journal = JournalFactory(title=title)
+        UserFactory(username=title, email=f"{title}@u.u", journal=journal)
+        Account.objects.create(title="T1", journal=journal)
 
     assert Account.objects.filter(title="T1").count() == 2
 

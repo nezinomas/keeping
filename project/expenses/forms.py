@@ -6,14 +6,14 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from ..accounts.forms import ACCOUNT_CLOSED
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib import table_columns
 from ..core.lib.convert_price import PriceToCentsFormMixin
-from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField, pin
-from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
+from ..core.lib.form_fields import CommaFloatField, date_field, pin
+from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.utils import int_or_zero
-from ..core.mixins.forms import YearNotLaterMixin
+from ..core.mixins.forms import ClosedYearMixin, UserTodayMixin, YearNotLaterMixin
 from .models import DEFAULT_QUANTITY, Expense, ExpenseName, ExpenseType
 from .services.model_services import (
     ExpenseNameModelService,
@@ -78,11 +78,14 @@ class ExpenseNameChoicesMixin:
 
 
 class ExpenseForm(
+    UserTodayMixin,
+    ClosedYearMixin,
     ExpenseNameChoicesMixin,
     PriceToCentsFormMixin,
     YearNotLaterMixin,
     forms.ModelForm,
 ):
+    closed_fields = {"account": (ACCOUNT_CLOSED, "date")}
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
     quantity = forms.IntegerField(min_value=1, initial=DEFAULT_QUANTITY)
@@ -118,8 +121,6 @@ class ExpenseForm(
     ]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -128,17 +129,18 @@ class ExpenseForm(
         self._overwrite_expense_name_query()
         self._set_htmx_attributes()
         self._translate_fields()
+        self._set_widgets()
 
-        self.fields["date"].widget = DatePickerWidget()
-
+    def _set_widgets(self):
         self.fields["price"].widget = forms.TextInput(attrs={"readonly": True})
         self.fields["remark"].widget.attrs["rows"] = 3
 
     def _initial_fields_values(self):
+        date_field(self.fields["date"], self.user, self.today)
+
         if self.instance.pk:
             return
 
-        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
         if account := AccountModelService(self.user).items().first():
             self.fields["account"].initial = account
         self.fields["price"].initial = "0.00"
@@ -193,41 +195,22 @@ class ExpenseForm(
 
         return image
 
-    def clean(self):
-        cleaned_data = super().clean()
 
-        if "account" not in cleaned_data or "date" not in cleaned_data:
-            return cleaned_data
-
-        account = cleaned_data["account"]
-        if not account.closed:
-            return cleaned_data
-
-        if cleaned_data["date"].year > account.closed:
-            self.add_error(
-                "date",
-                _(
-                    "The date cannot be later than the account closure date. "
-                    "The account was closed in %(year)s."
-                )
-                % ({"year": account.closed}),
-            )
-
-        return cleaned_data
-
-
-class ExpenseTypeForm(forms.ModelForm):
+class ExpenseTypeForm(UserTodayMixin, forms.ModelForm):
     class Meta:
         model = ExpenseType
         fields = ["journal", "title", "necessary"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        pin(self.fields["journal"], user.journal)
+        self._overwrite_default_queries()
+        self._translate_fields()
 
+    def _overwrite_default_queries(self):
+        pin(self.fields["journal"], self.user.journal)
+
+    def _translate_fields(self):
         self.fields["title"].label = _("Title")
         self.fields["necessary"].label = _("Necessary")
 
@@ -240,7 +223,7 @@ class ExpenseTypeForm(forms.ModelForm):
         return title
 
 
-class ExpenseNameForm(forms.ModelForm):
+class ExpenseNameForm(UserTodayMixin, forms.ModelForm):
     class Meta:
         model = ExpenseName
         fields = ["parent", "title", "valid_for"]
@@ -252,12 +235,15 @@ class ExpenseNameForm(forms.ModelForm):
     field_order = ["parent", "title", "valid_for"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["parent"].queryset = ExpenseTypeModelService(user).items()
+        self._overwrite_default_queries()
+        self._translate_fields()
 
+    def _overwrite_default_queries(self):
+        self.fields["parent"].queryset = ExpenseTypeModelService(self.user).items()
+
+    def _translate_fields(self):
         self.fields["parent"].label = _("Expense type")
         self.fields["title"].label = _("Expense name")
         self.fields["valid_for"].label = _("Valid for")

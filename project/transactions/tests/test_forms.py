@@ -1,16 +1,23 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Callable, NamedTuple
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.db import connection
+from django.forms.models import model_to_dict
 from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
 
 from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping import balance_sources
+from ...bookkeeping.tests.factories import SavingWorthFactory
+from ...plans.tests.factories import SavingPlanFactory
+from ...savings.forms import SavingTypeForm
 from ...savings.models import SavingBalance, SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
+from .factories import SavingChangeFactory, SavingCloseFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -62,6 +69,41 @@ def test_form_fields(main_user, name):
 
     for field in KINDS[name].fields:
         assert field in form
+
+
+@pytest.mark.parametrize("name", KINDS)
+def test_form_date_widget(main_user, name):
+    form = KINDS[name].form(user=main_user, today=TODAY)
+
+    assert form["date"].widget_type == "datepicker"
+
+
+@pytest.mark.parametrize("name", KINDS)
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [("date", "Data"), ("from_account", "Iš sąskaitos"), ("to_account", "Į sąskaitą")],
+)
+def test_form_labels(main_user, name, field, label):
+    form = KINDS[name].form(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
+@pytest.mark.parametrize(
+    "name, url_name",
+    [
+        pytest.param("transaction", "accounts:load", id="transaction"),
+        pytest.param("saving_change", "transactions:load_saving_type", id="change"),
+    ],
+)
+def test_form_from_account_loads_the_to_accounts(main_user, name, url_name):
+    form = KINDS[name].form(user=main_user, today=TODAY)
+
+    html = str(form["from_account"])
+
+    assert f'hx-get="{reverse(url_name)}"' in html
+    assert 'hx-target="#id_to_account"' in html
+    assert 'hx-trigger="change"' in html
 
 
 @pytest.mark.parametrize("name", KINDS)
@@ -177,6 +219,93 @@ def test_form_invalid_date(main_user, name, year):
     assert not form.is_valid()
     assert "date" in form.errors
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
+
+
+FUND_ERROR = "Fondas uždarytas 1999."
+ACCOUNT_ERROR = (
+    "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 1999."
+)
+
+
+@pytest.mark.parametrize(
+    "name, fields, posted, errors",
+    [
+        pytest.param(
+            "saving_change",
+            ["to_account"],
+            "2000-03-01",
+            {"to_account": [FUND_ERROR]},
+            id="switch_into",
+        ),
+        pytest.param(
+            "saving_change",
+            ["from_account"],
+            "2000-03-01",
+            {"date": [FUND_ERROR]},
+            id="switch_out_of",
+        ),
+        pytest.param(
+            "saving_close",
+            ["from_account"],
+            "2000-03-01",
+            {"date": [FUND_ERROR]},
+            id="sell_out_of",
+        ),
+        pytest.param(
+            "saving_close",
+            ["to_account"],
+            "2000-03-01",
+            {"date": [ACCOUNT_ERROR]},
+            id="sell_into",
+        ),
+        pytest.param(
+            "transaction",
+            ["from_account"],
+            "2000-03-01",
+            {"date": [ACCOUNT_ERROR]},
+            id="transfer_from",
+        ),
+        pytest.param(
+            "transaction",
+            ["to_account"],
+            "2000-03-01",
+            {"date": [ACCOUNT_ERROR]},
+            id="transfer_to",
+        ),
+        pytest.param(
+            "transaction",
+            ["from_account", "to_account"],
+            "2000-03-01",
+            {"date": [ACCOUNT_ERROR, ACCOUNT_ERROR]},
+            id="transfer_both",
+        ),
+        pytest.param(
+            "saving_close", ["to_account"], "1999-12-31", {}, id="sell_into_closed_year"
+        ),
+        pytest.param(
+            "transaction",
+            ["from_account", "to_account"],
+            "1999-12-31",
+            {},
+            id="transfer_closed_year",
+        ),
+    ],
+)
+def test_form_date_after_the_parent_closed(main_user, name, fields, posted, errors):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
+    for field in fields:
+        closed = {"from_account": a_from, "to_account": a_to}[field]
+        closed.closed = 1999
+        closed.save()
+
+    form = kind.form(
+        user=main_user,
+        today=TODAY,
+        data=_post(a_from, a_to, date=posted, price="1.0"),
+    )
+
+    assert form.errors == errors
 
 
 @pytest.mark.parametrize("name", KINDS)
@@ -377,15 +506,132 @@ def test_form_unticked_close_does_not_write_an_open_fund(
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_edit_with_close_ticked_moves_the_close_year(
+def test_form_closing_move_edited_past_the_close_year_is_rejected(
     main_user, move, fund, receiver
 ):
     row = _saved_move(main_user, move, fund, receiver, "1999-01-01", True)
     assert SavingType.objects.get(pk=fund.pk).closed == 1999
 
-    _saved_move(main_user, move, fund, receiver, "2000-01-01", True, row)
+    form = MOVES[move].form(
+        user=main_user,
+        today=TODAY,
+        instance=row,
+        data=_move_data(fund, receiver, "2000-01-01", True),
+    )
 
-    assert SavingType.objects.get(pk=fund.pk).closed == 2000
+    assert form.errors == {"date": ["Fondas uždarytas 1999."]}
+    assert SavingType.objects.get(pk=fund.pk).closed == 1999
+
+
+FUND_ROWS_IN_2000 = {
+    "buy": lambda fund: SavingFactory(saving_type=fund, date=date(2000, 1, 1)),
+    "switch_in": lambda fund: SavingChangeFactory(
+        to_account=fund, date=date(2000, 1, 1)
+    ),
+    "worth": lambda fund: SavingWorthFactory(
+        saving_type=fund,
+        date=datetime(2000, 6, 1, 12, tzinfo=ZoneInfo("Europe/Vilnius")),
+    ),
+    "plan": lambda fund: SavingPlanFactory(saving_type=fund, year=2000),
+}
+CANT_CLOSE_BEFORE_2000 = {
+    "close": ["Negalima uždaryti anksčiau nei 2000: tais metais yra įrašų."]
+}
+OTHER_KIND = {
+    "sell": lambda fund, **kwargs: SavingChangeFactory(from_account=fund, **kwargs),
+    "switch": lambda fund, **kwargs: SavingCloseFactory(from_account=fund, **kwargs),
+}
+
+
+# each returns the move the ticked form edits; None for a new one, as Django takes it
+def _a_new_move(main_user, move, fund, receiver):
+    return None
+
+
+def _a_later_move_edited(main_user, move, fund, receiver):
+    return _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
+
+
+def _a_later_move_kept(main_user, move, fund, receiver):
+    _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
+
+
+def _a_later_move_of_the_other_kind_with_its_pk(main_user, move, fund, receiver):
+    edited = _saved_move(main_user, move, fund, receiver, "1999-03-01", False)
+    OTHER_KIND[move](fund, pk=edited.pk, date=date(2000, 12, 1))
+    return edited
+
+
+def _a_move_of_another_fund(main_user, move, fund, receiver):
+    elsewhere = SavingTypeFactory(title="Elsewhere")
+    return _saved_move(main_user, move, elsewhere, receiver, "1999-03-01", False)
+
+
+@pytest.mark.parametrize("move", MOVES)
+@pytest.mark.parametrize("row", FUND_ROWS_IN_2000)
+@pytest.mark.parametrize(
+    "setup, day, close, errors",
+    [
+        pytest.param(
+            _a_new_move, "1999-06-01", True, CANT_CLOSE_BEFORE_2000, id="before"
+        ),
+        pytest.param(
+            _a_later_move_edited,
+            "1999-06-01",
+            True,
+            CANT_CLOSE_BEFORE_2000,
+            id="edited_back",
+        ),
+        pytest.param(
+            _a_later_move_kept, "1999-06-01", True, {}, id="a_later_move_closes"
+        ),
+        pytest.param(
+            _a_later_move_of_the_other_kind_with_its_pk,
+            "1999-06-01",
+            True,
+            {},
+            id="a_later_move_of_the_other_kind_closes",
+        ),
+        pytest.param(
+            _a_move_of_another_fund,
+            "1999-06-01",
+            True,
+            CANT_CLOSE_BEFORE_2000,
+            id="moved_onto",
+        ),
+        pytest.param(_a_new_move, "2000-06-01", True, {}, id="in_the_row_year"),
+        pytest.param(_a_new_move, "1999-06-01", False, {}, id="unticked"),
+    ],
+)
+def test_form_tick_closing_before_a_fund_row(
+    main_user, move, fund, receiver, row, setup, day, close, errors
+):
+    edited = setup(main_user, move, fund, receiver)
+    FUND_ROWS_IN_2000[row](fund)
+
+    form = MOVES[move].form(
+        user=main_user,
+        today=TODAY,
+        instance=edited,
+        data=_move_data(fund, receiver, day, close),
+    )
+
+    assert form.errors == errors
+
+
+def test_form_switch_reversed_onto_its_old_target_can_close_it(main_user, fund):
+    source = SavingTypeFactory(title="Source")
+    target = SavingTypeFactory(title="Target")
+    switch = _saved_move(main_user, "switch", source, fund, "2000-12-01", False)
+
+    form = SavingChangeForm(
+        user=main_user,
+        today=TODAY,
+        instance=switch,
+        data=_move_data(fund, target, "1999-06-01", True),
+    )
+
+    assert form.errors == {}
 
 
 @pytest.mark.parametrize("move", MOVES)
@@ -445,31 +691,29 @@ def test_form_earlier_move_edited_keeps_the_fund_closed_in_its_last_year(
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(
-    main_user, move, fund, receiver
+@pytest.mark.parametrize(
+    "first_day, second_day",
+    [
+        pytest.param("1999-12-01", "1999-06-01", id="before_the_last"),
+        pytest.param("1999-06-01", "1999-12-01", id="after_the_last"),
+    ],
+)
+def test_form_new_unticked_move_keeps_the_fund_closed(
+    main_user, move, fund, receiver, first_day, second_day
 ):
-    _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
+    _saved_move(main_user, move, fund, receiver, first_day, True)
 
-    _saved_move(main_user, move, fund, receiver, "1999-06-01", False)
+    _saved_move(main_user, move, fund, receiver, second_day, False)
 
     fund.refresh_from_db()
     assert fund.closed == 1999
 
 
 @pytest.mark.parametrize("move", MOVES)
-@pytest.mark.parametrize(
-    "first_day, first_close, second_day",
-    [
-        pytest.param("1999-06-01", True, "1999-12-01", id="unticked_after_the_last"),
-        pytest.param("2000-12-01", False, "2000-06-01", id="unticked_before_the_last"),
-    ],
-)
-def test_form_new_unticked_move_leaves_the_fund_open(
-    main_user, move, fund, receiver, first_day, first_close, second_day
-):
-    _saved_move(main_user, move, fund, receiver, first_day, first_close)
+def test_form_new_unticked_move_leaves_the_fund_open(main_user, move, fund, receiver):
+    _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
 
-    _saved_move(main_user, move, fund, receiver, second_day, False)
+    _saved_move(main_user, move, fund, receiver, "2000-06-01", False)
 
     fund.refresh_from_db()
     assert fund.closed is None
@@ -492,20 +736,27 @@ def test_form_closing_move_moved_to_another_fund_reopens_the_first(
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_move_moved_away_leaves_the_first_closed_at_its_last_move(
-    main_user, move, receiver
+@pytest.mark.parametrize(
+    "second_closed",
+    [
+        pytest.param(None, id="onto_an_open_fund"),
+        pytest.param(2001, id="onto_a_closed"),
+    ],
+)
+def test_form_closing_move_moved_away_unticked_reopens_the_first(
+    main_user, move, receiver, second_closed
 ):
     first = SavingTypeFactory(title="First")
-    second = SavingTypeFactory(title="Second")
+    second = SavingTypeFactory(title="Second", closed=second_closed)
     _saved_move(main_user, move, first, receiver, "1999-06-01", False)
     row = _saved_move(main_user, move, first, receiver, "2000-12-01", True)
 
     _saved_move(main_user, move, second, receiver, "2000-12-01", False, row)
 
     first.refresh_from_db()
-    assert first.closed == 1999
+    assert first.closed is None
     second.refresh_from_db()
-    assert second.closed is None
+    assert second.closed == second_closed
 
 
 @pytest.mark.parametrize("move", MOVES)
@@ -521,6 +772,41 @@ def test_form_edit_of_an_earlier_move_does_not_write_a_closed_fund(
     assert _fund_updates(queries.captured_queries) == []
     fund.refresh_from_db()
     assert fund.closed == 1999
+
+
+@pytest.mark.parametrize("move", MOVES)
+@pytest.mark.parametrize(
+    "box",
+    [
+        pytest.param(lambda form: form["close"].initial, id="as_rendered"),
+        pytest.param(lambda form: False, id="unticked"),
+    ],
+)
+def test_form_edit_of_a_move_keeps_a_close_year_set_on_the_fund_form(
+    main_user, move, fund, receiver, box
+):
+    row = _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
+    fund_form = SavingTypeForm(
+        user=main_user,
+        today=TODAY,
+        instance=fund,
+        data=model_to_dict(fund) | {"closed": 2001},
+    )
+    assert fund_form.is_valid()
+    fund_form.save()
+
+    close = box(MOVES[move].form(user=main_user, today=TODAY, instance=row))
+    form = MOVES[move].form(
+        user=main_user,
+        today=TODAY,
+        instance=row,
+        data=_move_data(fund, receiver, "1999-01-01", close) | {"price": "6"},
+    )
+    assert form.is_valid()
+    form.save()
+
+    fund.refresh_from_db()
+    assert fund.closed == 2001
 
 
 @pytest.mark.parametrize("move", MOVES)

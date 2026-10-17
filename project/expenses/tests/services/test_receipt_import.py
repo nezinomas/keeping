@@ -533,13 +533,14 @@ def test_receipt_import_rolls_back_a_repointed_keyword_on_failure(main_user, moc
 
 
 def test_receipt_import_of_no_lines_saves_nothing_and_skips_the_sync(main_user, mocker):
+    account = AccountFactory(journal=main_user.journal)
     sync = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
 
     expenses = ReceiptImport.save(
         lines=(),
         shop_money=0,
         date=date(2026, 1, 1),
-        account=AccountFactory(journal=main_user.journal),
+        account=account,
         journal=main_user.journal,
     )
 

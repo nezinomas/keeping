@@ -26,6 +26,12 @@ def test_form_year_initial_value(main_user):
     assert '<input type="number" name="quantity" value="1"' in form
 
 
+def test_form_date_widget(main_user):
+    form = CountForm(user=main_user, today=TODAY)
+
+    assert form["date"].widget_type == "datepicker"
+
+
 def test_form_valid_data(main_user):
     obj = CountTypeFactory(title="Xxx")
 
