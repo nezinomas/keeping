@@ -1,6 +1,17 @@
 from datetime import date
 
-from django.db.models import Case, F, IntegerField, Q, Sum, Value, When
+from django.db.models import (
+    Case,
+    F,
+    IntegerField,
+    Model,
+    Q,
+    QuerySet,
+    Sum,
+    Value,
+    When,
+)
+from django.db.models.expressions import Combinable
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
 from ...core.lib.date import last_months_window
@@ -14,6 +25,7 @@ from ...core.services.model_services import (
 from .. import models
 
 CHARGED = Q(saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT)
+YearRows = tuple[tuple[QuerySet, Combinable], ...]
 
 
 class SavingTypeModelService(BaseModelService):
@@ -36,15 +48,41 @@ class SavingTypeModelService(BaseModelService):
         if not fund.pk:
             return 0
 
-        year = ExtractYear("date")
-        return max_year(
-            (fund.saving_set, year),
-            (fund.savings_close_from, year),
-            (fund.savings_change_from, year),
-            (fund.savings_change_to, year),
-            (fund.savings_worth, year),
-            (fund.savingplan_set, F("year")),
-        )
+        return max_year(*_rows_but_moves(fund), *_moves(fund))
+
+    def latest_year_but_moves_without(
+        self, fund: models.SavingType, move: Model
+    ) -> int:
+        return max_year(*_without(_rows_but_moves(fund), move))
+
+    def last_move_year_without(self, fund: models.SavingType, move: Model) -> int:
+        return max_year(*_without(_moves(fund), move))
+
+
+def _rows_but_moves(fund: models.SavingType) -> YearRows:
+    year = ExtractYear("date")
+    return (
+        (fund.saving_set.all(), year),
+        (fund.savings_change_to.all(), year),
+        (fund.savings_worth.all(), year),
+        (fund.savingplan_set.all(), F("year")),
+    )
+
+
+def _moves(fund: models.SavingType) -> YearRows:
+    year = ExtractYear("date")
+    return (
+        (fund.savings_close_from.all(), year),
+        (fund.savings_change_from.all(), year),
+    )
+
+
+def _without(rows: YearRows, move: Model) -> YearRows:
+    # a sell and a switch may share a pk: `move` leaves only its own model's rows
+    return tuple(
+        (qs.exclude(pk=move.pk) if qs.model is type(move) else qs, year)
+        for qs, year in rows
+    )
 
 
 class SavingModelService(SumMixin, DatedModelService):
