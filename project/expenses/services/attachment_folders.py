@@ -1,7 +1,7 @@
 import itertools
-import posixpath
 from collections.abc import Iterator
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from django.core.files.storage import default_storage
 from django.db import transaction
@@ -61,7 +61,7 @@ class AttachmentFolders:
                 continue
 
             for expense, folder in rows:
-                key = (old, posixpath.join(folder, posixpath.basename(old)))
+                key = (old, folder / Path(old).name)
                 if key not in placements:
                     placements[key] = self._place(*key)
 
@@ -87,12 +87,12 @@ class AttachmentFolders:
         }
         olds = {old for old, _ in placements} - in_place - still_named
         result.not_deleted.extend(_delete(olds))
-        emptied = {posixpath.dirname(old) for old in olds}
+        emptied = {Path(old).parent.as_posix() for old in olds}
         result.not_removed.extend(_delete({f for f in emptied if _is_empty(f)}))
         return result
 
     @staticmethod
-    def _read() -> tuple[dict[str, list[tuple[Expense, str]]], set[str]]:
+    def _read() -> tuple[dict[str, list[tuple[Expense, Path]]], set[str]]:
         pending = {}
         in_place = set()
         rows = (
@@ -102,20 +102,20 @@ class AttachmentFolders:
         )
         for expense in rows:
             old = expense.attachment.name
-            folder = attachment_folder(expense.expense_type).as_posix()
-            if posixpath.dirname(old) == folder:
+            folder = attachment_folder(expense.expense_type)
+            if Path(old).parent == folder:
                 in_place.add(old)
                 continue
             pending.setdefault(old, []).append((expense, folder))
         return pending, in_place
 
-    def _place(self, old: str, new: str) -> Placement:
+    def _place(self, old: str, new: Path) -> Placement:
         try:
             return self._copy(old, new)
         except OSError as error:
             return NotCopied(_reason(error))
 
-    def _copy(self, old: str, new: str) -> Placement:
+    def _copy(self, old: str, new: Path) -> Placement:
         # opened in a dry run too, so both runs refuse a file the OS will not hand over
         default_storage.open(old).close()
         for name in _names(new):
@@ -143,11 +143,10 @@ class AttachmentFolders:
         return not default_storage.exists(name) or _same(name, old)
 
 
-def _names(new: str) -> Iterator[str]:
+def _names(new: Path) -> Iterator[str]:
     max_length = Expense._meta.get_field("attachment").max_length
-    root, ext = posixpath.splitext(new)
-    numbered = (f"{root}_{n}{ext}" for n in itertools.count(2))
-    names = itertools.chain([new], numbered)
+    numbered = (new.with_stem(f"{new.stem}_{n}") for n in itertools.count(2))
+    names = (path.as_posix() for path in itertools.chain([new], numbered))
     return itertools.takewhile(lambda name: len(name) <= max_length, names)
 
 
