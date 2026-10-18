@@ -260,13 +260,24 @@ def test_row_without_attachment_is_ignored(media):
 
 
 def test_missing_file_is_listed_and_row_kept(media):
-    e = _legacy(media, "expense-type", on_disk=False)
-    old = f"{e.expense_type.journal_id}/expense-type/1999.01_x.jpg"
+    missing = _legacy(media, "expense-type", on_disk=False)
+    moved = _legacy(
+        media, "expense-type", "1999.01_y.jpg", expense_type=missing.expense_type
+    )
+    old = f"{missing.expense_type.journal_id}/expense-type/1999.01_x.jpg"
+    moved_old = f"{moved.expense_type.journal_id}/expense-type/1999.01_y.jpg"
+    moved_new = f"{_pk_folder(moved)}/1999.01_y.jpg"
 
     lines = _run()
 
-    assert lines == [f"missing: {old}", "moved 0, missing 1"]
-    assert _stored(e) == old
+    assert lines == [
+        f"{moved_old} -> {moved_new}",
+        f"missing: {old}",
+        "moved 1, missing 1",
+    ]
+    assert _stored(missing) == old
+    assert _stored(moved) == moved_new
+    assert (media / moved_new).read_bytes() == b"1999.01_y.jpg"
 
 
 @pytest.mark.parametrize(
