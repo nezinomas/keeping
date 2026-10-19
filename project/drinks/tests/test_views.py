@@ -68,6 +68,34 @@ def test_tab_names_itself_in_the_browser_title(client_logged, headers, tab, expe
     assert f"<title>{_('Drinks')} | {_(expected)}</title>" in response.content.decode()
 
 
+@pytest.mark.parametrize(
+    "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
+)
+@pytest.mark.parametrize(
+    "name, trigger",
+    [
+        ("index", "reloadIndex"),
+        ("trends", "reloadTrends"),
+        ("habits", "reloadHabits"),
+        ("risk", "reloadRisk"),
+        ("history", "reloadHistory"),
+        ("data", "reloadData"),
+    ],
+)
+def test_only_the_open_tab_reloads_on_its_trigger(
+    client_logged, name, trigger, headers
+):
+    url = reverse(TABS[name])
+
+    content = client_logged.get(url, headers=headers).content.decode()
+
+    listener = (
+        f'hx-get="{url}" hx-target="#tab_content" hx-trigger="{trigger} from:body"'
+    )
+    assert listener in content
+    assert content.count(" from:body") == 1
+
+
 def test_index_takes_its_legend_position_from_the_paper_charts(client_logged):
     # chart_paper.js places every paper legend, so Drinks keeps no file of its own
     content = client_logged.get(reverse("drinks:index")).content.decode()
@@ -1015,6 +1043,19 @@ def test_trigger_name(view, url_name, tab, trigger, rf):
     actual = instance.get_hx_trigger_django()
 
     assert actual == trigger
+
+
+@pytest.mark.parametrize(
+    "view, trigger",
+    [
+        (views.Update, "reloadData"),
+        (views.Delete, "reloadData"),
+        (views.TargetUpdate, "reloadIndex"),
+    ],
+    ids=["update", "delete", "target_update"],
+)
+def test_an_edit_reloads_the_tab_its_row_is_on(view, trigger):
+    assert view().get_hx_trigger_django() == trigger
 
 
 @pytest.mark.parametrize(
