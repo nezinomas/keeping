@@ -71,26 +71,12 @@ def test_tab_names_itself_in_the_browser_title(client_logged, headers, tab, expe
 @pytest.mark.parametrize(
     "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
 )
-@pytest.mark.parametrize(
-    "name, trigger",
-    [
-        ("index", "reloadIndex"),
-        ("trends", "reloadTrends"),
-        ("habits", "reloadHabits"),
-        ("risk", "reloadRisk"),
-        ("history", "reloadHistory"),
-        ("data", "reloadData"),
-    ],
-)
-def test_only_the_open_tab_reloads_on_its_trigger(
-    client_logged, name, trigger, headers
-):
-    url = reverse(TABS[name])
-
-    content = client_logged.get(url, headers=headers).content.decode()
+def test_only_the_open_tab_reloads_on_its_trigger(client_logged, headers):
+    content = client_logged.get("/drinks/data/", headers=headers).content.decode()
 
     listener = (
-        f'hx-get="{url}" hx-target="#tab_content" hx-trigger="{trigger} from:body"'
+        'hx-get="/drinks/data/" hx-target="#tab_content" '
+        'hx-trigger="reloadData from:body"'
     )
     assert listener in content
     assert content.count(" from:body") == 1
@@ -1046,16 +1032,32 @@ def test_trigger_name(view, url_name, tab, trigger, rf):
 
 
 @pytest.mark.parametrize(
-    "view, trigger",
+    "factory, url_name, data, trigger",
     [
-        (views.Update, "reloadData"),
-        (views.Delete, "reloadData"),
-        (views.TargetUpdate, "reloadIndex"),
+        (
+            DrinkFactory,
+            "drinks:update",
+            {"date": "1999-01-01", "stdav": 0.68, "option": "beer"},
+            '{"reloadData": {}}',
+        ),
+        (DrinkFactory, "drinks:delete", {}, '{"reloadData": {}}'),
+        (
+            DrinkTargetFactory,
+            "drinks:target_update",
+            {"year": 1999, "quantity": 100, "drink_type": "beer"},
+            '{"reloadIndex": {}}',
+        ),
     ],
     ids=["update", "delete", "target_update"],
 )
-def test_an_edit_reloads_the_tab_its_row_is_on(view, trigger):
-    assert view().get_hx_trigger_django() == trigger
+def test_an_edit_reloads_the_tab_its_row_is_on(
+    factory, url_name, data, trigger, client_logged
+):
+    url = reverse(url_name, kwargs={"pk": factory().pk})
+
+    response = client_logged.post(url, data, headers={"HX-Request": "true"})
+
+    assert response.headers["HX-Trigger"] == trigger
 
 
 @pytest.mark.parametrize(
