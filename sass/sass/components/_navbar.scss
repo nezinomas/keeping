@@ -155,6 +155,11 @@ nav#main-nav {
     }
 }
 
+// a quick-add bar that draws the count takes it from the top bar
+body:has(.quick-add .day-of-year) nav#main-nav .day-of-year {
+    display: none;
+}
+
 // mobile devices — no hover to open a menu with, so a press opens it
 @media (pointer: coarse) {
     .dropdown__btn:hover + .dropdown__menu,

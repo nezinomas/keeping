@@ -1,0 +1,2 @@
+<c-vars url tab="" />
+<a{% if tab %} x-show="tab === '{{ tab }}'" x-cloak{% endif %} class="quick-add__pill" href="{{ url }}">{{ slot }}</a>
