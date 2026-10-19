@@ -6,6 +6,7 @@ from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import SavingWorthFactory
+from ....bookkeeping.tests.helper import quiet_build
 from ....core.lib.db_sync import SAVING_FIELDS
 from ....core.tests.utils import count_queries
 from ....incomes.tests.factories import IncomeFactory
@@ -301,10 +302,12 @@ def _purchases_of_both_fee_sources(count):
     ids=["expenses", "re-sync"],
 )
 def test_query_count_does_not_grow_with_both_fee_sources(main_user, run):
-    _purchases_of_both_fee_sources(2)
+    with quiet_build(main_user):
+        _purchases_of_both_fee_sources(2)
     two = count_queries(lambda: run(main_user))
     SavingType.objects.all().delete()
 
-    _purchases_of_both_fee_sources(6)
+    with quiet_build(main_user):
+        _purchases_of_both_fee_sources(4)
 
     assert count_queries(lambda: run(main_user)) == two

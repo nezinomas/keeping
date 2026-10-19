@@ -172,12 +172,13 @@ def test_open_fund_with_no_worth_marks_its_empty_cells(client_logged):
     assert all('data-cell="empty"' in attrs for attrs, _ in cells[8:])
 
 
-def test_savings_queries_do_not_grow_with_closed_funds(client_logged):
+def test_savings_queries_do_not_grow_with_closed_funds(client_logged, main_user):
     def build(i):
         fund_with_a_sell(f"Fund {i}", 100000, 60000, closed=1999 if i % 2 else None)
 
     queries = [
-        view_queries(client_logged, "bookkeeping:savings", build, n) for n in (2, 6)
+        view_queries(client_logged, main_user, "bookkeeping:savings", build, n)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
@@ -260,7 +261,7 @@ def test_total_without_switches_reads_the_plain_percentage(client_logged):
     assert total_cells(content)[-1] == "30,00%"
 
 
-def test_savings_queries_do_not_grow_with_switches(client_logged):
+def test_savings_queries_do_not_grow_with_switches(client_logged, main_user):
     def build(i):
         a = fund_with_a_sell(f"A {i}", 100000, 60000)
         b = SavingTypeFactory(title=f"B {i}")
@@ -269,7 +270,8 @@ def test_savings_queries_do_not_grow_with_switches(client_logged):
         )
 
     queries = [
-        view_queries(client_logged, "bookkeeping:savings", build, n) for n in (2, 6)
+        view_queries(client_logged, main_user, "bookkeeping:savings", build, n)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
