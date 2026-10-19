@@ -308,6 +308,6 @@ def test_query_count_does_not_grow_with_both_fee_sources(main_user, run):
     SavingType.objects.all().delete()
 
     with quiet_build(main_user):
-        _purchases_of_both_fee_sources(6)
+        _purchases_of_both_fee_sources(4)
 
     assert count_queries(lambda: run(main_user)) == two

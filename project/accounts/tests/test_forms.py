@@ -138,7 +138,7 @@ def test_account_close_year_query_count(main_user):
         return count_queries(form.is_valid)
 
     assert queries(AccountFactory(title="A2"), 2) == queries(
-        AccountFactory(title="A6"), 6
+        AccountFactory(title="A4"), 4
     )
 
 

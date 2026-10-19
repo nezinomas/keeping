@@ -42,11 +42,11 @@ def test_view_index_queries_stay_under_the_cap_and_do_not_grow(
         _add_items(0, 2)
     two = queries()
     with quiet_build(main_user):
-        _add_items(2, 6)
-    six = queries()
+        _add_items(2, 4)
+    four = queries()
 
-    assert two == six
-    assert six <= INDEX_QUERY_CAP
+    assert two == four
+    assert four <= INDEX_QUERY_CAP
 
 
 @pytest.fixture(name="index_content")

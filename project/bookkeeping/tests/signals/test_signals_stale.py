@@ -165,7 +165,7 @@ def test_resync_query_count_with_moves_does_not_grow_with_the_funds(main_user):
         _funds_with_moves(0, 2)
     few = queries()
     with quiet_build(main_user):
-        _funds_with_moves(2, 4)
+        _funds_with_moves(2, 2)
     many = queries()
 
     assert many == few

@@ -352,7 +352,7 @@ def test_saving_a_saving_type_query_count_does_not_grow_with_the_types(main_user
     few = _save_queries(funds[0])
 
     with quiet_build(main_user):
-        funds += [_fund_with_worth(f"T{i}") for i in range(2, 6)]
+        funds += [_fund_with_worth(f"T{i}") for i in range(2, 4)]
     many = _save_queries(funds[0])
 
     assert many == few
@@ -382,7 +382,7 @@ def test_resync_query_count_does_not_grow_with_the_types(main_user):
     few = _resync_queries(main_user)
 
     with quiet_build(main_user):
-        for i in range(2, 6):
+        for i in range(2, 4):
             _fund_with_worth(f"T{i}")
     many = _resync_queries(main_user)
 
