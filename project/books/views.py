@@ -2,7 +2,6 @@ from typing import cast
 from urllib.parse import urlencode
 
 from django.urls import reverse, reverse_lazy
-from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.paginator import CountlessPaginator
@@ -20,29 +19,19 @@ from ..users.models import User
 from . import forms, services
 from .services.model_services import BookModelService, BookTargetModelService
 from .services.search import search_books
-from .tabs import DEFAULT_TAB, TABS, BookTab
+from .tabs import TABS
 
 ALL_RECORDS = "all"
 
 
 class TabViewMixin(CoreTabViewMixin):
-    tab = DEFAULT_TAB
-    fragment_template = "books/tab_fragment.html"
+    tabs = TABS
+    default_tab = TABS["index"]
+    app_title = _("Books")
     page_template = "books/index.html"
-
-    def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "tab_url": self.tab.url}
-
-    def page_context(self) -> dict:
-        return {
-            "page_title": format_lazy("{} | {}", _("Books"), self.tab.title),
-            "tabs": [(tab, tab.url) for tab in TABS],
-        }
 
 
 class TabIndex(TabViewMixin, TemplateViewMixin):
-    tab = BookTab.resolve("index")
-
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
         chart = services.ChartFinished(services.ChartFinishedData(user))
@@ -91,7 +80,7 @@ class Lists(ListViewMixin):
 
 
 class TabData(TabViewMixin, Lists):
-    tab = BookTab.resolve("data")
+    tab = TABS["data"]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -127,7 +116,7 @@ class Search(SearchViewMixin):
 
 
 class TargetNew(CreateViewMixin):
-    hx_trigger_django = "afterTarget"
+    hx_trigger_django = "reload"
     form_class = forms.BookTargetForm
     url_name = "target_new"
     modal_form_title = _("New goal")
@@ -135,7 +124,7 @@ class TargetNew(CreateViewMixin):
 
 class TargetUpdate(UpdateViewMixin):
     service_class = BookTargetModelService
-    hx_trigger_django = "afterTarget"
+    hx_trigger_django = "reload"
     form_class = forms.BookTargetForm
     url_name = "target_update"
     modal_form_title = _("Update goal")

@@ -53,8 +53,7 @@ def test_only_the_open_tab_reloads_on_a_saved_book_or_goal(client_logged, tab):
     ).content.decode()
 
     listener = (
-        f'hx-get="{tab.url}" hx-target="#tab_content"'
-        ' hx-trigger="reload from:body, afterTarget from:body"'
+        f'hx-get="{tab.url}" hx-target="#tab_content" hx-trigger="reload from:body"'
     )
     assert listener in content
     assert content.count("reload from:body") == 1
@@ -631,3 +630,12 @@ def test_target_save(client_logged, make_url):
     client_logged.post(url, {"year": 1999, "quantity": 66})
 
     assert models.BookTarget.objects.first().quantity == 66
+
+
+@GOAL_URL
+def test_a_saved_goal_triggers_reload(client_logged, make_url):
+    response = client_logged.post(
+        make_url(), {"year": 1999, "quantity": 66}, headers={"HX-Request": "true"}
+    )
+
+    assert response.headers["HX-Trigger"] == '{"reload": {}}'
