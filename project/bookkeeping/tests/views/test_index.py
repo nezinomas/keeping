@@ -12,7 +12,7 @@ from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
-from ..helper import script_json
+from ..helper import quiet_build, script_json
 
 pytestmark = pytest.mark.django_db
 
@@ -30,15 +30,19 @@ def _add_items(first, last):
         LendFactory(name=f"Name {i}")
 
 
-def test_view_index_queries_stay_under_the_cap_and_do_not_grow(client_logged):
+def test_view_index_queries_stay_under_the_cap_and_do_not_grow(
+    client_logged, main_user
+):
     url = reverse("bookkeeping:index")
 
     def queries():
         return count_queries(lambda: client_logged.get(url))
 
-    _add_items(0, 2)
+    with quiet_build(main_user):
+        _add_items(0, 2)
     two = queries()
-    _add_items(2, 6)
+    with quiet_build(main_user):
+        _add_items(2, 6)
     six = queries()
 
     assert two == six

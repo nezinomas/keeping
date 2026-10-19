@@ -9,6 +9,7 @@ from ....savings.tests.factories import SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ...services import savings, summary_savings
 from ..factories import PensionWorthFactory
+from ..helper import quiet_build
 from ..signals.helpers import (
     YEAR,
     buy,
@@ -147,7 +148,8 @@ def _grow(years):
 
 
 def _queries(user, years):
-    _grow(years)
+    with quiet_build(user):
+        _grow(years)
     return count_queries(lambda: _chart(user))
 
 

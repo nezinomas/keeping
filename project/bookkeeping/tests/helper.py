@@ -113,10 +113,11 @@ def quiet_build(user):
         sync(user)
 
 
-def view_queries(client, name, build, count):
+def view_queries(client, user, name, build, count):
     """Queries the view runs once `build(i)` has made `count` saving types."""
-    while SavingType.objects.count() < count:
-        build(SavingType.objects.count())
+    with quiet_build(user):
+        while SavingType.objects.count() < count:
+            build(SavingType.objects.count())
     with CaptureQueriesContext(connection) as ctx:
         client.get(reverse(name))
     return len(ctx)
