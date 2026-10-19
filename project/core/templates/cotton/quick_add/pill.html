@@ -1,0 +1,2 @@
+<c-vars url="" tab="" />
+<button type="button"{% if tab %} x-show="tab === '{{ tab }}'" x-cloak{% endif %} class="quick-add__pill" hx-get="{{ url }}" hx-target="#mainModal">{{ slot }}</button>

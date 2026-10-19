@@ -17,12 +17,16 @@ body:has(.paper-skin) {
         border-top: 1px solid $hair;
     }
 
-    // Books draws the pill bare, the other two draw it in a bar; the same gap
-    // under it either way, so all three docks are one height
+    // the same gap under the pill as under the bar, so every dock is one height
     .quick-add__pill {
         @include tokens.button;
 
         margin-bottom: 0.5rem;
+    }
+
+    // an <a> keeps the browser's underline; a <button> never had one
+    a.quick-add__pill {
+        text-decoration: none;
     }
 
     .quick-add__sheet {
@@ -48,11 +52,44 @@ body:has(.paper-skin) {
         }
     }
 
+    // the wrapper centres its children, so the bar claims the full width itself
     .quick-add__bar {
         display: flex;
         align-items: center;
         gap: 0 1rem;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0 1rem;
         margin-bottom: 0.5rem;
+
+        // Drinks' and Counts' hand-drawn bars keep their centred row until ticket 05
+        &:not(:has(> .quick-add__pills)) {
+            justify-content: center;
+        }
+
+        // wide: count left, pills centred whatever the count's width
+        @media only screen and (min-width: 768px) {
+            &:has(> .quick-add__pills) {
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+            }
+        }
+
+        .day-of-year {
+            flex: none;
+            white-space: nowrap;
+            font-family: $mono;
+            font-size: 0.8125rem;
+            color: $ink-muted;
+        }
+
+        .quick-add__pills {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0 1rem;
+            min-width: 0;
+        }
 
         .quick-add__pill { margin-bottom: 0; }
 

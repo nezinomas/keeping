@@ -31,13 +31,19 @@ def test_base_leaves_the_loader_styles_to_the_stylesheet(client_logged):
     assert content.index('<meta name="htmx-config"') < content.index("htmx.min.js")
 
 
-def test_base_keeps_error_responses_out_of_the_page(client_logged):
+@pytest.mark.parametrize(
+    "markup",
+    [
+        pytest.param('"noSwap": [204, 304, "4xx", "5xx"]', id="no_swap"),
+        pytest.param('"history": "reload"', id="history_reload"),
+        pytest.param(
+            '<div class="day-of-year"><span>34 / <b>365</b></span></div>',
+            id="day_of_year",
+        ),
+    ],
+)
+@time_machine.travel("1999-02-03")
+def test_base_draws_on_every_page(client_logged, markup):
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
 
-    assert '"noSwap": [204, 304, "4xx", "5xx"]' in content
-
-
-def test_base_reloads_the_page_on_back(client_logged):
-    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
-
-    assert '"history": "reload"' in content
+    assert markup in content
