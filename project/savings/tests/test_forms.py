@@ -4,6 +4,7 @@ import pytest
 
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.factories import SavingWorthFactory
+from ...bookkeeping.tests.helper import quiet_build
 from ...core.tests.utils import count_queries
 from ...journals.tests.factories import JournalFactory
 from ...plans.tests.factories import SavingPlanFactory
@@ -151,14 +152,15 @@ def test_saving_type_close_year_not_before_its_rows(main_user, row, closed, erro
 
 def test_saving_type_close_year_query_count(main_user):
     def queries(fund, rows):
-        for year in range(1999, 1999 + rows):
-            for make in FUND_ROWS.values():
-                make(fund, year)
+        with quiet_build(main_user):
+            for year in range(1999, 1999 + rows):
+                for make in FUND_ROWS.values():
+                    make(fund, year)
         form = _fund_form(main_user, fund, "2010")
         return count_queries(form.is_valid)
 
     assert queries(SavingTypeFactory(title="F2"), 2) == queries(
-        SavingTypeFactory(title="F6"), 6
+        SavingTypeFactory(title="F4"), 4
     )
 
 
