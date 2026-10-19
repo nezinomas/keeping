@@ -33,13 +33,9 @@
     {{ content }}
 </main>
 
-<!-- the page's only way into the book form. It borrows the quick-add pill's
-     chrome and none of its behaviour — this opens the modal -->
-<div class="quick-add">
-    <button type="button" class="quick-add__pill" hx-get="{% url 'books:new' %}" hx-target="#mainModal">
-        {% translate 'Add book' %}
-    </button>
-</div>
+<c-quick-add>
+    <c-quick-add.pill url="{% url 'books:new' %}">{% translate 'Add book' %}</c-quick-add.pill>
+</c-quick-add>
 
 </div>
 
