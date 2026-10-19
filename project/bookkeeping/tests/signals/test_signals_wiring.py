@@ -5,6 +5,7 @@ import pytest
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
+from ....accounts.models import Account, AccountBalance
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import (
@@ -12,22 +13,31 @@ from ....bookkeeping.tests.factories import (
     PensionWorthFactory,
     SavingWorthFactory,
 )
+from ....bookkeeping.tests.helper import quiet_build
+from ....debts.models import Debt
 from ....debts.services.model_services import DebtModelService
 from ....debts.tests.factories import BorrowFactory, BorrowReturnFactory
 from ....expenses.tests.factories import ExpenseFactory
+from ....incomes.models import Income
 from ....incomes.tests.factories import IncomeFactory
 from ....journals.models import Journal
+from ....pensions.models import Pension, PensionBalance, PensionType
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
+from ....savings.models import Saving, SavingBalance, SavingType
 from ....savings.tests.factories import (
     SavingFactory,
     SavingTypeFactory,
 )
+from ....transactions.close_rules import CLOSE
+from ....transactions.models import SavingChange, SavingClose
 from ....transactions.services.close_year import FundCloseYear
 from ....transactions.tests.factories import (
     SavingChangeFactory,
     SavingCloseFactory,
     TransactionFactory,
 )
+
+pytestmark = pytest.mark.django_db
 
 # the edit puts the row before the journal's first record
 EARLIER = {"date": date(1998, 1, 1)}
@@ -117,7 +127,6 @@ def created(name):
     return instance
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize("name", WIRING)
 def test_save_reaches_receivers_in_order(name, listen):
     instance = created(name)
@@ -128,7 +137,6 @@ def test_save_reaches_receivers_in_order(name, listen):
     assert reached() == WIRING[name].on_save
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize("name", WIRING)
 def test_delete_reaches_receivers_in_order(name, listen):
     instance = created(name)
@@ -139,7 +147,6 @@ def test_delete_reaches_receivers_in_order(name, listen):
     assert reached() == WIRING[name].on_delete
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize("name", ["Account", "SavingType", "PensionType"])
 def test_creating_a_type_reaches_its_receivers_once(name, listen, main_user):
     journal = main_user.journal
@@ -150,7 +157,6 @@ def test_creating_a_type_reaches_its_receivers_once(name, listen, main_user):
     assert reached() == WIRING[name].on_save
 
 
-@pytest.mark.django_db
 def test_deleting_a_debt_syncs_the_accounts_once_for_all_its_returns(listen):
     debt = BorrowFactory()
     BorrowReturnFactory.create_batch(2, debt=debt)
@@ -161,7 +167,6 @@ def test_deleting_a_debt_syncs_the_accounts_once_for_all_its_returns(listen):
     assert reached() == ["accounts"]
 
 
-@pytest.mark.django_db
 def test_deleting_a_debt_costs_the_same_queries_for_2_and_6_returns():
     def queries_to_delete(returns):
         debt = BorrowFactory()
@@ -171,3 +176,68 @@ def test_deleting_a_debt_costs_the_same_queries_for_2_and_6_returns():
         return len(queries)
 
     assert queries_to_delete(2) == queries_to_delete(6)
+
+
+def _journal_state():
+    """Every balance row, and what the receivers write besides; an owner shows as its
+    title, not its pk."""
+    snapshot = {}
+    for model in (AccountBalance, SavingBalance, PensionBalance):
+        fields = [
+            f"{f.name}__title" if f.is_relation else f.name
+            for f in model._meta.concrete_fields
+            if not f.primary_key
+        ]
+        rows = model.objects.values_list(*fields)
+        snapshot[model.__name__] = sorted(rows, key=repr)
+    snapshot["first_record"] = list(Journal.objects.values_list("first_record"))
+    snapshot["closed"] = sorted(SavingType.objects.values_list("title", "closed"))
+    snapshot["returned"] = list(Debt.objects.values_list("name", "returned"))
+    return snapshot
+
+
+def _build_a_journal():
+    bank = AccountFactory(title="Bank")
+    fund = SavingTypeFactory(title="Fund")
+    other = SavingTypeFactory(title="Other")
+    old = SavingTypeFactory(title="Old", closed=2000)
+    pension_type = PensionTypeFactory(title="Pension")
+    SavingFactory(saving_type=fund, account=bank, date=date(1999, 1, 1))
+    SavingCloseFactory(
+        from_account=fund, to_account=bank, price=7, date=date(1999, 6, 1)
+    )
+    SavingChangeFactory(
+        from_account=fund, to_account=other, price=3, date=date(1999, 7, 1)
+    )
+    SavingWorthFactory(saving_type=fund, price=90)
+    SavingFactory(saving_type=old, account=bank, date=date(1999, 2, 1))
+    sold = SavingTypeFactory(title="Sold")
+    SavingFactory(saving_type=sold, account=bank, date=date(1999, 1, 1))
+    closing = SavingCloseFactory.build(
+        from_account=sold, to_account=bank, price=5, date=date(2001, 3, 1)
+    )
+    closing.close_rule = CLOSE
+    closing.save()
+    PensionFactory(pension_type=pension_type)
+    PensionWorthFactory(pension_type=pension_type, price=120)
+    IncomeFactory(account=bank, **EARLIER)
+    debt = BorrowFactory(name="Lender", account=bank)
+    BorrowReturnFactory(debt=debt, account=bank)
+
+
+def test_a_quiet_build_leaves_what_a_per_save_build_leaves(main_user):
+    first_record = main_user.journal.first_record
+    _build_a_journal()
+    per_save = _journal_state()
+    assert all(per_save.values())
+    records = (SavingClose, SavingChange, Saving, Pension, Income, Debt)
+    for model in (*records, Account, SavingType, PensionType):
+        model.objects.all().delete()
+    for model in (AccountBalance, SavingBalance, PensionBalance):
+        model.objects.all().delete()
+    Journal.objects.update(first_record=first_record)
+
+    with quiet_build(main_user):
+        _build_a_journal()
+
+    assert _journal_state() == per_save
