@@ -18,6 +18,10 @@ class Tab:
     def template_name(self) -> str:
         return f"{self.app}/tab_{self.name}.html"
 
+    @property
+    def reload_trigger(self) -> str:
+        return "reload"
+
 
 class Tabs(tuple):
     def __new__(cls, *tabs: Tab):
