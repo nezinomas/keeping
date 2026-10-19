@@ -1,7 +1,8 @@
 import pytest
 from django.urls import reverse
 
-from ..tabs import DEFAULT_TAB, TABS, CountTab
+from .. import views
+from ..tabs import TABS, CountTab
 
 
 @pytest.mark.parametrize("tab", TABS)
@@ -21,8 +22,8 @@ def test_resolve_returns_the_named_tab(tab):
 
 
 def test_resolve_unknown_falls_back_to_the_default():
-    assert CountTab.resolve("nonsense") is DEFAULT_TAB
-    assert CountTab.resolve(None) is DEFAULT_TAB
+    assert CountTab.resolve("nonsense") is TABS["index"]
+    assert CountTab.resolve(None) is TABS["index"]
 
 
 def test_resolve_takes_the_default_it_is_given():
@@ -30,4 +31,4 @@ def test_resolve_takes_the_default_it_is_given():
 
 
 def test_the_default_tab_is_overview():
-    assert DEFAULT_TAB.name == "index"
+    assert views.TabViewMixin.default_tab is TABS["index"]
