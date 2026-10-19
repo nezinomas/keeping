@@ -31,16 +31,10 @@
     {{ content }}
 </main>
 
-<div class="quick-add">
-    <div class="quick-add__bar">
-        <button type="button" x-show="tab === 'types'" x-cloak class="quick-add__pill" hx-get="{% url 'incomes:type_new' %}" hx-target="#mainModal">
-            {% translate 'Add income type' %}
-        </button>
-        <button type="button" class="quick-add__pill" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal">
-            {% translate 'Add income' %}
-        </button>
-    </div>
-</div>
+<c-quick-add>
+    <c-quick-add.pill url="{% url 'incomes:type_new' %}" tab="types">{% translate 'Add income type' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'incomes:new' %}">{% translate 'Add income' %}</c-quick-add.pill>
+</c-quick-add>
 
 </div>
 
