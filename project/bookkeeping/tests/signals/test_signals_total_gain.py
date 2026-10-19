@@ -4,6 +4,7 @@ import pytest
 
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import PensionWorthFactory
+from ....bookkeeping.tests.helper import quiet_build
 from ....core.tests.utils import count_queries
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
@@ -345,11 +346,13 @@ def _save_queries(type_):
     return count_queries(type_.save)
 
 
-def test_saving_a_saving_type_query_count_does_not_grow_with_the_types():
-    funds = [_fund_with_worth(f"T{i}") for i in range(2)]
+def test_saving_a_saving_type_query_count_does_not_grow_with_the_types(main_user):
+    with quiet_build(main_user):
+        funds = [_fund_with_worth(f"T{i}") for i in range(2)]
     few = _save_queries(funds[0])
 
-    funds += [_fund_with_worth(f"T{i}") for i in range(2, 6)]
+    with quiet_build(main_user):
+        funds += [_fund_with_worth(f"T{i}") for i in range(2, 6)]
     many = _save_queries(funds[0])
 
     assert many == few
@@ -373,12 +376,14 @@ def test_saving_a_pension_type_query_count_does_not_grow_with_the_types():
 
 
 def test_resync_query_count_does_not_grow_with_the_types(main_user):
-    funds = [_fund_with_worth(f"T{i}") for i in range(2)]
-    _close_with_a_sell_after_a_switch_in(*funds)
+    with quiet_build(main_user):
+        funds = [_fund_with_worth(f"T{i}") for i in range(2)]
+        _close_with_a_sell_after_a_switch_in(*funds)
     few = _resync_queries(main_user)
 
-    for i in range(2, 6):
-        _fund_with_worth(f"T{i}")
+    with quiet_build(main_user):
+        for i in range(2, 6):
+            _fund_with_worth(f"T{i}")
     many = _resync_queries(main_user)
 
     assert many == few

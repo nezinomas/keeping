@@ -3,6 +3,7 @@ from datetime import UTC, date, datetime
 import pytest
 
 from ...bookkeeping.tests.factories import AccountWorthFactory
+from ...bookkeeping.tests.helper import quiet_build
 from ...core.tests.utils import count_queries
 from ...debts.tests.factories import BorrowFactory, BorrowReturnFactory
 from ...expenses.forms import ExpenseForm
@@ -129,9 +130,10 @@ def test_account_close_year_not_before_its_rows(main_user, row, closed, errors):
 
 def test_account_close_year_query_count(main_user):
     def queries(account, rows):
-        for year in range(1999, 1999 + rows):
-            for make in ACCOUNT_ROWS.values():
-                make(account, year)
+        with quiet_build(main_user):
+            for year in range(1999, 1999 + rows):
+                for make in ACCOUNT_ROWS.values():
+                    make(account, year)
         form = _account_form(main_user, account, "2010")
         return count_queries(form.is_valid)
 
