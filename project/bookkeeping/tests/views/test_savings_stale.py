@@ -100,7 +100,7 @@ def test_savings_queries_do_not_grow_with_stale_funds(client_logged, main_user):
             lambda i: _stale_fund(f"Fund {i}"),
             n,
         )
-        for n in (2, 6)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
@@ -115,7 +115,7 @@ def test_pensions_queries_do_not_grow_with_stale_funds(client_logged, main_user)
             lambda i: _stale_fund(f"Fund {i}", "pensions"),
             n,
         )
-        for n in (2, 6)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]

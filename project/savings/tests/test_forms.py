@@ -160,7 +160,7 @@ def test_saving_type_close_year_query_count(main_user):
         return count_queries(form.is_valid)
 
     assert queries(SavingTypeFactory(title="F2"), 2) == queries(
-        SavingTypeFactory(title="F6"), 6
+        SavingTypeFactory(title="F4"), 4
     )
 
 

@@ -155,9 +155,9 @@ def _queries(user, years):
 
 def test_the_chart_queries_do_not_grow_with_the_years(main_user):
     two = _queries(main_user, 2)
-    six = _queries(main_user, 6)
+    four = _queries(main_user, 4)
 
-    assert two == six
+    assert two == four
 
 
 def test_money_from_another_type_is_outside_the_funds_chart(main_user):

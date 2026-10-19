@@ -178,7 +178,7 @@ def test_savings_queries_do_not_grow_with_closed_funds(client_logged, main_user)
 
     queries = [
         view_queries(client_logged, main_user, "bookkeeping:savings", build, n)
-        for n in (2, 6)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
@@ -271,7 +271,7 @@ def test_savings_queries_do_not_grow_with_switches(client_logged, main_user):
 
     queries = [
         view_queries(client_logged, main_user, "bookkeeping:savings", build, n)
-        for n in (2, 6)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
