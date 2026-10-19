@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 import factory
@@ -86,6 +87,22 @@ def test_view_detailed_tab_page_has_the_subnav(client_logged, tab):
     assert f"<title>Detali | {tab.title}</title>" in content
 
 
+@pytest.mark.parametrize(
+    "name, url",
+    [
+        ("incomes", "/detailed/incomes/"),
+        ("savings", "/detailed/savings/"),
+        ("expenses", "/detailed/expenses/"),
+    ],
+)
+def test_view_detailed_subnav_opens_each_tab(client_logged, name, url):
+    content = client_logged.get(
+        reverse("bookkeeping:detailed_savings")
+    ).content.decode()
+
+    assert re.search(rf'id="tab-{name}"[^>]*hx-get="{url}"', content)
+
+
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
 def test_view_detailed_tab_fragment_has_no_subnav(client_logged, tab):
     response = client_logged.get(tab.url, headers=HTMX)
@@ -95,6 +112,28 @@ def test_view_detailed_tab_fragment_has_no_subnav(client_logged, tab):
     assert 'class="subnav"' not in content
     assert "<html" not in content
     assert f"<title>Detali | {tab.title}</title>" in content
+
+
+@pytest.mark.parametrize("headers", [HTMX, {}], ids=["fragment", "page"])
+@pytest.mark.parametrize(
+    "url, listens_on",
+    [
+        ("/detailed/incomes/", "/detailed/incomes/"),
+        ("/detailed/savings/", "/detailed/savings/"),
+        ("/detailed/expenses/", "/detailed/expenses/"),
+        ("/detailed/savings/?order=title", "/detailed/savings/"),
+    ],
+)
+def test_view_detailed_only_the_open_tab_reloads(
+    client_logged, url, listens_on, headers
+):
+    content = client_logged.get(url, headers=headers).content.decode()
+
+    listener = (
+        f'hx-get="{listens_on}" hx-target="#tab_content" hx-trigger="reload from:body"'
+    )
+    assert listener in content
+    assert content.count(" from:body") == 1
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
