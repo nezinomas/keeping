@@ -4,7 +4,6 @@ from typing import cast
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 
@@ -22,7 +21,7 @@ from ..core.mixins.views import (
 from ..users.models import User
 from . import forms, models, services
 from .services.model_services import DrinkModelService, DrinkTargetModelService
-from .tabs import DEFAULT_TAB, TABS, DrinkTab, tab_reload_response
+from .tabs import TABS, DrinkTab, tab_reload_response
 
 
 class HtmxFormRetargetMixin:
@@ -46,8 +45,8 @@ class UserMixin:
 
 
 class TabViewMixin(UserMixin, TodayMixin, CoreTabViewMixin):
-    tab = DEFAULT_TAB
-    fragment_template = "drinks/tab_fragment.html"
+    tabs = TABS
+    app_title = _("Drinks")
     page_template = "drinks/index.html"
 
     def get_context_data(self, **kwargs):
@@ -59,16 +58,14 @@ class TabViewMixin(UserMixin, TodayMixin, CoreTabViewMixin):
     def page_context(self) -> dict:
         """What the shell around a tab needs, and no tab does."""
         return {
-            "tab_title": self.tab.title,
-            "page_title": format_lazy("{} | {}", _("Drinks"), self.tab.title),
-            "tabs": [(tab, tab.url) for tab in TABS],
+            **super().page_context(),
             "recent_days": services.RecentDaySelector.for_day(self.today),
             "drink_types": services.DrinkTypeSelector(self.user.drink_type),
         }
 
 
 class TabIndex(TabViewMixin, TemplateViewMixin):
-    tab = DrinkTab.resolve("index")
+    tab = TABS["index"]
 
     def get_context_data(self, **kwargs):
         year = self.user.selected_year()
@@ -80,7 +77,7 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
 
 
 class TabHabits(TabViewMixin, TemplateViewMixin):
-    tab = DrinkTab.resolve("habits")
+    tab = TABS["habits"]
 
     def get_context_data(self, **kwargs):
         year = self.user.selected_year()
@@ -136,7 +133,7 @@ class TypicalYearChart(UserMixin, HtmxFormRetargetMixin, FormViewMixin):
 
 
 class TabTrends(TabViewMixin, TemplateViewMixin):
-    tab = DrinkTab.resolve("trends")
+    tab = TABS["trends"]
 
     def get_context_data(self, **kwargs):
         year = self.user.selected_year()
@@ -148,7 +145,7 @@ class TabTrends(TabViewMixin, TemplateViewMixin):
 
 
 class TabRisk(TabViewMixin, TemplateViewMixin):
-    tab = DrinkTab.resolve("risk")
+    tab = TABS["risk"]
 
     def get_context_data(self, **kwargs):
         year = self.user.selected_year()
@@ -160,14 +157,14 @@ class TabRisk(TabViewMixin, TemplateViewMixin):
 
 
 class TabData(TabViewMixin, ListViewMixin):
-    tab = DrinkTab.resolve("data")
+    tab = TABS["data"]
 
     def get_queryset(self):
         return DrinkModelService(self.user).year(self.user.selected_year())
 
 
 class TabHistory(TabViewMixin, TemplateViewMixin):
-    tab = DrinkTab.resolve("history")
+    tab = TABS["history"]
 
     def get_context_data(self, **kwargs):
         return {
@@ -228,14 +225,14 @@ class New(CreateViewMixin):
 class Update(UpdateViewMixin):
     service_class = DrinkModelService
     form_class = forms.DrinkForm
-    hx_trigger_django = "reloadData"
+    hx_trigger_django = TABS["data"].reload_trigger
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Drinks")
 
 
 class Delete(DeleteViewMixin):
     service_class = DrinkModelService
-    hx_trigger_django = "reloadData"
+    hx_trigger_django = TABS["data"].reload_trigger
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Delete drinks")
 
@@ -255,7 +252,7 @@ class TargetNew(CreateViewMixin):
 class TargetUpdate(UpdateViewMixin):
     service_class = DrinkTargetModelService
     form_class = forms.DrinkTargetForm
-    hx_trigger_django = "reloadIndex"
+    hx_trigger_django = TABS["index"].reload_trigger
     url_name = "target_update"
     success_url = reverse_lazy("drinks:tab_index")
     modal_form_title = _("Update goal")
