@@ -198,11 +198,28 @@ def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, t
     assert "<title>" in content
 
 
+@pytest.mark.parametrize(
+    ("url_name", "title"),
+    [
+        ("plans:tab_incomes", "Planai | Pajamos"),
+        ("plans:tab_expenses", "Planai | Išlaidos"),
+        ("plans:tab_savings", "Planai | Taupymas"),
+        ("plans:tab_day", "Planai | Suma dienai"),
+    ],
+    ids=["incomes", "expenses", "savings", "day"],
+)
+def test_browser_title_names_the_open_tab(client_logged, url_name, title):
+    content = client_logged.get(reverse(url_name)).content.decode()
+
+    assert f"<title>{title}</title>" in content
+
+
+@pytest.mark.parametrize(
+    "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
+)
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_only_the_open_tab_reloads_on_a_saved_plan(client_logged, tab):
-    content = client_logged.get(
-        tab.url, headers={"HX-Request": "true"}
-    ).content.decode()
+def test_only_the_open_tab_reloads_on_a_saved_plan(client_logged, tab, headers):
+    content = client_logged.get(tab.url, headers=headers).content.decode()
 
     listener = (
         f'hx-get="{tab.url}" hx-target="#tab_content" hx-trigger="reload from:body"'

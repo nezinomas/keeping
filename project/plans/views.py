@@ -1,7 +1,6 @@
 from datetime import date
 
 from django.urls import reverse_lazy
-from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.utils import http_htmx_response
@@ -25,22 +24,15 @@ from .services.model_services import (
     NecessaryPlanModelService,
     SavingPlanModelService,
 )
-from .tabs import DEFAULT_TAB, TABS, PlanTab
+from .tabs import TABS
 
 
 class TabViewMixin(CoreTabViewMixin):
-    tab = DEFAULT_TAB
-    fragment_template = "plans/tab_fragment.html"
+    tabs = TABS
+    # the outcome the other three tabs feed, so it opens first
+    default_tab = TABS["day"]
+    app_title = _("Plans")
     page_template = "plans/index.html"
-
-    def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "tab_url": self.tab.url}
-
-    def page_context(self) -> dict:
-        return {
-            "page_title": format_lazy("{} | {}", _("Plans"), self.tab.title),
-            "tabs": [(tab, tab.url) for tab in TABS],
-        }
 
     def plan_data(self) -> DataDto:
         user = self.request.user
@@ -48,7 +40,7 @@ class TabViewMixin(CoreTabViewMixin):
 
 
 class TabIncomes(TabViewMixin, TemplateViewMixin):
-    tab = PlanTab.resolve("incomes")
+    tab = TABS["incomes"]
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -87,7 +79,7 @@ class IncomesDelete(PlanDeleteMixin, DeleteViewMixin):
 
 
 class TabExpenses(TabViewMixin, TemplateViewMixin):
-    tab = PlanTab.resolve("expenses")
+    tab = TABS["expenses"]
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -126,7 +118,7 @@ class ExpensesDelete(PlanDeleteMixin, DeleteViewMixin):
 
 
 class TabSavings(TabViewMixin, TemplateViewMixin):
-    tab = PlanTab.resolve("savings")
+    tab = TABS["savings"]
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -165,8 +157,6 @@ class SavingsDelete(PlanDeleteMixin, DeleteViewMixin):
 
 
 class TabDay(TabViewMixin, TemplateViewMixin):
-    tab = PlanTab.resolve("day")
-
     def get_context_data(self, **kwargs):
         user = self.request.user
         data = self.plan_data()
