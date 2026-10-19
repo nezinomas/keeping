@@ -3,16 +3,12 @@ from dataclasses import dataclass
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from ..core.tabs import Tab, Tabs
+
 
 @dataclass(frozen=True)
-class DetailedTab:
-    name: str
-    title: str
+class DetailedTab(Tab):
     template: str
-
-    @classmethod
-    def resolve(cls, name: str) -> "DetailedTab":
-        return BY_NAME[name]
 
     @property
     def url(self) -> str:
@@ -23,10 +19,8 @@ class DetailedTab:
         return f"bookkeeping/detailed/tab_{self.template}.html"
 
 
-TABS = (
+TABS = Tabs(
     DetailedTab("incomes", _("Incomes"), "table"),
     DetailedTab("savings", _("Savings"), "table"),
     DetailedTab("expenses", _("Expenses"), "expenses"),
 )
-BY_NAME = {tab.name: tab for tab in TABS}
-DEFAULT_TAB = BY_NAME["incomes"]
