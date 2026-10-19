@@ -1,9 +1,9 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from ...core.lib.convert_price import int_cents_to_float
-from ...core.lib.translation import month_abbr
-from ...core.lib.year_boundary import YearBoundary
+from .convert_price import int_cents_to_float
+from .translation import month_abbr
+from .year_boundary import YearBoundary
 
 
 @dataclass(frozen=True)

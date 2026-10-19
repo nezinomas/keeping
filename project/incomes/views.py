@@ -3,7 +3,9 @@ from datetime import date
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
+from ..core.lib.chart_months import ChartMonths
 from ..core.lib.convert_price import PriceToFloatViewMixin
+from ..core.lib.overview_cards import OverviewCards
 from ..core.lib.year_boundary import YearBoundary
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
@@ -15,8 +17,7 @@ from ..core.mixins.views import (
     UpdateViewMixin,
 )
 from . import forms
-from .services.cards import OverviewCards
-from .services.chart_months import ChartMonths
+from .services.cards import LARGEST_TYPE_EXPLANATION
 from .services.model_services import IncomeModelService, IncomeTypeModelService
 from .services.search import search_incomes
 from .services.type_rows import TypesTable
@@ -38,9 +39,10 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             "cards": OverviewCards.build(
-                list(service.sum_by_type_between(*boundary.span)),
-                list(service.sum_by_type_between(*boundary.previous_span)),
+                list(service.sum_by_between("income_type", *boundary.span)),
+                list(service.sum_by_between("income_type", *boundary.previous_span)),
                 boundary,
+                LARGEST_TYPE_EXPLANATION,
             ),
             "chart": ChartMonths.build(
                 list(service.sum_by_month_between(*boundary.span)),
@@ -82,9 +84,9 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             "table": TypesTable.build(
                 list(types),
-                list(service.sum_by_type_between(*boundary.span)),
-                list(service.sum_by_type_between(*boundary.previous_span)),
-                list(service.last_date_by_type(boundary.end_date)),
+                list(service.sum_by_between("income_type", *boundary.span)),
+                list(service.sum_by_between("income_type", *boundary.previous_span)),
+                list(service.last_date_by("income_type", boundary.end_date)),
                 self.request.GET.get("order", ""),
             ),
         }

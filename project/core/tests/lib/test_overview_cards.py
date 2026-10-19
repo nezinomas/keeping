@@ -1,18 +1,22 @@
 from datetime import date
 
+from ....core.lib.overview_cards import OverviewCards
 from ....core.lib.stat_card import EMPTY, NEUTRAL
 from ....core.lib.year_boundary import YearBoundary
-from ...services.cards import OverviewCards
 
 RUNNING = YearBoundary(year=2026, today=date(2026, 9, 15))
 FINISHED = YearBoundary(year=2025, today=date(2026, 9, 15))
 
 YEAR = [{"title": "Alga", "sum": 90_000}, {"title": "Kita", "sum": 30_000}]
 LAST_YEAR = [{"title": "Alga", "sum": 80_000}]
+EXPLANATION = "Paaiškinimas"
 
 
 def _cards(boundary=RUNNING, year=YEAR, last_year=LAST_YEAR):
-    return {card.title: card for card in OverviewCards.build(year, last_year, boundary)}
+    return {
+        card.title: card
+        for card in OverviewCards.build(year, last_year, boundary, EXPLANATION)
+    }
 
 
 def test_three_cards_in_order():
@@ -50,7 +54,7 @@ def test_largest_type_names_the_type_and_its_share():
 
     assert card.value == "Alga"
     assert card.note == "75% metų sumos"
-    assert card.explanation == ("Didžiausią šių metų dalį sudaranti pajamų rūšis",)
+    assert card.explanation == (EXPLANATION,)
 
 
 def test_an_empty_year_is_three_empty_cards():

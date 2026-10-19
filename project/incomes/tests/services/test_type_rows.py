@@ -11,15 +11,15 @@ TYPES = [
     {"id": 4, "title": "Alga"},
 ]
 YEAR = [
-    {"title": "Alga", "sum": 900_000},
-    {"title": "Freelance", "sum": 299_950},
-    {"title": "Dividendai", "sum": 50},
+    {"pk": 4, "title": "Alga", "sum": 900_000},
+    {"pk": 1, "title": "Freelance", "sum": 299_950},
+    {"pk": 2, "title": "Dividendai", "sum": 50},
 ]
-LAST_YEAR = [{"title": "Alga", "sum": 800_000}]
+LAST_YEAR = [{"pk": 4, "title": "Alga", "sum": 800_000}]
 LAST_DATES = [
-    {"title": "Alga", "date": date(2026, 9, 10)},
-    {"title": "Freelance", "date": date(2026, 7, 7)},
-    {"title": "Dividendai", "date": date(2026, 6, 11)},
+    {"pk": 4, "title": "Alga", "date": date(2026, 9, 10)},
+    {"pk": 1, "title": "Freelance", "date": date(2026, 7, 7)},
+    {"pk": 2, "title": "Dividendai", "date": date(2026, 6, 11)},
 ]
 
 
