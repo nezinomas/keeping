@@ -1,15 +1,29 @@
 from django.shortcuts import render
+from django.utils.text import format_lazy
+
+from ..tabs import Tab, Tabs
 
 
 class TabViewMixin:
-    fragment_template = ""
+    tabs: Tabs
+    default_tab: Tab
+    app_title: str
+    fragment_template = "core/tab_fragment.html"
     page_template = ""
+
+    @property
+    def tab(self) -> Tab:
+        return self.default_tab
 
     def get_template_names(self):
         return [self.tab.template_name]
 
     def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "tab": self.tab.name}
+        return {
+            **super().get_context_data(**kwargs),
+            "tab": self.tab.name,
+            "tab_url": self.tab.url,
+        }
 
     def render_to_response(self, context, **response_kwargs):
         response = super().render_to_response(context, **response_kwargs)
@@ -24,4 +38,7 @@ class TabViewMixin:
         return render(self.request, template, page)
 
     def page_context(self) -> dict:
-        return {}
+        return {
+            "page_title": format_lazy("{} | {}", self.app_title, self.tab.title),
+            "tabs": [(tab, tab.url) for tab in self.tabs],
+        }

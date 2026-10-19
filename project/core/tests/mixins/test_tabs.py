@@ -15,11 +15,16 @@ TEMPLATES = [
                 (
                     "django.template.loaders.locmem.Loader",
                     {
-                        "tab.html": "tab={{ tab }}",
-                        "fragment.html": "fragment {{ shell }} {{ content }}",
-                        "page.html": "page {{ shell }} {{ content }}",
+                        "tab.html": "tab={{ tab }} {{ tab_url }}",
+                        "fragment.html": "fragment {{ content }}",
+                        "page.html": (
+                            "page {{ page_title }}"
+                            "{% for tab, url in tabs %} {{ tab.name }}={{ url }}"
+                            "{% endfor %} {{ content }}"
+                        ),
                     },
-                )
+                ),
+                "django.template.loaders.app_directories.Loader",
             ]
         },
     }
@@ -28,23 +33,38 @@ TEMPLATES = [
 
 @dataclass(frozen=True)
 class Tab:
-    name: str = "index"
+    name: str
+    title: str
     template_name: str = "tab.html"
 
+    @property
+    def url(self) -> str:
+        return f"/{self.name}/"
 
-class View(TabViewMixin, TemplateView):
-    tab = Tab()
-    fragment_template = "fragment.html"
+
+INDEX = Tab("index", "Overview")
+DATA = Tab("data", "Data")
+
+
+class Shop(TabViewMixin, TemplateView):
+    tabs = (INDEX, DATA)
+    default_tab = INDEX
+    app_title = "Shop"
     page_template = "page.html"
 
-    def page_context(self) -> dict:
-        return {"shell": "nav"}
+
+class View(Shop):
+    fragment_template = "fragment.html"
 
 
-def _get(rf, **headers):
+class DataView(View):
+    tab = DATA
+
+
+def _get(rf, view=View, **headers):
     request = rf.get("/tab/", headers=headers)
     request.htmx = HtmxDetails(request)
-    return View.as_view()(request).content.decode().strip()
+    return view.as_view()(request).content.decode().strip()
 
 
 @pytest.fixture(autouse=True)
@@ -54,24 +74,36 @@ def _templates():
 
 
 def test_a_plain_request_gets_the_page_around_the_tab(rf):
-    assert _get(rf) == "page nav tab=index"
+    content = _get(rf)
+
+    assert content == "page Shop | Overview index=/index/ data=/data/ tab=index /index/"
 
 
 def test_an_htmx_request_gets_the_fragment(rf):
-    assert _get(rf, HX_Request="true") == "fragment nav tab=index"
+    assert _get(rf, HX_Request="true") == "fragment tab=index /index/"
 
 
 def test_an_htmx_history_restore_gets_the_whole_page(rf):
     content = _get(rf, HX_Request="true", HX_History_Restore_Request="true")
 
-    assert content == "page nav tab=index"
+    assert content == "page Shop | Overview index=/index/ data=/data/ tab=index /index/"
 
 
-def test_the_page_context_defaults_to_nothing(rf):
-    class Bare(View):
-        page_context = TabViewMixin.page_context
+@pytest.mark.parametrize(
+    "view, expected",
+    [(View, "tab=index /index/"), (DataView, "tab=data /data/")],
+    ids=["default", "set"],
+)
+def test_a_view_without_a_tab_gets_the_default_one(rf, view, expected):
+    assert _get(rf, view, HX_Request="true").endswith(expected)
 
-    request = rf.get("/tab/")
-    request.htmx = HtmxDetails(request)
 
-    assert Bare.as_view()(request).content.decode().strip() == "page  tab=index"
+def test_the_fragment_defaults_to_the_core_one(rf):
+    content = _get(rf, Shop, HX_Request="true")
+
+    assert "<title>Shop | Overview</title>" in content
+    assert (
+        '<div hx-get="/index/" hx-target="#tab_content" '
+        'hx-trigger="reload from:body"></div>'
+    ) in content
+    assert content.endswith("tab=index /index/")
