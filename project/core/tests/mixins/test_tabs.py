@@ -36,6 +36,7 @@ class Tab:
     name: str
     title: str
     template_name: str = "tab.html"
+    reload_trigger: str = "reload"
 
     @property
     def url(self) -> str:
@@ -107,3 +108,16 @@ def test_the_fragment_defaults_to_the_core_one(rf):
         'hx-trigger="reload from:body"></div>'
     ) in content
     assert content.endswith("tab=index /index/")
+
+
+class OwnTrigger(Shop):
+    tab = Tab("data", "Data", reload_trigger="reloadData")
+
+
+def test_the_fragment_listens_on_the_tabs_own_trigger(rf):
+    content = _get(rf, OwnTrigger, HX_Request="true")
+
+    assert (
+        '<div hx-get="/data/" hx-target="#tab_content" '
+        'hx-trigger="reloadData from:body"></div>'
+    ) in content

@@ -23,6 +23,7 @@ class TabViewMixin:
             **super().get_context_data(**kwargs),
             "tab": self.tab.name,
             "tab_url": self.tab.url,
+            "reload_trigger": self.tab.reload_trigger,
         }
 
     def render_to_response(self, context, **response_kwargs):
