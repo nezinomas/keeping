@@ -1,5 +1,5 @@
 // amounts arrive in euro
-function chartIncomesMonths(idData, idContainer) {
+function chartMonths(idData, idContainer) {
     const chartData = JSON.parse(
         document.getElementById(idData).textContent
     );
