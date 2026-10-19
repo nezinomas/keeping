@@ -236,8 +236,8 @@ def test_import_post_jogurt_keyword_prefills_row(main_user, client_logged):
     prefix = f"form-{jogurt_index}"
     expense_type = _select(text, f"{prefix}-expense_type")
     expense_name = _select(text, f"{prefix}-expense_name")
-    assert f'<option value="{t.pk}" selected>' in expense_type
-    assert f'<option value="{n.pk}" selected>' in expense_name
+    assert _is_selected(expense_type, t.pk)
+    assert _is_selected(expense_name, n.pk)
     assert f'name="{prefix}-keyword" value="jogurt"' in text
 
 
@@ -278,6 +278,10 @@ def _select(text, name):
     match = re.search(rf'<select name="{name}".*?</select>', text, re.DOTALL)
     assert match, f"no select {name} in the response"
     return match.group(0)
+
+
+def _is_selected(select, pk):
+    return re.search(rf'<option value="{pk}"[^>]*\sselected\b', select) is not None
 
 
 def _shop_money_receipt():
@@ -595,7 +599,7 @@ def test_import_save_invalid_nothing_saved_names_intact(main_user, client_logged
     assert response.status_code == 200
     assert Expense.objects.count() == 0
     expense_name = _select(response.content.decode(), "form-0-expense_name")
-    assert f'<option value="{n.pk}" selected>' in expense_name
+    assert _is_selected(expense_name, n.pk)
 
 
 def test_import_save_tampered_account_refused(main_user, second_user, client_logged):
