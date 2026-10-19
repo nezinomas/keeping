@@ -1,11 +1,11 @@
 from collections.abc import Sequence
-from datetime import date
 
-from django.db.models import F, Max, Sum, Value
+from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService, DatedModelService
+from ...core.services.span_sums import SpanReadsMixin
 from .. import models
 
 
@@ -19,7 +19,7 @@ class IncomeTypeModelService(BaseModelService):
         return self.objects.all()
 
 
-class IncomeModelService(SumMixin, DatedModelService):
+class IncomeModelService(SpanReadsMixin, SumMixin, DatedModelService):
     def get_queryset(self):
         return models.Income.objects.select_related("account", "income_type").filter(
             income_type__journal=self.user.journal
@@ -69,34 +69,6 @@ class IncomeModelService(SumMixin, DatedModelService):
             )
             .order_by("income_type__title", "date")
             .values("date", "sum", "title")
-        )
-
-    def sum_by_type_between(self, start: date, end: date):
-        return (
-            self.objects.filter(date__range=(start, end))
-            .values("income_type")
-            .annotate(sum=Sum("price"), title=F("income_type__title"))
-            .order_by("-sum", "title")
-            .values("title", "sum")
-        )
-
-    def sum_by_month_between(self, start: date, end: date):
-        return (
-            self.objects.filter(date__range=(start, end))
-            .annotate(month=TruncMonth("date"))
-            .values("month")
-            .annotate(sum=Sum("price"))
-            .order_by("month")
-            .values("sum", date=F("month"))
-        )
-
-    def last_date_by_type(self, end: date):
-        return (
-            self.objects.filter(date__lte=end)
-            .values("income_type")
-            .annotate(date=Max("date"), title=F("income_type__title"))
-            .order_by()
-            .values("title", "date")
         )
 
     def incomes(self):

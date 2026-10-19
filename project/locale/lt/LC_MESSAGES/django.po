@@ -1020,6 +1020,11 @@ msgctxt "counts card"
 msgid "This year"
 msgstr "Šiais metais"
 
+#: .\project\core\lib\overview_cards.py:39
+msgctxt "overview card"
+msgid "This year"
+msgstr "Šiais metais"
+
 #: .\project\counts\services\cards.py:53
 #, python-format
 msgid "typically %(days)s d."

@@ -21,6 +21,7 @@ from django.db.models.functions import (
 from ...core.lib.date import last_months_window
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService, DatedModelService
+from ...core.services.span_sums import SpanReadsMixin
 from .. import models
 
 
@@ -67,7 +68,7 @@ class ExpenseKeywordModelService(DatedModelService):
         return self.objects
 
 
-class ExpenseModelService(SumMixin, DatedModelService):
+class ExpenseModelService(SpanReadsMixin, SumMixin, DatedModelService):
     def get_queryset(self):
         return models.Expense.objects.select_related(
             "expense_type", "expense_name", "account"

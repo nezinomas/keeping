@@ -502,6 +502,7 @@ def test_overview_states_the_year_in_three_cards(client_logged):
     assert "Alga" in content
     assert "Pernai 800<" in content
     assert "9 mėnesiai" in content
+    assert "Didžiausią šių metų dalį sudaranti pajamų rūšis" in content
 
 
 @time_machine.travel("1999-09-15")
