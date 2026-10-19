@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from django.db import transaction
 
-from ...bookkeeping.signals import accounts_signal, update_journal_first_record
+from ...bookkeeping.signals import entry_saved_signal
 from ..keywords import normalise_keyword
 from ..models import DEFAULT_QUANTITY, Expense, ExpenseKeyword
 from ..receipts.receipt import ReceiptLine
@@ -102,10 +102,7 @@ class ReceiptImport:
             )
 
             if expenses:
-                accounts_signal(sender=Expense, instance=expenses[0])
-                update_journal_first_record(
-                    sender=Expense, instance=expenses[0], created=True
-                )
+                entry_saved_signal(sender=Expense, instance=expenses[0])
 
             cls._save_keywords(reviewed, journal)
 

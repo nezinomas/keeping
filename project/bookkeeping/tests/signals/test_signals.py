@@ -26,6 +26,7 @@ from ....savings.tests.factories import (
     SavingFactory,
     SavingTypeFactory,
 )
+from ...tests.factories import AccountWorthFactory, SavingWorthFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -299,3 +300,45 @@ def test_removing_the_latest_year_keeps_every_other_owners_rows():
     assert _years(AccountBalance, account=seb) == [1999, 2000]
     assert _years(AccountBalance, account=ib) == []
     assert AccountBalance.objects.get(account=seb, year=2000).balance == 100
+
+
+@pytest.mark.parametrize(
+    "owner_factory, entry_factory, worth_factory, balance_model, owner_field",
+    [
+        (
+            SavingTypeFactory,
+            SavingFactory,
+            SavingWorthFactory,
+            SavingBalance,
+            "saving_type",
+        ),
+        (AccountFactory, IncomeFactory, AccountWorthFactory, AccountBalance, "account"),
+    ],
+    ids=["fund", "account"],
+)
+def test_a_first_worth_equal_to_the_stored_amount_stores_its_check(
+    owner_factory, entry_factory, worth_factory, balance_model, owner_field
+):
+    owner = {owner_field: owner_factory()}
+    entry_factory(price=100, **owner)
+
+    # with no worth yet the stored amount is 0, so a worth of 0 changes only the check
+    worth = worth_factory(price=0, **owner)
+
+    assert balance_model.objects.get(year=1999, **owner).latest_check == worth.date
+
+
+def test_closing_and_reopening_an_account_resyncs_its_years():
+    seb = AccountFactory(title="SEB")
+    IncomeFactory(account=seb, price=100, date=date(1999, 1, 1))
+    # another account's row carries the journal's years on to 2002
+    IncomeFactory(account=AccountFactory(title="IB"), price=50, date=date(2001, 1, 1))
+    assert _years(AccountBalance, account=seb) == [1999, 2000, 2001, 2002]
+
+    seb.closed = 1999
+    seb.save()
+    assert _years(AccountBalance, account=seb) == [1999]
+
+    seb.closed = None
+    seb.save()
+    assert _years(AccountBalance, account=seb) == [1999, 2000, 2001, 2002]

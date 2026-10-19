@@ -2,16 +2,18 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib.convert_price import PriceNeverEmptyFormMixin, PriceToCentsFormMixin
-from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField, pin
-from ..core.lib.form_widgets import DatePickerWidget
-from ..core.mixins.forms import YearBetweenMixin
+from ..core.lib.form_fields import CommaFloatField, date_field, pin
+from ..core.mixins.forms import UserTodayMixin, YearBetweenMixin
 from .models import Pension, PensionType
 from .services.model_services import PensionTypeModelService
 
 
 class PensionForm(
-    PriceToCentsFormMixin, PriceNeverEmptyFormMixin, YearBetweenMixin, forms.ModelForm
+    UserTodayMixin,
+    PriceToCentsFormMixin,
+    PriceNeverEmptyFormMixin,
+    YearBetweenMixin,
+    forms.ModelForm,
 ):
     price_fields = ("price", "fee")
     price = CommaFloatField(required=False, min_value=0)
@@ -24,15 +26,11 @@ class PensionForm(
     field_order = ["date", "pension_type", "price", "fee", "remark"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        self.today = kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerWidget()
+        date_field(self.fields["date"], self.user, self.today)
 
         self.fields["remark"].widget.attrs["rows"] = 3
-
-        self.fields["date"].initial = set_date_with_user_year(self.user, self.today)
 
         self.fields["pension_type"].queryset = PensionTypeModelService(
             self.user
@@ -45,16 +43,14 @@ class PensionForm(
         self.fields["pension_type"].label = _("Fund")
 
 
-class PensionTypeForm(forms.ModelForm):
+class PensionTypeForm(UserTodayMixin, forms.ModelForm):
     class Meta:
         model = PensionType
         fields = ["journal", "title"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
-        pin(self.fields["journal"], user.journal)
+        pin(self.fields["journal"], self.user.journal)
 
         self.fields["title"].label = _("Fund title")

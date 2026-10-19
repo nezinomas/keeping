@@ -19,6 +19,19 @@ def test_income_type_init_fields(main_user):
     assert '<select name="user"' not in form
 
 
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("title", "Pajamų rūšis"),
+        ("type", "Tipas"),
+    ],
+)
+def test_income_type_form_labels(main_user, field, label):
+    form = IncomeTypeForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
 def test_income_type_valid_data(main_user):
     form = IncomeTypeForm(
         user=main_user,
@@ -89,6 +102,29 @@ def test_income_year_initial_value(main_user):
     form = IncomeForm(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
+
+
+def test_income_form_widgets(main_user):
+    form = IncomeForm(user=main_user, today=TODAY)
+
+    assert form["date"].widget_type == "datepicker"
+    assert form["remark"].field.widget.attrs["rows"] == 3
+
+
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("date", "Data"),
+        ("account", "Sąskaita"),
+        ("price", "Suma"),
+        ("remark", "Pastaba"),
+        ("income_type", "Pajamų rūšis"),
+    ],
+)
+def test_income_form_labels(main_user, field, label):
+    form = IncomeForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
 
 
 def test_income_select_first_account(main_user, second_user):
@@ -200,3 +236,34 @@ def test_income_rejects_an_account_or_type_of_another_journal(
 
     assert not form.is_valid()
     assert field in form.errors
+
+
+@pytest.mark.parametrize(
+    ("posted", "errors"),
+    [
+        ("1999-12-31", {}),
+        (
+            "2000-03-01",
+            {
+                "date": [
+                    "Data negali būti vėlesnė nei sąskaitos uždarymo data. "
+                    "Sąskaita buvo uždaryta 1999."
+                ]
+            },
+        ),
+    ],
+    ids=["last_open_day", "after_close"],
+)
+def test_income_date_is_valid_up_to_the_accounts_closed_year(main_user, posted, errors):
+    form = IncomeForm(
+        user=main_user,
+        today=TODAY,
+        data={
+            "date": posted,
+            "price": 0.01,
+            "account": AccountFactory(closed=1999).pk,
+            "income_type": IncomeTypeFactory().pk,
+        },
+    )
+
+    assert form.errors == errors

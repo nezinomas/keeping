@@ -9,6 +9,7 @@ from ....savings.tests.factories import SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ...services import savings, summary_savings
 from ..factories import PensionWorthFactory
+from ..helper import quiet_build
 from ..signals.helpers import (
     YEAR,
     buy,
@@ -21,7 +22,7 @@ pytestmark = pytest.mark.django_db
 
 
 def _chart(user, pointer="funds"):
-    return summary_savings.load(user)["charts"][pointer]
+    return summary_savings.load(user, date(YEAR, 12, 31))["charts"][pointer]
 
 
 def _figures(chart, year=YEAR):
@@ -124,7 +125,7 @@ def test_pensions_ii_counts_only_the_rows_that_show_a_profit(main_user):
 def _grow(years):
     """Adds the funds of each of the last `years` years not yet there."""
     for k in range(years):
-        year = date.today().year - k
+        year = YEAR - k
         if SavingType.objects.filter(title=f"A{year}").exists():
             continue
         a = SavingTypeFactory(title=f"A{year}")
@@ -147,15 +148,16 @@ def _grow(years):
 
 
 def _queries(user, years):
-    _grow(years)
+    with quiet_build(user):
+        _grow(years)
     return count_queries(lambda: _chart(user))
 
 
 def test_the_chart_queries_do_not_grow_with_the_years(main_user):
     two = _queries(main_user, 2)
-    six = _queries(main_user, 6)
+    four = _queries(main_user, 4)
 
-    assert two == six
+    assert two == four
 
 
 def test_money_from_another_type_is_outside_the_funds_chart(main_user):

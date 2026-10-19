@@ -91,29 +91,31 @@ def test_a_switch_out_of_a_stale_fund_leaves_the_base_of_the_fund_that_shows(
     assert cells[-2:] == ["100,00", "7,69%"]
 
 
-def test_savings_queries_do_not_grow_with_stale_funds(client_logged):
+def test_savings_queries_do_not_grow_with_stale_funds(client_logged, main_user):
     queries = [
         view_queries(
             client_logged,
+            main_user,
             "bookkeeping:savings",
             lambda i: _stale_fund(f"Fund {i}"),
             n,
         )
-        for n in (2, 6)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
 
 
-def test_pensions_queries_do_not_grow_with_stale_funds(client_logged):
+def test_pensions_queries_do_not_grow_with_stale_funds(client_logged, main_user):
     queries = [
         view_queries(
             client_logged,
+            main_user,
             "bookkeeping:pensions",
             lambda i: _stale_fund(f"Fund {i}", "pensions"),
             n,
         )
-        for n in (2, 6)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]

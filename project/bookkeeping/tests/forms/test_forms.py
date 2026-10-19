@@ -74,6 +74,13 @@ def test_worth_form_date_starts_at_today_in_the_users_year(
 
 
 @WORTH_FORMS
+def test_worth_form_date_widget(main_user, form_class, factory, field):
+    form = worth_form(form_class, main_user, today=TODAY, now=NOW)
+
+    assert form["date"].widget_type == "datepicker"
+
+
+@WORTH_FORMS
 def test_worth_form_blank_data(main_user, form_class, factory, field):
     form = worth_form(form_class, main_user, today=TODAY, now=NOW, data={})
 

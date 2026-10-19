@@ -1,7 +1,6 @@
-from datetime import datetime
+from datetime import date
 
 import pytest
-import time_machine
 from hypothesis import example, given
 from hypothesis import strategies as st
 
@@ -21,6 +20,7 @@ DATA2 = [
 ]
 LOAD_FULL = {"funds": DATA1, "shares": DATA2, "pensions2": DATA1, "pensions": DATA2}
 LOAD_FUNDS = {"funds": DATA1, "shares": [], "pensions2": [], "pensions": []}
+TODAY = date(2010, 1, 1)
 
 
 data_stragety = st.lists(
@@ -39,17 +39,18 @@ data_stragety = st.lists(
 @given(data_stragety)
 @example(data=[{"year": 1999, "incomes": 0, "profit": 500, "total": 0}])
 def test_chart_data_with_hypothesis(data):
-    actual = make_chart("x", data)
+    actual = make_chart("x", data, today=TODAY)
 
     years = actual["categories"]
     assert years == sorted(set(years))
-    assert all(year <= datetime.now().year for year in years)
+    assert all(year <= TODAY.year for year in years)
     assert len(actual["invested"]) == len(years)
     assert len(actual["profit"]) == len(years)
     assert len(actual["total"]) == len(years)
+    assert len(actual["proc"]) == len(years)
     for year, total in zip(years, actual["total"], strict=True):
         assert total == sum(row["total"] for row in data if row["year"] == year)
-    past = {row["year"] for row in data if row["year"] <= datetime.now().year}
+    past = {row["year"] for row in data if row["year"] <= TODAY.year}
     expected = {
         year
         for year in past
@@ -60,20 +61,20 @@ def test_chart_data_with_hypothesis(data):
 
 
 @pytest.mark.parametrize(
-    "now, sources, categories, invested, profit, total",
+    "today, sources, categories, invested, profit, total",
     [
+        pytest.param(TODAY, [DATA1], [2000, 2001], [1, 2], [1, 2], [2, 4], id="one"),
         pytest.param(
-            "2026-1-1", [DATA1], [2000, 2001], [1, 2], [1, 2], [2, 4], id="one"
-        ),
-        pytest.param("2000-1-1", [DATA1], [2000], [1], [1], [2], id="one_year_cut"),
-        pytest.param(
-            "2026-1-1", [DATA1, DATA2], [2000, 2001], [5, 7], [5, 7], [10, 14], id="two"
+            date(2000, 1, 1), [DATA1], [2000], [1], [1], [2], id="one_year_cut"
         ),
         pytest.param(
-            "2000-1-1", [DATA1, DATA2], [2000], [5], [5], [10], id="two_year_cut"
+            TODAY, [DATA1, DATA2], [2000, 2001], [5, 7], [5, 7], [10, 14], id="two"
         ),
         pytest.param(
-            "2026-1-1",
+            date(2000, 1, 1), [DATA1, DATA2], [2000], [5], [5], [10], id="two_year_cut"
+        ),
+        pytest.param(
+            TODAY,
             [DATA1, []],
             [2000, 2001],
             [1, 2],
@@ -81,12 +82,11 @@ def test_chart_data_with_hypothesis(data):
             [2, 4],
             id="empty_second",
         ),
-        pytest.param("2026-1-1", [[]], [], [], [], [], id="no_data"),
+        pytest.param(TODAY, [[]], [], [], [], [], id="no_data"),
     ],
 )
-def test_chart_data(now, sources, categories, invested, profit, total):
-    with time_machine.travel(now):
-        actual = make_chart("x", *sources)
+def test_chart_data(today, sources, categories, invested, profit, total):
+    actual = make_chart("x", *sources, today=today)
 
     assert actual["categories"] == categories
     assert actual["invested"] == invested
@@ -96,7 +96,9 @@ def test_chart_data(now, sources, categories, invested, profit, total):
 
 def test_chart_keeps_a_year_whose_shown_rows_paid_nothing_in():
     actual = make_chart(
-        "x", [{"year": 1999, "incomes": 0, "profit": 37000, "total": 37000}]
+        "x",
+        [{"year": 1999, "incomes": 0, "profit": 37000, "total": 37000}],
+        today=TODAY,
     )
 
     assert actual["categories"] == [1999]
@@ -112,7 +114,7 @@ def test_chart_data_db1(main_user):
 
     qs = SavingBalanceModelService(main_user).sum_by_type()
 
-    actual = make_chart("x", list(qs.filter(type="funds")))
+    actual = make_chart("x", list(qs.filter(type="funds")), today=TODAY)
 
     assert actual["categories"] == [2000, 2001]
     assert actual["invested"] == [1, 2]
@@ -128,13 +130,13 @@ def test_chart_data_db1(main_user):
     ],
 )
 def test_load_service_records(data, expect):
-    actual = load_service(data, chart_keys_map())
+    actual = load_service(data, chart_keys_map(), TODAY)
 
     assert actual["records"] == expect
 
 
 @pytest.mark.parametrize(
-    "data, expect",
+    "data, expect, titles",
     [
         pytest.param(
             LOAD_FULL,
@@ -146,18 +148,30 @@ def test_load_service_records(data, expect):
                 "pensions2",
                 "funds_shares_pensions",
             ],
+            [
+                "Fondai",
+                "Akcijos",
+                "Fondai, Akcijos",
+                "Pensijos III",
+                "Pensijos II",
+                "Fondai, Akcijos, Pensijos III",
+            ],
             id="full",
         ),
         pytest.param(
-            LOAD_FUNDS, ["funds", "funds_shares", "funds_shares_pensions"], id="funds"
+            LOAD_FUNDS,
+            ["funds", "funds_shares", "funds_shares_pensions"],
+            ["Fondai", "Fondai, Akcijos", "Fondai, Akcijos, Pensijos III"],
+            id="funds",
         ),
     ],
 )
-def test_load_service_template_variables(data, expect):
-    actual = load_service(data, chart_keys_map())
+def test_load_service_template_variables(data, expect, titles):
+    actual = load_service(data, chart_keys_map(), TODAY)
 
     assert actual["pointers"] == expect
     assert list(actual["charts"].keys()) == expect
+    assert [chart["title"] for chart in actual["charts"].values()] == titles
 
 
 @given(
@@ -171,7 +185,7 @@ def test_load_service_template_variables(data, expect):
     )
 )
 def test_load_service_with_hypothesis(data):
-    actual = load_service(data, chart_keys_map())
+    actual = load_service(data, chart_keys_map(), TODAY)
 
     assert actual["records"] == sum(
         len(chart["categories"]) for chart in actual["charts"].values()

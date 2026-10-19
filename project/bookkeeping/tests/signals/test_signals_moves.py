@@ -18,13 +18,13 @@ FORMS = {"sell": SavingCloseForm, "switch": SavingChangeForm}
 
 
 @pytest.mark.parametrize("move", FACTORIES)
-def test_move_saved_without_a_form_moves_the_close_year(move):
+def test_move_saved_without_a_form_keeps_the_close_year(move):
     fund = SavingTypeFactory(title="Fund", closed=1999)
 
     FACTORIES[move](from_account=fund, date="2000-06-01")
 
     fund.refresh_from_db()
-    assert fund.closed == 2000
+    assert fund.closed == 1999
 
 
 @pytest.mark.parametrize("move", FACTORIES)
@@ -37,7 +37,7 @@ def test_move_saved_without_a_form_leaves_an_open_fund_open(move):
     assert fund.closed is None
 
 
-def _ticked_form(main_user, move):
+def _ticked_form(main_user, move, close=True):
     fund = SavingTypeFactory(title="Fund")
     receiver = (
         SavingTypeFactory(title="Other") if move == "switch" else AccountFactory()
@@ -51,7 +51,7 @@ def _ticked_form(main_user, move):
             "to_account": receiver.pk,
             "price": "5",
             "fee": "0.5",
-            "close": True,
+            "close": close,
         },
     )
     assert form.is_valid()
@@ -59,16 +59,22 @@ def _ticked_form(main_user, move):
 
 
 @time_machine.travel("1999-1-1")
+@pytest.mark.parametrize(
+    "close, closed",
+    [pytest.param(True, 1999, id="closes"), pytest.param(False, None, id="kept")],
+)
 @pytest.mark.parametrize("move, accounts", [("sell", 1), ("switch", 0)])
-def test_form_move_that_closes_the_fund_syncs_once(main_user, mocker, move, accounts):
-    fund, form = _ticked_form(main_user, move)
+def test_form_move_syncs_once_whether_it_closes_the_fund_or_not(
+    main_user, mocker, move, accounts, close, closed
+):
+    fund, form = _ticked_form(main_user, move, close)
     savings = mocker.spy(balance_sources, "sync_savings")
     balances = mocker.spy(balance_sources, "sync_accounts")
 
     form.save()
 
     fund.refresh_from_db()
-    assert fund.closed == 1999
+    assert fund.closed == closed
     assert savings.call_count == 1
     assert balances.call_count == accounts
 
@@ -100,7 +106,34 @@ def test_move_saved_without_a_form_to_another_fund_follows_the_one_it_left(move)
     row.save()
 
     first.refresh_from_db()
-    assert first.closed is None
+    assert first.closed == 1999
+
+
+@pytest.mark.parametrize(
+    "second_day, closed, deleted",
+    [
+        # a close year set on the fund form, later than any move
+        pytest.param(date(1999, 6, 1), 2001, 0, id="earlier"),
+        pytest.param(date(1999, 6, 1), 2001, 1, id="last"),
+        # a move left on the closing day is the closing move now
+        pytest.param(date(1999, 3, 1), 1999, 1, id="same_day_as_another"),
+    ],
+)
+@pytest.mark.parametrize("move", FACTORIES)
+def test_deleting_a_move_that_is_not_the_closing_one_keeps_the_close_year(
+    move, second_day, closed, deleted
+):
+    fund = SavingTypeFactory(title="Fund")
+    rows = [
+        FACTORIES[move](from_account=fund, date=day)
+        for day in (date(1999, 3, 1), second_day)
+    ]
+    SavingType.objects.filter(pk=fund.pk).update(closed=closed)
+
+    rows[deleted].delete()
+
+    fund.refresh_from_db()
+    assert fund.closed == closed
 
 
 @pytest.mark.parametrize("move", FACTORIES)

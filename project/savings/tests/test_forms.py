@@ -1,13 +1,17 @@
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 
 from ...accounts.tests.factories import AccountFactory
+from ...bookkeeping.tests.factories import SavingWorthFactory
+from ...bookkeeping.tests.helper import quiet_build
+from ...core.tests.utils import count_queries
 from ...journals.tests.factories import JournalFactory
-from ...users.tests.factories import UserFactory
+from ...plans.tests.factories import SavingPlanFactory
+from ...transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
 from ..forms import SavingForm, SavingTypeForm
 from ..models import SavingType
-from .factories import SavingTypeFactory
+from .factories import SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -27,6 +31,21 @@ def test_saving_type_init_fields(main_user):
     assert '<input type="text" name="title"' in form
     assert '<input type="text" name="closed"' in form
     assert '<select name="user"' not in form
+
+
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("title", "Fondas"),
+        ("closed", "Uždaryta"),
+        ("type", "Tipas"),
+        ("fee_source", "Mokestis nuskaitomas"),
+    ],
+)
+def test_saving_type_form_labels(main_user, field, label):
+    form = SavingTypeForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
 
 
 @pytest.mark.parametrize(
@@ -75,6 +94,74 @@ def test_saving_type_with_no_close_year_saves_open(main_user, closed):
 
     assert form.is_valid()
     assert form.save().closed is None
+
+
+FUND_ROWS = {
+    "buy": lambda fund, year: SavingFactory(saving_type=fund, date=date(year, 6, 1)),
+    "sell": lambda fund, year: SavingCloseFactory(
+        from_account=fund, date=date(year, 6, 1)
+    ),
+    "switch_out": lambda fund, year: SavingChangeFactory(
+        from_account=fund, date=date(year, 6, 1)
+    ),
+    "switch_in": lambda fund, year: SavingChangeFactory(
+        to_account=fund, date=date(year, 6, 1)
+    ),
+    "worth": lambda fund, year: SavingWorthFactory(
+        saving_type=fund,
+        date=datetime(year, 6, 1, tzinfo=UTC),
+    ),
+    "plan": lambda fund, year: SavingPlanFactory(saving_type=fund, year=year),
+}
+
+
+def _fund_form(user, fund, closed):
+    return SavingTypeForm(
+        user=user,
+        today=TODAY,
+        instance=fund,
+        data={
+            "title": fund.title,
+            "closed": closed,
+            "type": "funds",
+            "fee_source": "investment",
+        },
+    )
+
+
+@pytest.mark.parametrize("row", FUND_ROWS)
+@pytest.mark.parametrize(
+    "closed, errors",
+    [
+        (
+            "2000",
+            {"closed": ["Negalima uždaryti anksčiau nei 2001: tais metais yra įrašų."]},
+        ),
+        ("2001", {}),
+        ("2005", {}),
+        ("", {}),
+    ],
+)
+def test_saving_type_close_year_not_before_its_rows(main_user, row, closed, errors):
+    fund = SavingTypeFactory()
+    FUND_ROWS[row](fund, 1999)
+    FUND_ROWS[row](fund, 2001)
+
+    assert _fund_form(main_user, fund, closed).errors == errors
+
+
+def test_saving_type_close_year_query_count(main_user):
+    def queries(fund, rows):
+        with quiet_build(main_user):
+            for year in range(1999, 1999 + rows):
+                for make in FUND_ROWS.values():
+                    make(fund, year)
+        form = _fund_form(main_user, fund, "2010")
+        return count_queries(form.is_valid)
+
+    assert queries(SavingTypeFactory(title="F2"), 2) == queries(
+        SavingTypeFactory(title="F4"), 4
+    )
 
 
 def test_saving_type_fee_source_field(main_user):
@@ -252,11 +339,33 @@ def test_saving_type_title_slug_rules(main_user, title, message):
 
 
 def test_saving_year_initial_value(main_user):
-    UserFactory()
-
-    form = SavingForm(user=main_user, today=TODAY).as_p()
+    form = SavingForm(user=main_user, today=date(1974, 1, 1)).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
+
+
+def test_saving_form_widgets(main_user):
+    form = SavingForm(user=main_user, today=TODAY)
+
+    assert form["date"].widget_type == "datepicker"
+    assert form["remark"].field.widget.attrs["rows"] == 3
+
+
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("date", "Data"),
+        ("account", "Iš sąskaitos"),
+        ("price", "Suma"),
+        ("fee", "Mokesčiai"),
+        ("remark", "Pastaba"),
+        ("saving_type", "Fondas"),
+    ],
+)
+def test_saving_form_labels(main_user, field, label):
+    form = SavingForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
 
 
 def test_saving_select_first_account(main_user, second_user):
@@ -269,44 +378,17 @@ def test_saving_select_first_account(main_user, second_user):
     assert expect in form
 
 
-def test_saving_valid_data(main_user):
-    a = AccountFactory()
-    t = SavingTypeFactory()
-
-    form = SavingForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "date": "1999-01-01",
-            "price": 0.01,
-            "fee": 0.01,
-            "remark": "remark",
-            "account": a.pk,
-            "saving_type": t.pk,
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(1999, 1, 1)
-    assert data.price == 1
-    assert data.fee == 1
-    assert data.remark == "remark"
-    assert data.account.title == a.title
-    assert data.saving_type.title == t.title
-
-
 @pytest.mark.parametrize(
-    "price",
+    "amounts, expect_price, expect_fee",
     [
-        (""),
-        (None),
-        (0),
+        pytest.param({"price": 0.01, "fee": 0.01}, 1, 1, id="price_and_fee"),
+        pytest.param({"price": "", "fee": 0.01}, 0, 1, id="only_fee_empty_price"),
+        pytest.param({"price": None, "fee": 0.01}, 0, 1, id="only_fee_none_price"),
+        pytest.param({"price": 0, "fee": 0.01}, 0, 1, id="only_fee_zero_price"),
+        pytest.param({"price": 0.01}, 1, 0, id="no_fee"),
     ],
 )
-def test_saving_valid_data_only_fee(main_user, price):
+def test_saving_valid_data(main_user, amounts, expect_price, expect_fee):
     a = AccountFactory()
     t = SavingTypeFactory()
 
@@ -315,12 +397,11 @@ def test_saving_valid_data_only_fee(main_user, price):
         today=TODAY,
         data={
             "date": "1999-01-01",
-            "price": price,
-            "fee": 0.01,
             "remark": "remark",
             "account": a.pk,
             "saving_type": t.pk,
-        },
+        }
+        | amounts,
     )
 
     assert form.is_valid()
@@ -328,36 +409,8 @@ def test_saving_valid_data_only_fee(main_user, price):
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert not data.price
-    assert data.fee == 1
-    assert data.remark == "remark"
-    assert data.account.title == a.title
-    assert data.saving_type.title == t.title
-
-
-def test_saving_valid_data_with_no_fee(main_user):
-    a = AccountFactory()
-    t = SavingTypeFactory()
-
-    form = SavingForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "date": "1999-01-01",
-            "price": 0.01,
-            "remark": "remark",
-            "account": a.pk,
-            "saving_type": t.pk,
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(1999, 1, 1)
-    assert data.price == 1
-    assert not data.fee
+    assert data.price == expect_price
+    assert data.fee == expect_fee
     assert data.remark == "remark"
     assert data.account.title == a.title
     assert data.saving_type.title == t.title
@@ -454,6 +507,59 @@ def test_saving_invalid_date(main_user, year):
     assert not form.is_valid()
     assert "date" in form.errors
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
+
+
+FUND_ERROR = "Fondas uždarytas 1999."
+ACCOUNT_ERROR = (
+    "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 1999."
+)
+
+
+@pytest.mark.parametrize(
+    "fund_closed, account_closed, posted, errors",
+    [
+        pytest.param(
+            1999, None, "2000-01-01", {"date": [FUND_ERROR]}, id="fund_after_closed"
+        ),
+        pytest.param(1999, None, "1999-12-31", {}, id="fund_closed_year"),
+        pytest.param(1999, None, "1998-12-31", {}, id="fund_before_closed"),
+        pytest.param(
+            None,
+            1999,
+            "2000-03-01",
+            {"date": [ACCOUNT_ERROR]},
+            id="account_after_closed",
+        ),
+        pytest.param(None, 1999, "1999-12-31", {}, id="account_closed_year"),
+        pytest.param(
+            1999,
+            1999,
+            "2000-03-01",
+            {"date": [FUND_ERROR, ACCOUNT_ERROR]},
+            id="fund_and_account_after_closed",
+        ),
+    ],
+)
+def test_saving_date_after_the_parent_closed(
+    main_user, fund_closed, account_closed, posted, errors
+):
+    main_user.journal.first_record = date(1998, 1, 1)
+    main_user.journal.save()
+    a = AccountFactory(closed=account_closed)
+    t = SavingTypeFactory(closed=fund_closed)
+
+    form = SavingForm(
+        user=main_user,
+        today=TODAY,
+        data={
+            "date": posted,
+            "price": "10",
+            "account": a.pk,
+            "saving_type": t.pk,
+        },
+    )
+
+    assert form.errors == errors
 
 
 def test_saving_blank_data(main_user):
