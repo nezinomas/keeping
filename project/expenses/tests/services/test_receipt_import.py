@@ -554,7 +554,8 @@ def test_receipt_import_syncs_balance_once_and_updates_journal_first_record(
 ):
     journal = main_user.journal
     expense_type = ExpenseTypeFactory(title="Maistas RIB", journal=journal)
-    name = ExpenseNameFactory(title="Pieno RIB", parent=expense_type)
+    name_a = ExpenseNameFactory(title="Pieno RIB", parent=expense_type)
+    name_b = ExpenseNameFactory(title="Duonos RIB", parent=expense_type)
     account = AccountFactory(journal=journal)
 
     sync = mocker.patch(
@@ -563,8 +564,8 @@ def test_receipt_import_syncs_balance_once_and_updates_journal_first_record(
     )
 
     lines = (
-        _reviewed(name, price=100),
-        _reviewed(name, price=50),
+        _reviewed(name_a, price=100),
+        _reviewed(name_b, price=50),
     )
     import_date = date(1998, 6, 1)
 
@@ -576,6 +577,7 @@ def test_receipt_import_syncs_balance_once_and_updates_journal_first_record(
         journal=journal,
     )
 
+    assert Expense.objects.count() == 2
     assert sync.call_count == 1
 
     journal.refresh_from_db()
