@@ -157,6 +157,18 @@ def test_creating_a_type_reaches_its_receivers_once(name, listen, main_user):
     assert reached() == WIRING[name].on_save
 
 
+def test_a_quiet_build_reaches_each_sync_once_on_leaving(listen, main_user):
+    reached = listen()
+
+    with quiet_build(main_user):
+        AccountFactory()
+        SavingTypeFactory()
+        PensionTypeFactory()
+        assert reached() == []
+
+    assert reached() == ["accounts", "savings", "pensions"]
+
+
 def test_deleting_a_debt_syncs_the_accounts_once_for_all_its_returns(listen):
     debt = BorrowFactory()
     BorrowReturnFactory.create_batch(2, debt=debt)
@@ -181,7 +193,7 @@ def test_deleting_a_debt_costs_the_same_queries_for_2_and_6_returns():
 def _journal_state():
     """Every balance row, and what the receivers write besides; an owner shows as its
     title, not its pk."""
-    snapshot = {}
+    state = {}
     for model in (AccountBalance, SavingBalance, PensionBalance):
         fields = [
             f"{f.name}__title" if f.is_relation else f.name
@@ -189,11 +201,11 @@ def _journal_state():
             if not f.primary_key
         ]
         rows = model.objects.values_list(*fields)
-        snapshot[model.__name__] = sorted(rows, key=repr)
-    snapshot["first_record"] = list(Journal.objects.values_list("first_record"))
-    snapshot["closed"] = sorted(SavingType.objects.values_list("title", "closed"))
-    snapshot["returned"] = list(Debt.objects.values_list("name", "returned"))
-    return snapshot
+        state[model.__name__] = sorted(rows, key=repr)
+    state["first_record"] = list(Journal.objects.values_list("first_record"))
+    state["closed"] = sorted(SavingType.objects.values_list("title", "closed"))
+    state["returned"] = list(Debt.objects.values_list("name", "returned"))
+    return state
 
 
 def _build_a_journal():
