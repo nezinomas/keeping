@@ -140,6 +140,17 @@ def test_delete_reaches_receivers_in_order(name, listen):
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("name", ["Account", "SavingType", "PensionType"])
+def test_creating_a_type_reaches_its_receivers_once(name, listen, main_user):
+    journal = main_user.journal
+    reached = listen()
+
+    WIRING[name].factory(journal=journal)
+
+    assert reached() == WIRING[name].on_save
+
+
+@pytest.mark.django_db
 def test_deleting_a_debt_syncs_the_accounts_once_for_all_its_returns(listen):
     debt = BorrowFactory()
     BorrowReturnFactory.create_batch(2, debt=debt)
