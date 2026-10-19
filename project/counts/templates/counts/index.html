@@ -27,11 +27,8 @@
 
 <c-subnav :tabs=tabs :active=tab />
 
-{% for count_tab, url in tabs %}
-<div hx-get="{{ url }}" hx-target="#tab_content" hx-trigger="{{ count_tab.reload_trigger }} from:body"></div>
-{% endfor %}
-
 <main id="tab_content" class="grid-one-col" role="tabpanel" :aria-labelledby="'tab-' + tab">
+    {% include 'core/includes/tab_reload.html' %}
     {{content}}
 </main>
 

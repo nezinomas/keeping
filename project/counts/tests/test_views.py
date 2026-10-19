@@ -339,6 +339,22 @@ def test_index_names_the_open_tab_and_the_counter_in_the_browser_title(
     assert f"<title>Xxx | {title}</title>" in content
 
 
+@pytest.mark.parametrize(
+    "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
+)
+def test_only_the_open_tab_reloads_on_its_trigger(client_logged, headers):
+    CountTypeFactory(title="Xxx")
+
+    content = client_logged.get("/counts/c/xxx/data/", headers=headers).content.decode()
+
+    listener = (
+        'hx-get="/counts/c/xxx/data/" hx-target="#tab_content" '
+        'hx-trigger="reloadData from:body"'
+    )
+    assert listener in content
+    assert content.count(" from:body") == 1
+
+
 def test_index_add_record_pill_opens_the_form_for_whichever_tab_is_open(client_logged):
     CountTypeFactory()
 
