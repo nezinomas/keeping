@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
+from ..core.mixins.forms import UserTodayMixin
 from ..expenses.services.model_services import ExpenseTypeModelService
 from .models import Journal
 
@@ -15,15 +16,13 @@ def pks_json(choices):
     return json.dumps(list(choices.values_list("pk", flat=True)))
 
 
-class UnnecessaryForm(forms.Form):
+class UnnecessaryForm(UserTodayMixin, forms.Form):
     choices = forms.ModelMultipleChoiceField(
         queryset=None, widget=forms.CheckboxSelectMultiple, required=False
     )
     savings = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         self.fields["choices"].queryset = ExpenseTypeModelService(self.user).objects
@@ -57,13 +56,11 @@ class UnnecessaryForm(forms.Form):
         journal.save()
 
 
-class SettingsForm(forms.Form):
+class SettingsForm(UserTodayMixin, forms.Form):
     lang = forms.ChoiceField(choices=settings.LANGUAGES)
     title = forms.CharField(validators=Journal._meta.get_field("title").validators)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        kwargs.pop("today")
         super().__init__(*args, **kwargs)
 
         journal = self.user.journal

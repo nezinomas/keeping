@@ -83,6 +83,7 @@ def test_expense_form_widget_attributes(main_user):
     assert form["total_sum"].field.widget.attrs["inputmode"] == "decimal"
     assert form["price"].field.widget.attrs["readonly"]
     assert "class" not in form["price"].field.widget.attrs
+    assert form["remark"].field.widget.attrs["rows"] == 3
 
 
 def test_expense_initial_date_is_today_in_the_users_year(main_user):
@@ -393,6 +394,33 @@ def test_expense_name_choices_mixin_instance_type_fills_names(main_user):
     )
 
     assert list(form.fields["expense_name"].queryset) == [n]
+
+
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("title", "Pavadinimas"),
+        ("necessary", "Būtina"),
+    ],
+)
+def test_expense_type_form_labels(main_user, field, label):
+    form = ExpenseTypeForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
+
+
+@pytest.mark.parametrize(
+    ("field", "label"),
+    [
+        ("parent", "Išlaidų rūšis"),
+        ("title", "Išlaidų pavadinimas"),
+        ("valid_for", "Galioja"),
+    ],
+)
+def test_expense_name_form_labels(main_user, field, label):
+    form = ExpenseNameForm(user=main_user, today=TODAY)
+
+    assert form[field].label == label
 
 
 def test_expense_type_valid_data(main_user):

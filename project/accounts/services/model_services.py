@@ -1,6 +1,11 @@
 from django.db.models import Q
+from django.db.models.functions import ExtractYear
 
-from ...core.services.model_services import BaseModelService, DatedModelService
+from ...core.services.model_services import (
+    BaseModelService,
+    DatedModelService,
+    max_year,
+)
 from .. import models
 
 
@@ -21,6 +26,23 @@ class AccountModelService(BaseModelService):
 
     def none(self):
         return self.objects.none()
+
+    def latest_row_year(self, account: models.Account) -> int:
+        if not account.pk:
+            return 0
+
+        year = ExtractYear("date")
+        return max_year(
+            (account.incomes, year),
+            (account.expenses, year),
+            (account.savings, year),
+            (account.savings_close_to, year),
+            (account.transactions_from, year),
+            (account.transactions_to, year),
+            (account.debt_from_account, year),
+            (account.debt_return_account, year),
+            (account.accounts_worth, year),
+        )
 
 
 class AccountBalanceModelService(DatedModelService):

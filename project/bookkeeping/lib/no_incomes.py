@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from datetime import date
 
 from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
@@ -19,21 +20,28 @@ from ...users.models import User
 
 @dataclass(frozen=True)
 class Data:
-    account_sum: float
-    fund_sum: float
-    pension_sum: float
+    account_sum: int
+    fund_sum: int
+    pension_sum: int
     expenses: list
     savings: dict
     unnecessary: list
+
+
+def _row(title, money_fund, money_fund_pension, *, price) -> dict:
+    return {
+        "title": title,
+        "money_fund": money_fund,
+        "money_fund_pension": money_fund_pension,
+        "price": price,
+    }
 
 
 class NoIncomes:
     def __init__(self, data: Data, months: int = 6):
         self.data = data
         self.months = months
-        self.avg_expenses = 0.0
-        self.cut_sum = 0.0
-        self._calculate_monthly_metrics()
+        self.avg_expenses, self.cut_sum = self._monthly_metrics()
 
     @property
     def unnecessary(self) -> list:
@@ -45,34 +53,23 @@ class NoIncomes:
         money_fund_pension = money_fund + self.data.pension_sum
         reduced_expenses = self.avg_expenses - self.cut_sum
 
-        return self._generate_dict(
-            (f"{_('Money')}, €", money_fund, money_fund_pension, True),
-            (
+        return [
+            _row(f"{_('Money')}, €", money_fund, money_fund_pension, price=True),
+            _row(
                 _("No change in spending, month"),
                 self._div(money_fund, self.avg_expenses),
                 self._div(money_fund_pension, self.avg_expenses),
-                False,
+                price=False,
             ),
-            (
+            _row(
                 _("After spending cuts, month"),
                 self._div(money_fund, reduced_expenses),
                 self._div(money_fund_pension, reduced_expenses),
-                False,
+                price=False,
             ),
-        )
-
-    def _generate_dict(self, *entries) -> list[dict]:
-        return [
-            {
-                "title": title,
-                "money_fund": money_fund,
-                "money_fund_pension": money_fund_pension,
-                "price": is_currency,
-            }
-            for title, money_fund, money_fund_pension, is_currency in entries
         ]
 
-    def _calculate_monthly_metrics(self):
+    def _monthly_metrics(self) -> tuple[float, float]:
         expenses_sum = 0
         cut_sum = 0
 
@@ -86,63 +83,37 @@ class NoIncomes:
 
         savings_val = self.data.savings.get("sum", 0)
 
-        self.avg_expenses = (expenses_sum + savings_val) / self.months
-        self.cut_sum = (cut_sum + savings_val) / self.months
+        return (
+            (expenses_sum + savings_val) / self.months,
+            (cut_sum + savings_val) / self.months,
+        )
 
     def _div(self, incomes: float, expenses: float) -> float:
-        return incomes / expenses if expenses else 0
+        return incomes / expenses if expenses else 0.0
 
 
-def load_service(user: User, year: int, months: int = 6) -> dict:
+def load_service(user: User, year: int, today: date, months: int = 6) -> dict:
+    unnecessary = _unnecessary_expense_titles(user)
 
-    # 1. Fetch Unnecessary Titles
-    unnecessary_ids = (
-        json.loads(user.journal.unnecessary_expenses)
-        if user.journal.unnecessary_expenses
-        else []
-    )
-    unnecessary_titles = list(
-        ExpenseTypeModelService(user)
-        .items()
-        .filter(pk__in=unnecessary_ids)
-        .values_list("title", flat=True)
-    )
-
-    # 2. Fetch Savings
-    savings_data = {}
+    savings = {}
     if user.journal.unnecessary_savings:
-        unnecessary_titles.append(str(_("Savings")))
-        savings_data = SavingModelService(user).spent_last_months(months=months)
+        unnecessary.append(str(_("Savings")))
+        savings = SavingModelService(user).spent_last_months(today, months)
 
-    # 3. Build Pure Data Object
-    data_payload = Data(
+    data = Data(
         account_sum=(
             AccountBalanceModelService(user)
             .year(year)
             .aggregate(Sum("balance", default=0))["balance__sum"]
         ),
-        fund_sum=(
-            SavingBalanceModelService(user)
-            .items()
-            .filter(year=year, saving_type__type__in=["shares", "funds"])
-            .aggregate(worth=Sum("market_value", filter=FRESH_WORTH, default=0))[
-                "worth"
-            ]
-        ),
-        pension_sum=(
-            SavingBalanceModelService(user)
-            .items()
-            .filter(year=year, saving_type__type="pensions")
-            .aggregate(worth=Sum("market_value", filter=FRESH_WORTH, default=0))[
-                "worth"
-            ]
-        ),
-        expenses=list(ExpenseModelService(user).last_months(months=months)),
-        savings=savings_data,
-        unnecessary=unnecessary_titles,
+        fund_sum=_fresh_worth(user, year, ["shares", "funds"]),
+        pension_sum=_fresh_worth(user, year, ["pensions"]),
+        expenses=list(ExpenseModelService(user).last_months(today, months)),
+        savings=savings,
+        unnecessary=unnecessary,
     )
 
-    obj = NoIncomes(data_payload, months=months)
+    obj = NoIncomes(data, months=months)
 
     return {
         "no_incomes": obj.summary,
@@ -150,3 +121,23 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
         "not_use": obj.unnecessary,
         "avg_expenses": obj.avg_expenses,
     }
+
+
+def _unnecessary_expense_titles(user: User) -> list[str]:
+    ids = json.loads(user.journal.unnecessary_expenses or "[]")
+
+    return list(
+        ExpenseTypeModelService(user)
+        .items()
+        .filter(pk__in=ids)
+        .values_list("title", flat=True)
+    )
+
+
+def _fresh_worth(user: User, year: int, types: list[str]) -> int:
+    return (
+        SavingBalanceModelService(user)
+        .items()
+        .filter(year=year, saving_type__type__in=types)
+        .aggregate(worth=Sum("market_value", filter=FRESH_WORTH, default=0))["worth"]
+    )

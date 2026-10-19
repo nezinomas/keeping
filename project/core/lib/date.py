@@ -1,5 +1,7 @@
 import calendar
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+
+from dateutil.relativedelta import relativedelta
 
 from ...users.models import User
 from .year_boundary import YearBoundary
@@ -42,6 +44,12 @@ def set_date_with_user_year(user: User, today: date) -> datetime:
     day = min(today.day, calendar.monthrange(year, today.month)[1])
 
     return datetime(year, today.month, day)
+
+
+def last_months_window(today: date, months: int) -> tuple[date, date]:
+    """The `months` whole months before `today`'s, first day to last."""
+    month_start = today.replace(day=1)
+    return (month_start - relativedelta(months=months), month_start - timedelta(days=1))
 
 
 def yday(year: int, today: date) -> tuple[int, int]:

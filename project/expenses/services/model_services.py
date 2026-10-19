@@ -1,6 +1,5 @@
-from datetime import date, timedelta
+from datetime import date
 
-from dateutil.relativedelta import relativedelta
 from django.db.models import (
     BooleanField,
     Case,
@@ -19,6 +18,7 @@ from django.db.models.functions import (
     TruncMonth,
 )
 
+from ...core.lib.date import last_months_window
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService, DatedModelService
 from .. import models
@@ -170,21 +170,10 @@ class ExpenseModelService(SumMixin, DatedModelService):
             .values("year", "sum", "title")
         )
 
-    def last_months(self, months: int = 6):
-        """
-        Calculates the total sum of expenses for the last `months` months.
-        If today is 2020-02-15 and months=6,
-        it will calculate the sum from 2019-08-01 to 2020-01-31.
-        - If there are no expenses in that period, it will return []
-        """
-        one_day = timedelta(days=1)
-        start = date.today().replace(day=1) - one_day
-
-        # back months to past; if months=6 then end=2019-08-01
-        end = (start + one_day) - relativedelta(months=months)
-
+    def last_months(self, today: date, months: int = 6):
+        """Per expense type, the `months` whole months before `today`'s."""
         return (
-            self.objects.filter(date__range=(end, start))
+            self.objects.filter(date__range=last_months_window(today, months))
             .values("expense_type")
             .annotate(sum=Sum("price"))
             .values("sum", title=F("expense_type__title"))

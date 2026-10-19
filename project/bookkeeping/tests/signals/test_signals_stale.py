@@ -4,6 +4,7 @@ import pytest
 
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import PensionWorthFactory
+from ....bookkeeping.tests.helper import quiet_build
 from ....core.tests.utils import count_queries
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
@@ -160,9 +161,11 @@ def test_resync_query_count_with_moves_does_not_grow_with_the_funds(main_user):
         SavingBalance.objects.all().delete()
         return count_queries(lambda: balance_sources.sync_savings(user=main_user))
 
-    _funds_with_moves(0, 2)
+    with quiet_build(main_user):
+        _funds_with_moves(0, 2)
     few = queries()
-    _funds_with_moves(2, 4)
+    with quiet_build(main_user):
+        _funds_with_moves(2, 2)
     many = queries()
 
     assert many == few

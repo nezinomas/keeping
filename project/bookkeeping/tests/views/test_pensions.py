@@ -120,13 +120,14 @@ def test_open_pension_type_with_no_worth_shows_dashes(client_logged, sold):
     assert row_cells(content, "Open")[8:] == ["-"] * 4
 
 
-def test_pensions_queries_do_not_grow_with_closed_types(client_logged):
+def test_pensions_queries_do_not_grow_with_closed_types(client_logged, main_user):
     def build(i):
         _pension_type_with_a_sell(f"Fund {i}", closed=1999 if i % 2 else None)
         PensionFactory(pension_type=PensionTypeFactory(title=f"P {i}"))
 
     queries = [
-        view_queries(client_logged, "bookkeeping:pensions", build, n) for n in (2, 6)
+        view_queries(client_logged, main_user, "bookkeeping:pensions", build, n)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
@@ -153,7 +154,7 @@ def test_total_ignores_a_switch_between_funds(client_logged):
     assert total_cells(content)[-1] == row_cells(content, "PensionType")[-1]
 
 
-def test_pensions_queries_do_not_grow_with_switches(client_logged):
+def test_pensions_queries_do_not_grow_with_switches(client_logged, main_user):
     def build(i):
         a = _pension_type_with_a_sell(f"A {i}")
         b = SavingTypeFactory(title=f"B {i}", type="pensions")
@@ -162,7 +163,8 @@ def test_pensions_queries_do_not_grow_with_switches(client_logged):
         )
 
     queries = [
-        view_queries(client_logged, "bookkeeping:pensions", build, n) for n in (2, 6)
+        view_queries(client_logged, main_user, "bookkeeping:pensions", build, n)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]

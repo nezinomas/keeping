@@ -1,6 +1,8 @@
 import json
 import re
+from contextlib import contextmanager
 from datetime import date, datetime
+from unittest.mock import patch
 
 import pytz
 from django.db import connection
@@ -11,7 +13,7 @@ from ...accounts.tests.factories import AccountFactory
 from ...savings.models import SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
-from .. import views
+from .. import balance_sources, views
 from .factories import SavingWorthFactory
 
 WORTH_VIEWS = (views.AccountsWorthNew, views.SavingsWorthNew, views.PensionsWorthNew)
@@ -90,10 +92,32 @@ def total_cells(content):
     return [c.strip() for c in re.findall(r"<th[^>]*>(.*?)</th>", foot, re.S)]
 
 
-def view_queries(client, name, build, count):
+@contextmanager
+def quiet_build(user):
+    """Builds rows without the per-save balance syncs, then syncs each balance once.
+
+    Build balance rows after the block: the closing syncs overwrite any built inside.
+    """
+    syncs = (
+        balance_sources.sync_accounts,
+        balance_sources.sync_savings,
+        balance_sources.sync_pensions,
+    )
+    with (
+        patch.object(balance_sources, "sync_accounts"),
+        patch.object(balance_sources, "sync_savings"),
+        patch.object(balance_sources, "sync_pensions"),
+    ):
+        yield
+    for sync in syncs:
+        sync(user)
+
+
+def view_queries(client, user, name, build, count):
     """Queries the view runs once `build(i)` has made `count` saving types."""
-    while SavingType.objects.count() < count:
-        build(SavingType.objects.count())
+    with quiet_build(user):
+        while SavingType.objects.count() < count:
+            build(SavingType.objects.count())
     with CaptureQueriesContext(connection) as ctx:
         client.get(reverse(name))
     return len(ctx)

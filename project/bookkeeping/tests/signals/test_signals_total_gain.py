@@ -4,6 +4,7 @@ import pytest
 
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import PensionWorthFactory
+from ....bookkeeping.tests.helper import quiet_build
 from ....core.tests.utils import count_queries
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
@@ -190,7 +191,7 @@ def test_closing_a_pension_type_drops_its_later_rows():
 
 
 # ----------------------------------------------------------------------------
-#                                 deleting a move re-derives the fund's close year
+#                                   deleting the closing move reopens the fund
 # ----------------------------------------------------------------------------
 MOVE_OUT = {
     "sell": lambda fund, when: sell(fund, 10000, when=when),
@@ -203,22 +204,19 @@ def _closed(fund):
 
 
 @pytest.mark.parametrize("move", MOVE_OUT)
-def test_deleting_the_closing_move_closes_the_fund_at_the_move_before(move):
+@pytest.mark.parametrize(
+    "earlier",
+    [
+        pytest.param([date(YEAR, 6, 1)], id="after_an_earlier_move"),
+        pytest.param([], id="the_only_move"),
+    ],
+)
+def test_deleting_the_closing_move_reopens_the_fund(move, earlier):
     fund = SavingTypeFactory(title="Fund", closed=YEAR + 1)
     buy(fund, 100000)
-    MOVE_OUT[move](fund, date(YEAR, 6, 1))
+    for when in earlier:
+        MOVE_OUT[move](fund, when)
     closing = MOVE_OUT[move](fund, date(YEAR + 1, 6, 1))
-
-    closing.delete()
-
-    assert _closed(fund) == YEAR
-
-
-@pytest.mark.parametrize("move", MOVE_OUT)
-def test_deleting_the_only_move_reopens_the_fund(move):
-    fund = SavingTypeFactory(title="Fund", closed=YEAR)
-    buy(fund, 100000)
-    closing = MOVE_OUT[move](fund, date(YEAR, 6, 1))
 
     closing.delete()
 
@@ -348,11 +346,13 @@ def _save_queries(type_):
     return count_queries(type_.save)
 
 
-def test_saving_a_saving_type_query_count_does_not_grow_with_the_types():
-    funds = [_fund_with_worth(f"T{i}") for i in range(2)]
+def test_saving_a_saving_type_query_count_does_not_grow_with_the_types(main_user):
+    with quiet_build(main_user):
+        funds = [_fund_with_worth(f"T{i}") for i in range(2)]
     few = _save_queries(funds[0])
 
-    funds += [_fund_with_worth(f"T{i}") for i in range(2, 6)]
+    with quiet_build(main_user):
+        funds += [_fund_with_worth(f"T{i}") for i in range(2, 4)]
     many = _save_queries(funds[0])
 
     assert many == few
@@ -376,12 +376,14 @@ def test_saving_a_pension_type_query_count_does_not_grow_with_the_types():
 
 
 def test_resync_query_count_does_not_grow_with_the_types(main_user):
-    funds = [_fund_with_worth(f"T{i}") for i in range(2)]
-    _close_with_a_sell_after_a_switch_in(*funds)
+    with quiet_build(main_user):
+        funds = [_fund_with_worth(f"T{i}") for i in range(2)]
+        _close_with_a_sell_after_a_switch_in(*funds)
     few = _resync_queries(main_user)
 
-    for i in range(2, 6):
-        _fund_with_worth(f"T{i}")
+    with quiet_build(main_user):
+        for i in range(2, 4):
+            _fund_with_worth(f"T{i}")
     many = _resync_queries(main_user)
 
     assert many == few

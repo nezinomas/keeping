@@ -2,7 +2,7 @@ import itertools
 from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
+from datetime import date
 from types import MappingProxyType
 from typing import NamedTuple
 
@@ -31,29 +31,29 @@ class Chart:
     invested: list = field(init=False, default_factory=list)
     profit: list = field(init=False, default_factory=list)
     total: list = field(init=False, default_factory=list)
-    proc: float = field(init=False, default=0.0)
+    proc: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.text_total = _("Total")
         self.text_profit = _("Profit")
         self.text_invested = _("Invested")
 
-    def process_data(self, data, switched: Mapping[int, int]):
+    def process_data(self, data, switched: Mapping[int, int], today: date):
         df = pl.DataFrame(data)
         if df.is_empty():
             return
 
-        df = self._process_dataframe(df, switched)
+        df = self._process_dataframe(df, switched, today)
         self._update_attributes(df)
 
-    def _process_dataframe(self, df, switched: Mapping[int, int]):
+    def _process_dataframe(self, df, switched: Mapping[int, int], today: date):
         base = pl.col.incomes - pl.col.year.replace_strict(switched, default=0)
         return (
             df.lazy()
             .group_by(pl.col.year)
             .agg([pl.col.incomes.sum(), pl.col.profit.sum(), pl.col.total.sum()])
             .with_columns((pl.col.total - pl.col.profit).alias("invested"))
-            .filter(pl.col.year <= datetime.now().year)
+            .filter(pl.col.year <= today.year)
             .filter((pl.col.total != 0) | (pl.col.profit != 0))
             .with_columns(
                 proc=pl.when(base > 0)
@@ -78,8 +78,12 @@ class Context:
     charts: dict = field(default_factory=dict, init=False)
     pointers: list = field(default_factory=list, init=False)
 
-    def add_chart(self, pointer, data, records):
-        self.charts[pointer] = data
+    def add_chart(self, pointer, chart):
+        records = len(chart["categories"])
+        if not records:
+            return
+
+        self.charts[pointer] = chart
         self.records += records
         self.pointers.append(pointer)
 
@@ -148,31 +152,33 @@ def switched_by_group(user, data: dict) -> dict[str, dict[int, int]]:
     return switched
 
 
-def make_chart(title: str, *args, switched: Mapping[int, int] = NO_SWITCHES) -> dict:
+def make_chart(
+    title: str, *args, today: date, switched: Mapping[int, int] = NO_SWITCHES
+) -> dict:
     chart = Chart(title)
     data = itertools.chain.from_iterable(args)
-    chart.process_data(data, switched)
+    chart.process_data(data, switched, today)
     return asdict(chart)
 
 
-def update_context(context, chart, chart_pointer):
-    if records := len(chart["categories"]):
-        context.add_chart(chart_pointer, chart, records)
-
-
-def load_service(data, maps, switched: Mapping = NO_SWITCHES):
+def load_service(data, maps, today: date, switched: Mapping = NO_SWITCHES):
     context = Context()
 
-    for i in maps:
-        data_args = [data[x] for x in i.keys]
+    for chart_keys in maps:
+        data_args = [data[x] for x in chart_keys.keys]
         chart = make_chart(
-            i.title, *data_args, switched=switched.get(i.pointer, NO_SWITCHES)
+            chart_keys.title,
+            *data_args,
+            today=today,
+            switched=switched.get(chart_keys.pointer, NO_SWITCHES),
         )
-        update_context(context, chart, i.pointer)
+        context.add_chart(chart_keys.pointer, chart)
 
     return asdict(context)
 
 
-def load(user) -> dict:
+def load(user, today: date) -> dict:
     data = get_data(user)
-    return load_service(data, chart_keys_map(), switched=switched_by_group(user, data))
+    return load_service(
+        data, chart_keys_map(), today, switched=switched_by_group(user, data)
+    )
