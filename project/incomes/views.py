@@ -1,7 +1,6 @@
 from datetime import date
 
 from django.urls import reverse_lazy
-from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import PriceToFloatViewMixin
@@ -21,27 +20,17 @@ from .services.chart_months import ChartMonths
 from .services.model_services import IncomeModelService, IncomeTypeModelService
 from .services.search import search_incomes
 from .services.type_rows import TypesTable
-from .tabs import DEFAULT_TAB, TABS, IncomeTab
+from .tabs import TABS
 
 
 class TabViewMixin(CoreTabViewMixin):
-    tab = DEFAULT_TAB
-    fragment_template = "incomes/tab_fragment.html"
+    tabs = TABS
+    default_tab = TABS["index"]
+    app_title = _("Incomes")
     page_template = "incomes/index.html"
-
-    def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "tab_url": self.tab.url}
-
-    def page_context(self) -> dict:
-        return {
-            "page_title": format_lazy("{} | {}", _("Incomes"), self.tab.title),
-            "tabs": [(tab, tab.url) for tab in TABS],
-        }
 
 
 class TabIndex(TabViewMixin, TemplateViewMixin):
-    tab = IncomeTab.resolve("index")
-
     def get_context_data(self, **kwargs):
         boundary = YearBoundary(self.request.user.selected_year(), date.today())
         service = IncomeModelService(self.request.user)
@@ -77,11 +66,11 @@ class Lists(ListViewMixin):
 
 
 class TabData(TabViewMixin, Lists):
-    tab = IncomeTab.resolve("data")
+    tab = TABS["data"]
 
 
 class TabTypes(TabViewMixin, TemplateViewMixin):
-    tab = IncomeTab.resolve("types")
+    tab = TABS["types"]
 
     def get_context_data(self, **kwargs):
         user = self.request.user
