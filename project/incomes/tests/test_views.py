@@ -364,11 +364,12 @@ def test_a_history_restore_rebuilds_the_whole_page(client_logged, tab):
     assert '<nav class="subnav">' in content
 
 
+@pytest.mark.parametrize(
+    "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
+)
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_only_the_open_tab_reloads_on_a_saved_income(client_logged, tab):
-    content = client_logged.get(
-        tab.url, headers={"HX-Request": "true"}
-    ).content.decode()
+def test_only_the_open_tab_reloads_on_a_saved_income(client_logged, tab, headers):
+    content = client_logged.get(tab.url, headers=headers).content.decode()
 
     listener = (
         f'hx-get="{tab.url}" hx-target="#tab_content" hx-trigger="reload from:body"'
