@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from unittest.mock import patch
 
 import pytest
@@ -9,6 +10,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
+from ...bookkeeping import balance_sources
 from ..forms_import import ReviewFormSet, ReviewReceiptForm
 from ..models import Expense, ExpenseKeyword
 from ..receipts import reader
@@ -87,9 +89,6 @@ def _save_data(rows, account, **receipt_overrides):
     return data
 
 
-# ----------------------------------------------------------------------------
-#                                                                       Import
-# ----------------------------------------------------------------------------
 def test_import_get_anonymous_redirects_to_login(client):
     url = reverse("expenses:import")
     response = client.get(url)
@@ -193,8 +192,7 @@ def test_import_post_fixture_29_rows(main_user, client_logged):
     )
 
     assert response.status_code == 200
-    formset = response.context["formset"]
-    assert len(formset.forms) == 29
+    assert 'name="form-TOTAL_FORMS" value="29"' in response.content.decode()
 
 
 def test_import_post_kg_line_amount_is_one(main_user, client_logged):
@@ -213,8 +211,8 @@ def test_import_post_kg_line_amount_is_one(main_user, client_logged):
         data=_upload_data(a, _barbora_file(), date="2026-09-18"),
     )
 
-    formset = response.context["formset"]
-    assert formset.forms[kg_index].initial["amount"] == 1
+    text = response.content.decode()
+    assert f'name="form-{kg_index}-amount" value="1"' in text
 
 
 def test_import_post_jogurt_keyword_prefills_row(main_user, client_logged):
@@ -234,11 +232,13 @@ def test_import_post_jogurt_keyword_prefills_row(main_user, client_logged):
         data=_upload_data(a, _barbora_file(), date="2026-09-18"),
     )
 
-    formset = response.context["formset"]
-    row = formset.forms[jogurt_index]
-    assert row.initial["expense_type"] == t
-    assert row.initial["expense_name"] == n
-    assert row.initial["keyword"] == "jogurt"
+    text = response.content.decode()
+    prefix = f"form-{jogurt_index}"
+    expense_type = _select(text, f"{prefix}-expense_type")
+    expense_name = _select(text, f"{prefix}-expense_name")
+    assert _is_selected(expense_type, t.pk)
+    assert _is_selected(expense_name, n.pk)
+    assert f'name="{prefix}-keyword" value="jogurt"' in text
 
 
 def test_import_post_unmatched_row_blank_option_selected(main_user, client_logged):
@@ -270,7 +270,18 @@ def test_import_post_every_skip_box_named_form_n_skip(main_user, client_logged):
 
 def _section(text, tag):
     match = re.search(rf"<{tag}>.*?</{tag}>", text, re.DOTALL)
+    assert match, f"no <{tag}> in the response"
     return match.group(0)
+
+
+def _select(text, name):
+    match = re.search(rf'<select name="{name}".*?</select>', text, re.DOTALL)
+    assert match, f"no select {name} in the response"
+    return match.group(0)
+
+
+def _is_selected(select, pk):
+    return re.search(rf'<option value="{pk}"[^>]*\sselected\b', select) is not None
 
 
 def _shop_money_receipt():
@@ -488,13 +499,18 @@ def test_import_post_query_count_equal_for_2_and_6_lines(main_user, client_logge
     assert counts[2] == counts[6]
 
 
-# ----------------------------------------------------------------------------
-#                                                                   ImportSave
-# ----------------------------------------------------------------------------
-def test_import_save_valid_creates_expenses_and_redirects(main_user, client_logged):
+def test_import_save_valid_creates_expenses_and_redirects(
+    main_user, client_logged, mocker
+):
     a = AccountFactory()
     t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
+    n1 = ExpenseNameFactory(title="Pieno produktai", parent=t)
+    n2 = ExpenseNameFactory(title="Duona", parent=t)
+
+    sync = mocker.patch(
+        "project.bookkeeping.balance_sources.sync_accounts",
+        wraps=balance_sources.sync_accounts,
+    )
 
     data = _save_data(
         [
@@ -502,12 +518,20 @@ def test_import_save_valid_creates_expenses_and_redirects(main_user, client_logg
                 "title": "Naturalus jogurtas VILVI",
                 "price": "5,00",
                 "expense_type": t.pk,
-                "expense_name": n.pk,
+                "expense_name": n1.pk,
                 "keyword": "jogurt",
-            }
+            },
+            {
+                "title": "Juoda duona",
+                "price": "3,00",
+                "expense_type": t.pk,
+                "expense_name": n2.pk,
+                "keyword": "duon",
+            },
         ],
         a,
-        date="1999-03-05",
+        total="800",
+        date="1998-03-05",
     )
 
     url = reverse("expenses:import_save")
@@ -515,11 +539,16 @@ def test_import_save_valid_creates_expenses_and_redirects(main_user, client_logg
 
     assert response.status_code == 200
     assert response["HX-Redirect"] == reverse("expenses:index", kwargs={"month": 3})
-    assert Expense.objects.count() == 1
-    expense = Expense.objects.get()
-    assert expense.price == 500
-    assert expense.expense_name == n
-    assert ExpenseKeyword.objects.filter(keyword="jogurt", expense_name=n).exists()
+    assert [(e.expense_name, e.price) for e in Expense.objects.order_by("pk")] == [
+        (n1, 500),
+        (n2, 300),
+    ]
+    assert ExpenseKeyword.objects.filter(keyword="jogurt", expense_name=n1).exists()
+    assert ExpenseKeyword.objects.filter(keyword="duon", expense_name=n2).exists()
+    assert sync.call_count == 1
+
+    main_user.journal.refresh_from_db()
+    assert main_user.journal.first_record == date(1998, 3, 5)
 
 
 def test_import_save_edited_price_is_saved(main_user, client_logged):
@@ -569,8 +598,8 @@ def test_import_save_invalid_nothing_saved_names_intact(main_user, client_logged
 
     assert response.status_code == 200
     assert Expense.objects.count() == 0
-    formset = response.context["formset"]
-    assert formset.forms[0].fields["expense_name"].queryset.filter(pk=n.pk).exists()
+    expense_name = _select(response.content.decode(), "form-0-expense_name")
+    assert _is_selected(expense_name, n.pk)
 
 
 def test_import_save_tampered_account_refused(main_user, second_user, client_logged):
@@ -748,9 +777,6 @@ def test_import_save_valid_query_count_equal_for_2_and_6_lines(
     assert counts[2] == counts[6]
 
 
-# ----------------------------------------------------------------------------
-#                                                                        Index
-# ----------------------------------------------------------------------------
 def test_index_shows_import_link(main_user, client_logged):
     url = reverse("expenses:index")
     response = client_logged.get(url)
@@ -771,9 +797,6 @@ def test_import_upload_file_control_speaks_the_app_language(main_user, client_lo
     assert re.search(r'<input type="file" name="pdf"[^>]*class="visually-hidden"', text)
 
 
-# ----------------------------------------------------------------------------
-#                                                          Error markup, colspan
-# ----------------------------------------------------------------------------
 def test_import_save_invalid_title_shows_invalid_feedback(main_user, client_logged):
     a = AccountFactory()
     t = ExpenseTypeFactory()
