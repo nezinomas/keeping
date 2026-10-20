@@ -1,13 +1,20 @@
 import re
 from datetime import date
+from pathlib import Path
 
 import pytest
 from django.urls import NoReverseMatch, reverse
 
-from ....expenses.tests.factories import ExpenseFactory
+from ....expenses.tests.factories import (
+    ExpenseFactory,
+    ExpenseNameFactory,
+    ExpenseTypeFactory,
+)
 from ....plans.tests.factories import DayPlanFactory
 
 pytestmark = pytest.mark.django_db
+
+EXPANDED_DAY_SNAPSHOT = Path(__file__).parent / "snapshots" / "expanded_day.html"
 
 
 def test_view_month_import_button_after_expenses_button(client_logged):
@@ -101,6 +108,40 @@ def test_view_expand_day_expenses_ajax(client_logged):
     assert "1999-01-01" in actual
     assert "Expense Type" in actual
     assert "Expense Name" in actual
+
+
+def test_expanded_day_expenses_markup_unchanged(client_logged):
+    # explicit pks: they reach the row colour and the urls, and a factory's varies
+    food = ExpenseTypeFactory(pk=1, title="Food")
+    drinks = ExpenseTypeFactory(pk=2, title="Drinks")
+    ExpenseFactory(
+        pk=1,
+        expense_type=food,
+        expense_name=ExpenseNameFactory(title="Bread", parent=food),
+        exception=True,
+    )
+    ExpenseFactory(
+        pk=2,
+        expense_type=food,
+        expense_name=ExpenseNameFactory(title="Milk", parent=food),
+        attachment="1/1/1999.01_milk.jpg",
+    )
+    ExpenseFactory(
+        pk=3,
+        expense_type=drinks,
+        expense_name=ExpenseNameFactory(title="Beer", parent=drinks),
+        attachment="1/2/1999.01_beer.pdf",
+    )
+
+    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": date(1999, 1, 1)})
+    actual = client_logged.get(url).content.decode("utf-8")
+    expected = EXPANDED_DAY_SNAPSHOT.read_text(encoding="utf-8")
+
+    assert _without_whitespace(actual) == _without_whitespace(expected)
+
+
+def _without_whitespace(html):
+    return re.sub(r"\s+", " ", re.sub(r"\s*([<>])\s*", r"\1", html))
 
 
 @pytest.mark.parametrize(
