@@ -1,5 +1,6 @@
 from datetime import date
 
+import pytest
 from hypothesis import example, given
 from hypothesis import strategies as st
 
@@ -53,3 +54,14 @@ def test_the_items_name_every_month_then_all_and_mark_the_open_one():
         FilterItem(label, f"/t/?month={value}", value == "3")
         for label, value in zip(labels, URL_VALUES, strict=True)
     ]
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        pytest.param("all", {}, id="all"),
+        pytest.param("3", {"date__month": 3}, id="month"),
+    ],
+)
+def test_a_filter_looks_its_month_up_in_the_date(value, expected):
+    assert MonthFilter(value).lookup() == expected

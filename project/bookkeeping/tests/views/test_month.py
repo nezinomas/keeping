@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from django.urls import NoReverseMatch, reverse
 
+from ....core.tests.utils import clean_content
 from ....expenses.tests.factories import (
     ExpenseFactory,
     ExpenseNameFactory,
@@ -108,6 +109,16 @@ def test_view_expand_day_expenses_ajax(client_logged):
     assert "1999-01-01" in actual
     assert "Expense Type" in actual
     assert "Expense Name" in actual
+
+
+def test_an_empty_expanded_day_keeps_its_reloading_notice(client_logged):
+    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": date(1999, 1, 1)})
+    actual = clean_content(client_logged.get(url).content.decode("utf-8"))
+
+    assert (
+        f'<div class="alert alert-warning" hx-trigger="reload from:body" hx-get="{url}"'
+        ' hx-target="#data" hx-indicator="#indicator">1999-01-01 dieną įrašų nėra</div>'
+    ) in actual
 
 
 def test_expanded_day_expenses_markup_unchanged(client_logged):
