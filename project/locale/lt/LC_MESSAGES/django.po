@@ -1873,6 +1873,16 @@ msgstr "Išlaidų rūšį"
 msgid "There are no records for month <b>%(month)s</b>."
 msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 
+#: .\project\expenses\templates\expenses\expense_list.html
+#, python-format
+msgid "There are no records for month %(month)s."
+msgstr "Mėnesį %(month)s įrašų nėra."
+
+#: .\project\expenses\templates\expenses\expense_list.html
+#, python-format
+msgid "No records in %(year)s."
+msgstr "%(year)s metais įrašų nėra."
+
 #: .\project\expenses\views\expenses.py:93
 msgid "Delete expense"
 msgstr "Trinti išlaidas"
