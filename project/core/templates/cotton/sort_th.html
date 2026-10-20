@@ -4,6 +4,6 @@
     {% if key == active %}
     <span>{{ slot }}</span>
     {% else %}
-    <a role="button" hx-get="{{ url }}?order={{ key }}" hx-target="{{ target }}">{{ slot }}</a>
+    <a role="button" hx-get="{{ url }}{% if '?' in url %}&amp;{% else %}?{% endif %}order={{ key }}" hx-target="{{ target }}">{{ slot }}</a>
     {% endif %}
 </th>
