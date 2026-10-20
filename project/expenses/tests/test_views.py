@@ -6,6 +6,7 @@ import time_machine
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
+from ...core.lib.utils import get_action_buttons_html
 from ...core.tests.utils import change_profile_year, clean_content, view_for
 from ...users.views import Login
 from .. import models
@@ -113,6 +114,25 @@ def test_expenses_list_empty_notice(client_logged, month, expected):
     actual = client_logged.get(url).content.decode("utf-8")
 
     assert expected in actual
+
+
+def test_lists_renders_row_buttons_equal_for_2_and_6_expenses(client_logged):
+    url = reverse("expenses:list", kwargs={"month": 1})
+    buttons = {"cotton/td_edit.html", "cotton/td_delete.html"}
+    # the buttons render once per process (lru_cache): warm it, or the first
+    # request alone renders them
+    get_action_buttons_html()
+
+    def button_renders():
+        templates = client_logged.get(url).templates
+        return sorted(t.name for t in templates if t.name in buttons)
+
+    ExpenseFactory.create_batch(2)
+    two = button_renders()
+    ExpenseFactory.create_batch(4)
+    six = button_renders()
+
+    assert two == six
 
 
 def test_expenses_lists_302(client):
