@@ -10,7 +10,6 @@ from django.urls import reverse
 from django.utils.dates import WEEKDAYS_ABBR
 
 from ...core.lib.stat_card import EMPTY
-from ...core.lib.translation import month_abbr
 from .factories import CountFactory, CountTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -111,12 +110,23 @@ def test_periodicity_months_are_twelve(client_logged):
     assert len(_context(client_logged)["chart_months"]["categories"]) == 12
 
 
-def test_periodicity_months_use_djangos_month_abbreviations(client_logged):
+def test_periodicity_months_are_the_full_month_names(client_logged):
     CountFactory()
 
-    categories = _context(client_logged)["chart_months"]["categories"]
-
-    assert categories == [month_abbr(number) for number in range(1, 13)]
+    assert _context(client_logged)["chart_months"]["categories"] == [
+        "Sausis",
+        "Vasaris",
+        "Kovas",
+        "Balandis",
+        "Gegužė",
+        "Birželis",
+        "Liepa",
+        "Rugpjūtis",
+        "Rugsėjis",
+        "Spalis",
+        "Lapkritis",
+        "Gruodis",
+    ]
 
 
 def test_periodicity_charts_pool_every_record_and_caption_the_span(client_logged):
