@@ -17,11 +17,21 @@ def _data(chart):
     return {series["name"]: series["data"] for series in chart["series"]}
 
 
-def test_categories_are_the_twelve_months():
-    categories = _chart()["categories"]
-
-    assert len(categories) == 12
-    assert categories[0] == "Sau"
+def test_categories_are_the_twelve_full_month_names():
+    assert _chart()["categories"] == [
+        "Sausis",
+        "Vasaris",
+        "Kovas",
+        "Balandis",
+        "Gegužė",
+        "Birželis",
+        "Liepa",
+        "Rugpjūtis",
+        "Rugsėjis",
+        "Spalis",
+        "Lapkritis",
+        "Gruodis",
+    ]
 
 
 def test_last_year_comes_first_so_the_year_is_drawn_darkest():
