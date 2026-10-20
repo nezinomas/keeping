@@ -1,4 +1,3 @@
-from django.utils.dates import MONTHS_3
 from django.utils.translation import gettext as _
 
 
@@ -29,7 +28,3 @@ def weekday_names():
         "Saturday": _("Saturday"),
         "Sunday": _("Sunday"),
     }
-
-
-def month_abbr(month: int) -> str:
-    return str(MONTHS_3[month]).capitalize()
