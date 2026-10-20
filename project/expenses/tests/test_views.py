@@ -1,8 +1,12 @@
+import json
+import re
 from datetime import date
 from unittest.mock import patch
 
 import pytest
 import time_machine
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
@@ -12,6 +16,7 @@ from ...users.views import Login
 from .. import models
 from ..forms import ExpenseNameChoicesMixin
 from ..forms_import import ReviewLineForm
+from ..views import expenses as expense_views
 from ..views import expenses_import
 from ..views.expenses import Lists, LoadExpenseName
 from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
@@ -27,19 +32,150 @@ def type_with_two_names():
     return expense_type
 
 
+def _active_tab(name):
+    return rf'id="tab-{name}"\s+class="tab active"'
+
+
+def _listed_month(month):
+    # the month buttons draw every month's url too; only #data loads one
+    return rf'id="data"[^>]*hx-get="/expenses/list/{month}/"'
+
+
 @pytest.mark.parametrize(
-    "kwargs, expected",
+    "url_name, kwargs, expected",
     [
-        pytest.param({}, 2, id="no_month"),
-        pytest.param({"month": 3}, 3, id="month_kwarg"),
+        pytest.param("expenses:index", {}, [_active_tab("index")], id="overview"),
+        pytest.param(
+            "expenses:tab_data",
+            {},
+            [_active_tab("data"), _listed_month(2)],
+            id="data_this_month",
+        ),
+        pytest.param(
+            "expenses:index",
+            {"month": 3},
+            [_active_tab("data"), _listed_month(3)],
+            id="nav_month",
+        ),
     ],
 )
 @time_machine.travel("1999-02-08")
-def test_expenses_index_context(client_logged, kwargs, expected):
-    url = reverse("expenses:index", kwargs=kwargs)
-    actual = client_logged.get(url).context["month"]
+def test_the_page_opens_the_tab_and_month_its_url_names(
+    client_logged, url_name, kwargs, expected
+):
+    content = client_logged.get(reverse(url_name, kwargs=kwargs)).content.decode()
 
-    assert actual == expected
+    for pattern in expected:
+        assert re.search(pattern, content)
+
+
+def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
+    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
+
+    assert 'role="tablist"' in content
+    assert content.count('class="quick-add__pill"') == 2
+    assert 'class="quick-add__pill" href="/expenses/import/">Importuoti čekį' in content
+    assert 'class="quick-add__pill" hx-get="/expenses/new/"' in content
+    assert "Pridėti išlaidas" in content
+
+
+def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
+    content = client_logged.get(
+        reverse("expenses:tab_index"), headers={"HX-Request": "true"}
+    ).content.decode()
+
+    assert "<title>Išlaidos | Apžvalga</title>" in content
+    assert 'role="tablist"' not in content
+    assert "quick-add" not in content
+
+
+def _tab_queries(client, url_name):
+    with CaptureQueriesContext(connection) as queries:
+        client.get(reverse(url_name), headers={"HX-Request": "true"})
+    return len(queries)
+
+
+@pytest.mark.parametrize("url_name", ["expenses:tab_index", "expenses:tab_data"])
+def test_tab_query_count_does_not_grow_with_the_expenses(client_logged, url_name):
+    for i in range(2):
+        ExpenseFactory(expense_type=ExpenseTypeFactory(title=f"T{i}"))
+    two = _tab_queries(client_logged, url_name)
+
+    for i in range(2, 6):
+        ExpenseFactory(expense_type=ExpenseTypeFactory(title=f"T{i}"))
+    six = _tab_queries(client_logged, url_name)
+
+    assert six == two
+
+
+@time_machine.travel("1999-09-15")
+def test_overview_states_a_running_year_to_its_boundary(client_logged):
+    food = ExpenseTypeFactory(title="Maistas")
+    ExpenseFactory(date=date(1999, 2, 5), price=90_000, expense_type=food)
+    ExpenseFactory(date=date(1999, 11, 5), price=60_000, expense_type=food)
+    ExpenseFactory(date=date(1998, 1, 5), price=80_000, expense_type=food)
+    ExpenseFactory(date=date(1998, 12, 5), price=5_000, expense_type=food)
+
+    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
+
+    assert ">900</span>" in content
+    assert "Pernai 800<" in content
+    assert ">100</span>" in content
+    assert "9 mėnesiai" in content
+    assert ">Maistas</span>" in content
+    assert "100% metų sumos" in content
+    assert "Didžiausią šių metų dalį sudaranti išlaidų rūšis" in content
+
+
+def test_overview_of_a_past_year_reads_the_whole_year(client_logged):
+    ExpenseFactory(date=date(1999, 3, 5), price=60_000)
+    ExpenseFactory(date=date(1998, 12, 5), price=5_000)
+
+    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
+
+    assert ">600</span>" in content
+    assert "Pernai 50<" in content
+    assert ">50</span>" in content
+
+
+def test_overview_of_an_empty_year_is_three_empty_cards(client_logged):
+    ExpenseFactory(date=date(1998, 3, 5))
+
+    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
+
+    assert content.count("trend-card__value--empty") == 3
+
+
+@time_machine.travel("1999-09-15")
+def test_overview_charts_the_year_against_last_year_to_the_same_day(client_logged):
+    ExpenseFactory(date=date(1999, 2, 5), price=90_000)
+    ExpenseFactory(date=date(1998, 9, 10), price=80_000)
+    ExpenseFactory(date=date(1998, 9, 20), price=5_000)
+
+    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
+    chart = json.loads(
+        re.search(r'id="chart-months-data"[^>]*>(.*?)</script>', content)[1]
+    )
+    data = {series["name"]: series["data"] for series in chart["series"]}
+
+    assert data["1999"] == [0.0, 900.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    assert data["1998"][8] == 800.0
+    assert "Išlaidos per mėnesį" in content
+
+
+@pytest.mark.parametrize(
+    "url_name, lit",
+    [
+        pytest.param("expenses:tab_data", True, id="expenses_tab"),
+        pytest.param("plans:tab_expenses", False, id="plans"),
+        pytest.param("bookkeeping:detailed_expenses", False, id="detailed"),
+        pytest.param("bookkeeping:summary_expenses", False, id="summary"),
+    ],
+)
+def test_the_navbar_lights_expenses_only_on_its_own_pages(client_logged, url_name, lit):
+    content = client_logged.get(reverse(url_name)).content.decode()
+
+    assert bool(re.search(r'class="active">\s*<a href="/expenses/"', content)) is lit
 
 
 @pytest.mark.parametrize(
@@ -419,9 +555,9 @@ def test_expenses_not_load_other_journal(client_logged, second_user):
     assert str(other_expense.price) not in form
 
 
-def test_expenses_index_search_form(client_logged):
-    url = reverse("expenses:index")
-    response = client_logged.get(url, follow=True).content.decode("utf-8")
+def test_expenses_data_search_form(client_logged):
+    url = reverse("expenses:tab_data")
+    response = client_logged.get(url).content.decode("utf-8")
 
     assert '<input type="search" name="search"' in response
     assert reverse("expenses:search") in response
@@ -811,6 +947,10 @@ class _Names(ExpenseNameChoicesMixin):
 @pytest.mark.parametrize(
     "call",
     [
+        pytest.param(
+            lambda rf, u: view_for(rf, u, expense_views.TabIndex).get_context_data(),
+            id="tab_index",
+        ),
         pytest.param(lambda rf, u: view_for(rf, u, Lists).get_queryset(), id="list"),
         pytest.param(
             lambda rf, u: _get(view_for(rf, u, LoadExpenseName, "/?expense_type=1")),

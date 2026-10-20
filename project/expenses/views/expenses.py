@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from functools import partial
 from typing import Any, cast
 
@@ -6,8 +6,12 @@ from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
+from ...core.lib.chart_months import ChartMonths
 from ...core.lib.convert_price import PriceToFloatViewMixin
+from ...core.lib.overview_cards import OverviewCards
 from ...core.lib.utils import add_fast_urls, get_action_buttons_html, int_or_zero
+from ...core.lib.year_boundary import YearBoundary
+from ...core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ...core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -20,10 +24,12 @@ from ...users.models import User
 from .. import forms
 from ..apps import App_name
 from ..services import search
+from ..services.cards import LARGEST_TYPE_EXPLANATION
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
 )
+from ..tabs import TABS
 
 
 class GetMonthMixin:
@@ -33,8 +39,36 @@ class GetMonthMixin:
         return self.kwargs.get("month") or datetime.now().month
 
 
-class Index(GetMonthMixin, TemplateViewMixin):
-    template_name = "expenses/index.html"
+class TabViewMixin(CoreTabViewMixin):
+    tabs = TABS
+    default_tab = TABS["index"]
+    app_title = _("Expenses")
+    page_template = "expenses/index.html"
+
+
+class TabIndex(TabViewMixin, TemplateViewMixin):
+    def get_context_data(self, **kwargs):
+        boundary = YearBoundary(self.request.user.selected_year(), date.today())
+        service = ExpenseModelService(self.request.user)
+
+        return {
+            **super().get_context_data(**kwargs),
+            "cards": OverviewCards.build(
+                list(service.sum_by_between("expense_type", *boundary.span)),
+                list(service.sum_by_between("expense_type", *boundary.previous_span)),
+                boundary,
+                LARGEST_TYPE_EXPLANATION,
+            ),
+            "chart": ChartMonths.build(
+                list(service.sum_by_month_between(*boundary.span)),
+                list(service.sum_by_month_between(*boundary.previous_span)),
+                boundary,
+            ),
+        }
+
+
+class TabData(GetMonthMixin, TabViewMixin, TemplateViewMixin):
+    tab = TABS["data"]
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"month": self.get_month()}
