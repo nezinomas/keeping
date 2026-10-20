@@ -2748,3 +2748,12 @@ msgstr "Pasirinktos vienodos pensijos."
 
 msgid "The name must be unique."
 msgstr "Vardas turi būti unikalus."
+
+msgid "Expenses by month"
+msgstr "Išlaidos per mėnesį"
+
+msgid "The expense type with the biggest share of this year"
+msgstr "Didžiausią šių metų dalį sudaranti išlaidų rūšis"
+
+msgid "Add expense"
+msgstr "Pridėti išlaidas"
