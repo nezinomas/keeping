@@ -7,8 +7,11 @@ app_name = App_name
 
 
 urlpatterns = [
-    path("", expenses.Index.as_view(), name="index"),
-    path("<int:month>/", expenses.Index.as_view(), name="index"),
+    path("", expenses.TabIndex.as_view(), name="index"),
+    # the nav's month links open Duomenys at that month
+    path("<int:month>/", expenses.TabData.as_view(), name="index"),
+    path("index/", expenses.TabIndex.as_view(), name="tab_index"),
+    path("data/", expenses.TabData.as_view(), name="tab_data"),
     path("import/", expenses_import.Import.as_view(), name="import"),
     path("import/save/", expenses_import.ImportSave.as_view(), name="import_save"),
     path("list/", expenses.Lists.as_view(), name="list"),

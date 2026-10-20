@@ -1,85 +1,57 @@
 {% extends 'base.html' %}
 
-{% load i18n %}
 {% load static %}
+{% load i18n %}
+
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+
+{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
+
 
 {% block head %}
-<script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
-
+    {% include 'highcharts.html' %}
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_months.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
 
 
 {% block content %}
 
+<div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
 
-<main class="grid-70-30">
-    <div
-        x-data="{
-            openTab: '{{view.get_month}}',
-            activeClass: 'button-active',
-            inactiveClass: 'button-secondary',
-        }">
-        <!-- search form -->
-        <div class="button-row">
-            <c-search-form url="{% url 'expenses:search' %}" reset_url=" {% url 'expenses:list'%}" target="#data" :hightlight_tab=current_month />
+<h1 class="visually-hidden">{% translate 'Expenses' %}</h1>
 
-            {% if request.GET.month %}
-                {% firstof request.GET.month as month_number %}
-            {% else %}
-                {% firstof now 'n' as month_number %}
-            {% endif %}
+<c-subnav :tabs=tabs :active=tab />
 
-            <c-new-button url="{% url 'expenses:new' %}" title="{% translate 'Expenses' context 'expenses button' %}" css_class="flex-right" />
-            <c-import-button />
-        </div>
-
-        <!-- month buttons -->
-        <div class="button-row equal-width">
-            {% for month in context_months %}
-            {% with month|date:'n' as month_number %}
-            <button type="button"
-                hx-get="{% url 'expenses:list' month_number %}"
-                hx-target="#data"
-                hx-swap="innerHTML"
-                hx-indicator="#indicator"
-                :class="openTab === '{{month_number}}' ? activeClass : inactiveClass"
-                @click="openTab = '{{month_number}}'">
-                {{month|date:'F'|title}}
-            </button>
-            {% endwith %}
-            {% endfor %}
-
-            <button type="button"
-                hx-get="{% url 'expenses:list' 13 %}"
-                hx-target="#data"
-                hx-swap="innerHTML"
-                hx-indicator="#indicator"
-                :class="openTab === '13' ? activeClass : inactiveClass"
-                @click="openTab = '13'">
-                {% translate 'All records' %}
-            </button>
-        </div><!-- /month buttons -->
-
-        <!-- data -->
-        <div id="data" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' month %}"></div>
-    </div>
-
-    <div>
-        <!-- type and name buttons -->
-        <div class="button-row row-reverse">
-            <c-new-button url="{% url 'expenses:name_new' %}" title="{% translate 'Expenses name' context 'expenses name button' %}" />
-            <c-new-button url="{% url 'expenses:type_new' %}" title="{% translate 'Expenses type' context 'expenses type button' %}" />
-        </div>
-
-        <div class="button-row"></div>
-
-        <!-- type and name list -->
-        <div
-            hx-trigger="load, afterType from:body, afterName from:body"
-            hx-get="{% url 'expenses:type_list' %}"
-            hx-target="this">
-        </div>
-    </div>
+<main id="tab_content" class="grid-one-col" role="tabpanel" :aria-labelledby="'tab-' + tab">
+    {% include 'core/includes/tab_reload.html' %}
+    {{ content }}
 </main>
+
+<c-quick-add>
+    <c-quick-add.link url="{% url 'expenses:import' %}">{% translate 'Import receipt' %}</c-quick-add.link>
+    <c-quick-add.pill url="{% url 'expenses:new' %}">{% translate 'Add expense' %}</c-quick-add.pill>
+</c-quick-add>
+
+</div>
+
+<script nonce="{{ csp_nonce }}">
+    function initExpensesChart() {
+        if (document.getElementById('chart-months-data')) {
+            chartMonths('chart-months-data', 'chart-months-container');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initExpensesChart);
+
+    htmx.on('htmx:after:swap', function (event) {
+        if (event.detail.ctx.target.id === 'tab_content') {
+            initExpensesChart();
+        }
+    });
+</script>
 
 {% endblock content %}
