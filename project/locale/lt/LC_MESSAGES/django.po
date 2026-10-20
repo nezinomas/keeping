@@ -2767,3 +2767,22 @@ msgstr "Didžiausią šių metų dalį sudaranti išlaidų rūšis"
 
 msgid "Add expense"
 msgstr "Pridėti išlaidas"
+
+msgid "Last expense"
+msgstr "Paskutinį kartą"
+
+msgid "Type / name"
+msgstr "Rūšis / pavadinimas"
+
+msgctxt "name scope"
+msgid "This year"
+msgstr "Šie metai"
+
+msgid "All names"
+msgstr "Visi pavadinimai"
+
+msgid "Add expense type"
+msgstr "Pridėti išlaidų rūšį"
+
+msgid "Add expense name"
+msgstr "Pridėti išlaidų pavadinimą"
