@@ -1,6 +1,6 @@
-from datetime import date, datetime
-from functools import partial
-from typing import Any, cast
+from datetime import date
+from functools import cached_property, partial
+from typing import cast
 
 from django.http import HttpResponse
 from django.urls import reverse_lazy
@@ -29,14 +29,13 @@ from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
 )
+from ..services.month_filter import ALL, MonthFilter
 from ..tabs import TABS
 
 
-class GetMonthMixin:
-    kwargs: dict[str, Any]
-
-    def get_month(self):
-        return self.kwargs.get("month") or datetime.now().month
+def month_filter(request, kwargs) -> MonthFilter:
+    value = str(kwargs.get("month", request.GET.get("month", "")))
+    return MonthFilter.parse(value, date.today())
 
 
 class TabViewMixin(CoreTabViewMixin):
@@ -67,38 +66,44 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
         }
 
 
-class TabData(GetMonthMixin, TabViewMixin, TemplateViewMixin):
+class TabData(TabViewMixin, TemplateViewMixin):
     tab = TABS["data"]
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"month": self.get_month()}
+        month = month_filter(self.request, self.kwargs)
+        return super().get_context_data(**kwargs) | {
+            "month": month,
+            "items": month.items(self.tab.url),
+            # a save reloads the tab at the month it shows
+            "tab_url": month.url(self.tab.url),
+        }
 
 
-class Lists(GetMonthMixin, ListViewMixin):
+class Lists(ListViewMixin):
     template_name = "expenses/expense_list.html"
 
-    def calendar_month(self) -> int:
-        month = self.get_month()
-        # tab 13 lists every month
-        if month not in range(1, 13):
-            return 0
-        return month
+    @cached_property
+    def month(self) -> MonthFilter:
+        return month_filter(self.request, self.kwargs)
+
+    @cached_property
+    def user(self) -> User:
+        return cast(User, self.request.user)
 
     def get_queryset(self):
-        month = self.calendar_month()
-        user = cast(User, self.request.user)
-        year = user.selected_year()
-        service = ExpenseModelService(user)
-        qs = service.year(year)
-        if month:
-            qs = qs.filter(date__month=month)
+        service = ExpenseModelService(self.user)
+        qs = service.year(self.user.selected_year()).filter(**self.month.lookup())
 
         data = service.expenses_list(qs)
 
         return add_fast_urls(data=data, app_name=App_name)
 
     def get_context_data(self, **kwargs):
-        context = {"notice_month": self.calendar_month()}
+        context = {
+            "month": self.month,
+            "all_months": self.month.value == ALL,
+            "year": self.user.selected_year(),
+        }
         return super().get_context_data(**kwargs) | context | get_action_buttons_html()
 
 

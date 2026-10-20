@@ -36,34 +36,65 @@ def _active_tab(name):
     return rf'id="tab-{name}"\s+class="tab active"'
 
 
-def _listed_month(month):
-    # the month buttons draw every month's url too; only #data loads one
-    return rf'id="data"[^>]*hx-get="/expenses/list/{month}/"'
+def _open_month(month):
+    # each pattern names the element that carries the url: the filter line lists
+    # every month, the Reset button and #data share one url
+    return [
+        rf'id="data"[^>]*hx-get="/expenses/list/\?month={month}"',
+        rf'class="button-secondary"\s+hx-get="/expenses/list/\?month={month}"',
+        rf'aria-current="true" hx-get="/expenses/data/\?month={month}"'
+        r' hx-push-url="true"',
+        rf'<div hx-get="/expenses/data/\?month={month}" hx-target="#tab_content"',
+    ]
 
 
 @pytest.mark.parametrize(
-    "url_name, kwargs, expected",
+    "url_name, kwargs, query, expected",
     [
-        pytest.param("expenses:index", {}, [_active_tab("index")], id="overview"),
+        pytest.param("expenses:index", {}, {}, [_active_tab("index")], id="overview"),
         pytest.param(
             "expenses:tab_data",
             {},
-            [_active_tab("data"), _listed_month(2)],
+            {},
+            [_active_tab("data"), *_open_month(2)],
             id="data_this_month",
         ),
         pytest.param(
             "expenses:index",
             {"month": 3},
-            [_active_tab("data"), _listed_month(3)],
+            {},
+            [_active_tab("data"), *_open_month(3)],
             id="nav_month",
+        ),
+        pytest.param(
+            "expenses:tab_data",
+            {},
+            {"month": "all"},
+            [_active_tab("data"), *_open_month("all")],
+            id="query_all",
+        ),
+        pytest.param(
+            "expenses:index",
+            {"month": 13},
+            {},
+            [_active_tab("data"), *_open_month("all")],
+            id="old_route_13",
+        ),
+        pytest.param(
+            "expenses:tab_data",
+            {},
+            {"month": "x"},
+            [_active_tab("data"), *_open_month(2)],
+            id="junk_falls_back",
         ),
     ],
 )
 @time_machine.travel("1999-02-08")
 def test_the_page_opens_the_tab_and_month_its_url_names(
-    client_logged, url_name, kwargs, expected
+    client_logged, url_name, kwargs, query, expected
 ):
-    content = client_logged.get(reverse(url_name, kwargs=kwargs)).content.decode()
+    url = reverse(url_name, kwargs=kwargs)
+    content = client_logged.get(url, query).content.decode()
 
     for pattern in expected:
         assert re.search(pattern, content)
@@ -178,12 +209,16 @@ def test_the_navbar_lights_expenses_only_on_its_own_pages(client_logged, url_nam
     assert bool(re.search(r'class="active">\s*<a href="/expenses/"', content)) is lit
 
 
+YEAR_DATES = [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)]
+
+
 @pytest.mark.parametrize(
-    "today, dates, kwargs, expected",
+    "today, dates, kwargs, query, expected",
     [
         pytest.param(
             "1999-02-08",
             [date(1999, 1, 1), date(1999, 2, 7)],
+            {},
             {},
             [date(1999, 2, 7)],
             id="no_month_is_this_month",
@@ -191,65 +226,99 @@ def test_the_navbar_lights_expenses_only_on_its_own_pages(client_logged, url_nam
         pytest.param(
             "1999-02-08",
             [date(1999, 1, 1), date(1999, 2, 7)],
-            {"month": 1},
+            {},
+            {"month": "1"},
             [date(1999, 1, 1)],
-            id="month_kwarg",
+            id="query_month",
         ),
         pytest.param(
             "1999-01-01",
-            [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)],
+            YEAR_DATES,
+            {},
             {},
             [date(1999, 1, 1)],
             id="no_month_in_user_year",
         ),
         pytest.param(
-            "1999-02-01",
-            [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)],
-            {"month": 1},
-            [date(1999, 1, 1)],
-            id="january",
+            "1999-01-01",
+            YEAR_DATES,
+            {},
+            {"month": "all"},
+            [date(1999, 1, 1), date(1999, 2, 1)],
+            id="query_all_is_the_year",
         ),
         pytest.param(
             "1999-01-01",
-            [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)],
+            YEAR_DATES,
             {"month": 13},
+            {},
             [date(1999, 1, 1), date(1999, 2, 1)],
-            id="all_year",
+            id="old_route_13_is_the_year",
         ),
         pytest.param(
             "1999-01-01",
-            [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)],
+            YEAR_DATES,
+            {},
+            {"month": "x"},
+            [date(1999, 1, 1)],
+            id="junk_is_this_month",
+        ),
+        pytest.param(
+            "1999-01-01",
+            YEAR_DATES,
             {"month": 133},
-            [date(1999, 1, 1), date(1999, 2, 1)],
-            id="any_number_is_all_year",
+            {},
+            [date(1999, 1, 1)],
+            id="any_other_number_is_this_month",
         ),
     ],
 )
-def test_expenses_list_filters_by_month(client_logged, today, dates, kwargs, expected):
+def test_expenses_list_filters_by_month(
+    client_logged, today, dates, kwargs, query, expected
+):
     for expense_date in dates:
         ExpenseFactory(date=expense_date)
 
     url = reverse("expenses:list", kwargs=kwargs)
     with time_machine.travel(today):
-        actual = client_logged.get(url).context["object_list"]
+        actual = client_logged.get(url, query).context["object_list"]
 
     assert sorted(row["date"] for row in actual) == expected
 
 
 @pytest.mark.parametrize(
-    "month, expected",
+    "kwargs, query, expected",
     [
-        pytest.param(1, "<b>1</b> mėnesį įrašų nėra", id="month"),
-        pytest.param(12, "<b>12</b> mėnesį įrašų nėra", id="december"),
-        pytest.param(13, "<b>1999</b> metais įrašų nėra", id="all_year"),
-        pytest.param(14, "<b>1999</b> metais įrašų nėra", id="above_all_year"),
+        pytest.param({}, {"month": "1"}, "Mėnesį 1 įrašų nėra.", id="month"),
+        pytest.param({}, {"month": "all"}, "1999 metais įrašų nėra.", id="all"),
+        pytest.param({"month": 13}, {}, "1999 metais įrašų nėra.", id="old_route_13"),
+        pytest.param({"month": 14}, {}, "Mėnesį 2 įrašų nėra.", id="above_13_today"),
     ],
 )
-def test_expenses_list_empty_notice(client_logged, month, expected):
-    url = reverse("expenses:list", kwargs={"month": month})
-    actual = client_logged.get(url).content.decode("utf-8")
+@time_machine.travel("1999-02-08")
+def test_expenses_list_empty_notice(client_logged, kwargs, query, expected):
+    url = reverse("expenses:list", kwargs=kwargs)
+    actual = client_logged.get(url, query).content.decode("utf-8")
 
-    assert expected in actual
+    assert f'<div class="alert">{expected}</div>' in clean_content(actual)
+    assert "<b>" not in actual
+    assert "alert-warning" not in actual
+    assert "reload from:body" not in actual
+
+
+def test_a_duomenys_row_has_no_type_colour_and_keeps_its_exception_mark(
+    client_logged,
+):
+    # pk 1 is a type colorize.py paints, so a drawn colour would show here
+    ExpenseFactory(expense_type=ExpenseTypeFactory(pk=1), exception=True)
+
+    url = reverse("expenses:list", kwargs={"month": 1})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    row = re.search(r'<tr hx-get=[^>]*class="([^"]*)"', content)[1]
+    assert row.strip() == ""
+    assert '<td class="text-left exception">1999-01-01</td>' in content
+    assert "reload from:body" not in content
 
 
 def test_lists_renders_row_buttons_equal_for_2_and_6_expenses(client_logged):
@@ -863,7 +932,8 @@ def test_search_not_found(client_logged, query):
     response = client_logged.get(url, query)
     actual = response.content.decode("utf-8")
 
-    assert "Nieko nerasta" in actual
+    assert '<div class="alert">Nieko nerasta</div>' in clean_content(actual)
+    assert "alert-warning" not in actual
 
 
 def test_search_found(client_logged):
@@ -898,6 +968,13 @@ def test_search_pagination(client_logged, query, expected):
     actual = response.context["object_list"]
 
     assert len(actual) == expected
+    # a page of the search swaps into #data like the first one
+    links = re.findall(
+        r'<a role="button"[^>]*hx-get="/expenses/search/\?page=[^>]*>',
+        response.content.decode(),
+    )
+    assert links
+    assert all('hx-target="#data"' in link for link in links)
 
 
 def test_search_statistic(client_logged):
@@ -911,6 +988,26 @@ def test_search_statistic(client_logged):
     assert response.context["sum_price"] == 500
     assert response.context["sum_quantity"] == 5
     assert response.context["average"] == 100
+
+
+def test_search_totals_row_sums_the_quantity_and_price_under_their_columns(
+    client_logged,
+):
+    ExpenseFactory(price=100)
+    ExpenseFactory(price=200, quantity=2, remark="xxx")
+    ExpenseFactory(price=300, quantity=3, remark="xxx")
+
+    url = reverse("expenses:search")
+    actual = client_logged.get(url, {"search": "xxx"}).content.decode("utf-8")
+
+    assert re.search(
+        r'<tfoot>\s*<tr class="main__total">\s*<td class="text-left">Viso</td>'
+        r"\s*<td></td>\s*<td></td>\s*<td>5</td>\s*<td>5,00</td>\s*"
+        r'<td colspan="5"></td>',
+        actual,
+    )
+    assert "<caption>Vidutinė vieneto kaina: 1,00</caption>" in actual
+    assert "alert-warning" not in actual
 
 
 def test_search_statistic_not_found(client_logged):

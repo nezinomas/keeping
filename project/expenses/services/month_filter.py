@@ -29,9 +29,17 @@ class MonthFilter:
             return cls(ALL)
         return cls(str(today.month))
 
+    def url(self, tab_url: str) -> str:
+        return f"{tab_url}?month={self.value}"
+
+    def lookup(self) -> dict:
+        if self.value == ALL:
+            return {}
+        return {"date__month": int(self.value)}
+
     def items(self, tab_url: str) -> list[FilterItem]:
         labels = (*month_names().values(), _("All records"))
         return [
-            FilterItem(label, f"{tab_url}?month={value}", value == self.value)
+            FilterItem(label, MonthFilter(value).url(tab_url), value == self.value)
             for value, label in zip((*MONTHS, ALL), labels, strict=True)
         ]
