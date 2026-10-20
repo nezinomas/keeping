@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from .convert_price import int_cents_to_float
-from .translation import month_abbr
+from .translation import month_names
 from .year_boundary import YearBoundary
 
 
@@ -22,7 +22,7 @@ class ChartMonths:
         year = self.boundary.year
 
         return {
-            "categories": [month_abbr(month) for month in range(1, 13)],
+            "categories": list(month_names().values()),
             "series": [
                 {"name": str(year - 1), "data": self._months(self.last_year)},
                 {"name": str(year), "data": self._months(self.year)},
