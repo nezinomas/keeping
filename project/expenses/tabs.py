@@ -10,4 +10,5 @@ class ExpenseTab(Tab):
 TABS = Tabs(
     ExpenseTab("index", _("Overview")),
     ExpenseTab("data", _("Data")),
+    ExpenseTab("types", _("Types")),
 )

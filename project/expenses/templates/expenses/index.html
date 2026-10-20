@@ -34,6 +34,8 @@
 <c-quick-add>
     <c-quick-add.link url="{% url 'expenses:import' %}">{% translate 'Import receipt' %}</c-quick-add.link>
     <c-quick-add.pill url="{% url 'expenses:new' %}">{% translate 'Add expense' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'expenses:type_new' %}" tab="types">{% translate 'Add expense type' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'expenses:name_new' %}" tab="types">{% translate 'Add expense name' %}</c-quick-add.pill>
 </c-quick-add>
 
 </div>

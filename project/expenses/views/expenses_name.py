@@ -13,15 +13,15 @@ class QuerySetMixin:
 
 class New(CreateViewMixin):
     form_class = forms.ExpenseNameForm
-    hx_trigger_django = "afterName"
+    hx_trigger_django = "reload"
     modal_form_title = _("Expense name")
     url_name = "name_new"
-    success_url = reverse_lazy("expenses:type_list")
+    success_url = reverse_lazy("expenses:tab_types")
 
 
 class Update(QuerySetMixin, UpdateViewMixin):
     form_class = forms.ExpenseNameForm
-    hx_trigger_django = "afterName"
+    hx_trigger_django = "reload"
     modal_form_title = _("Expense name")
     url_name = "name_update"
-    success_url = reverse_lazy("expenses:type_list")
+    success_url = reverse_lazy("expenses:tab_types")
