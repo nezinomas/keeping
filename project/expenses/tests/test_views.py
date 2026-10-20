@@ -19,6 +19,7 @@ from ..forms_import import ReviewLineForm
 from ..views import expenses as expense_views
 from ..views import expenses_import
 from ..views.expenses import Lists, LoadExpenseName
+from ..views.expenses_type import TabTypes
 from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -104,10 +105,17 @@ def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
     content = client_logged.get(reverse("expenses:tab_index")).content.decode()
 
     assert 'role="tablist"' in content
-    assert content.count('class="quick-add__pill"') == 2
+    assert content.count('class="quick-add__pill"') == 4
     assert 'class="quick-add__pill" href="/expenses/import/">Importuoti čekį' in content
     assert 'class="quick-add__pill" hx-get="/expenses/new/"' in content
     assert "Pridėti išlaidas" in content
+    for url_name, label in (
+        ("expenses:type_new", "Pridėti išlaidų rūšį"),
+        ("expenses:name_new", "Pridėti išlaidų pavadinimą"),
+    ):
+        pill = f'class="quick-add__pill" hx-get="{reverse(url_name)}"'
+        assert f"x-show=\"tab === 'types'\" x-cloak {pill}" in content
+        assert label in content
 
 
 def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
@@ -126,17 +134,183 @@ def _tab_queries(client, url_name):
     return len(queries)
 
 
-@pytest.mark.parametrize("url_name", ["expenses:tab_index", "expenses:tab_data"])
+def _expense_under_its_own_name(i):
+    expense_type = ExpenseTypeFactory(title=f"T{i}")
+    name = ExpenseNameFactory(title=f"N{i}", parent=expense_type)
+    ExpenseFactory(expense_type=expense_type, expense_name=name)
+
+
+@pytest.mark.parametrize(
+    "url_name", ["expenses:tab_index", "expenses:tab_data", "expenses:tab_types"]
+)
 def test_tab_query_count_does_not_grow_with_the_expenses(client_logged, url_name):
     for i in range(2):
-        ExpenseFactory(expense_type=ExpenseTypeFactory(title=f"T{i}"))
+        _expense_under_its_own_name(i)
     two = _tab_queries(client_logged, url_name)
 
     for i in range(2, 6):
-        ExpenseFactory(expense_type=ExpenseTypeFactory(title=f"T{i}"))
+        _expense_under_its_own_name(i)
     six = _tab_queries(client_logged, url_name)
 
     assert six == two
+
+
+def _spend(name, cents, when):
+    ExpenseFactory(date=when, price=cents, expense_type=name.parent, expense_name=name)
+
+
+@time_machine.travel("1999-09-15")
+def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
+    food = ExpenseTypeFactory(title="Maistas")
+    milk = ExpenseNameFactory(title="Pienas", parent=food)
+    bread = ExpenseNameFactory(title="Duona", parent=food)
+    ExpenseNameFactory(title="Sūris", parent=food)
+    soap = ExpenseNameFactory(
+        title="Muilas", parent=ExpenseTypeFactory(title="Buitinės")
+    )
+    ExpenseTypeFactory(title="Tuščia")
+    _spend(milk, 60_000, date(1999, 2, 5))
+    _spend(milk, 20_000, date(1998, 1, 1))
+    _spend(bread, 30_000, date(1999, 3, 7))
+    _spend(soap, 10_000, date(1999, 4, 1))
+
+    content = client_logged.get(reverse("expenses:tab_types")).content.decode()
+
+    def cells(*values):
+        return r"\s*".join(f"<td>{value}</td>" for value in values)
+
+    rows = [
+        r'<tr class="main__group"[^>]*>\s*<td class="text-left">Buitinės</td>\s*'
+        + cells(100, "–", "10%", "1999-04-01"),
+        r'<tr[^>]*>\s*<td class="text-left main__child">Muilas</td>\s*'
+        + cells(100, "–", "100%", "1999-04-01"),
+        r'<tr class="main__group"[^>]*>\s*<td class="text-left">Maistas</td>\s*'
+        + cells(900, 200, "90%", "1999-03-07"),
+        r'<tr[^>]*>\s*<td class="text-left main__child">Duona</td>\s*'
+        + cells(300, "–", "33%", "1999-03-07"),
+        r'<tr[^>]*>\s*<td class="text-left main__child">Pienas</td>\s*'
+        + cells(600, 200, "67%", "1999-02-05"),
+        r'<tr[^>]*>\s*<td class="text-left main__child">Sūris</td>\s*'
+        + cells("–", "–", "–", "–"),
+        r'<tr class="main__group"[^>]*>\s*<td class="text-left">Tuščia</td>\s*'
+        + cells("–", "–", "–", "–"),
+        r'<tr class="main__total">\s*<td class="text-left">Viso</td>\s*'
+        + cells("1.000", 200, "100%"),
+    ]
+    assert re.search(r"[\s\S]*?".join(rows), content)
+
+
+@time_machine.travel("2000-09-15")
+def test_types_tab_of_a_past_year_shows_its_own_last_expense(main_user, client_logged):
+    main_user.year = 1999
+    main_user.save()
+    milk = ExpenseNameFactory(title="Pienas", parent=ExpenseTypeFactory(title="M"))
+    _spend(milk, 100, date(1999, 5, 5))
+    _spend(milk, 100, date(2000, 2, 2))
+
+    content = client_logged.get(reverse("expenses:tab_types")).content.decode()
+
+    assert "<td>1999-05-05</td>" in content
+    assert "2000-02-02" not in content
+
+
+@pytest.mark.parametrize(
+    "query, listed",
+    [
+        pytest.param({}, False, id="year_scope"),
+        pytest.param({"scope": "all"}, True, id="all_scope"),
+    ],
+)
+@time_machine.travel("1999-09-15")
+def test_types_tab_hides_a_name_limited_to_another_year(
+    main_user, client_logged, query, listed
+):
+    main_user.year = 1999
+    main_user.save()
+    food = ExpenseTypeFactory(title="Maistas")
+    ExpenseNameFactory(title="Senas", parent=food, valid_for=1998)
+    ExpenseNameFactory(title="Šių metų", parent=food, valid_for=1999)
+
+    content = client_logged.get(reverse("expenses:tab_types"), query).content.decode()
+
+    this_year = 'main__child">Šių metų <span class="main__year">1999</span></td>'
+    last_year = 'main__child">Senas <span class="main__year">1998</span></td>'
+    assert this_year in content
+    assert (last_year in content) is listed
+
+
+@pytest.mark.parametrize(
+    "query, join, reload_url",
+    [
+        pytest.param(
+            {"order": "share"}, "?", "/expenses/types/?order=share", id="year_scope"
+        ),
+        pytest.param(
+            {"scope": "all", "order": "share"},
+            "?scope=all&amp;",
+            "/expenses/types/?scope=all&amp;order=share",
+            id="all",
+        ),
+    ],
+)
+def test_types_tab_sort_links_keep_the_scope(client_logged, query, join, reload_url):
+    content = client_logged.get(reverse("expenses:tab_types"), query).content.decode()
+
+    # pushed, so a reload keeps the sort with the scope
+    assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
+    for key, label in (
+        ("title", "Rūšis / pavadinimas"),
+        ("this_year", "Šiemet"),
+        ("last_year", "Pernai"),
+        ("last_expense", "Paskutinį kartą"),
+    ):
+        link = f'<a role="button" hx-get="/expenses/types/{join}order={key}"'
+        assert f'{link} hx-target="#tab_content">{label}</a>' in content
+    assert "<span>Dalis</span>" in content
+    # a save reloads the scope and sort shown; picking a scope drops the sort
+    assert f'<div hx-get="{reload_url}" hx-target="#tab_content"' in content
+    assert 'hx-get="/expenses/types/?scope=all" hx-push-url="true"' in content
+
+
+def test_types_tab_edits_each_type_and_name_from_its_row(client_logged):
+    food = ExpenseTypeFactory(title="Maistas")
+    milk = ExpenseNameFactory(title="Pienas", parent=food)
+    type_link = reverse("expenses:type_update", kwargs={"pk": food.pk})
+    name_link = reverse("expenses:name_update", kwargs={"pk": milk.pk})
+
+    content = client_logged.get(reverse("expenses:tab_types")).content.decode()
+
+    for row, link in (('<tr class="main__group"', type_link), ("<tr", name_link)):
+        dblclick = f'hx-get="{link}" hx-trigger="dblclick" hx-target="#mainModal">'
+        assert f"{row} {dblclick}" in content
+        assert re.search(rf'<a role="button" hx-get="{link}"[^>]*class="edit"', content)
+
+
+def _type_update_url():
+    return reverse("expenses:type_update", kwargs={"pk": ExpenseTypeFactory().pk})
+
+
+def _name_update_url():
+    return reverse("expenses:name_update", kwargs={"pk": ExpenseNameFactory().pk})
+
+
+@pytest.mark.parametrize(
+    "url_of, with_parent",
+    [
+        pytest.param(lambda: reverse("expenses:type_new"), False, id="type_new"),
+        pytest.param(_type_update_url, False, id="type"),
+        pytest.param(lambda: reverse("expenses:name_new"), True, id="name_new"),
+        pytest.param(_name_update_url, True, id="name"),
+    ],
+)
+def test_type_and_name_forms_reload_the_open_tab(client_logged, url_of, with_parent):
+    data = {"title": "TTT"}
+    if with_parent:
+        data["parent"] = ExpenseTypeFactory(title="P").pk
+
+    response = client_logged.post(url_of(), data, headers={"HX-Request": "true"})
+
+    assert response.headers["HX-Trigger"] == '{"reload": {}}'
 
 
 @time_machine.travel("1999-09-15")
@@ -779,7 +953,7 @@ def test_expense_name_load_for_form_for_update(client_logged):
 def test_expense_name_update(client_logged):
     expense_name = ExpenseNameFactory()
 
-    data = {"title": "TTT", "valid_for": 2000, "parent": expense_name.parent.pk}
+    data = {"title": "TTT", "valid_for": 1999, "parent": expense_name.parent.pk}
     url = reverse("expenses:name_update", kwargs={"pk": expense_name.pk})
 
     response = client_logged.post(url, data, follow=True)
@@ -1047,6 +1221,9 @@ class _Names(ExpenseNameChoicesMixin):
         pytest.param(
             lambda rf, u: view_for(rf, u, expense_views.TabIndex).get_context_data(),
             id="tab_index",
+        ),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, TabTypes).get_context_data(), id="tab_types"
         ),
         pytest.param(lambda rf, u: view_for(rf, u, Lists).get_queryset(), id="list"),
         pytest.param(

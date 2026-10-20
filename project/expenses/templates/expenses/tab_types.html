@@ -1,0 +1,52 @@
+{% load i18n %}
+
+<c-filter-line :items="items" target="#tab_content" />
+
+<div class="table-responsive">
+<table class="main striped hover">
+    <thead class="sortable-header-row" hx-push-url:inherited="true">
+        <tr>
+            <c-sort-th key="title" :active="table.order" :url="sort_url" target="#tab_content" class="text-left">{% translate 'Type / name' %}</c-sort-th>
+            <c-sort-th key="this_year" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'This year' %}</c-sort-th>
+            <c-sort-th key="last_year" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Last year' %}</c-sort-th>
+            <c-sort-th key="share" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Share' %}</c-sort-th>
+            <c-sort-th key="last_expense" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Last expense' %}</c-sort-th>
+            <th class="edit-col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in table.rows %}
+        {% url 'expenses:type_update' row.pk as url_update %}
+        <tr class="main__group" hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
+            <td class="text-left">{{ row.title }}</td>
+            <td>{{ row.this_year }}</td>
+            <td>{{ row.last_year }}</td>
+            <td>{{ row.share }}</td>
+            <td>{{ row.last_expense }}</td>
+            <c-td-edit :url="url_update" />
+        </tr>
+        {% for name in row.names %}
+        {% url 'expenses:name_update' name.pk as name_update %}
+        <tr hx-get="{{ name_update }}" hx-trigger="dblclick" hx-target="#mainModal">
+            <td class="text-left main__child">{{ name.title }}{% if name.year %} <span class="main__year">{{ name.year }}</span>{% endif %}</td>
+            <td>{{ name.this_year }}</td>
+            <td>{{ name.last_year }}</td>
+            <td>{{ name.share }}</td>
+            <td>{{ name.last_expense }}</td>
+            <c-td-edit :url="name_update" />
+        </tr>
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="main__total">
+            <td class="text-left">{% translate 'Total' %}</td>
+            <td>{{ table.total.this_year }}</td>
+            <td>{{ table.total.last_year }}</td>
+            <td>{{ table.total.share }}</td>
+            <td></td>
+            <td class="edit-col"></td>
+        </tr>
+    </tfoot>
+</table>
+</div>

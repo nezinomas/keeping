@@ -58,6 +58,22 @@
             border-bottom: 1px solid $hair-soft;
         }
 
+        // a grouped table: the group's own row is the heading, its children indent
+        tbody tr.main__group td {
+            font-weight: 600;
+        }
+
+        td.main__child {
+            padding-left: 2 * $gap;
+        }
+
+        // the year a name is limited to: a caption beside the title, ink only
+        .main__year {
+            font-family: $mono;
+            font-size: 0.68rem;
+            color: $ink-muted;
+        }
+
         // where one group of rows ends and the next begins. 2px on the cells, not
         // 1px on the row: border-collapse breaks a tie by width, so 1px would lose
         // to the border-bottom the previous row's td already carries
