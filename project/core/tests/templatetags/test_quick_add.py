@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from django.template import engines
 from django_cotton.compiler_regex import CottonCompiler
@@ -69,6 +71,26 @@ def test_the_slot_follows_the_count_inside_the_pills():
 
     assert content.index("275") < content.index('<div class="quick-add__pills">')
     assert '<div class="quick-add__pills"><i>slot</i></div>' in content
+
+
+@pytest.mark.parametrize(
+    "source, expected",
+    [
+        pytest.param(
+            '<c-quick-add><c-slot name="sheet"><form></form></c-slot></c-quick-add>',
+            "<form></form>",
+            id="sheet",
+        ),
+        pytest.param("<c-quick-add>slot</c-quick-add>", "", id="no_sheet"),
+    ],
+)
+def test_the_sheet_slot_sits_above_the_bar(source, expected):
+    content = _render(source, {})
+    above_the_bar = re.search(
+        r'<div class="quick-add"[^>]*>(.*?)<div class="quick-add__bar">', content, re.S
+    )
+
+    assert above_the_bar.group(1).strip() == expected
 
 
 def test_the_count_reads_the_day_of_the_year():
