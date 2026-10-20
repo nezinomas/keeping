@@ -138,6 +138,8 @@ def test_index_quick_add_prefilled_and_esc_close(client_logged, main_user):
     content = response.content.decode()
 
     assert '@keydown.window.escape="open = false"' in content
+    # the sheet's state lives on the bar, so the pill and the sheet share one scope
+    assert re.search(r'<div\b(?=[^>]*\bid="quick-add")[^>]*\bx-data="\{', content)
     assert 'x-model="quantity"' in content
     assert 'x-model="option"' in content
     assert "beer: '1'" in content
