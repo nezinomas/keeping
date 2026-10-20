@@ -1,0 +1,61 @@
+@use "../abstracts/variables" as *;
+@use "tokens";
+
+// One line of filter items (a tab's months, its name scope): centred while it fits,
+// scrolling sideways with a fade at each edge when it does not.
+
+$fade: 1.75rem;
+
+.paper-skin {
+    .filter-line {
+        // the offset parent the open item's scroll-into-view measures against
+        position: relative;
+        display: flex;
+        gap: 0.1rem;
+        margin-bottom: $gap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        white-space: nowrap;
+        mask-image: linear-gradient(
+            90deg,
+            transparent,
+            #000 $fade,
+            #000 calc(100% - #{$fade}),
+            transparent
+        );
+    }
+
+    // auto margins centre the line; justify-content would cut its start off on overflow
+    .filter-line__item:first-child {
+        margin-left: auto;
+    }
+
+    .filter-line__item:last-child {
+        margin-right: auto;
+    }
+
+    .filter-line__item {
+        @include tokens.label;
+
+        flex: none;
+        padding: 0.55rem 0.5rem;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        color: $ink-faint;
+        cursor: pointer;
+        touch-action: manipulation;
+        transition: $transition;
+
+        &:hover,
+        &:focus {
+            color: $ink;
+        }
+
+        &[aria-current] {
+            color: $ink;
+            font-weight: 600;
+            border-bottom-color: $ink;
+        }
+    }
+}
