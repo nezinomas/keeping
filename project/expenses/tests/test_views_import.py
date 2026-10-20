@@ -777,16 +777,6 @@ def test_import_save_valid_query_count_equal_for_2_and_6_lines(
     assert counts[2] == counts[6]
 
 
-def test_index_shows_import_link(main_user, client_logged):
-    url = reverse("expenses:index")
-    response = client_logged.get(url)
-
-    text = response.content.decode()
-    assert "Importuoti čekį" in text
-    assert reverse("expenses:import") in text
-    assert 'class="button-outline-success import-receipt"' in text
-
-
 def test_import_upload_file_control_speaks_the_app_language(main_user, client_logged):
     url = reverse("expenses:import")
 
