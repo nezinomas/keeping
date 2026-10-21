@@ -1,5 +1,4 @@
 from typing import cast
-from urllib.parse import urlencode
 
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -19,9 +18,10 @@ from ..users.models import User
 from . import forms, services
 from .services.model_services import BookModelService, BookTargetModelService
 from .services.search import search_books
-from .tabs import TABS
+from .tabs import ALL_RECORDS, TABS, YEAR
 
-ALL_RECORDS = "all"
+# the form cannot know the open scope; an htmx save reloads the tab instead
+SAVED_URL = reverse_lazy("books:list", kwargs={"scope": YEAR})
 
 
 class TabViewMixin(CoreTabViewMixin):
@@ -49,13 +49,16 @@ class Lists(ListViewMixin):
     def get_queryset(self):
         user = cast(User, self.request.user)
         service = BookModelService(user)
-        if self.all_records:
+        if self.scope == ALL_RECORDS:
             return service.objects
         return service.year(user.selected_year())
 
     @property
-    def all_records(self) -> bool:
-        return self.request.GET.get("scope") == ALL_RECORDS
+    def scope(self) -> str:
+        scope = YEAR
+        if self.kwargs["scope"] == ALL_RECORDS:
+            scope = ALL_RECORDS
+        return scope
 
     def get_context_data(self, **kwargs):
         total = self.object_list.count()
@@ -64,14 +67,10 @@ class Lists(ListViewMixin):
         )
         page_obj, paginator_object = paginator.paging(self.request.GET.get("page", 1))
 
-        scope = ""
-        if self.all_records:
-            scope = ALL_RECORDS
-
         context = {
             "object_list": page_obj,
-            "url": reverse("books:list"),
-            "scope": scope,
+            "url": reverse("books:list", kwargs={"scope": self.scope}),
+            "scope": self.scope,
             "countdown_from": total - page_obj.start_index() + 1,
             "paginator_object": paginator_object,
         }
@@ -83,17 +82,15 @@ class TabData(TabViewMixin, Lists):
     tab = TABS["data"]
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.all_records:
-            context["tab_url"] = f"{self.tab.url}?{urlencode({'scope': ALL_RECORDS})}"
-        return context
+        tab_url = reverse("books:tab_data", kwargs={"scope": self.scope})
+        return super().get_context_data(**kwargs) | {"tab_url": tab_url}
 
 
 class New(CreateViewMixin):
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     modal_form_title = _("New book")
-    success_url = reverse_lazy("books:list")
+    success_url = SAVED_URL
 
 
 class Update(UpdateViewMixin):
@@ -101,13 +98,13 @@ class Update(UpdateViewMixin):
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     modal_form_title = _("Update book")
-    success_url = reverse_lazy("books:list")
+    success_url = SAVED_URL
 
 
 class Delete(DeleteViewMixin):
     service_class = BookModelService
     modal_form_title = _("Delete book")
-    success_url = reverse_lazy("books:list")
+    success_url = SAVED_URL
 
 
 class Search(SearchViewMixin):
