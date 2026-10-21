@@ -1,6 +1,6 @@
 {% load i18n %}
 
-{% partialdef query %}{% if search %}&search={{ search|urlencode }}{% endif %}{% if scope %}&scope={{ scope|urlencode }}{% endif %}{% endpartialdef %}
+{% partialdef query %}{% if search %}&search={{ search|urlencode }}{% endif %}{% endpartialdef %}
 
 {% if paginator_object.total_pages > 1 %}
 

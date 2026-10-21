@@ -6,17 +6,17 @@ from ..tabs import TABS
 
 
 @pytest.mark.parametrize(
-    ("name", "url_name", "template"),
+    ("name", "url_name", "kwargs", "template"),
     [
-        ("index", "books:tab_index", "books/tab_index.html"),
-        ("data", "books:tab_data", "books/tab_data.html"),
+        ("index", "books:tab_index", {}, "books/tab_index.html"),
+        ("data", "books:tab_data", {"scope": "year"}, "books/tab_data.html"),
     ],
     ids=["index", "data"],
 )
-def test_tab_derives_its_url_and_template(name, url_name, template):
+def test_tab_derives_its_url_and_template(name, url_name, kwargs, template):
     tab = TABS[name]
 
-    assert tab.url == reverse(url_name)
+    assert tab.url == reverse(url_name, kwargs=kwargs)
     assert tab.template_name == template
 
 
