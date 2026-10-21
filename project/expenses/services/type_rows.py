@@ -42,6 +42,7 @@ class TypeRow:
     last_expense: str
     sort_values: Mapping[str, Any]
     names: list[NameRow]
+    necessary: bool
 
 
 @dataclass(frozen=True)
@@ -106,6 +107,7 @@ class GroupedTypesTable:
             rows.append(
                 TypeRow(
                     names=ORDER.sort(order, listed, lambda r: r.sort_values).rows,
+                    necessary=type_["necessary"],
                     **_cells(
                         type_["id"],
                         type_["title"],

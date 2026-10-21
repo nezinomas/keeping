@@ -4,10 +4,15 @@ import pytest
 
 from ...services.type_rows import GroupedTypesTable
 
+
+def _type(pk, title):
+    return {"id": pk, "title": title, "necessary": False}
+
+
 TYPES = [
-    {"id": 3, "title": "Gama"},
-    {"id": 2, "title": "Beta"},
-    {"id": 1, "title": "Alfa"},
+    _type(3, "Gama"),
+    _type(2, "Beta"),
+    _type(1, "Alfa"),
 ]
 NAMES = [
     {"id": 22, "title": "Kava", "parent_id": 2, "valid_for": None},
@@ -118,7 +123,7 @@ def test_a_types_figures_count_every_name_whatever_its_year():
     names = [_name(11, "Aaa", 1), _name(12, "Bbb", 1, 2024)]
 
     table = _table(
-        types=[{"id": 1, "title": "Alfa"}],
+        types=[_type(1, "Alfa")],
         names=names,
         year=[_sum(11, "Aaa", 100_00), _sum(12, "Bbb", 300_00)],
         last_year=[_sum(12, "Bbb", 50_00)],
@@ -142,7 +147,7 @@ def test_two_names_titled_alike_keep_their_own_figures():
     names = [_name(11, "Kita", 1), _name(21, "Kita", 2)]
 
     table = _table(
-        types=[{"id": 1, "title": "Alfa"}, {"id": 2, "title": "Beta"}],
+        types=[_type(1, "Alfa"), _type(2, "Beta")],
         names=names,
         year=[_sum(11, "Kita", 100_00), _sum(21, "Kita", 700_00)],
         last_year=[_sum(21, "Kita", 30_00)],
@@ -199,7 +204,7 @@ YEARS_APART = [
 )
 def test_names_order_by_year_under_title_and_by_their_figure_otherwise(order, expected):
     table = _table(
-        types=[{"id": 1, "title": "Kelionės"}],
+        types=[_type(1, "Kelionės")],
         names=YEARS_APART,
         year=[_sum(11, "Kita", 100_00), _sum(13, "Bilietai", 300_00)],
         last_year=[],
@@ -214,9 +219,9 @@ def test_types_and_names_read_in_the_lithuanian_alphabet():
     titles = ["Šildymas", "Ypatingos", "Autobusas", "Sveikata", "Jūra"]
     titles += ["Įrankiai", "Telefonas", "Ąžuolas"]
     types = [
-        {"id": 2, "title": "Čekiai"},
-        {"id": 3, "title": "Drabužiai"},
-        {"id": 1, "title": "Cukrus"},
+        _type(2, "Čekiai"),
+        _type(3, "Drabužiai"),
+        _type(1, "Cukrus"),
     ]
     names = [_name(10 + i, title, 1) for i, title in enumerate(titles)]
 

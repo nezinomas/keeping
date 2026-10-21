@@ -1,7 +1,7 @@
 {% load i18n %}
 
 <div class="table-responsive">
-<table class="main striped hover">
+<table class="main striped hover sticky-table">
     <thead class="sortable-header-row" hx-push-url:inherited="true">
         <tr>
             <c-sort-th key="title" :active="table.order" :url="sort_url" target="#tab_content" class="text-left">{% translate 'Type / name' %}</c-sort-th>
@@ -12,11 +12,11 @@
             <th class="edit-col"></th>
         </tr>
     </thead>
+    {% for row in table.rows %}
     <tbody>
-        {% for row in table.rows %}
         {% url 'expenses:type_update' row.pk as url_update %}
-        <tr class="main__group" hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
-            <td class="text-left">{{ row.title }}</td>
+        <tr class="main__group{% if not forloop.first %} table-group-divider{% endif %}" hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
+            <td class="text-left">{{ row.title }}{% if row.necessary %} <span class="main__mark">{% translate 'necessary' context 'expense type caption' %}</span>{% endif %}</td>
             <td>{{ row.this_year }}</td>
             <td>{{ row.last_year }}</td>
             <td>{{ row.share }}</td>
@@ -29,13 +29,13 @@
             <td class="text-left main__child">{{ name.title }}{% if name.year %} <span class="main__year">{{ name.year }}</span>{% endif %}</td>
             <td>{{ name.this_year }}</td>
             <td>{{ name.last_year }}</td>
-            <td>{{ name.share }}</td>
+            <td class="main__share">{{ name.share }}</td>
             <td>{{ name.last_expense }}</td>
             <c-td-edit :url="name_update" />
         </tr>
         {% endfor %}
-        {% endfor %}
     </tbody>
+    {% endfor %}
     <tfoot>
         <tr class="main__total">
             <td class="text-left">{% translate 'Total' %}</td>

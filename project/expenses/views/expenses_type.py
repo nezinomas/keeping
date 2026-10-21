@@ -24,7 +24,7 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
         user = self.request.user
         boundary = YearBoundary(user.selected_year(), date.today())
         service = ExpenseModelService(user)
-        types = ExpenseTypeModelService(user).items().values("id", "title")
+        types = ExpenseTypeModelService(user).items().values("id", "title", "necessary")
         names = (
             ExpenseNameModelService(user)
             .items()

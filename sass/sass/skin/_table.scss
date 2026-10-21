@@ -60,17 +60,41 @@
 
         // a grouped table: the group's own row is the heading, its children indent
         tbody tr.main__group td {
+            padding-top: 1.5 * $gap;
+            padding-bottom: 0.5rem;
             font-weight: 600;
+        }
+
+        tbody tr.main__group td:first-child {
+            font-family: $display;
+            font-size: 1.05rem;
         }
 
         td.main__child {
             padding-left: 2 * $gap;
         }
 
-        // the year a name is limited to: a caption beside the title, ink only
-        .main__year {
+        @media only screen and (max-width: 767px) {
+            tbody tr.main__group td {
+                padding-top: $gap;
+            }
+
+            td.main__child {
+                padding-left: 1.5 * $gap;
+            }
+        }
+
+        // a caption beside a title (a name's year, a type's mark), ink only
+        .main__year,
+        .main__mark {
             font-family: $mono;
             font-size: 0.68rem;
+            font-weight: 400;
+            color: $ink-muted;
+        }
+
+        // a name's share is of its type, not of the year as its type's is
+        td.main__share {
             color: $ink-muted;
         }
 
