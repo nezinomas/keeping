@@ -46,6 +46,21 @@ def test_rows_sort_by_the_asked_column(order, expected):
     assert _titles(order) == expected
 
 
+@pytest.mark.parametrize(
+    "order", ["title", "this_year"], ids=["title_sort", "rows_without_the_figure"]
+)
+def test_titles_sort_in_the_lithuanian_alphabet(order):
+    types = [
+        {"id": 1, "title": "Drabužiai"},
+        {"id": 2, "title": "Čekiai"},
+        {"id": 3, "title": "Cukrus"},
+    ]
+
+    table = TypesTable.build(types, [], [], [], order)
+
+    assert [row.title for row in table.rows] == ["Cukrus", "Čekiai", "Drabužiai"]
+
+
 def test_the_table_names_its_active_column():
     assert (_table().order, _table(order="share").order) == ("title", "share")
 
