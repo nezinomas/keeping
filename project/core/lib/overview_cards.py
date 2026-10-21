@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext, pgettext
 
 from .convert_price import int_cents_to_float
+from .money_cells import share
 from .stat_card import Card, EmptyStatCard, StatCard
 from .year_boundary import YearBoundary
 
@@ -78,11 +79,11 @@ class OverviewCards:
 
     def _largest_type(self, title: str, total: int) -> Card:
         largest = max(self.year, key=lambda row: row["sum"])
-        share = floatformat(largest["sum"] / total * 100, "0")
 
         return StatCard(
             title=title,
             value=largest["title"],
-            note=_("%(share)s%% of the year's total") % {"share": share},
+            note=_("%(share)s of the year's total")
+            % {"share": share(largest["sum"], total)},
             explanation=(self.largest_type_explanation,),
         )

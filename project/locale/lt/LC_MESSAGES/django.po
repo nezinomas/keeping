@@ -2498,8 +2498,8 @@ msgid "The year's total divided by the months it has reached"
 msgstr "Metų suma, padalinta iš prabėgusių mėnesių"
 
 #, python-format
-msgid "%(share)s%% of the year's total"
-msgstr "%(share)s%% metų sumos"
+msgid "%(share)s of the year's total"
+msgstr "%(share)s metų sumos"
 
 #, python-format
 msgid "Last year %(amount)s"
