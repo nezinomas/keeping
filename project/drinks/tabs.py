@@ -20,15 +20,6 @@ class DrinkTab(Tab):
     app = "drinks"
     control: Callable[[str], DrinkTypeControl]
 
-    @classmethod
-    def resolve(cls, raw: str | None, default: str = "index") -> "DrinkTab":
-        """`default` is the tab that owns the change when a url kwarg, query
-        string or form field named no valid one."""
-        try:
-            return TABS[raw or default]
-        except KeyError:
-            return TABS[default]
-
     @property
     def url_name(self) -> str:
         return f"tab_{self.name}"
@@ -52,10 +43,10 @@ TABS = Tabs(
 )
 
 
-def tab_reload_response(raw: str, default: str = "index") -> HttpResponse:
+def tab_reload_response(raw: str) -> HttpResponse:
     response = HttpResponse(status=204)
     trigger_client_event(
-        response=response, name=DrinkTab.resolve(raw, default).reload_trigger, params={}
+        response=response, name=TABS.resolve(raw, "index").reload_trigger, params={}
     )
 
     return response
