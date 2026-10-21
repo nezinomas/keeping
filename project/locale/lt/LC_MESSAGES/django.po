@@ -2774,13 +2774,6 @@ msgstr "Paskutinį kartą"
 msgid "Type / name"
 msgstr "Rūšis / pavadinimas"
 
-msgctxt "name scope"
-msgid "This year"
-msgstr "Šie metai"
-
-msgid "All names"
-msgstr "Visi pavadinimai"
-
 msgid "Add expense type"
 msgstr "Pridėti išlaidų rūšį"
 
