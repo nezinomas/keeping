@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext, pgettext
 
 from .convert_price import int_cents_to_float
-from .money_cells import share
+from .money_cells import amount, share
 from .stat_card import Card, EmptyStatCard, StatCard
 from .year_boundary import YearBoundary
 
@@ -59,11 +59,9 @@ class OverviewCards:
         note = ""
 
         if last_year:
-            note = _("Last year %(amount)s") % {
-                "amount": _euro(int_cents_to_float(last_year))
-            }
+            note = _("Last year %(amount)s") % {"amount": amount(last_year)}
 
-        return StatCard(title=title, value=_euro(int_cents_to_float(total)), note=note)
+        return StatCard(title=title, value=amount(total), note=note)
 
     def _per_month(self, title: str, total: int) -> Card:
         # the Year boundary, never 12: a running year has not reached every month
