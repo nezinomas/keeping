@@ -237,16 +237,9 @@ def test_types_tab_of_a_past_year_shows_its_own_last_expense(main_user, client_l
     assert "2000-02-02" not in content
 
 
-@pytest.mark.parametrize(
-    "query, listed",
-    [
-        pytest.param({}, False, id="year_scope"),
-        pytest.param({"scope": "all"}, True, id="all_scope"),
-    ],
-)
 @time_machine.travel("1999-09-15")
-def test_types_tab_hides_a_name_limited_to_another_year(
-    main_user, client_logged, query, listed
+def test_types_tab_lists_a_name_limited_to_another_year_with_its_year(
+    main_user, client_logged
 ):
     main_user.year = 1999
     main_user.save()
@@ -254,32 +247,19 @@ def test_types_tab_hides_a_name_limited_to_another_year(
     ExpenseNameFactory(title="Senas", parent=food, valid_for=1998)
     ExpenseNameFactory(title="Šių metų", parent=food, valid_for=1999)
 
+    content = client_logged.get(reverse("expenses:tab_types")).content.decode()
+
+    assert 'main__child">Šių metų <span class="main__year">1999</span></td>' in content
+    assert 'main__child">Senas <span class="main__year">1998</span></td>' in content
+    assert 'class="filter-line"' not in content
+
+
+def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged):
+    query = {"order": "share"}
+
     content = client_logged.get(reverse("expenses:tab_types"), query).content.decode()
 
-    this_year = 'main__child">Šių metų <span class="main__year">1999</span></td>'
-    last_year = 'main__child">Senas <span class="main__year">1998</span></td>'
-    assert this_year in content
-    assert (last_year in content) is listed
-
-
-@pytest.mark.parametrize(
-    "query, join, reload_url",
-    [
-        pytest.param(
-            {"order": "share"}, "?", "/expenses/types/?order=share", id="year_scope"
-        ),
-        pytest.param(
-            {"scope": "all", "order": "share"},
-            "?scope=all&amp;",
-            "/expenses/types/?scope=all&amp;order=share",
-            id="all",
-        ),
-    ],
-)
-def test_types_tab_sort_links_keep_the_scope(client_logged, query, join, reload_url):
-    content = client_logged.get(reverse("expenses:tab_types"), query).content.decode()
-
-    # pushed, so a reload keeps the sort with the scope
+    # pushed, so a reload keeps the sort
     assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
     for key, label in (
         ("title", "Rūšis / pavadinimas"),
@@ -287,12 +267,12 @@ def test_types_tab_sort_links_keep_the_scope(client_logged, query, join, reload_
         ("last_year", "Pernai"),
         ("last_expense", "Paskutinį kartą"),
     ):
-        link = f'<a role="button" hx-get="/expenses/types/{join}order={key}"'
+        link = f'<a role="button" hx-get="/expenses/types/?order={key}"'
         assert f'{link} hx-target="#tab_content">{label}</a>' in content
     assert "<span>Dalis</span>" in content
-    # a save reloads the scope and sort shown; picking a scope drops the sort
-    assert f'<div hx-get="{reload_url}" hx-target="#tab_content"' in content
-    assert 'hx-get="/expenses/types/?scope=all" hx-push-url="true"' in content
+    # a save reloads the sort shown
+    reload = '<div hx-get="/expenses/types/?order=share" hx-target="#tab_content"'
+    assert reload in content
 
 
 def test_types_tab_edits_each_type_and_name_from_its_row(client_logged):
