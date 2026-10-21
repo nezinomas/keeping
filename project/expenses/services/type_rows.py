@@ -3,18 +3,10 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
-from urllib.parse import urlencode
 
-from django.utils.translation import gettext as _
-from django.utils.translation import pgettext
-
+from ...core.lib.collation import lt_title
 from ...core.lib.money_cells import NOTHING, amount, share
 from ...core.lib.table_order import Column, TableOrder
-from ...core.lib.year_boundary import YearBoundary
-from .month_filter import FilterItem
-
-YEAR = "year"
-ALL = "all"
 
 ORDER = TableOrder(
     columns=(
@@ -26,38 +18,6 @@ ORDER = TableOrder(
     ),
     default="title",
 )
-
-
-@dataclass(frozen=True)
-class NameScope:
-    value: str = YEAR
-
-    @classmethod
-    def parse(cls, value: str) -> "NameScope":
-        return cls(ALL if value == ALL else YEAR)
-
-    def query(self) -> dict:
-        if self.value == YEAR:
-            return {}
-        return {"scope": self.value}
-
-    def url(self, tab_url: str) -> str:
-        if self.value == YEAR:
-            return tab_url
-        return f"{tab_url}?{urlencode(self.query())}"
-
-    def items(self, tab_url: str) -> list[FilterItem]:
-        labels = {
-            YEAR: pgettext("name scope", "This year"),
-            ALL: _("All names"),
-        }
-        return [
-            FilterItem(label, NameScope(value).url(tab_url), value == self.value)
-            for value, label in labels.items()
-        ]
-
-    def lists(self, limit: str, year: int) -> bool:
-        return self.value == ALL or limit in ("", str(year))
 
 
 @dataclass(frozen=True)
@@ -113,15 +73,13 @@ class GroupedTypesTable:
         last_year: Sequence[dict],
         last_dates: Sequence[dict],
         order: str,
-        scope: NameScope,
-        boundary: YearBoundary,
     ) -> "GroupedTypesTable":
         sums = {row["pk"]: row["sum"] for row in year}
         last_sums = {row["pk"]: row["sum"] for row in last_year}
         dates = {row["pk"]: row["date"] for row in last_dates}
 
         by_type = defaultdict(list)
-        for name in sorted(names, key=lambda n: n["title"]):
+        for name in sorted(names, key=lambda n: lt_title(n["title"])):
             by_type[name["parent_id"]].append(name)
 
         figures = {
@@ -135,7 +93,7 @@ class GroupedTypesTable:
         total = sum(f.this_year for f in figures.values())
 
         rows = []
-        for type_ in sorted(types, key=lambda t: t["title"]):
+        for type_ in sorted(types, key=lambda t: lt_title(t["title"])):
             group = by_type[type_["id"]]
             type_figures = _Figures(
                 this_year=sum(figures[n["id"]].this_year for n in group),
@@ -143,14 +101,18 @@ class GroupedTypesTable:
                 dates=[d for n in group for d in figures[n["id"]].dates],
             )
             listed = [
-                _name_row(n, figures[n["id"]], type_figures.this_year)
-                for n in group
-                if scope.lists(_limit(n), boundary.year)
+                _name_row(n, figures[n["id"]], type_figures.this_year) for n in group
             ]
             rows.append(
                 TypeRow(
                     names=ORDER.sort(order, listed, lambda r: r.sort_values).rows,
-                    **_cells(type_["id"], type_["title"], type_figures, total),
+                    **_cells(
+                        type_["id"],
+                        type_["title"],
+                        lt_title(type_["title"]),
+                        type_figures,
+                        total,
+                    ),
                 )
             )
 
@@ -171,21 +133,39 @@ def _limit(name: dict) -> str:
     return str(name["valid_for"]) if name["valid_for"] else ""
 
 
+def _title_key(limit: str, title: str) -> tuple:
+    if not limit:
+        return (0, 0, lt_title(title))
+    return (1, -int(limit), lt_title(title))
+
+
 def _name_row(name: dict, figures: _Figures, type_total: int) -> NameRow:
+    limit = _limit(name)
     return NameRow(
-        year=_limit(name),
-        **_cells(name["id"], name["title"], figures, type_total),
+        year=limit,
+        **_cells(
+            name["id"],
+            name["title"],
+            _title_key(limit, name["title"]),
+            figures,
+            type_total,
+        ),
     )
 
 
-def _cells(pk: int, title: str, figures: _Figures, whole: int) -> dict:
+def _cells(
+    pk: int, title: str, title_key: tuple, figures: _Figures, whole: int
+) -> dict:
     # share runs with this year's sum; a figure the row has not got sorts last
     sums = {
         "this_year": figures.this_year,
         "last_year": figures.last_year,
         "share": figures.this_year,
     }
-    sort_values = {"title": title, **{k: cents for k, cents in sums.items() if cents}}
+    sort_values = {
+        "title": title_key,
+        **{k: cents for k, cents in sums.items() if cents},
+    }
     last_expense = NOTHING
     if figures.dates:
         latest = max(figures.dates)
