@@ -202,25 +202,48 @@ def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
     def cells(*values):
         return r"\s*".join(f"<td>{value}</td>" for value in values)
 
+    def name_cells(this_year, last_year, share, last_expense):
+        share_cell = f'<td class="main__share">{share}</td>'
+        return r"\s*".join(
+            (cells(this_year, last_year), share_cell, cells(last_expense))
+        )
+
     rows = [
-        r'<tr class="main__group"[^>]*>\s*<td class="text-left">Buitinės</td>\s*'
+        r'<tbody>\s*<tr class="main__group"[^>]*>\s*'
+        r'<td class="text-left">Buitinės</td>\s*'
         + cells(100, "–", "10%", "1999-04-01"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Muilas</td>\s*'
-        + cells(100, "–", "100%", "1999-04-01"),
-        r'<tr class="main__group"[^>]*>\s*<td class="text-left">Maistas</td>\s*'
-        + cells(900, 200, "90%", "1999-03-07"),
+        + name_cells(100, "–", "100%", "1999-04-01"),
+        r'</tbody>\s*<tbody>\s*<tr class="main__group table-group-divider"[^>]*>\s*'
+        r'<td class="text-left">Maistas</td>\s*' + cells(900, 200, "90%", "1999-03-07"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Duona</td>\s*'
-        + cells(300, "–", "33%", "1999-03-07"),
+        + name_cells(300, "–", "33%", "1999-03-07"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Pienas</td>\s*'
-        + cells(600, 200, "67%", "1999-02-05"),
+        + name_cells(600, 200, "67%", "1999-02-05"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Sūris</td>\s*'
-        + cells("–", "–", "–", "–"),
-        r'<tr class="main__group"[^>]*>\s*<td class="text-left">Tuščia</td>\s*'
-        + cells("–", "–", "–", "–"),
-        r'<tr class="main__total">\s*<td class="text-left">Viso</td>\s*'
-        + cells("1.000", 200, "100%"),
+        + name_cells("–", "–", "–", "–"),
+        r'</tbody>\s*<tbody>\s*<tr class="main__group table-group-divider"[^>]*>\s*'
+        r'<td class="text-left">Tuščia</td>\s*' + cells("–", "–", "–", "–"),
+        r'</tbody>\s*<tfoot>\s*<tr class="main__total">\s*'
+        r'<td class="text-left">Viso</td>\s*' + cells("1.000", 200, "100%"),
     ]
     assert re.search(r"[\s\S]*?".join(rows), content)
+
+
+@pytest.mark.parametrize(
+    "necessary, title_cell",
+    [
+        (True, 'Būstas <span class="main__mark">būtinos</span></td>'),
+        (False, '<td class="text-left">Būstas</td>'),
+    ],
+    ids=["necessary_reads_its_caption", "other_has_none"],
+)
+def test_types_tab_captions_a_necessary_type(client_logged, necessary, title_cell):
+    ExpenseTypeFactory(title="Būstas", necessary=necessary)
+
+    content = client_logged.get(reverse("expenses:tab_types")).content.decode()
+
+    assert title_cell in content
 
 
 @time_machine.travel("2000-09-15")
