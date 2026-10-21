@@ -37,16 +37,15 @@
 </table>
 
 
-<c-paging :scope=scope :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#data"/>
+<c-paging :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#data"/>
 
 {% else %}
 
-<!-- the Lists view states the year, or states nothing when ?scope=all widened the
-     table past having one; a search gets its own notice from SearchMixin -->
+{# a search brings its own notice, from SearchMixin #}
 <div class="alert alert-warning">
 {% if notice %}
     {{ notice }}
-{% elif scope %}
+{% elif scope == "all" %}
     {% translate "No records" %}
 {% else %}
     {% blocktranslate with year=request.user.year %}No records in <b>{{ year }}</b>.{% endblocktranslate %}

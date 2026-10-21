@@ -67,15 +67,15 @@ def test_nav_offers_every_tab(client_logged):
 
 
 @pytest.mark.parametrize(
-    ("url_name", "title"),
+    ("url_name", "kwargs", "title"),
     [
-        ("books:tab_index", "Knygos | Apžvalga"),
-        ("books:tab_data", "Knygos | Duomenys"),
+        ("books:tab_index", {}, "Knygos | Apžvalga"),
+        ("books:tab_data", {"scope": "year"}, "Knygos | Duomenys"),
     ],
     ids=["index", "data"],
 )
-def test_browser_title_names_the_open_tab(client_logged, url_name, title):
-    content = client_logged.get(reverse(url_name)).content.decode()
+def test_browser_title_names_the_open_tab(client_logged, url_name, kwargs, title):
+    content = client_logged.get(reverse(url_name, kwargs=kwargs)).content.decode()
 
     assert f"<title>{title}</title>" in content
 
@@ -110,25 +110,30 @@ def test_books_adds_a_book_from_the_foot_of_every_tab(client_logged, tab):
     assert "Pridėti knygą" in content
 
 
-def _page_queries(client, url_name):
+def _page_queries(client, url):
     with CaptureQueriesContext(connection) as queries:
-        client.get(reverse(url_name))
+        client.get(url)
     return len(queries)
 
 
 @pytest.mark.parametrize(
-    "url_name",
-    ["books:tab_index", "books:tab_data", "books:list"],
+    ("url_name", "kwargs"),
+    [
+        ("books:tab_index", {}),
+        ("books:tab_data", {"scope": "year"}),
+        ("books:list", {"scope": "year"}),
+    ],
     ids=["index", "data", "list"],
 )
-def test_page_query_count_does_not_grow_with_the_books(client_logged, url_name):
+def test_page_query_count_does_not_grow_with_the_books(client_logged, url_name, kwargs):
+    url = reverse(url_name, kwargs=kwargs)
     for _i in range(2):
         BookFactory()
-    two = _page_queries(client_logged, url_name)
+    two = _page_queries(client_logged, url)
 
     for _i in range(2, 6):
         BookFactory()
-    six = _page_queries(client_logged, url_name)
+    six = _page_queries(client_logged, url)
 
     assert six == two
 
@@ -208,7 +213,8 @@ def test_overview_goal_pencil_opens_the_goal_form(
 
 
 def test_data_tab_reads_search_then_table(client_logged):
-    content = client_logged.get(reverse("books:tab_data")).content.decode("utf-8")
+    url = reverse("books:tab_data", kwargs={"scope": "year"})
+    content = client_logged.get(url).content.decode("utf-8")
 
     assert '<input type="search" name="search"' in content
     assert 'id="id_search"' in content
@@ -216,50 +222,76 @@ def test_data_tab_reads_search_then_table(client_logged):
     assert 'id="chart-finished-container"' not in content
 
 
-def test_data_tab_all_records_reloads_all_records(client_logged):
-    url = reverse("books:tab_data")
-    content = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
+@pytest.mark.parametrize(
+    ("scope", "reloaded"),
+    [("all", "all"), ("bogus", "year")],
+    ids=["all_records", "junk_reloads_the_year"],
+)
+def test_data_tab_reloads_its_scope(client_logged, scope, reloaded):
+    url = reverse("books:tab_data", kwargs={"scope": scope})
+    content = client_logged.get(url).content.decode("utf-8")
 
-    assert f'hx-get="{url}?scope=all" hx-target="#tab_content"' in content
+    reload_url = reverse("books:tab_data", kwargs={"scope": reloaded})
+    assert f'hx-get="{reload_url}" hx-target="#tab_content"' in content
 
 
 def test_navbar_all_records_opens_the_data_tab_on_every_year(client_logged):
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
-    assert f'href="{reverse("books:tab_data")}?scope=all"' in content
+    url = reverse("books:tab_data", kwargs={"scope": "all"})
+    assert f'<a href="{url}">Visi įrašai</a>' in content
 
 
 @pytest.mark.parametrize(
-    ("url_name", "params", "query"),
+    "url",
+    ["/books/data/", "/books/lists/", "/books/lists/year/"],
+    ids=["bare_data", "bare_lists", "lists_with_scope"],
+)
+def test_the_old_spellings_are_gone(client_logged, url):
+    response = client_logged.get(url, {"scope": "all"})
+
+    assert response.status_code == 404
+
+
+@pytest.mark.parametrize(
+    ("url_name", "kwargs", "params", "link_name", "query"),
     [
-        ("books:list", {"scope": "all"}, "page=2&scope=all"),
+        ("books:list", {"scope": "all"}, {}, "books:list", "page=2"),
+        ("books:tab_data", {"scope": "all"}, {}, "books:list", "page=2"),
         (
             "books:search",
+            {},
             {"search": "title & author"},
+            "books:search",
             "page=2&search=title%20%26%20author",
         ),
         (
             "books:search",
+            {},
             {"search": "title & author", "page": 2},
+            "books:search",
             "page=1&search=title%20%26%20author",
         ),
     ],
-    ids=["all_records", "search_encoded", "search_encoded_back"],
+    ids=["all_records", "data_all_records", "search_encoded", "search_encoded_back"],
 )
-def test_page_links_keep_their_query(client_logged, url_name, params, query):
+def test_page_links_keep_their_query(
+    client_logged, url_name, kwargs, params, link_name, query
+):
     Book.objects.bulk_create(BookFactory.build_batch(51, user=UserFactory()))
 
-    url = reverse(url_name)
+    url = reverse(url_name, kwargs=kwargs)
     content = client_logged.get(url, params).content.decode("utf-8")
 
+    link = reverse(link_name, kwargs=kwargs)
     # the other page's number and the next or previous arrow
-    assert content.count(f'hx-get="{url}?{query}"') == 2
+    assert content.count(f'hx-get="{link}?{query}"') == 2
 
 
 def test_list_with_data(client_logged):
     BookFactory()
 
-    url = reverse("books:list")
+    url = reverse("books:list", kwargs={"scope": "year"})
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -270,23 +302,32 @@ def test_list_with_data(client_logged):
 
 
 @pytest.mark.parametrize(
-    ("url_name", "params", "shown", "hidden"),
+    ("url_name", "kwargs", "params", "shown", "hidden"),
     [
-        ("books:tab_data", {}, ["This Year"], ["Old Book"]),
-        ("books:tab_data", {"scope": "all"}, ["This Year", "Old Book"], []),
-        ("books:list", {}, ["This Year"], ["Old Book"]),
-        ("books:list", {"scope": "all"}, ["This Year", "Old Book", "1974-01-01"], []),
-        ("books:search", {"search": "Old Book"}, ["Old Book", "1974-01-01"], []),
+        ("books:tab_data", {"scope": "year"}, {}, ["This Year"], ["Old Book"]),
+        ("books:tab_data", {"scope": "all"}, {}, ["This Year", "Old Book"], []),
+        ("books:tab_data", {"scope": "bogus"}, {}, ["This Year"], ["Old Book"]),
+        ("books:list", {"scope": "year"}, {}, ["This Year"], ["Old Book"]),
+        (
+            "books:list",
+            {"scope": "all"},
+            {},
+            ["This Year", "Old Book", "1974-01-01"],
+            [],
+        ),
+        ("books:list", {"scope": "bogus"}, {}, ["This Year"], ["Old Book"]),
+        ("books:search", {}, {"search": "Old Book"}, ["Old Book", "1974-01-01"], []),
     ],
-    ids=["data", "data_all", "list", "list_all", "search"],
+    ids=["data", "data_all", "data_junk", "list", "list_all", "list_junk", "search"],
 )
 def test_a_listing_shows_the_books_of_its_scope(
-    client_logged, url_name, params, shown, hidden
+    client_logged, url_name, kwargs, params, shown, hidden
 ):
     BookFactory(title="This Year")
     BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
 
-    actual = client_logged.get(reverse(url_name), params).content.decode("utf-8")
+    url = reverse(url_name, kwargs=kwargs)
+    actual = client_logged.get(url, params).content.decode("utf-8")
 
     for text in shown:
         assert text in actual
@@ -295,15 +336,16 @@ def test_a_listing_shows_the_books_of_its_scope(
 
 
 @pytest.mark.parametrize(
-    ("params", "shown", "hidden"),
+    ("scope", "shown", "hidden"),
     [
-        ({}, ["<b>1999</b> metais įrašų nėra"], []),
-        ({"scope": "all"}, ["Įrašų nėra"], ["1999"]),
+        ("year", ["<b>1999</b> metais įrašų nėra"], []),
+        ("all", ["Įrašų nėra"], ["1999"]),
     ],
     ids=["this_year_names_the_year", "all_books_names_no_year"],
 )
-def test_list_empty_state(client_logged, params, shown, hidden):
-    actual = client_logged.get(reverse("books:list"), params).content.decode("utf-8")
+def test_list_empty_state(client_logged, scope, shown, hidden):
+    url = reverse("books:list", kwargs={"scope": scope})
+    actual = client_logged.get(url).content.decode("utf-8")
 
     for text in shown:
         assert text in actual
@@ -336,14 +378,24 @@ def test_books_load_form(client_logged, url_of, expected):
         assert text in actual
 
 
-def test_save_book(client_logged):
+@pytest.mark.parametrize(
+    "url_of",
+    [
+        lambda: reverse("books:new"),
+        lambda: reverse("books:update", kwargs={"pk": BookFactory().pk}),
+    ],
+    ids=["new", "update"],
+)
+def test_save_book(client_logged, url_of):
     data = {"started": "1999-01-01", "author": "AAA", "title": "TTT"}
 
-    url = reverse("books:new")
+    url = url_of()
 
     response = client_logged.post(url, data, follow=True)
 
-    assert response.redirect_chain == [(reverse("books:list"), 302)]
+    assert response.redirect_chain == [
+        (reverse("books:list", kwargs={"scope": "year"}), 302)
+    ]
 
     obj = Book.objects.first()
 
@@ -519,35 +571,35 @@ def test_search(client_logged, search, expected):
         assert text in actual
 
 
-def test_search_reset_url_restores_the_year(client_logged):
-    BookFactory(title="This Year")
-    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
+@pytest.mark.parametrize(
+    ("scope", "reset"),
+    [("year", "year"), ("all", "all"), ("bogus", "year")],
+    ids=["year", "all_records", "junk_resets_to_the_year"],
+)
+def test_search_reset_returns_to_the_open_scope(client_logged, scope, reset):
+    url = reverse("books:tab_data", kwargs={"scope": scope})
+    data = client_logged.get(url).content.decode("utf-8")
 
-    data = client_logged.get(reverse("books:tab_data")).content.decode("utf-8")
-    assert f'hx-get="{reverse("books:list")}"' in data
-
-    actual = client_logged.get(reverse("books:list")).content.decode("utf-8")
-
-    assert "This Year" in actual
-    assert "Old Book" not in actual
+    reset_url = reverse("books:list", kwargs={"scope": reset})
+    assert re.search(rf'<button[^>]*hx-get="{reset_url}"', data)
 
 
 @pytest.mark.parametrize(
-    ("name", "params", "expected", "first_numbers"),
+    ("name", "kwargs", "params", "expected", "first_numbers"),
     [
-        ("books:search", {"search": "title"}, 50, ["1"]),
-        ("books:search", {"page": 2, "search": "author"}, 1, ["1"]),
-        ("books:search", {"page": "x", "search": "title"}, 50, ["1"]),
-        ("books:search", {"page": 0, "search": "title"}, 50, ["1"]),
-        ("books:search", {"page": -3, "search": "title"}, 50, ["1"]),
-        ("books:search", {"page": 10**30, "search": "title"}, 0, []),
-        ("books:list", {"scope": "all"}, 50, ["51"]),
-        ("books:list", {"scope": "all", "page": 2}, 1, ["1"]),
-        ("books:list", {"scope": "all", "page": "x"}, 50, ["51"]),
-        ("books:list", {"scope": "all", "page": 0}, 50, ["51"]),
-        ("books:list", {"scope": "all", "page": -3}, 50, ["51"]),
-        ("books:list", {"scope": "all", "page": 999}, 0, []),
-        ("books:list", {"scope": "all", "page": 10**30}, 0, []),
+        ("books:search", {}, {"search": "title"}, 50, ["1"]),
+        ("books:search", {}, {"page": 2, "search": "author"}, 1, ["1"]),
+        ("books:search", {}, {"page": "x", "search": "title"}, 50, ["1"]),
+        ("books:search", {}, {"page": 0, "search": "title"}, 50, ["1"]),
+        ("books:search", {}, {"page": -3, "search": "title"}, 50, ["1"]),
+        ("books:search", {}, {"page": 10**30, "search": "title"}, 0, []),
+        ("books:list", {"scope": "all"}, {}, 50, ["51"]),
+        ("books:list", {"scope": "all"}, {"page": 2}, 1, ["1"]),
+        ("books:list", {"scope": "all"}, {"page": "x"}, 50, ["51"]),
+        ("books:list", {"scope": "all"}, {"page": 0}, 50, ["51"]),
+        ("books:list", {"scope": "all"}, {"page": -3}, 50, ["51"]),
+        ("books:list", {"scope": "all"}, {"page": 999}, 0, []),
+        ("books:list", {"scope": "all"}, {"page": 10**30}, 0, []),
     ],
     ids=[
         "search_first_page",
@@ -565,10 +617,10 @@ def test_search_reset_url_restores_the_year(client_logged):
         "list_page_past_any_offset",
     ],
 )
-def test_pagination(client_logged, name, params, expected, first_numbers):
+def test_pagination(client_logged, name, kwargs, params, expected, first_numbers):
     Book.objects.bulk_create(BookFactory.build_batch(51, user=UserFactory()))
 
-    response = client_logged.get(reverse(name), params)
+    response = client_logged.get(reverse(name, kwargs=kwargs), params)
     actual = response.content.decode("utf-8")
 
     assert actual.count("Author") == expected
@@ -583,7 +635,8 @@ def test_pagination(client_logged, name, params, expected, first_numbers):
             lambda rf, u: view_for(rf, u, views.TabIndex).get_context_data(), id="index"
         ),
         pytest.param(
-            lambda rf, u: view_for(rf, u, views.Lists).get_queryset(), id="list"
+            lambda rf, u: view_for(rf, u, views.Lists, scope="year").get_queryset(),
+            id="list",
         ),
         pytest.param(
             lambda rf, u: BookTargetForm(user=u, today=date(2000, 2, 2)),
