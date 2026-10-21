@@ -410,7 +410,7 @@ def test_index_counter_menu_puts_the_three_counter_acts_under_a_divider(client_l
         reverse("counts:type_delete", kwargs={"pk": obj.pk}),
         reverse("counts:type_new"),
     ):
-        assert bar.index(f'hx-get="{url}"') > divider
+        assert bar.index(f'<button type="button" hx-get="{url}"') > divider
         assert 'hx-target="#mainModal"' in bar
 
 
