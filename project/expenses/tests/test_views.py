@@ -41,12 +41,15 @@ def _open_month(month):
     # each pattern names the element that carries the url: the filter line lists
     # every month, the Reset button and #data share one url
     return [
-        rf'id="data"[^>]*hx-get="/expenses/list/\?month={month}"',
-        rf'class="button-secondary"\s+hx-get="/expenses/list/\?month={month}"',
-        rf'aria-current="true" hx-get="/expenses/data/\?month={month}"'
-        r' hx-push-url="true"',
-        rf'<div hx-get="/expenses/data/\?month={month}" hx-target="#tab_content"',
+        rf'id="data"[^>]*hx-get="/expenses/list/{month}/"',
+        rf'class="button-secondary"\s+hx-get="/expenses/list/{month}/"',
+        rf'aria-current="true" hx-get="/expenses/data/{month}/" hx-push-url="true"',
+        rf'<div hx-get="/expenses/data/{month}/" hx-target="#tab_content"',
     ]
+
+
+# the travel's month, which the subnav's Duomenys opens from any month's page
+SUBNAV_DUOMENYS_AT_TODAY = r'id="tab-data"[^>]*hx-get="/expenses/data/2/"'
 
 
 @pytest.mark.parametrize(
@@ -55,36 +58,43 @@ def _open_month(month):
         pytest.param("expenses:index", {}, {}, [_active_tab("index")], id="overview"),
         pytest.param(
             "expenses:tab_data",
-            {},
+            {"month": "2"},
             {},
             [_active_tab("data"), *_open_month(2)],
             id="data_this_month",
         ),
         pytest.param(
-            "expenses:index",
-            {"month": 3},
+            "expenses:tab_data",
+            {"month": "3"},
             {},
-            [_active_tab("data"), *_open_month(3)],
+            [_active_tab("data"), *_open_month(3), SUBNAV_DUOMENYS_AT_TODAY],
             id="nav_month",
         ),
         pytest.param(
             "expenses:tab_data",
-            {},
-            {"month": "all"},
-            [_active_tab("data"), *_open_month("all")],
-            id="query_all",
-        ),
-        pytest.param(
-            "expenses:index",
-            {"month": 13},
-            {},
-            [_active_tab("data"), *_open_month("all")],
-            id="old_route_13",
+            {"month": "3"},
+            {"month": "5"},
+            [_active_tab("data"), *_open_month(3)],
+            id="the_path_wins_over_a_query",
         ),
         pytest.param(
             "expenses:tab_data",
+            {"month": "all"},
             {},
-            {"month": "x"},
+            [_active_tab("data"), *_open_month("all"), SUBNAV_DUOMENYS_AT_TODAY],
+            id="all",
+        ),
+        pytest.param(
+            "expenses:tab_data",
+            {"month": "13"},
+            {},
+            [_active_tab("data"), *_open_month(2)],
+            id="13_falls_back",
+        ),
+        pytest.param(
+            "expenses:tab_data",
+            {"month": "abc"},
+            {},
             [_active_tab("data"), *_open_month(2)],
             id="junk_falls_back",
         ),
@@ -99,6 +109,11 @@ def test_the_page_opens_the_tab_and_month_its_url_names(
 
     for pattern in expected:
         assert re.search(pattern, content)
+
+
+@pytest.mark.parametrize("path", ["/expenses/data/", "/expenses/list/", "/expenses/3/"])
+def test_duomenys_and_its_list_have_no_route_without_a_month(client_logged, path):
+    assert client_logged.get(path).status_code == 404
 
 
 def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
@@ -128,9 +143,9 @@ def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
     assert "quick-add" not in content
 
 
-def _tab_queries(client, url_name):
+def _tab_queries(client, url):
     with CaptureQueriesContext(connection) as queries:
-        client.get(reverse(url_name), headers={"HX-Request": "true"})
+        client.get(url, headers={"HX-Request": "true"})
     return len(queries)
 
 
@@ -141,16 +156,25 @@ def _expense_under_its_own_name(i):
 
 
 @pytest.mark.parametrize(
-    "url_name", ["expenses:tab_index", "expenses:tab_data", "expenses:tab_types"]
+    "url_name, kwargs",
+    [
+        pytest.param("expenses:tab_index", {}, id="expenses:tab_index"),
+        pytest.param("expenses:tab_data", {"month": "all"}, id="expenses:tab_data"),
+        pytest.param("expenses:list", {"month": "all"}, id="expenses:list"),
+        pytest.param("expenses:tab_types", {}, id="expenses:tab_types"),
+    ],
 )
-def test_tab_query_count_does_not_grow_with_the_expenses(client_logged, url_name):
+def test_tab_query_count_does_not_grow_with_the_expenses(
+    client_logged, url_name, kwargs
+):
+    url = reverse(url_name, kwargs=kwargs)
     for i in range(2):
         _expense_under_its_own_name(i)
-    two = _tab_queries(client_logged, url_name)
+    two = _tab_queries(client_logged, url)
 
     for i in range(2, 6):
         _expense_under_its_own_name(i)
-    six = _tab_queries(client_logged, url_name)
+    six = _tab_queries(client_logged, url)
 
     assert six == two
 
@@ -369,18 +393,29 @@ def test_overview_charts_the_year_against_last_year_to_the_same_day(client_logge
 
 
 @pytest.mark.parametrize(
-    "url_name, lit",
+    "url_name, kwargs, lit",
     [
-        pytest.param("expenses:tab_data", True, id="expenses_tab"),
-        pytest.param("plans:tab_expenses", False, id="plans"),
-        pytest.param("bookkeeping:detailed_expenses", False, id="detailed"),
-        pytest.param("bookkeeping:summary_expenses", False, id="summary"),
+        pytest.param("expenses:tab_data", {"month": "1"}, True, id="expenses_tab"),
+        pytest.param("plans:tab_expenses", {}, False, id="plans"),
+        pytest.param("bookkeeping:detailed_expenses", {}, False, id="detailed"),
+        pytest.param("bookkeeping:summary_expenses", {}, False, id="summary"),
     ],
 )
-def test_the_navbar_lights_expenses_only_on_its_own_pages(client_logged, url_name, lit):
-    content = client_logged.get(reverse(url_name)).content.decode()
+def test_the_navbar_lights_expenses_only_on_its_own_pages(
+    client_logged, url_name, kwargs, lit
+):
+    content = client_logged.get(reverse(url_name, kwargs=kwargs)).content.decode()
 
     assert bool(re.search(r'class="active">\s*<a href="/expenses/"', content)) is lit
+
+
+def test_the_navbar_opens_duomenys_at_each_month_and_all(client_logged):
+    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
+
+    assert re.findall(r'href="(/expenses/data/[^"]*)"', content) == [
+        *(f"/expenses/data/{month}/" for month in range(1, 13)),
+        "/expenses/data/all/",
+    ]
 
 
 YEAR_DATES = [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)]
@@ -392,58 +427,50 @@ YEAR_DATES = [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)]
         pytest.param(
             "1999-02-08",
             [date(1999, 1, 1), date(1999, 2, 7)],
+            {"month": "1"},
             {},
-            {},
-            [date(1999, 2, 7)],
-            id="no_month_is_this_month",
+            [date(1999, 1, 1)],
+            id="path_month",
         ),
         pytest.param(
             "1999-02-08",
             [date(1999, 1, 1), date(1999, 2, 7)],
-            {},
             {"month": "1"},
+            {"month": "2"},
             [date(1999, 1, 1)],
-            id="query_month",
+            id="the_path_wins_over_a_query",
         ),
         pytest.param(
             "1999-01-01",
             YEAR_DATES,
-            {},
+            {"month": "1"},
             {},
             [date(1999, 1, 1)],
-            id="no_month_in_user_year",
+            id="month_in_user_year",
         ),
         pytest.param(
             "1999-01-01",
             YEAR_DATES,
-            {},
             {"month": "all"},
+            {},
             [date(1999, 1, 1), date(1999, 2, 1)],
-            id="query_all_is_the_year",
+            id="all_is_the_year",
         ),
         pytest.param(
             "1999-01-01",
             YEAR_DATES,
-            {"month": 13},
+            {"month": "13"},
             {},
-            [date(1999, 1, 1), date(1999, 2, 1)],
-            id="old_route_13_is_the_year",
+            [date(1999, 1, 1)],
+            id="13_is_this_month",
         ),
         pytest.param(
             "1999-01-01",
             YEAR_DATES,
+            {"month": "abc"},
             {},
-            {"month": "x"},
             [date(1999, 1, 1)],
             id="junk_is_this_month",
-        ),
-        pytest.param(
-            "1999-01-01",
-            YEAR_DATES,
-            {"month": 133},
-            {},
-            [date(1999, 1, 1)],
-            id="any_other_number_is_this_month",
         ),
     ],
 )
@@ -461,18 +488,17 @@ def test_expenses_list_filters_by_month(
 
 
 @pytest.mark.parametrize(
-    "kwargs, query, expected",
+    "month, expected",
     [
-        pytest.param({}, {"month": "1"}, "Mėnesį 1 įrašų nėra.", id="month"),
-        pytest.param({}, {"month": "all"}, "1999 metais įrašų nėra.", id="all"),
-        pytest.param({"month": 13}, {}, "1999 metais įrašų nėra.", id="old_route_13"),
-        pytest.param({"month": 14}, {}, "Mėnesį 2 įrašų nėra.", id="above_13_today"),
+        pytest.param("1", "Mėnesį 1 įrašų nėra.", id="month"),
+        pytest.param("all", "1999 metais įrašų nėra.", id="all"),
+        pytest.param("13", "Mėnesį 2 įrašų nėra.", id="13_today"),
     ],
 )
 @time_machine.travel("1999-02-08")
-def test_expenses_list_empty_notice(client_logged, kwargs, query, expected):
-    url = reverse("expenses:list", kwargs=kwargs)
-    actual = client_logged.get(url, query).content.decode("utf-8")
+def test_expenses_list_empty_notice(client_logged, month, expected):
+    url = reverse("expenses:list", kwargs={"month": month})
+    actual = client_logged.get(url).content.decode("utf-8")
 
     assert f'<div class="alert">{expected}</div>' in clean_content(actual)
     assert "<b>" not in actual
@@ -515,7 +541,7 @@ def test_lists_renders_row_buttons_equal_for_2_and_6_expenses(client_logged):
 
 
 def test_expenses_lists_302(client):
-    url = reverse("expenses:list")
+    url = reverse("expenses:list", kwargs={"month": "1"})
     response = client.get(url)
 
     assert response.status_code == 302
@@ -570,6 +596,33 @@ def test_expenses_save(client_logged):
     assert actual.account.title == "Account1"
     assert actual.expense_type.title == "Expense Type"
     assert actual.expense_name.title == "Expense Name"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        pytest.param(lambda expense: reverse("expenses:new"), id="new"),
+        pytest.param(
+            lambda expense: reverse("expenses:update", kwargs={"pk": expense.pk}),
+            id="update",
+        ),
+    ],
+)
+def test_a_save_without_htmx_lands_on_duomenys_at_the_saved_month(client_logged, url):
+    expense = ExpenseFactory(date=date(1999, 1, 1))
+    data = {
+        "date": "1999-05-03",
+        "price": 1,
+        "quantity": 1,
+        "account": expense.account.pk,
+        "expense_type": expense.expense_type.pk,
+        "expense_name": expense.expense_name.pk,
+    }
+
+    response = client_logged.post(url(expense), data)
+
+    assert response.status_code == 302
+    assert response["Location"] == "/expenses/data/5/"
 
 
 def test_expenses_save_invalid_data(client_logged):
@@ -799,7 +852,7 @@ def test_expenses_not_load_other_journal(client_logged, second_user):
 
 
 def test_expenses_data_search_form(client_logged):
-    url = reverse("expenses:tab_data")
+    url = reverse("expenses:tab_data", kwargs={"month": "1"})
     response = client_logged.get(url).content.decode("utf-8")
 
     assert '<input type="search" name="search"' in response

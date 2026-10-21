@@ -1,5 +1,8 @@
+from datetime import date
+
 import pytest
 import time_machine
+from django.urls import reverse
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -14,12 +17,16 @@ pytestmark = pytest.mark.django_db
 
 @pytest.mark.webtest
 class Expenses(Browser):
+    def data_url(self):
+        month = date.today().month
+        return f"{self.live_server_url}{reverse('expenses:tab_data', args=[month])}"
+
     def _fill_selects(self):
         a = AccountFactory()
         t = ExpenseTypeFactory()
         n = ExpenseNameFactory()
 
-        self.browser.get(f"{self.live_server_url}/expenses/data/")
+        self.browser.get(self.data_url())
         self.wait_until_idle()
 
         # click Add Expenses button
@@ -41,7 +48,7 @@ class Expenses(Browser):
         elem.select_by_value(f"{a.id}")
 
     def _open_update_form(self):
-        self.browser.get(f"{self.live_server_url}/expenses/data/")
+        self.browser.get(self.data_url())
         self.wait_until_idle()
 
         self.browser.find_element(By.CSS_SELECTOR, "a.edit").click()
@@ -139,7 +146,7 @@ class Expenses(Browser):
         t1 = ExpenseTypeFactory(title="Expense Type 1")
         n1 = ExpenseNameFactory(title="Expense Name 1", parent=t1)
 
-        self.browser.get(f"{self.live_server_url}/expenses/data/")
+        self.browser.get(self.data_url())
         self.wait_until_idle()
 
         # click Add Expenses button
@@ -273,7 +280,7 @@ class Expenses(Browser):
         ExpenseFactory(remark="yyyy")
         ExpenseFactory(remark="zzzz")
 
-        self.browser.get(f"{self.live_server_url}/expenses/data/")
+        self.browser.get(self.data_url())
         self.wait_until_idle()
 
         search = self.browser.find_element(by=By.ID, value="id_search")
@@ -308,7 +315,7 @@ class Expenses(Browser):
     def test_modal_closes_after_delete(self):
         ExpenseFactory()
 
-        self.browser.get(f"{self.live_server_url}/expenses/data/")
+        self.browser.get(self.data_url())
         self.wait_until_idle()
 
         self.browser.find_element(By.CSS_SELECTOR, ".delete-col a").click()
@@ -325,7 +332,7 @@ class Expenses(Browser):
         ExpenseFactory(remark="AAAA")
         ExpenseFactory(remark="BBBB")
 
-        self.browser.get(f"{self.live_server_url}/expenses/data/")
+        self.browser.get(self.data_url())
         self.wait_until_idle()
         rows_before = len(self.browser.find_elements(By.XPATH, "//table/tbody/tr"))
 
