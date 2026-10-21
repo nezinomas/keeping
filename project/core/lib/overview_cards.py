@@ -1,22 +1,55 @@
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
+from datetime import date
+from typing import Protocol
 
 from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext, pgettext
 
+from .chart_months import ChartMonths
 from .convert_price import int_cents_to_float
 from .money_cells import amount, share
 from .stat_card import Card, EmptyStatCard, StatCard
 from .year_boundary import YearBoundary
 
 
+class SpanReads(Protocol):
+    def sum_by_between(self, field: str, start: date, end: date) -> Iterable[dict]: ...
+
+    def sum_by_month_between(self, start: date, end: date) -> Iterable[dict]: ...
+
+
 def _sum(rows: Sequence[dict]) -> int:
     return sum(row["sum"] for row in rows)
 
 
-def _euro(euro: float) -> str:
-    return floatformat(euro, "0g")
+@dataclass(frozen=True)
+class Overview:
+    cards: list[Card]
+    chart: dict
+
+    @classmethod
+    def build(
+        cls,
+        service: SpanReads,
+        field: str,
+        boundary: YearBoundary,
+        largest_type_explanation: str,
+    ) -> "Overview":
+        return cls(
+            cards=OverviewCards.build(
+                list(service.sum_by_between(field, *boundary.span)),
+                list(service.sum_by_between(field, *boundary.previous_span)),
+                boundary,
+                largest_type_explanation,
+            ),
+            chart=ChartMonths.build(
+                list(service.sum_by_month_between(*boundary.span)),
+                list(service.sum_by_month_between(*boundary.previous_span)),
+                boundary,
+            ),
+        )
 
 
 @dataclass(frozen=True)
@@ -69,7 +102,7 @@ class OverviewCards:
 
         return StatCard(
             title=title,
-            value=_euro(int_cents_to_float(total) / months),
+            value=floatformat(int_cents_to_float(total) / months, "0g"),
             note=ngettext("%(count)s month", "%(count)s months", months)
             % {"count": months},
             explanation=(_("The year's total divided by the months it has reached"),),

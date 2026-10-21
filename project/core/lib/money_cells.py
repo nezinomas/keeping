@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.template.defaultfilters import floatformat
 
 from .convert_price import int_cents_to_float
@@ -7,6 +9,10 @@ NOTHING = "–"
 
 def amount(cents: int) -> str:
     return floatformat(int_cents_to_float(cents), "0g") if cents else NOTHING
+
+
+def day(when: date) -> str:
+    return f"{when:%Y-%m-%d}"
 
 
 def share(cents: int, total: int) -> str:

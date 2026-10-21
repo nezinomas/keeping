@@ -5,9 +5,8 @@ from typing import cast
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
 
-from ...core.lib.chart_months import ChartMonths
 from ...core.lib.convert_price import PriceToFloatViewMixin
-from ...core.lib.overview_cards import OverviewCards
+from ...core.lib.overview_cards import Overview
 from ...core.lib.utils import add_fast_urls, get_action_buttons_html, int_or_zero
 from ...core.lib.year_boundary import YearBoundary
 from ...core.mixins.tabs import TabViewMixin as CoreTabViewMixin
@@ -23,13 +22,14 @@ from ...users.models import User
 from .. import forms
 from ..apps import App_name
 from ..services import search
-from ..services.cards import LARGEST_TYPE_EXPLANATION
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
 )
 from ..services.month_filter import ALL, MonthFilter
 from ..tabs import TABS
+
+LARGEST_TYPE_EXPLANATION = _("The expense type with the biggest share of this year")
 
 
 def month_filter(kwargs) -> MonthFilter:
@@ -50,22 +50,17 @@ class TabViewMixin(CoreTabViewMixin):
 
 class TabIndex(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
-        boundary = YearBoundary(self.request.user.selected_year(), date.today())
-        service = ExpenseModelService(self.request.user)
+        overview = Overview.build(
+            ExpenseModelService(self.request.user),
+            "expense_type",
+            YearBoundary(self.request.user.selected_year(), date.today()),
+            LARGEST_TYPE_EXPLANATION,
+        )
 
         return {
             **super().get_context_data(**kwargs),
-            "cards": OverviewCards.build(
-                list(service.sum_by_between("expense_type", *boundary.span)),
-                list(service.sum_by_between("expense_type", *boundary.previous_span)),
-                boundary,
-                LARGEST_TYPE_EXPLANATION,
-            ),
-            "chart": ChartMonths.build(
-                list(service.sum_by_month_between(*boundary.span)),
-                list(service.sum_by_month_between(*boundary.previous_span)),
-                boundary,
-            ),
+            "cards": overview.cards,
+            "chart": overview.chart,
         }
 
 
