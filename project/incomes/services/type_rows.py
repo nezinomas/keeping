@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from ...core.lib.collation import lt_title
 from ...core.lib.money_cells import NOTHING, amount, day, share
 from ...core.lib.table_order import Column, TableOrder
 
@@ -57,7 +58,7 @@ class TypesTable:
 
         rows = [
             _row(income_type, sums, last_sums, dates, total)
-            for income_type in sorted(types, key=lambda t: t["title"])
+            for income_type in sorted(types, key=lambda t: lt_title(t["title"]))
         ]
 
         ordered = ORDER.sort(order, rows, lambda row: row.sort_values)
@@ -82,7 +83,7 @@ def _row(
     # share runs with this year's sum; a figure the row has not got sorts last
     figures = {"this_year": this_year, "last_year": last_year, "share": this_year}
     sort_values = {
-        "title": title,
+        "title": lt_title(title),
         **{k: cents for k, cents in figures.items() if cents},
     }
     last_income = NOTHING
