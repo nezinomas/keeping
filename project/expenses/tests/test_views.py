@@ -542,6 +542,8 @@ def test_lists_renders_row_buttons_equal_for_2_and_6_expenses(client_logged):
     ],
 )
 def test_anonymous_is_sent_to_login(client, url):
+    # a view that serves anonymous crashes on its user: read that as a status, not an error
+    client.raise_request_exception = False
     response = client.get(url)
 
     assert response.status_code == 302
