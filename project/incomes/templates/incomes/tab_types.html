@@ -2,13 +2,13 @@
 
 <div class="table-responsive">
 <table class="main striped hover">
-    <thead class="sortable-header-row">
+    <thead class="sortable-header-row" hx-push-url:inherited="true">
         <tr>
-            <c-sort-th key="title" :active=table.order :url=tab_url target="#tab_content" class="text-left">{% translate 'Incomes type' %}</c-sort-th>
-            <c-sort-th key="this_year" :active=table.order :url=tab_url target="#tab_content">{% translate 'This year' %}</c-sort-th>
-            <c-sort-th key="last_year" :active=table.order :url=tab_url target="#tab_content">{% translate 'Last year' %}</c-sort-th>
-            <c-sort-th key="share" :active=table.order :url=tab_url target="#tab_content">{% translate 'Share' %}</c-sort-th>
-            <c-sort-th key="last_income" :active=table.order :url=tab_url target="#tab_content">{% translate 'Last income' %}</c-sort-th>
+            <c-sort-th key="title" :active="table.order" :url="sort_url" target="#tab_content" class="text-left">{% translate 'Incomes type' %}</c-sort-th>
+            <c-sort-th key="this_year" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'This year' %}</c-sort-th>
+            <c-sort-th key="last_year" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Last year' %}</c-sort-th>
+            <c-sort-th key="share" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Share' %}</c-sort-th>
+            <c-sort-th key="last_income" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Last income' %}</c-sort-th>
             <th class="edit-col"></th>
         </tr>
     </thead>

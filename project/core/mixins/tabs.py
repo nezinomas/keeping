@@ -1,7 +1,14 @@
+from urllib.parse import urlencode
+
 from django.shortcuts import render
 from django.utils.text import format_lazy
 
 from ..tabs import Tab, Tabs
+
+
+def sorted_tab_urls(tab: Tab, order: str) -> dict:
+    # the header links add their own order; a save reloads the one shown
+    return {"sort_url": tab.url, "tab_url": f"{tab.url}?{urlencode({'order': order})}"}
 
 
 class TabViewMixin:
