@@ -1,14 +1,9 @@
 from datetime import date
 
 import pytest
-from hypothesis import example, given
-from hypothesis import strategies as st
 
-from ....core.lib.year_boundary import YearBoundary
-from ...services.month_filter import FilterItem
-from ...services.type_rows import GroupedTypesTable, NameScope
+from ...services.type_rows import GroupedTypesTable
 
-BOUNDARY = YearBoundary(2026, date(2026, 10, 20))
 TYPES = [
     {"id": 3, "title": "Gama"},
     {"id": 2, "title": "Beta"},
@@ -40,8 +35,6 @@ LAST_DATES = [
     {"pk": 21, "title": "Duona", "date": date(2026, 2, 1)},
     {"pk": 22, "title": "Kava", "date": date(2026, 9, 1)},
 ]
-YEAR_SCOPE = NameScope("year")
-ALL_SCOPE = NameScope("all")
 
 
 def _table(
@@ -51,11 +44,8 @@ def _table(
     last_year=LAST_YEAR,
     last_dates=LAST_DATES,
     order="",
-    scope=YEAR_SCOPE,
 ):
-    return GroupedTypesTable.build(
-        types, names, year, last_year, last_dates, order, scope, BOUNDARY
-    )
+    return GroupedTypesTable.build(types, names, year, last_year, last_dates, order)
 
 
 def _shape(table):
@@ -124,35 +114,7 @@ def test_a_names_share_is_of_its_type_and_a_types_of_the_year():
     assert [name.share for name in beta.names] == ["91%", "9%"]
 
 
-@pytest.mark.parametrize(
-    "scope, expected",
-    [
-        (YEAR_SCOPE, [("Aaa", ""), ("Ccc", "2026")]),
-        (ALL_SCOPE, [("Aaa", ""), ("Bbb", "2024"), ("Ccc", "2026")]),
-    ],
-    ids=["year", "all"],
-)
-def test_the_name_scope_hides_a_name_limited_to_another_year(scope, expected):
-    names = [
-        _name(13, "Ccc", 1, 2026),
-        _name(12, "Bbb", 1, 2024),
-        _name(11, "Aaa", 1),
-    ]
-
-    table = _table(
-        types=[{"id": 1, "title": "Alfa"}],
-        names=names,
-        year=[],
-        last_year=[],
-        last_dates=[],
-        scope=scope,
-    )
-
-    assert [(name.title, name.year) for name in table.rows[0].names] == expected
-
-
-@pytest.mark.parametrize("scope", [YEAR_SCOPE, ALL_SCOPE], ids=["year", "all"])
-def test_a_types_figures_count_every_name_whatever_the_scope(scope):
+def test_a_types_figures_count_every_name_whatever_its_year():
     names = [_name(11, "Aaa", 1), _name(12, "Bbb", 1, 2024)]
 
     table = _table(
@@ -164,7 +126,6 @@ def test_a_types_figures_count_every_name_whatever_the_scope(scope):
             {"pk": 11, "title": "Aaa", "date": date(2026, 1, 5)},
             {"pk": 12, "title": "Bbb", "date": date(2026, 6, 6)},
         ],
-        scope=scope,
     )
     alfa = table.rows[0]
 
@@ -219,21 +180,56 @@ def test_the_total_sums_every_type(year, last_year, expected):
     assert (total.this_year, total.last_year, total.share) == expected
 
 
-@given(st.text())
-@example("all")
-@example("year")
-@example("")
-def test_a_name_scope_parses_all_and_falls_back_to_the_year(value):
-    assert NameScope.parse(value).value == ("all" if value == "all" else "year")
+YEARS_APART = [
+    _name(14, "Gruzija", 1, 2012),
+    _name(11, "Kita", 1),
+    _name(13, "Bilietai", 1, 2025),
+    _name(15, "Zuikis", 1),
+    _name(12, "Aplink", 1, 2025),
+]
 
 
 @pytest.mark.parametrize(
-    "scope, active",
-    [(YEAR_SCOPE, (True, False)), (ALL_SCOPE, (False, True))],
-    ids=["year", "all"],
+    "order, expected",
+    [
+        ("title", ["Kita", "Zuikis", "Aplink", "Bilietai", "Gruzija"]),
+        ("this_year", ["Bilietai", "Kita", "Aplink", "Gruzija", "Zuikis"]),
+    ],
+    ids=["title_puts_years_after_newest_first", "a_figure_ties_by_title"],
 )
-def test_the_name_scope_items_link_both_scopes_and_mark_the_open_one(scope, active):
-    assert scope.items("/expenses/types/") == [
-        FilterItem("Šie metai", "/expenses/types/", active[0]),
-        FilterItem("Visi pavadinimai", "/expenses/types/?scope=all", active[1]),
+def test_names_order_by_year_under_title_and_by_their_figure_otherwise(order, expected):
+    table = _table(
+        types=[{"id": 1, "title": "Kelionės"}],
+        names=YEARS_APART,
+        year=[_sum(11, "Kita", 100_00), _sum(13, "Bilietai", 300_00)],
+        last_year=[],
+        last_dates=[],
+        order=order,
+    )
+
+    assert [name.title for name in table.rows[0].names] == expected
+
+
+def test_types_and_names_read_in_the_lithuanian_alphabet():
+    titles = ["Šildymas", "Ypatingos", "Autobusas", "Sveikata", "Jūra"]
+    titles += ["Įrankiai", "Telefonas", "Ąžuolas"]
+    types = [
+        {"id": 2, "title": "Čekiai"},
+        {"id": 3, "title": "Drabužiai"},
+        {"id": 1, "title": "Cukrus"},
+    ]
+    names = [_name(10 + i, title, 1) for i, title in enumerate(titles)]
+
+    table = _table(types=types, names=names, year=[], last_year=[], last_dates=[])
+
+    assert [row.title for row in table.rows] == ["Cukrus", "Čekiai", "Drabužiai"]
+    assert [name.title for name in table.rows[0].names] == [
+        "Autobusas",
+        "Ąžuolas",
+        "Įrankiai",
+        "Ypatingos",
+        "Jūra",
+        "Sveikata",
+        "Šildymas",
+        "Telefonas",
     ]

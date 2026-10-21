@@ -12,7 +12,7 @@ from ..services.model_services import (
     ExpenseNameModelService,
     ExpenseTypeModelService,
 )
-from ..services.type_rows import GroupedTypesTable, NameScope
+from ..services.type_rows import GroupedTypesTable
 from ..tabs import TABS
 from .expenses import TabViewMixin
 
@@ -23,7 +23,6 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         user = self.request.user
         boundary = YearBoundary(user.selected_year(), date.today())
-        scope = NameScope.parse(self.request.GET.get("scope", ""))
         service = ExpenseModelService(user)
         types = ExpenseTypeModelService(user).items().values("id", "title")
         names = (
@@ -41,17 +40,14 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
             ),
             last_dates=list(service.last_date_by("expense_name", boundary.end_date)),
             order=self.request.GET.get("order", ""),
-            scope=scope,
-            boundary=boundary,
         )
-        reload_query = urlencode(scope.query() | {"order": table.order})
+        reload_query = urlencode({"order": table.order})
 
         return {
             **super().get_context_data(**kwargs),
             "table": table,
-            "items": scope.items(self.tab.url),
-            "sort_url": scope.url(self.tab.url),
-            # a save reloads the scope and sort the tab shows
+            "sort_url": self.tab.url,
+            # a save reloads the sort the tab shows
             "tab_url": f"{self.tab.url}?{reload_query}",
         }
 
