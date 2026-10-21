@@ -231,10 +231,6 @@ class ExpenseModelService(SpanReadsMixin, SumMixin, DatedModelService):
         )
 
     def expenses(self):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
         return (
             self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
