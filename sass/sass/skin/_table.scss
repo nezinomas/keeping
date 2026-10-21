@@ -171,6 +171,9 @@
     }
 
     .main.sticky-table {
+        // a sticky header on a collapsed table loses its borders and fill
+        border-collapse: separate;
+        border-spacing: 0;
         border: 1px solid $hair;
 
         thead th {
@@ -181,6 +184,25 @@
         :where(td, th) {
             padding-left: $gap;
             padding-right: $gap;
+        }
+
+        // the stripe as an image over an opaque colour, so rows scrolling under
+        // the pinned header do not show through
+        &.striped tbody tr:nth-child(even) > td {
+            background-color: $paper;
+            background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+        }
+
+        &.hover tbody tr:hover > td {
+            background-color: $hair-soft;
+            background-image: none;
+        }
+
+        // separate borders do not merge: drop the hairline above a divider, in its
+        // own tbody or the one before
+        tbody tr:has(+ tr.table-group-divider) > td,
+        tbody:has(+ tbody > tr.table-group-divider:first-child) > tr:last-child > td {
+            border-bottom-width: 0;
         }
     }
 }

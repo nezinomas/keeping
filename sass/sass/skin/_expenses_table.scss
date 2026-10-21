@@ -4,17 +4,6 @@
 // renders the same template, never meets it.
 
 .paper-skin .expenses-table {
-    // a sticky header on a collapsed table loses its borders and fill
-    border-collapse: separate;
-    border-spacing: 0;
-
-    // opaque, so rows scrolling under the header sticky-table-headers.js pins do
-    // not show through
-    thead th {
-        background-color: $paper;
-        background-image: linear-gradient($table-header-bg, $table-header-bg);
-    }
-
     // a shadow, not a border, so the date keeps its column's alignment
     td.exception {
         box-shadow: inset 3px 0 0 $ink-faint;
@@ -22,22 +11,6 @@
 
     td:first-child {
         white-space: nowrap;
-    }
-
-    // the stripe as an image over an opaque colour, not a translucent fill
-    &.striped tbody tr:nth-child(even) > td {
-        background-color: $paper;
-        background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
-    }
-
-    &.hover tbody tr:hover > td {
-        background-color: $hair-soft;
-        background-image: none;
-    }
-
-    // separate borders do not merge: drop the row's own hairline above the divider
-    tbody tr:has(+ tr.table-group-divider) > td {
-        border-bottom-width: 0;
     }
 
     td > .button-xs {
