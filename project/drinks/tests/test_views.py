@@ -108,9 +108,11 @@ def test_index_quick_add(client_logged):
     assert 'name="quantity"' in content
     assert 'class="quick-add__pill"' in content
     assert '<button type="submit" class="button-secondary">' in content
-    assert (
-        "htmx.ajax('GET', '/drinks/' + document.getElementById('quick-add-tab').value + '/new/', '#mainModal')"
-        in content
+    more_url = reverse("drinks:new", kwargs={"tab": "TAB"})
+    assert re.search(
+        rf'data-url="{more_url}"\s*'
+        r"@click\.prevent=\"htmx\.ajax\('GET', \$el\.dataset\.url\.replace\('TAB', tab\)",
+        content,
     )
     assert 'class="select-wrapper quick-add__type"' in content
     assert '<select name="option" class="form-select"' in content
