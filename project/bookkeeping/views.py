@@ -4,14 +4,8 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from project.bookkeeping.services.model_services import (
-    AccountWorthModelService,
-    PensionWorthModelService,
-    SavingWorthModelService,
-)
-
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.utils import http_htmx_response, rendered_content
+from ..core.lib.utils import http_htmx_response, rendered_content, wants_fragment
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
@@ -25,6 +19,11 @@ from . import balance_sources, forms, services
 from .lib import no_incomes
 from .mixins.month import MonthMixin
 from .services.detailed.shares import with_subtitles
+from .services.model_services import (
+    AccountWorthModelService,
+    PensionWorthModelService,
+    SavingWorthModelService,
+)
 from .tabs import TABS
 
 
@@ -175,6 +174,14 @@ class NoIncomes(TemplateViewMixin):
 
 class Month(MonthMixin, TemplateViewMixin):
     template_name = "bookkeeping/month.html"
+
+    def get_template_names(self):
+        template = self.template_name
+
+        if wants_fragment(self.request):
+            template = f"{template}#page"
+
+        return [template]
 
     def get_context_data(self, **kwargs):
         self.set_month()

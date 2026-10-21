@@ -10,35 +10,30 @@
 
 {% block content %}
 
+{# an htmx refresh swaps only this partial: base.html's footer would re-run modal.js #}
+<div id="month-page">{% partialdef page inline %}
 <main class="month-grid" x-data="{show_chart: true}">
-    <!-- Month table -->
     <div id="month-content" class="table-responsive">{% include 'bookkeeping/includes/month_table.html' with ctx=month_table %}</div>
 
-    <!-- Chart and info table -->
     <div id="month-chart-and-info-table">
         {{ chart_targets|json_script:"chart-targets-data" }}
         {{ chart_expenses|json_script:"chart-expenses-data" }}
         <div>
             <div x-show="show_chart" id="chart-targets-container" hx-get="{% url 'bookkeeping:month_chart' 'targets' %}" hx-trigger="load" hx-target="this"></div>
-
-            <!-- Second chart -->
             <div x-show="!show_chart" id="chart-expenses-container"></div>
         </div>
 
-        <!-- Info table -->
         {% include 'bookkeeping/includes/spending_info.html' with ctx=info %}
     </div>
 
-    <!-- Month buttons -->
     <div id="month-buttons" class="button-row equal-width">
         {% with request.user.month as month %}
         {% for m in context_months %}
         {% with m|date:'n' as m_num %}
-        <button type="button" hx-get="{% url 'bookkeeping:month' %}?month={{m_num}}" hx-target="body" hx-indicator="#indicator" class="{% if month|slugify == m_num %}button-active{% else %}button-secondary{% endif %}">{{ m|date:'F'|title }}</button>
+        <button type="button" hx-get="{% url 'bookkeeping:month' %}?month={{m_num}}" hx-target="#month-page" hx-indicator="#indicator" class="{% if month|slugify == m_num %}button-active{% else %}button-secondary{% endif %}">{{ m|date:'F'|title }}</button>
         {% endwith %}{% endfor %}{% endwith %}
     </div>
 
-    <!-- Add buttons -->
     <div id="month-add-buttons" class="button-row flex-right wrap">
         <c-new-button url="{% url 'expenses:new' %}" title="{% translate 'Expenses' context 'expenses button' %}" />
         <c-import-button />
@@ -52,7 +47,8 @@
 
 </main>
 
-<div hx-get="{% url 'bookkeeping:month' %}" hx-target="body" hx-trigger="reload from:body"></div>
+<div hx-get="{% url 'bookkeeping:month' %}" hx-target="#month-page" hx-trigger="reload from:body"></div>
+{% endpartialdef %}</div>
 
 
-{% endblock content%}
+{% endblock content %}
