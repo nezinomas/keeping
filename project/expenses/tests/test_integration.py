@@ -17,6 +17,9 @@ pytestmark = pytest.mark.django_db
 
 @pytest.mark.webtest
 class Expenses(Browser):
+    def test_overview_chart_draws_on_load_and_after_a_tab_swap(self):
+        self.assert_overview_chart_redraws("/expenses/", "chart-months-container")
+
     def data_url(self):
         month = date.today().month
         return f"{self.live_server_url}{reverse('expenses:tab_data', args=[month])}"

@@ -12,10 +12,10 @@
 
 {% block head %}
     {% include 'highcharts.html' with bullet="True" %}
-    <!-- the paper skin's half of the charts, after the shared theme it overrides
-         and before the chart it dresses -->
+    {# after the shared chart theme it overrides, before the chart it dresses #}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_books_finished.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/tab_content.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
 
@@ -40,18 +40,8 @@
 </div>
 
 <script nonce="{{ csp_nonce }}">
-    function initBooksChart() {
-        if (document.getElementById('chart-finished-data')) {
-            chartFinished('chart-finished-data', 'chart-finished-container');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', initBooksChart);
-
-    htmx.on('htmx:after:swap', function (event) {
-        if (event.detail.ctx.target.id === 'tab_content') {
-            initBooksChart();
-        }
+    onTabContent('chart-finished-data', function () {
+        chartFinished('chart-finished-data', 'chart-finished-container');
     });
 </script>
 

@@ -2,6 +2,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -55,3 +56,21 @@ class Browser(StaticLiveServerTestCase):
             return quiet == 3
 
         WebDriverWait(self.browser, timeout, poll_frequency=0.1).until(settled)
+
+    def assert_overview_chart_redraws(self, path: str, container: str):
+        self.browser.get(f"{self.live_server_url}{path}")
+        self.wait_until_idle()
+        assert self._chart_drawn_in(container), "no chart on load"
+
+        for tab in ("data", "index"):
+            self.browser.find_element(By.ID, f"tab-{tab}").click()
+            self.wait_until_idle()
+
+        assert self._chart_drawn_in(container), "no chart after a tab swap"
+
+    def _chart_drawn_in(self, container: str) -> bool:
+        return bool(
+            self.browser.find_elements(
+                By.CSS_SELECTOR, f"#{container} svg.highcharts-root"
+            )
+        )
