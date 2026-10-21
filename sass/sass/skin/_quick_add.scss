@@ -123,9 +123,19 @@ body:has(.paper-skin) {
                 text-decoration: none;
             }
 
+            // an act opens a form, not a page: a button, drawn as the links beside it
+            > button {
+                width: 100%;
+                border: 0;
+                background: none;
+                line-height: inherit;
+                text-align: left;
+                cursor: pointer;
+            }
+
             > *:hover {
                 background: $hair-soft;
-                color: $ink !important;
+                color: $ink;
             }
 
             // the item you are already on, marked as the tab row marks the open tab

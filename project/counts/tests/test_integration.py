@@ -42,7 +42,7 @@ class CountsIntegrationTests(Browser):
 
         self.browser.find_element(
             By.XPATH,
-            "//div[@class='quick-add__bar']//a[contains(@hx-get,'/counts/type/new/')]",
+            "//div[@class='quick-add__bar']//button[contains(@hx-get,'/counts/type/new/')]",
         ).click()
         self.wait_until_idle()
 
@@ -57,7 +57,7 @@ class CountsIntegrationTests(Browser):
 
         self.browser.find_element(
             By.XPATH,
-            "//div[@class='quick-add__bar']//a[contains(@hx-get,'/counts/type/delete/')]",
+            "//div[@class='quick-add__bar']//button[contains(@hx-get,'/counts/type/delete/')]",
         ).click()
         self.wait_until_idle()
 
