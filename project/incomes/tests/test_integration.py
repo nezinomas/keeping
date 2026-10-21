@@ -11,6 +11,9 @@ pytestmark = pytest.mark.django_db
 
 @pytest.mark.webtest
 class Incomes(Browser):
+    def test_overview_chart_draws_on_load_and_after_a_tab_swap(self):
+        self.assert_overview_chart_redraws("/incomes/", "chart-months-container")
+
     @time_machine.travel("1999-1-1")
     def test_search(self):
         IncomeFactory(remark="xxxx")
