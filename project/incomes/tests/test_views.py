@@ -369,10 +369,14 @@ def test_a_history_restore_rebuilds_the_whole_page(client_logged, tab):
 )
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
 def test_only_the_open_tab_reloads_on_a_saved_income(client_logged, tab, headers):
+    # Types reloads the sort it shows
+    query = {"types": "?order=title"}.get(tab.name, "")
+
     content = client_logged.get(tab.url, headers=headers).content.decode()
 
     listener = (
-        f'hx-get="{tab.url}" hx-target="#tab_content" hx-trigger="reload from:body"'
+        f'hx-get="{tab.url}{query}" hx-target="#tab_content"'
+        ' hx-trigger="reload from:body"'
     )
     assert listener in content
     assert content.count("reload from:body") == 1
@@ -458,16 +462,18 @@ def test_types_tab_sorts_by_the_asked_column(client_logged):
     assert by_share.index(">Zeta<") < by_share.index(">Alga<")
 
 
-def test_types_tab_links_every_header_but_the_active_one(client_logged):
+def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged):
     url = reverse("incomes:tab_types")
 
     content = client_logged.get(url, {"order": "share"}).content.decode()
 
-    assert '<thead class="sortable-header-row">' in content
+    # pushed, so a reload keeps the sort
+    assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
     assert "<span>Dalis</span>" in content
     for key in ("title", "this_year", "last_year", "last_income"):
-        assert f'hx-get="{url}?order={key}" hx-target="#tab_content"' in content
-    assert f"{url}?order=share" not in content
+        assert f'<a role="button" hx-get="{url}?order={key}" hx-target' in content
+    # a save reloads the sort shown
+    assert f'<div hx-get="{url}?order=share" hx-target="#tab_content"' in content
 
 
 def test_types_tab_draws_no_groups(client_logged):

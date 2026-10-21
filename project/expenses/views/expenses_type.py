@@ -1,10 +1,10 @@
 from datetime import date
-from urllib.parse import urlencode
 
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.year_boundary import YearBoundary
+from ...core.mixins.tabs import sorted_tab_urls
 from ...core.mixins.views import CreateViewMixin, TemplateViewMixin, UpdateViewMixin
 from .. import forms
 from ..services.model_services import (
@@ -41,14 +41,11 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
             last_dates=list(service.last_date_by("expense_name", boundary.end_date)),
             order=self.request.GET.get("order", ""),
         )
-        reload_query = urlencode({"order": table.order})
 
         return {
             **super().get_context_data(**kwargs),
             "table": table,
-            "sort_url": self.tab.url,
-            # a save reloads the sort the tab shows
-            "tab_url": f"{self.tab.url}?{reload_query}",
+            **sorted_tab_urls(self.tab, table.order),
         }
 
 
