@@ -1,5 +1,7 @@
 from datetime import date
 
+import pytest
+
 from ....core.lib.overview_cards import OverviewCards
 from ....core.lib.stat_card import EMPTY, NEUTRAL
 from ....core.lib.year_boundary import YearBoundary
@@ -49,11 +51,22 @@ def test_per_month_divides_a_finished_year_by_twelve():
     assert card.note == "12 mėnesių"
 
 
-def test_largest_type_names_the_type_and_its_share():
-    card = _cards()["Didžiausia rūšis"]
+@pytest.mark.parametrize(
+    ("year", "note"),
+    [
+        (YEAR, "75% metų sumos"),
+        (
+            [{"title": "Alga", "sum": 99_700}, {"title": "Kita", "sum": 300}],
+            "> 99% metų sumos",
+        ),
+    ],
+    ids=["share", "near_the_whole"],
+)
+def test_largest_type_names_the_type_and_its_share(year, note):
+    card = _cards(year=year)["Didžiausia rūšis"]
 
     assert card.value == "Alga"
-    assert card.note == "75% metų sumos"
+    assert card.note == note
     assert card.explanation == (EXPLANATION,)
 
 
