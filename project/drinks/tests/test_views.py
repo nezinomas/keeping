@@ -1327,15 +1327,16 @@ def test_select_drinks_undeclared_drink_type_is_not_found(main_user, client_logg
 
 
 @pytest.mark.parametrize(
-    "tab, trigger",
+    "query, trigger",
     [
-        pytest.param("trends", "reloadTrends", id="current_tab"),
-        pytest.param("xxx", "reloadIndex", id="unknown_tab_falls_back_to_index"),
+        pytest.param("?tab=trends", "reloadTrends", id="current_tab"),
+        pytest.param("?tab=xxx", "reloadIndex", id="unknown_tab_falls_back_to_index"),
+        pytest.param("", "reloadIndex", id="no_tab_falls_back_to_index"),
     ],
 )
-def test_select_drink_htmx_reloads_the_tab(client_logged, tab, trigger):
+def test_select_drink_htmx_reloads_the_tab(client_logged, query, trigger):
     url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})
-    response = client_logged.get(f"{url}?tab={tab}", HTTP_HX_REQUEST="true")
+    response = client_logged.get(f"{url}{query}", HTTP_HX_REQUEST="true")
 
     assert response.status_code == 204
     assert trigger in response.headers.get("HX-Trigger", "")
