@@ -3,7 +3,6 @@ from functools import cached_property, partial
 from typing import cast
 
 from django.http import HttpResponse
-from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.chart_months import ChartMonths
@@ -33,9 +32,13 @@ from ..services.month_filter import ALL, MonthFilter
 from ..tabs import TABS
 
 
-def month_filter(request, kwargs) -> MonthFilter:
-    value = str(kwargs.get("month", request.GET.get("month", "")))
-    return MonthFilter.parse(value, date.today())
+def month_filter(kwargs) -> MonthFilter:
+    return MonthFilter.parse(kwargs["month"], date.today())
+
+
+class DuomenysAtItsMonthMixin:
+    def get_success_url(self):
+        return MonthFilter.at(self.object.date).url()
 
 
 class TabViewMixin(CoreTabViewMixin):
@@ -70,12 +73,12 @@ class TabData(TabViewMixin, TemplateViewMixin):
     tab = TABS["data"]
 
     def get_context_data(self, **kwargs):
-        month = month_filter(self.request, self.kwargs)
+        month = month_filter(self.kwargs)
         return super().get_context_data(**kwargs) | {
             "month": month,
-            "items": month.items(self.tab.url),
+            "items": month.items(),
             # a save reloads the tab at the month it shows
-            "tab_url": month.url(self.tab.url),
+            "tab_url": month.url(),
         }
 
 
@@ -84,7 +87,7 @@ class Lists(ListViewMixin):
 
     @cached_property
     def month(self) -> MonthFilter:
-        return month_filter(self.request, self.kwargs)
+        return month_filter(self.kwargs)
 
     @cached_property
     def user(self) -> User:
@@ -107,26 +110,24 @@ class Lists(ListViewMixin):
         return super().get_context_data(**kwargs) | context | get_action_buttons_html()
 
 
-class New(CreateViewMixin):
+class New(DuomenysAtItsMonthMixin, CreateViewMixin):
     form_class = forms.ExpenseForm
-    success_url = reverse_lazy("expenses:list")
     hx_trigger_form = "reload"
     modal_form_title = _("Expenses")
     template_name = "expenses/expense_form.html"
 
 
-class Update(PriceToFloatViewMixin, UpdateViewMixin):
+class Update(DuomenysAtItsMonthMixin, PriceToFloatViewMixin, UpdateViewMixin):
     service_class = ExpenseModelService
     form_class = forms.ExpenseForm
-    success_url = reverse_lazy("expenses:list")
     hx_trigger_django = "reload"
     modal_form_title = _("Expenses")
     template_name = "expenses/expense_form.html"
 
 
-class Delete(DeleteViewMixin):
+# DeleteView builds its success url before it deletes; the 204 reply discards it
+class Delete(DuomenysAtItsMonthMixin, DeleteViewMixin):
     service_class = ExpenseModelService
-    success_url = reverse_lazy("expenses:list")
     modal_form_title = _("Delete expense")
 
 

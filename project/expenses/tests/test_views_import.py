@@ -538,7 +538,7 @@ def test_import_save_valid_creates_expenses_and_redirects(
     response = client_logged.post(url, data=data)
 
     assert response.status_code == 200
-    assert response["HX-Redirect"] == reverse("expenses:index", kwargs={"month": 3})
+    assert response["HX-Redirect"] == "/expenses/data/3/"
     assert [(e.expense_name, e.price) for e in Expense.objects.order_by("pk")] == [
         (n1, 500),
         (n2, 300),
