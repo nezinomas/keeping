@@ -10,4 +10,18 @@ def amount(cents: int) -> str:
 
 
 def share(cents: int, total: int) -> str:
-    return f"{floatformat(cents / total * 100, '0')}%" if cents and total else NOTHING
+    if not cents or not total:
+        return NOTHING
+
+    if cents == total:
+        return "100%"
+
+    percent = cents / total * 100
+
+    if percent < 0.5:
+        return "< 1%"
+
+    if percent >= 99.5:
+        return "> 99%"
+
+    return f"{floatformat(percent, '0')}%"
