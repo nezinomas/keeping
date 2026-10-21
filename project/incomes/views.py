@@ -7,6 +7,7 @@ from ..core.lib.convert_price import PriceToFloatViewMixin
 from ..core.lib.overview_cards import Overview
 from ..core.lib.year_boundary import YearBoundary
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
+from ..core.mixins.tabs import sorted_tab_urls
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -75,15 +76,18 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
         service = IncomeModelService(user)
         types = IncomeTypeModelService(user).items().values("id", "title")
 
+        table = TypesTable.build(
+            list(types),
+            list(service.sum_by_between("income_type", *boundary.span)),
+            list(service.sum_by_between("income_type", *boundary.previous_span)),
+            list(service.last_date_by("income_type", boundary.end_date)),
+            self.request.GET.get("order", ""),
+        )
+
         return {
             **super().get_context_data(**kwargs),
-            "table": TypesTable.build(
-                list(types),
-                list(service.sum_by_between("income_type", *boundary.span)),
-                list(service.sum_by_between("income_type", *boundary.previous_span)),
-                list(service.last_date_by("income_type", boundary.end_date)),
-                self.request.GET.get("order", ""),
-            ),
+            "table": table,
+            **sorted_tab_urls(self.tab, table.order),
         }
 
 
