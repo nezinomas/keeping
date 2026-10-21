@@ -7,13 +7,6 @@ from ..core.tabs import Tab, Tabs
 class CountTab(Tab):
     app = "counts"
 
-    @classmethod
-    def resolve(cls, raw: str | None, default: str = "index") -> "CountTab":
-        try:
-            return TABS[raw or default]
-        except KeyError:
-            return TABS[default]
-
     @property
     def url_name(self) -> str:
         return f"counts:tab_{self.name}"

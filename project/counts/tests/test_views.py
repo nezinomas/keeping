@@ -689,7 +689,7 @@ def test_data_context(client_logged):
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
     response = client_logged.get(url)
 
-    assert response.context["slug"] == "count-type"
+    assert response.context["object"].slug == "count-type"
 
 
 def test_data(client_logged):
@@ -757,7 +757,7 @@ def test_history_context(client_logged):
 
     assert "chart_weekdays" not in response.context
     assert "chart_histogram" not in response.context
-    assert response.context["slug"] == obj.slug
+    assert response.context["object"].slug == obj.slug
 
 
 def test_history_context_carries_the_cards_and_keeps_records(client_logged):
