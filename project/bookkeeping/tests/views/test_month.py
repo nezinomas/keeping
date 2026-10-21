@@ -87,6 +87,45 @@ def test_view_month_200_set_user_month_value(month, expect, client_logged):
     assert response.wsgi_request.user.month == expect
 
 
+def test_view_month_requested_by_htmx_returns_the_content_alone(client_logged):
+    url = reverse("bookkeeping:month")
+    content = client_logged.get(url, headers={"HX-Request": "true"}).content.decode()
+
+    assert '<main class="month-grid"' in content
+    assert '<nav id="main-nav">' not in content
+    assert "js/modal.js" not in content
+    assert 'id="month-page"' not in content
+
+
+@pytest.mark.parametrize(
+    "headers",
+    [{}, {"HX-Request": "true", "HX-History-Restore-Request": "true"}],
+    ids=["plain", "history-restore"],
+)
+def test_view_month_renders_the_whole_page(client_logged, headers):
+    url = reverse("bookkeeping:month")
+    content = client_logged.get(url, headers=headers).content.decode()
+
+    assert '<nav id="main-nav">' in content
+    assert '<div id="month-page">' in content
+
+
+@pytest.mark.parametrize(
+    "swap",
+    [
+        'hx-get="/month/?month=1" hx-target="#month-page"',
+        'hx-get="/month/" hx-target="#month-page" hx-trigger="reload from:body"',
+    ],
+    ids=["month-button", "reload"],
+)
+def test_view_month_swaps_aim_at_its_content(client_logged, swap):
+    url = reverse("bookkeeping:month")
+    content = client_logged.get(url, headers={"HX-Request": "true"}).content.decode()
+
+    assert swap in content
+    assert 'hx-target="body"' not in content
+
+
 @pytest.mark.parametrize("dt", ["xx", "1970-13-01", "1970-12-32"])
 def test_view_expand_day_expenses_wrong_dates(dt, client_logged):
     response = client_logged.get(f"/month/{dt}/")

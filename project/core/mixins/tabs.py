@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 from django.shortcuts import render
 from django.utils.text import format_lazy
 
+from ..lib.utils import wants_fragment
 from ..tabs import Tab, Tabs
 
 
@@ -35,12 +36,11 @@ class TabViewMixin:
 
     def render_to_response(self, context, **response_kwargs):
         response = super().render_to_response(context, **response_kwargs)
-        htmx = self.request.htmx
         page = {**context, **self.page_context(), "content": response.rendered_content}
         template = self.page_template
 
         # base.html reloads on Back, so this runs only if htmx swaps a restore again
-        if htmx and not htmx.history_restore_request:
+        if wants_fragment(self.request):
             template = self.fragment_template
 
         return render(self.request, template, page)
