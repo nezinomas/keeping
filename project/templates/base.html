@@ -65,10 +65,10 @@
             <div class="dropdown__menu">
               {% for m in context_months %}
               {% with m|date:'n' as m_num %}
-              <a href="{% url 'expenses:index' forloop.counter %}">{{ m|date:'F'|title }}</a>
+              <a href="{% url 'expenses:tab_data' forloop.counter %}">{{ m|date:'F'|title }}</a>
               {% endwith %}{% endfor %}
               <span class="dropdown-divider"></span>
-              <a href="{% url 'expenses:index' 13 %}">{% translate 'All records' %}</a>
+              <a href="{% url 'expenses:tab_data' 'all' %}">{% translate 'All records' %}</a>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
-<c-search-form url="{% url 'expenses:search' %}" reset_url="{% url 'expenses:list' %}?month={{ month.value }}" target="#data" />
+<c-search-form url="{% url 'expenses:search' %}" reset_url="{% url 'expenses:list' month.value %}" target="#data" />
 
 <c-filter-line :items="items" target="#tab_content" />
 
-<div id="data" class="table-responsive" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' %}?month={{ month.value }}"></div>
+<div id="data" class="table-responsive" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' month.value %}"></div>
