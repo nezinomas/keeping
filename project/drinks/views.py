@@ -21,7 +21,7 @@ from ..core.mixins.views import (
 from ..users.models import User
 from . import forms, models, services
 from .services.model_services import DrinkModelService, DrinkTargetModelService
-from .tabs import TABS, DrinkTab, tab_reload_response
+from .tabs import TABS, tab_reload_response
 
 
 class HtmxFormRetargetMixin:
@@ -216,10 +216,10 @@ class New(CreateViewMixin):
     modal_form_title = _("Drinks")
 
     def get_hx_trigger_django(self):
-        return DrinkTab.resolve(self.kwargs.get("tab"), default="data").reload_trigger
+        return TABS.resolve(self.kwargs["tab"], "data").reload_trigger
 
     def url(self):
-        return DrinkTab.resolve(self.kwargs.get("tab")).form_url("drinks:new")
+        return TABS.resolve(self.kwargs["tab"], "index").form_url("drinks:new")
 
 
 class Update(UpdateViewMixin):
@@ -243,10 +243,10 @@ class TargetNew(CreateViewMixin):
     modal_form_title = _("New goal")
 
     def get_hx_trigger_django(self):
-        return DrinkTab.resolve(self.kwargs.get("tab")).reload_trigger
+        return TABS.resolve(self.kwargs["tab"], "index").reload_trigger
 
     def url(self):
-        return DrinkTab.resolve(self.kwargs.get("tab")).form_url("drinks:target_new")
+        return TABS.resolve(self.kwargs["tab"], "index").form_url("drinks:target_new")
 
 
 class TargetUpdate(UpdateViewMixin):
@@ -280,7 +280,7 @@ class SelectDrink(UserMixin, RedirectViewMixin):
             return super().get(request, *args, **kwargs)
 
         # stay on the tab the change was fired from
-        return tab_reload_response(request.GET.get("tab"))
+        return tab_reload_response(request.GET.get("tab", ""))
 
     def get_redirect_url(self, *args, **kwargs):
         return reverse_lazy("drinks:index")
@@ -295,4 +295,4 @@ class QuickAdd(UserMixin, TodayMixin, View):
 
         form.save()
 
-        return tab_reload_response(request.POST.get("tab"))
+        return tab_reload_response(request.POST.get("tab", ""))
