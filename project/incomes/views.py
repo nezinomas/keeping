@@ -3,9 +3,8 @@ from datetime import date
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.chart_months import ChartMonths
 from ..core.lib.convert_price import PriceToFloatViewMixin
-from ..core.lib.overview_cards import OverviewCards
+from ..core.lib.overview_cards import Overview
 from ..core.lib.year_boundary import YearBoundary
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
@@ -17,11 +16,12 @@ from ..core.mixins.views import (
     UpdateViewMixin,
 )
 from . import forms
-from .services.cards import LARGEST_TYPE_EXPLANATION
 from .services.model_services import IncomeModelService, IncomeTypeModelService
 from .services.search import search_incomes
 from .services.type_rows import TypesTable
 from .tabs import TABS
+
+LARGEST_TYPE_EXPLANATION = _("The income type with the biggest share of this year")
 
 
 class TabViewMixin(CoreTabViewMixin):
@@ -33,22 +33,17 @@ class TabViewMixin(CoreTabViewMixin):
 
 class TabIndex(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
-        boundary = YearBoundary(self.request.user.selected_year(), date.today())
-        service = IncomeModelService(self.request.user)
+        overview = Overview.build(
+            IncomeModelService(self.request.user),
+            "income_type",
+            YearBoundary(self.request.user.selected_year(), date.today()),
+            LARGEST_TYPE_EXPLANATION,
+        )
 
         return {
             **super().get_context_data(**kwargs),
-            "cards": OverviewCards.build(
-                list(service.sum_by_between("income_type", *boundary.span)),
-                list(service.sum_by_between("income_type", *boundary.previous_span)),
-                boundary,
-                LARGEST_TYPE_EXPLANATION,
-            ),
-            "chart": ChartMonths.build(
-                list(service.sum_by_month_between(*boundary.span)),
-                list(service.sum_by_month_between(*boundary.previous_span)),
-                boundary,
-            ),
+            "cards": overview.cards,
+            "chart": overview.chart,
         }
 
 

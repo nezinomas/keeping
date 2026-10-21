@@ -409,11 +409,12 @@ def test_types_tab_states_each_type_in_a_table(client_logged):
     alga = IncomeTypeFactory(title="Alga")
     IncomeTypeFactory(title="Kita")
     IncomeFactory(date=date(1999, 2, 5), price=90_000, income_type=alga)
+    IncomeFactory(date=date(1998, 2, 5), price=70_000, income_type=alga)
 
     content = client_logged.get(reverse("incomes:tab_types")).content.decode()
 
     assert '<td class="text-left">Kita</td>' in content
-    assert "<td>900</td>" in content
+    assert re.search(r">Alga</td>\s*<td>900</td>\s*<td>700</td>", content)
     assert "Paskutinį kartą" in content
     assert "c-accordion" not in content and 'class="accordion"' not in content
 

@@ -5,7 +5,7 @@ from datetime import date
 from typing import Any
 
 from ...core.lib.collation import lt_title
-from ...core.lib.money_cells import NOTHING, amount, share
+from ...core.lib.money_cells import NOTHING, amount, day, share
 from ...core.lib.table_order import Column, TableOrder
 
 ORDER = TableOrder(
@@ -170,7 +170,7 @@ def _cells(
     if figures.dates:
         latest = max(figures.dates)
         sort_values["last_expense"] = latest
-        last_expense = f"{latest:%Y-%m-%d}"
+        last_expense = day(latest)
 
     return {
         "pk": pk,

@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from ...core.lib.money_cells import NOTHING, amount, share
+from ...core.lib.money_cells import NOTHING, amount, day, share
 from ...core.lib.table_order import Column, TableOrder
 
 ORDER = TableOrder(
@@ -88,7 +88,7 @@ def _row(
     last_income = NOTHING
     if pk in dates:
         sort_values["last_income"] = dates[pk]
-        last_income = f"{dates[pk]:%Y-%m-%d}"
+        last_income = day(dates[pk])
 
     return TypeRow(
         pk=pk,
