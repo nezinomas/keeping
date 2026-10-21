@@ -35,3 +35,9 @@ class Tabs(tuple):
             if tab.name == key:
                 return tab
         raise KeyError(key)
+
+    def resolve(self, name: str, default: str) -> Tab:
+        try:
+            return self[name]
+        except KeyError:
+            return self[default]

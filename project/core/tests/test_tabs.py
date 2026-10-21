@@ -36,3 +36,10 @@ def test_tabs_are_found_by_name_in_their_order(name, position):
 def test_an_unknown_name_raises():
     with pytest.raises(KeyError):
         TABS["missing"]
+
+
+@pytest.mark.parametrize(
+    "name, expect", [("index", "index"), ("missing", "data"), ("", "data")]
+)
+def test_resolve_falls_back_to_the_default_for_an_unknown_name(name, expect):
+    assert TABS.resolve(name, "data") is TABS[expect]
