@@ -41,14 +41,12 @@ class CommonMethodsMixin:
         if fee:
             values.append("fee")
 
-        # Annotate the total price for each year and account
         objects = (
             self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "from_account__title")
             .annotate(expenses=Sum("price"))
         )
 
-        # Annotate the total fee for each year and account if fee is True
         objects = objects.annotate(fee=Sum("fee")) if fee else objects
 
         return objects.values(*values, category_id=F("from_account__pk")).order_by(
