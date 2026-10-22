@@ -1,9 +1,6 @@
 @use "sass:list";
 @use "../abstracts/variables" as *;
 
-// Nested in .paper-skin, so every selector keeps the specificity it had while
-// this lived in apps/_drinks.
-
 .paper-skin {
     .heat-card {
         min-width: 0;

@@ -1,4 +1,5 @@
 @use "../abstracts/variables" as *;
+@use "tokens";
 
 .month-table {
     overflow-x: auto;
@@ -11,12 +12,20 @@
     border-collapse: separate;
     border-spacing: 0;
 
+    @media only screen and (min-width: 768px) {
+        min-width: 72rem;
+    }
+
     th.title-col,
     :is(tbody, tfoot) td:first-child {
         width: 8rem;
         position: sticky;
         left: 0;
         z-index: 1;
+
+        @media only screen and (min-width: 768px) {
+            width: 12rem;
+        }
     }
 
     // opaque: it covers the cells that scroll under it
@@ -25,13 +34,11 @@
     }
 
     &.striped tbody tr:nth-child(even) > td:first-child {
-        background-color: $paper;
-        background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+        @include tokens.opaque-stripe;
     }
 
     &.hover tbody tr:hover > td:first-child {
-        background-color: $hair-soft;
-        background-image: none;
+        @include tokens.opaque-hover;
     }
 
     .month-table__total {
@@ -41,25 +48,17 @@
     }
 }
 
+// a full month name in 12px caps runs into the next column's sort glyph below 1700px
 .month-table__month-full {
     display: none;
-}
 
-@media only screen and (min-width: 768px) {
-    .paper-skin .month-table .main {
-        min-width: 72rem;
-
-        th.title-col,
-        :is(tbody, tfoot) td:first-child {
-            width: 12rem;
-        }
-    }
-
-    .month-table__month-full {
+    @media only screen and (min-width: 1700px) {
         display: inline;
     }
+}
 
-    .month-table__month-short {
+.month-table__month-short {
+    @media only screen and (min-width: 1700px) {
         display: none;
     }
 }

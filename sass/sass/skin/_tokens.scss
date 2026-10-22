@@ -1,7 +1,7 @@
 @use "sass:list";
 @use "../abstracts/variables" as *;
 
-// The paper skin's three mixins and the token block every paper chart reads.
+// The paper skin's mixins and the token block every paper chart reads.
 // On `:root`, not `.paper-skin`: Highcharts draws a tooltip outside the wrapper,
 // and a token it cannot resolve there comes out black.
 
@@ -54,6 +54,17 @@
     }
 }
 
+// A striped row on a cell that others scroll under: the stripe as an image over
+// an opaque colour, so nothing shows through.
+@mixin opaque-stripe {
+    background-color: $paper;
+    background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+}
+
+@mixin opaque-hover {
+    background-color: $hair-soft;
+    background-image: none;
+}
 
 :root {
     --skin-paper: #{$paper};

@@ -47,9 +47,16 @@
         thead th {
             @include tokens.label;
 
-            font-size: 0.58rem;
             background: $table-header-bg;
             border-bottom: 1px solid $ink;
+
+            // caps at their 12px floor push a phone's table past the page, so a
+            // phone's header is lowercase, which the floor does not cover
+            @media only screen and (max-width: 767px) {
+                font-size: 0.68rem;
+                letter-spacing: 0.06em;
+                text-transform: none;
+            }
         }
 
         tbody td {
@@ -61,6 +68,10 @@
             padding-top: 1.5 * $gap;
             padding-bottom: 0.5rem;
             font-weight: 600;
+
+            @media only screen and (max-width: 767px) {
+                padding-top: $gap;
+            }
         }
 
         tbody tr.main__group td:first-child {
@@ -70,14 +81,8 @@
 
         td.main__child {
             padding-left: 2 * $gap;
-        }
 
-        @media only screen and (max-width: 767px) {
-            tbody tr.main__group td {
-                padding-top: $gap;
-            }
-
-            td.main__child {
+            @media only screen and (max-width: 767px) {
                 padding-left: 1.5 * $gap;
             }
         }
@@ -205,16 +210,13 @@
             padding-right: $gap;
         }
 
-        // the stripe as an image over an opaque colour, so rows scrolling under
-        // the pinned header do not show through
+        // rows scroll under the pinned header
         &.striped tbody tr:nth-child(even) > td {
-            background-color: $paper;
-            background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+            @include tokens.opaque-stripe;
         }
 
         &.hover tbody tr:hover > td {
-            background-color: $hair-soft;
-            background-image: none;
+            @include tokens.opaque-hover;
         }
 
         // separate borders do not merge: drop the hairline above a divider, in its
