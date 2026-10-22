@@ -1,8 +1,7 @@
 @use "../abstracts/variables" as *;
 
-// A notice: the table has nothing in it. Uncoloured, warning or not — an empty
-// table is a baseline, not an error, and field errors are drawn by
-// `.invalid-feedback`. Top-level, because #mainModal sits outside `.paper-skin`.
+// A notice that the table is empty: uncoloured, as empty is a baseline, not an error.
+// Top-level, because #mainModal sits outside `.paper-skin`.
 .alert {
     padding: calc($gap * 1.2) 0;
     border: 0;
