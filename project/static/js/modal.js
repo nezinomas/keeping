@@ -14,6 +14,9 @@ class Modal {
 
     show() {
         this.container && (this.container.style.display = 'block');
+
+        // a pressed menu act keeps focus, and :focus-within would hold its menu open
+        document.activeElement?.closest('.dropdown__menu') && document.activeElement.blur();
     }
 
     hide() {
