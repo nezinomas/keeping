@@ -1,77 +1,117 @@
 const FORM_FIELDS = ['price', 'fee', 'quantity', 'title', 'remark', 'attachment'];
-const MODALS = {
-    mainModal: null,
-    imgModal: null
-};
 
 
 class Modal {
     constructor(id) {
         this.id = id;
-        this.container = document.querySelector(`#${id}Container`);
-        this.form = this.container?.querySelector('.modal-form');
+    }
+
+    // read on each call: imgModal's container arrives with the Duomenys tab
+    get container() {
+        return document.querySelector(`#${this.id}Container`);
+    }
+
+    get form() {
+        return this.container?.querySelector('.modal-form');
     }
 
     show() {
-        this.container && (this.container.style.display = 'block');
-
-        // a pressed menu act keeps focus, and :focus-within would hold its menu open
-        document.activeElement?.closest('.dropdown__menu') && document.activeElement.blur();
-    }
-
-    hide() {
-        if (!this.container) {
+        const container = this.container;
+        if (!container) {
             return;
         }
 
-        this.container.style.display = 'none';
+        container.style.display = 'block';
 
-        if(this.form) {
-            this.#hxTrigger();
-            this.form.remove();
+        // a pressed menu act keeps focus, and :focus-within would hold its menu open
+        if (document.activeElement?.closest('.dropdown__menu')) {
+            document.activeElement.blur();
+        }
+    }
+
+    hide() {
+        const container = this.container;
+        if (!container) {
+            return;
+        }
+
+        container.style.display = 'none';
+
+        const form = this.form;
+        if (form) {
+            this.#hxTrigger(form);
+            form.remove();
         }
     }
 
     resetForm() {
-        if (!this.form) {
+        const form = this.form;
+        if (!form) {
             return;
         }
 
-        let formSetForms = this.form.querySelector("#id_form-TOTAL_FORMS")?.value;
+        const formSetForms = form.querySelector('#id_form-TOTAL_FORMS')?.value;
 
         FORM_FIELDS.forEach((field) => {
             if (formSetForms) {
-                for(let i = 0; i < formSetForms; i++ ) {
-                    this.#resetField(`#id_form-${i}-${field}`);
-                };
-            } else  {
-                this.#resetField(`#id_${field}`)
-            };
+                for (let i = 0; i < formSetForms; i++) {
+                    this.#resetField(form, `#id_form-${i}-${field}`);
+                }
+            } else {
+                this.#resetField(form, `#id_${field}`);
+            }
         });
     }
 
     resetErrorMessages() {
-        if (!this.form) {
+        const form = this.form;
+        if (!form) {
             return;
         }
 
-        this.form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
-        this.form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
     }
 
-    #hxTrigger() {
-        const triggerName = this.form?.dataset.hxTriggerForm;
-        const dataInserted = this.form?.dataset.hxInserted;
+    #hxTrigger(form) {
+        const triggerName = form.dataset.hxTriggerForm;
+        const dataInserted = form.dataset.hxInserted;
 
         if (triggerName && dataInserted) {
             htmx.trigger('body', triggerName, {});
         }
     }
 
-    #resetField(field) {
-        const input = this.form.querySelector(field);
-        input && (input.value = '');
+    #resetField(form, field) {
+        const input = form.querySelector(field);
+        if (input) {
+            input.value = '';
+        }
     }
+}
+
+
+const MODALS = {
+    mainModal: new Modal('mainModal'),
+    imgModal: new Modal('imgModal')
+};
+
+
+function hideModalIn(container) {
+    Object.values(MODALS).find((modal) => modal.container === container)?.hide();
+}
+
+
+function showImage(e) {
+    const modal = MODALS.imgModal;
+    const url = e.detail.ctx?.sourceElement?.dataset?.url;
+    if (e.detail.ctx?.target?.id !== modal.id || !url) {
+        return;
+    }
+
+    const image = document.createElement('img');
+    image.src = url;
+    modal.container?.querySelector('.modal-body')?.replaceChildren(image);
 }
 
 
@@ -83,33 +123,19 @@ function initializeModals() {
     });
 
 
+    // a backdrop click lands on the container itself, outside its dialog
     document.addEventListener('click', (event) => {
-        if (event.target.matches('.modal-close')) {
-            const modalId = event.target.closest('.modal-dialog')?.id;
-            if(modalId) {
-                MODALS[modalId]?.hide();
-            }
+        if (event.target.matches('.modal, .modal-close')) {
+            hideModalIn(event.target.closest('.modal'));
         }
     });
 
 
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-            const visibleModals = document.querySelectorAll('.modal[style*="display: block"]');
-            visibleModals.forEach((visibleModal) => {
-                const modalId = visibleModal.querySelector('.modal-dialog')?.id;
-                if(modalId) {
-                    MODALS[modalId]?.hide();
-                }
-            });
-        }
-    });
-
-
-    document.addEventListener('click', function(event) {
-        const modalId = event.target.querySelector('div[id]')?.id;
-        if (modalId) {
-            MODALS[modalId]?.hide();
+            document.querySelectorAll('.modal[style*="display: block"]').forEach(
+                (container) => hideModalIn(container)
+            );
         }
     });
 
@@ -121,26 +147,18 @@ function initializeModals() {
             return;
         }
 
-        const targetId = e.detail.ctx?.target?.id;
-        const modal = new Modal(targetId)
-        MODALS[targetId] = modal;
-        modal.show();
-
-        if (targetId === 'imgModal') {
-            const url = e.detail.ctx?.sourceElement?.dataset?.url;
-            if (url) {
-                const modalBodyInput = document.querySelector(`#${targetId} .modal-body`);
-                modalBodyInput && (modalBodyInput.innerHTML = `<img src="${url}" />`);
-            }
-        }
+        MODALS[e.detail.ctx?.target?.id]?.show();
     });
+
+
+    htmx.on('htmx:after:swap', showImage);
 
 
     htmx.on('htmx:before:swap', (e) => {
         const targetId = e.detail.ctx?.target?.id;
         const responseText = e.detail.ctx?.text;
 
-        if (targetId !== "mainModal" || responseText) {
+        if (targetId !== MODALS.mainModal.id || responseText) {
             return;
         }
 
@@ -155,6 +173,6 @@ function initializeModals() {
         // no preventDefault(): htmx 4 fires the HX-Trigger header only once the
         // swap completes, so cancelling a 204's swap would swallow that trigger
     });
-};
+}
 
 document.addEventListener('DOMContentLoaded', initializeModals);

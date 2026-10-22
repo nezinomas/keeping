@@ -298,10 +298,11 @@ class Expenses(Browser):
         cells = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr[1]/td")
         assert cells[5].text == "xxxx"
 
+    def _modal_container(self):
+        return self.browser.find_element(By.ID, "mainModalContainer")
+
     def _modal_display(self):
-        return self.browser.find_element(
-            By.ID, "mainModalContainer"
-        ).value_of_css_property("display")
+        return self._modal_container().value_of_css_property("display")
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_modal_closes_after_update_and_close(self):
@@ -347,3 +348,89 @@ class Expenses(Browser):
         rows_after = len(self.browser.find_elements(By.XPATH, "//table/tbody/tr"))
 
         assert rows_after == rows_before - 1
+
+    def _click_the_backdrop(self):
+        container = self._modal_container()
+        # the dialog covers the container's centre, so press near its corner
+        x, y = 5 - container.size["width"] // 2, 5 - container.size["height"] // 2
+        ActionChains(self.browser).move_to_element_with_offset(
+            container, x, y
+        ).click().perform()
+
+    def _press_the_close_button(self):
+        self.browser.find_element(By.CSS_SELECTOR, "#mainModal .modal-close").click()
+
+    def _press_escape(self):
+        ActionChains(self.browser).send_keys(Keys.ESCAPE).perform()
+
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_modal_closes_by_backdrop_button_and_escape(self):
+        ExpenseFactory()
+        closers = {
+            "backdrop": self._click_the_backdrop,
+            "button": self._press_the_close_button,
+            "escape": self._press_escape,
+        }
+
+        for name, close in closers.items():
+            with self.subTest(name):
+                self._open_update_form()
+                assert self._modal_display() == "block"
+
+                close()
+                self.wait_until_idle()
+
+                assert self._modal_display() == "none"
+                assert not self.browser.find_elements(
+                    By.CSS_SELECTOR, "#mainModal .modal-form"
+                )
+
+    def test_insert_clears_the_form_and_its_errors(self):
+        self._fill_selects()
+        self.browser.find_element(By.ID, "_new").click()
+        self.wait_until_idle()
+        assert self.browser.find_elements(By.CSS_SELECTOR, "#mainModal .is-invalid")
+
+        self.browser.find_element(By.ID, "id_total_sum").send_keys("123.45")
+        self.browser.find_element(By.ID, "add_price").click()
+        self.browser.find_element(By.ID, "id_remark").send_keys("AAAA")
+        self.browser.find_element(By.ID, "_new").click()
+        self.wait_until_idle()
+
+        values = {
+            field: self.browser.find_element(By.ID, f"id_{field}").get_attribute(
+                "value"
+            )
+            for field in ("price", "quantity", "remark")
+        }
+        assert values == {"price": "0.0", "quantity": "1", "remark": ""}
+        for marker in (".invalid-feedback", ".is-invalid"):
+            assert not self.browser.find_elements(
+                By.CSS_SELECTOR, f"#mainModal {marker}"
+            )
+
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_a_receipt_image_opens_in_the_image_modal(self):
+        ExpenseFactory(attachment="receipt.jpg")
+        # from Apžvalga, so imgModal's container arrives with the Duomenys swap
+        self.browser.get(f"{self.live_server_url}/expenses/")
+        self.wait_until_idle()
+        self.browser.find_element(By.ID, "tab-data").click()
+        self.wait_until_idle()
+
+        # the second open is the second swap into the same modal
+        for _ in range(2):
+            self.browser.find_element(
+                By.CSS_SELECTOR, 'button[hx-target="#imgModal"]'
+            ).click()
+            self.wait_until_idle()
+
+            image = self.browser.find_element(By.CSS_SELECTOR, "#imgModal img")
+            assert image.get_attribute("src").endswith("/receipt.jpg")
+
+            self.browser.find_element(By.CSS_SELECTOR, "#imgModal .modal-close").click()
+            self.wait_until_idle()
+
+            assert not self.browser.find_element(
+                By.ID, "imgModalContainer"
+            ).is_displayed()
