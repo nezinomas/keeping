@@ -301,6 +301,15 @@ def test_list_with_data(client_logged):
     assert "Remark" in actual
 
 
+def test_the_number_column_header_is_translated(client_logged):
+    BookFactory()
+
+    url = reverse("books:list", kwargs={"scope": "year"})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert '<th class="text-left day-col">Nr.</th>' in actual
+
+
 @pytest.mark.parametrize(
     ("url_name", "kwargs", "params", "shown", "hidden"),
     [

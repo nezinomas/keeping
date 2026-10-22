@@ -614,6 +614,10 @@ msgstr "Perskaitytos knygos"
 msgid "Add book"
 msgstr "Pridėti knygą"
 
+#: .\project\books\templates\books\book_list.html:10
+msgid "No."
+msgstr "Nr."
+
 #: .\project\books\views.py:79 .\project\counts\services\cards.py:18
 #: .\project\counts\services\cards.py:42 .\project\counts\services\cards.py:58
 #: .\project\counts\services\cards.py:89 .\project\counts\services\cards.py:110
