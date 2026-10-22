@@ -1,17 +1,39 @@
 @use "../abstracts/variables" as *;
+@use "sheet";
 @use "tokens";
 
 // How the quick-add pill and sheet are drawn — hairline, no fill, no shadow.
 // `components/_quick_add` still carries the wrapper that positions them.
 
-// the shared wrapper reserves room for a tall dock; this one is a single
-// hairline row, so the page gives back the difference
 body:has(.paper-skin) {
-    padding-bottom: 3.5rem;
+    // at least a screen tall, so a short page's dock still sits at the screen's foot
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin-bottom: 0;
+    // zeroed, not dropped: the shared body:has(.quick-add) would reserve 6rem
+    padding-bottom: 0;
+}
+
+.paper-skin:has(> .quick-add) {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
+
+    // the sheet's foot space goes above the dock, which is the foot
+    > :has(+ .quick-add) {
+        margin-bottom: sheet.$foot;
+    }
 }
 
 .paper-skin {
     .quick-add {
+        // sticky, not fixed: the page ends above the dock, so it needs no reserve
+        position: sticky;
+        bottom: 0;
+        // out through the sheet's side and the body's margin, to the screen's edges
+        margin: auto calc(-1 * (sheet.$side + $gap / 2)) 0;
         padding-top: 0.5rem;
         background: $paper;
         border-top: 1px solid $hair;
@@ -68,6 +90,19 @@ body:has(.paper-skin) {
             grid-template-columns: 1fr auto 1fr;
         }
 
+        // narrow: the count on its own line, the pills two equal columns beneath
+        @media only screen and (max-width: 767px) {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.25rem;
+
+            // a label wraps inside its pill rather than being cut
+            .quick-add__pill {
+                justify-content: center;
+                text-align: center;
+            }
+        }
+
         .day-of-year {
             flex: none;
             white-space: nowrap;
@@ -82,10 +117,21 @@ body:has(.paper-skin) {
             align-items: center;
             gap: 0 1rem;
             min-width: 0;
+
+            @media only screen and (max-width: 767px) {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: stretch;
+                gap: 0.5rem;
+            }
         }
 
         .dropdown {
             position: relative;
+
+            @media only screen and (max-width: 767px) {
+                width: 100%;
+            }
         }
 
         .dropdown__btn {
@@ -95,6 +141,11 @@ body:has(.paper-skin) {
             min-width: 9.5rem;
             padding-right: 0.5rem;
 
+            @media only screen and (max-width: 767px) {
+                width: 100%;
+                min-width: 0;
+            }
+
             &::after {
                 content: "\e114";
                 margin-left: 0.5rem;
@@ -102,7 +153,7 @@ body:has(.paper-skin) {
         }
 
         .dropdown__menu {
-            // the bar is fixed at the foot, so every menu in it opens upward
+            // the bar sits at the screen's foot, so every menu in it opens upward
             top: auto;
             bottom: calc(100% + 0.15rem);
             left: auto;
@@ -114,11 +165,8 @@ body:has(.paper-skin) {
 
             // a choice is a word, so the menu wears the button face, not mono caps
             > * {
-                font-family: $body;
-                font-size: 0.8125rem;
-                font-weight: 500;
-                letter-spacing: normal;
-                text-transform: none;
+                @include tokens.face;
+
                 color: $ink;
                 text-decoration: none;
             }

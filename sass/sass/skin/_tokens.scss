@@ -23,8 +23,16 @@
     color: $ink-muted;
 }
 
-// Every button on a paper page: the body face and no tracking, because mono caps
-// are chrome and an action is a word. `$hover: false` when there is nothing to press.
+// The body face and no tracking, because mono caps are chrome and an action is a word.
+@mixin face {
+    font-family: $body;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+// Every button on a paper page. `$hover: false` when there is nothing to press.
 @mixin button($hover: true) {
     display: inline-flex;
     align-items: center;
@@ -33,11 +41,7 @@
     border-radius: 0;
     background: $paper;
     box-shadow: none;
-    font-family: $body;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: normal;
-    text-transform: none;
+    @include face;
     color: $ink-muted;
 
     @if $hover {
