@@ -55,6 +55,21 @@ def test_the_navbar_marks_the_user_menu_on_settings(client_logged, main_user):
     )
 
 
+def test_the_navbar_menus_carry_no_flag(client_logged):
+    nav = _nav(client_logged, "/")
+
+    assert set(re.findall(r'<div class="(dropdown(?: [^"]*)?)"', nav)) == {"dropdown"}
+
+
+def test_the_navbar_names_the_selected_year(client_logged, main_user):
+    main_user.year = 2004
+    main_user.save()
+
+    nav = _nav(client_logged, "/month/")
+
+    assert re.search(r'<a href="/">\s*([^<]+?)\s*</a>', nav).group(1) == "2004"
+
+
 def test_the_navbar_menus_without_a_page_stay_unlinked_where_a_page_has_a_url(
     client_logged, main_user
 ):

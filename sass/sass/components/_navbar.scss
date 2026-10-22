@@ -14,13 +14,6 @@
             pointer-events: auto;
         }
     }
-
-    &.left {
-        .dropdown__menu {
-            right: 0;
-            left: auto;
-        }
-    }
 }
 
 .dropdown__menu {
@@ -148,6 +141,12 @@ nav#main-nav {
 
     > :last-child {
         margin-left: auto;
+
+        // at the screen's right edge, so its menu opens leftward to stay on screen
+        .dropdown__menu {
+            right: 0;
+            left: auto;
+        }
     }
 
     > .active {
