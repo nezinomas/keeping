@@ -2,9 +2,13 @@
 
 // The sheet every paper page is drawn on.
 
+// the quick-add dock reaches through both to the screen's edges and foot
+$side: $gap * 1.5;
+$foot: $gap * 4;
+
 .paper-skin {
     // ---- the sheet -------------------------------------------------------
-    padding: calc($gap * 1.5) calc($gap * 1.5) calc($gap * 4);
+    padding: $side $side $foot;
     background: $paper;
     color: $ink;
     font-family: $body;

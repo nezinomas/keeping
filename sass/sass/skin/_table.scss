@@ -14,8 +14,6 @@
             @include tokens.label;
 
             padding: 0 0 0.7rem;
-            font-size: 0.68rem;
-            letter-spacing: 0.15em;
             text-align: left;
             color: $ink;
             background: transparent;
@@ -98,9 +96,8 @@
             color: $ink-muted;
         }
 
-        // where one group of rows ends and the next begins. 2px on the cells, not
-        // 1px on the row: border-collapse breaks a tie by width, so 1px would lose
-        // to the border-bottom the previous row's td already carries
+        // 2px, not 1px: border-collapse breaks a tie by width, and 1px would lose to
+        // the border-bottom the previous row's cells already carry
         tbody tr.table-group-divider > td {
             border-top: 2px solid $hair;
         }
@@ -113,9 +110,10 @@
             color: $ink;
 
             &:first-child {
-                font-family: $mono;
-                font-size: 0.7rem;
-                letter-spacing: 0.1em;
+                @include tokens.label;
+
+                font-weight: 600;
+                color: $ink;
             }
         }
 
@@ -135,17 +133,14 @@
             text-align: center;
         }
 
-        .edit-col a {
+        .edit-col a,
+        .delete-col a {
             color: $ink-muted;
         }
 
         // an empty or zero cell (the `cell_state` filter): present, not read
         [data-cell="empty"] {
             color: $ink-faint;
-        }
-
-        .delete-col a {
-            color: $harm;
         }
 
         // the stripe is fainter than the hover, so the cursor still reads on an

@@ -13,6 +13,8 @@
         @include tokens.button($hover: false);
 
         display: inline-flex;
+        flex-wrap: wrap;
+        justify-content: center;
         align-items: baseline;
         gap: 0 0.5rem;
     }
@@ -20,6 +22,10 @@
     .drink-type-note {
         white-space: nowrap;
         color: $ink-muted;
+    }
+
+    .drink-type-unit {
+        white-space: nowrap;
     }
 
     // the shared calendar draws no harm: this border means Heavy day
