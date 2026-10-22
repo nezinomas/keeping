@@ -14,6 +14,12 @@ def _active_links(client, path: str) -> list[str]:
     return re.findall(r'<div class="active">\s*<a href="([^"]+)"', content)
 
 
+def _nav(client, path: str) -> str:
+    content = client.get(path).content.decode()
+
+    return re.search(r'<nav id="main-nav">.*?</nav>', content, re.S).group()
+
+
 @pytest.mark.parametrize(
     "path",
     ["/detailed/", "/detailed/incomes/", "/detailed/savings/", "/detailed/expenses/"],
@@ -63,10 +69,33 @@ def test_the_navbar_menus_without_a_page_stay_unlinked_where_a_page_has_a_url(
     client_logged, main_user
 ):
     # Books' Duomenys passes its own `url` to the page's context
-    content = client_logged.get(reverse("books:tab_data", args=["all"])).content
-    nav = re.search(r'<nav id="main-nav">.*?</nav>', content.decode(), re.S).group()
+    nav = _nav(client_logged, reverse("books:tab_data", args=["all"]))
 
     assert re.findall(r"<div>\s*<span>\s*([^<]+?)\s*</span>", nav) == [
         "Pridėti",
         main_user.username,
     ]
+
+
+def test_the_navbar_acts_are_buttons_that_open_their_form(client_logged):
+    nav = _nav(client_logged, "/")
+    forms = [
+        "/counts/type/new/",
+        "/incomes/new/",
+        "/expenses/new/",
+        "/transactions/new/",
+        "/savings/new/",
+        "/accounts/new/",
+        "/incomes/type/new/",
+        "/expenses/type/new/",
+        "/expenses/name/new/",
+        "/savings/type/new/",
+    ]
+
+    assert re.findall(r'hx-get="([^"]+)"', nav) == forms
+    assert (
+        re.findall(
+            r'<button type="button" hx-get="([^"]+)" hx-target="#mainModal">', nav
+        )
+        == forms
+    )

@@ -153,6 +153,27 @@ nav#main-nav {
     > .active {
         border-bottom: 2px solid $ink;
     }
+
+    // an act opens a form, not a page: a button, drawn as the links beside it
+    .dropdown__menu > button {
+        width: 100%;
+        border: 0;
+        background: none;
+        font: inherit;
+        text-align: left;
+        color: $ink;
+        cursor: pointer;
+
+        &:hover {
+            transition: $transition;
+            background: $hair-soft;
+            color: $data;
+        }
+
+        &:focus {
+            color: $data;
+        }
+    }
 }
 
 // a quick-add bar that draws the count takes it from the top bar
