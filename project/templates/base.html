@@ -64,7 +64,7 @@
             <a href="{% url 'counts:index' count_type.slug %}">{{ count_type.title }}</a>
             {% endfor %}
             <span class="dropdown-divider"></span>
-            <a role="button" href="#" hx-get="{% url 'counts:type_new' %}" hx-target="#mainModal">{% translate 'Add count type' %}</a>
+            <button type="button" hx-get="{% url 'counts:type_new' %}" hx-target="#mainModal">{% translate 'Add count type' %}</button>
           </c-slot>
         </c-nav-item>
         <c-nav-item section="plans" url="{% url 'plans:index' %}">{% translate 'Plans' %}</c-nav-item>
@@ -78,16 +78,16 @@
         </c-nav-item>
         <c-nav-item>{% translate 'Add' %}
           <c-slot name="menu">
-            <a role="button" class="no-hover" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal">{% translate 'Incomes' context 'incomes button' %}</a>
-            <a role="button" class="no-hover" hx-get="{% url 'expenses:new' %}" hx-target="#mainModal">{% translate "Expenses" context "expenses button" %}</a>
-            <a role="button" class="no-hover" hx-get="{% url 'transactions:new' %}" hx-target="#mainModal">{% translate 'Transactions' context "transactions button" %}</a>
-            <a role="button" class="no-hover" hx-get="{% url 'savings:new' %}" hx-target="#mainModal">{% translate 'Savings' context "savings button" %}</a>
+            <button type="button" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal">{% translate 'Incomes' context 'incomes button' %}</button>
+            <button type="button" hx-get="{% url 'expenses:new' %}" hx-target="#mainModal">{% translate "Expenses" context "expenses button" %}</button>
+            <button type="button" hx-get="{% url 'transactions:new' %}" hx-target="#mainModal">{% translate 'Transactions' context "transactions button" %}</button>
+            <button type="button" hx-get="{% url 'savings:new' %}" hx-target="#mainModal">{% translate 'Savings' context "savings button" %}</button>
             <span class="dropdown-divider"></span>
-            <a role="button" class="no-hover" hx-get="{% url 'accounts:new' %}" hx-target="#mainModal">{% translate 'Account' context 'account button' %}</a>
-            <a role="button" class="no-hover" hx-get="{% url 'incomes:type_new' %}" hx-target="#mainModal">{% translate 'Incomes type' context 'income type button' %}</a>
-            <a role="button" class="no-hover" hx-get="{% url 'expenses:type_new' %}" hx-target="#mainModal">{% translate "Expenses type" context "expenses type button" %}</a>
-            <a role="button" class="no-hover" hx-get="{% url 'expenses:name_new' %}" hx-target="#mainModal">{% translate "Expenses name" context "expenses name button" %}</a>
-            <a role="button" class="no-hover" hx-get="{% url 'savings:type_new' %}" hx-target="#mainModal">{% translate 'Fund' context 'fund button' %}</a>
+            <button type="button" hx-get="{% url 'accounts:new' %}" hx-target="#mainModal">{% translate 'Account' context 'account button' %}</button>
+            <button type="button" hx-get="{% url 'incomes:type_new' %}" hx-target="#mainModal">{% translate 'Incomes type' context 'income type button' %}</button>
+            <button type="button" hx-get="{% url 'expenses:type_new' %}" hx-target="#mainModal">{% translate "Expenses type" context "expenses type button" %}</button>
+            <button type="button" hx-get="{% url 'expenses:name_new' %}" hx-target="#mainModal">{% translate "Expenses name" context "expenses name button" %}</button>
+            <button type="button" hx-get="{% url 'savings:type_new' %}" hx-target="#mainModal">{% translate 'Fund' context 'fund button' %}</button>
           </c-slot>
         </c-nav-item>
         <c-day-of-year />
