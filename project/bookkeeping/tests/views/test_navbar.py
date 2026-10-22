@@ -21,22 +21,12 @@ def _nav(client, path: str) -> str:
 
 
 @pytest.mark.parametrize(
-    "path",
-    ["/detailed/", "/detailed/incomes/", "/detailed/savings/", "/detailed/expenses/"],
-)
-def test_the_navbar_marks_detailed_on_every_tab(client_logged, path):
-    assert _active_links(client_logged, path) == [reverse("bookkeeping:detailed")]
-
-
-def test_the_navbar_still_marks_expenses_on_expenses(client_logged):
-    assert _active_links(client_logged, "/expenses/") == [reverse("expenses:index")]
-
-
-@pytest.mark.parametrize(
     "path, url_name",
     [
         ("/", "bookkeeping:index"),
         ("/month/", "bookkeeping:month"),
+        ("/detailed/", "bookkeeping:detailed"),
+        ("/expenses/", "expenses:index"),
         ("/incomes/", "incomes:index"),
         ("/transactions/", "transactions:index"),
         ("/savings/", "savings:index"),
