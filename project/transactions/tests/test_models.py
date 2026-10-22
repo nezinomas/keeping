@@ -802,18 +802,34 @@ def test_saving_close_balance_incomes(main_user, savings_close):
     assert actual[2]["category_id"] == 2
 
 
-def test_saving_close_balance_expenses(main_user, savings_close):
-    actual = SavingCloseModelService(main_user).expenses()
+@pytest.mark.parametrize(
+    "service, factory, receiver",
+    [
+        pytest.param(
+            SavingCloseModelService, SavingCloseFactory, AccountFactory, id="close"
+        ),
+        pytest.param(
+            SavingChangeModelService,
+            SavingChangeFactory,
+            SavingTypeFactory,
+            id="change",
+        ),
+    ],
+)
+def test_saving_close_balance_expenses(main_user, service, factory, receiver):
+    fund = SavingTypeFactory(title="Saving1")
+    a1 = receiver(title="To1")
+    a2 = receiver(title="To2")
+    factory(date=date(1999, 1, 1), price=25, fee=5, to_account=a1, from_account=fund)
+    factory(date=date(1999, 1, 1), price=1, fee=1, to_account=a2, from_account=fund)
+    factory(date=date(1970, 1, 1), price=25, fee=5, to_account=a1, from_account=fund)
 
-    assert actual[0]["year"] == 1970
-    assert actual[0]["expenses"] == 25
-    assert actual[0]["fee"] == 5
-    assert actual[0]["category_id"] == 1
+    actual = service(main_user).expenses()
 
-    assert actual[1]["year"] == 1999
-    assert actual[1]["expenses"] == 26
-    assert actual[1]["fee"] == 6
-    assert actual[1]["category_id"] == 1
+    assert list(actual) == [
+        {"year": 1970, "expenses": 25, "fee": 5, "category_id": fund.pk},
+        {"year": 1999, "expenses": 26, "fee": 6, "category_id": fund.pk},
+    ]
 
 
 def test_savings_change_str():
