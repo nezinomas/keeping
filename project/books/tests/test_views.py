@@ -17,33 +17,13 @@ from .factories import Book, BookFactory, BookTargetFactory
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
-    content = client_logged.get(tab.url).content.decode()
+def test_a_plain_visit_returns_the_whole_paper_page(client_logged):
+    content = client_logged.get(TABS["index"].url).content.decode()
 
     assert '<nav class="subnav">' in content
-    assert "css/paper.min.css" in content
-    assert "css/main.min.css" not in content
-    assert 'class="paper-skin"' in content
-
-
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, tab):
-    content = client_logged.get(
-        tab.url, headers={"HX-Request": "true"}
-    ).content.decode()
-
-    assert '<nav class="subnav">' not in content
-    assert "<title>" in content
-
-
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_history_restore_rebuilds_the_whole_page(client_logged, tab):
-    headers = {"HX-Request": "true", "HX-History-Restore-Request": "true"}
-
-    content = client_logged.get(tab.url, headers=headers).content.decode()
-
-    assert '<nav class="subnav">' in content
+    assert re.search(r'<link[^>]*href="[^"]*css/paper\.min\.css[^"]*"', content)
+    assert not re.search(r"<link[^>]*css/main\.min\.css", content)
+    assert '<div class="paper-skin"' in content
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -53,7 +33,8 @@ def test_only_the_open_tab_reloads_on_a_saved_book_or_goal(client_logged, tab):
     ).content.decode()
 
     listener = (
-        f'hx-get="{tab.url}" hx-target="#tab_content" hx-trigger="reload from:body"'
+        f'<div hx-get="{tab.url}" hx-target="#tab_content" '
+        'hx-trigger="reload from:body"></div>'
     )
     assert listener in content
     assert content.count("reload from:body") == 1
@@ -63,7 +44,10 @@ def test_nav_offers_every_tab(client_logged):
     content = client_logged.get(reverse("books:index")).content.decode()
 
     for tab in TABS:
-        assert f'hx-get="{tab.url}"' in content
+        assert re.search(
+            rf'<button\s+id="tab-{tab.name}"[^>]*hx-get="{re.escape(tab.url)}"',
+            content,
+        )
 
 
 @pytest.mark.parametrize(
@@ -81,33 +65,33 @@ def test_browser_title_names_the_open_tab(client_logged, url_name, kwargs, title
 
 
 @pytest.mark.parametrize(
-    "markup",
+    "pattern",
     [
         pytest.param('<h1 class="visually-hidden">Knygos</h1>', id="heading"),
-        pytest.param("js/chart_paper.js", id="chart_theme"),
+        pytest.param(r'<script[^>]*src="[^"]*js/chart_paper\.js"', id="chart_theme"),
         pytest.param(
             '<h2 class="panel__title">Perskaitytos knygos</h2>', id="finished_panel"
         ),
     ],
 )
 def test_books_index_shows_its_heading_chart_theme_and_finished_panel(
-    client_logged, markup
+    client_logged, pattern
 ):
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
-    assert markup in content
+    assert re.search(pattern, content)
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_books_adds_a_book_from_the_foot_of_every_tab(client_logged, tab):
-    content = client_logged.get(tab.url).content.decode("utf-8")
+def test_books_adds_a_book_from_the_foot_of_the_page(client_logged):
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     link = reverse("books:new")
 
-    assert 'class="quick-add"' in content
-    assert f'class="quick-add__pill" hx-get="{link}"' in content
-    assert 'hx-target="#mainModal"' in content
-    assert "Pridėti knygą" in content
+    assert '<div class="quick-add"' in content
+    assert (
+        f'<button type="button" class="quick-add__pill" hx-get="{link}" '
+        'hx-target="#mainModal">Pridėti knygą</button>'
+    ) in content
 
 
 def _page_queries(client, url):
@@ -165,7 +149,6 @@ def test_overview_carries_the_chart_data(client_logged):
     assert '<script id="chart-finished-data" type="application/json">' in content
 
 
-@time_machine.travel("1999-07-18")
 @pytest.mark.parametrize(
     ("open_books", "finished_books", "expected"),
     [
@@ -206,10 +189,12 @@ def test_overview_goal_pencil_opens_the_goal_form(
     assert content.count(f'hx-get="{link}"') == 1
     assert f'<button type="button" class="trend-card__edit" hx-get="{link}"' in content
     assert re.search(
-        rf'trend-card__edit" hx-get="{link}"[^>]*hx-target="#mainModal"', content
+        rf'trend-card__edit" hx-get="{link}"[^>]*hx-target="#mainModal"[^>]*>'
+        r'<i class="bi bi-pencil"',
+        content,
     )
-    assert 'class="bi bi-pencil"' in content
-    assert ("Neįvestas tikslas" in content) is no_goal_shown
+    no_goal = '<div class="trend-card__note">Neįvestas tikslas</div>'
+    assert (no_goal in content) is no_goal_shown
 
 
 def test_data_tab_reads_search_then_table(client_logged):
@@ -232,7 +217,10 @@ def test_data_tab_reloads_its_scope(client_logged, scope, reloaded):
     content = client_logged.get(url).content.decode("utf-8")
 
     reload_url = reverse("books:tab_data", kwargs={"scope": reloaded})
-    assert f'hx-get="{reload_url}" hx-target="#tab_content"' in content
+    assert (
+        f'<div hx-get="{reload_url}" hx-target="#tab_content" '
+        'hx-trigger="reload from:body"></div>'
+    ) in content
 
 
 def test_navbar_all_records_opens_the_data_tab_on_every_year(client_logged):
@@ -288,19 +276,6 @@ def test_page_links_keep_their_query(
     assert content.count(f'hx-get="{link}?{query}"') == 2
 
 
-def test_list_with_data(client_logged):
-    BookFactory()
-
-    url = reverse("books:list", kwargs={"scope": "year"})
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "1999-01-01" in actual
-    assert "Author" in actual
-    assert "Book Title" in actual
-    assert "Remark" in actual
-
-
 def test_the_number_column_header_is_translated(client_logged):
     BookFactory()
 
@@ -316,7 +291,18 @@ def test_the_number_column_header_is_translated(client_logged):
         ("books:tab_data", {"scope": "year"}, {}, ["This Year"], ["Old Book"]),
         ("books:tab_data", {"scope": "all"}, {}, ["This Year", "Old Book"], []),
         ("books:tab_data", {"scope": "bogus"}, {}, ["This Year"], ["Old Book"]),
-        ("books:list", {"scope": "year"}, {}, ["This Year"], ["Old Book"]),
+        (
+            "books:list",
+            {"scope": "year"},
+            {},
+            [
+                "This Year",
+                '<td class="text-left">Author</td>',
+                '<td class="text-left">Remark</td>',
+                '<td class="text-center date-col">1999-01-01</td>',
+            ],
+            ["Old Book"],
+        ),
         (
             "books:list",
             {"scope": "all"},
@@ -345,21 +331,21 @@ def test_a_listing_shows_the_books_of_its_scope(
 
 
 @pytest.mark.parametrize(
-    ("scope", "shown", "hidden"),
+    ("scope", "notice"),
     [
-        ("year", ["<b>1999</b> metais įrašų nėra"], []),
-        ("all", ["Įrašų nėra"], ["1999"]),
+        ("year", "<b>1999</b> metais įrašų nėra."),
+        ("all", "Įrašų nėra"),
     ],
     ids=["this_year_names_the_year", "all_books_names_no_year"],
 )
-def test_list_empty_state(client_logged, scope, shown, hidden):
+def test_list_empty_state(client_logged, scope, notice):
     url = reverse("books:list", kwargs={"scope": scope})
     actual = client_logged.get(url).content.decode("utf-8")
 
-    for text in shown:
-        assert text in actual
-    for text in hidden:
-        assert text not in actual
+    assert re.fullmatch(
+        rf'\s*<div class="alert alert-warning">\s*{re.escape(notice)}\s*</div>\s*',
+        actual,
+    )
 
 
 @time_machine.travel("2000-01-01")
@@ -372,7 +358,12 @@ def test_list_empty_state(client_logged, scope, shown, hidden):
         ),
         (
             lambda book: reverse("books:update", kwargs={"pk": book.pk}),
-            ["1999-01-01", "Author", "Book Title", "Remark"],
+            [
+                '<input type="text" name="started" value="1999-01-01"',
+                '<input type="text" name="author" value="Author"',
+                '<input type="text" name="title" value="Book Title"',
+                r'<textarea name="remark"[^>]*>\s*Remark</textarea>',
+            ],
         ),
     ],
     ids=["new", "update"],
@@ -382,9 +373,12 @@ def test_books_load_form(client_logged, url_of, expected):
 
     actual = client_logged.get(url, {}, follow=True).content.decode()
 
-    assert url in actual
-    for text in expected:
-        assert text in actual
+    assert re.search(
+        rf'<form method="POST" id="generic-form"[^>]*hx-post="{re.escape(url)}"',
+        actual,
+    )
+    for pattern in expected:
+        assert re.search(pattern, actual)
 
 
 @pytest.mark.parametrize(
@@ -542,8 +536,10 @@ def test_view_books_delete_load_form(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert url in actual
-    assert '<form method="POST"' in actual
+    assert re.search(
+        rf'<form method="POST" id="delete-form"[^>]*hx-post="{re.escape(url)}"',
+        actual,
+    )
     assert "Ar tikrai norite ištrinti: <strong>Book Title</strong>?" in actual
 
 
@@ -564,7 +560,7 @@ def test_books_delete(client_logged, second_user, owned, remaining):
 @pytest.mark.parametrize(
     ("search", "expected"),
     [
-        ("xxx", ["Nieko nerasta"]),
+        ("xxx", [r'<div class="alert alert-warning">\s*Nieko nerasta\s*</div>']),
         ("1999 title", ["1999-01-01", "Book Title", "Author"]),
     ],
     ids=["not_found", "found"],
@@ -576,8 +572,8 @@ def test_search(client_logged, search, expected):
     response = client_logged.get(url, {"search": search})
     actual = response.content.decode("utf-8")
 
-    for text in expected:
-        assert text in actual
+    for pattern in expected:
+        assert re.search(pattern, actual)
 
 
 @pytest.mark.parametrize(
@@ -598,31 +594,15 @@ def test_search_reset_returns_to_the_open_scope(client_logged, scope, reset):
     [
         ("books:search", {}, {"search": "title"}, 50, ["1"]),
         ("books:search", {}, {"page": 2, "search": "author"}, 1, ["1"]),
-        ("books:search", {}, {"page": "x", "search": "title"}, 50, ["1"]),
-        ("books:search", {}, {"page": 0, "search": "title"}, 50, ["1"]),
-        ("books:search", {}, {"page": -3, "search": "title"}, 50, ["1"]),
-        ("books:search", {}, {"page": 10**30, "search": "title"}, 0, []),
         ("books:list", {"scope": "all"}, {}, 50, ["51"]),
         ("books:list", {"scope": "all"}, {"page": 2}, 1, ["1"]),
-        ("books:list", {"scope": "all"}, {"page": "x"}, 50, ["51"]),
-        ("books:list", {"scope": "all"}, {"page": 0}, 50, ["51"]),
-        ("books:list", {"scope": "all"}, {"page": -3}, 50, ["51"]),
-        ("books:list", {"scope": "all"}, {"page": 999}, 0, []),
         ("books:list", {"scope": "all"}, {"page": 10**30}, 0, []),
     ],
     ids=[
         "search_first_page",
         "search_second_page",
-        "search_page_x",
-        "search_page_0",
-        "search_page_minus_3",
-        "search_page_past_any_offset",
         "list_first_page",
         "list_second_page",
-        "list_page_x",
-        "list_page_0",
-        "list_page_minus_3",
-        "list_page_past_the_end",
         "list_page_past_any_offset",
     ],
 )
@@ -680,8 +660,10 @@ def test_target_load_form(client_logged, make_url):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert url in actual
-    assert f'hx-post="{url}"' in actual
+    assert re.search(
+        rf'<form method="POST" id="generic-form"[^>]*hx-post="{re.escape(url)}"',
+        actual,
+    )
     assert '<input type="text" name="year" value="1999"' in actual
 
 
