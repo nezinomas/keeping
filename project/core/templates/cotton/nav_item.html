@@ -1,10 +1,10 @@
 {# defaults, or a page's own `url` in the context fills an item that passes none #}
-<c-vars section="" url="" menu="" left="" />
+<c-vars section="" url="" menu="" />
 
 <div{% if section in nav_active %} class="active"{% endif %}>
     {% if url %}<a href="{{ url }}">{{ slot }}</a>{% else %}<span>{{ slot }}</span>{% endif %}
     {% if menu %}
-    <div class="dropdown{% if left %} left{% endif %}">
+    <div class="dropdown">
         <button class="dropdown__btn"></button>
         <div class="dropdown__menu">
             {{ menu }}

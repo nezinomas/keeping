@@ -7,8 +7,7 @@
   <head>
     <meta charset="utf-8">
     {# above htmx, which reads it at load: its indicator CSS would outrank the bundle's delayed reveal #}
-    {# noSwap never pastes an error page into a target; it replaces htmx's list, so 204 and 304 stay #}
-    {# history reload: a swapped Back restore fires no DOMContentLoaded, so charts would stay blank #}
+    {# noSwap replaces htmx's own list, so 204 and 304 stay; history reload: a Back restore fires no DOMContentLoaded #}
     <meta name="htmx-config" content='{"includeIndicatorCSS": false, "noSwap": [204, 304, "4xx", "5xx"], "history": "reload"}'>
     <script nonce="{{ csp_nonce }}" src="{% static 'htmx/htmx.min.js' %}"></script>
     {# Alpine state survives a morph swap #}
@@ -31,7 +30,7 @@
     {% block body %}
     <header>
       <nav id="main-nav">
-        <c-nav-item section="bookkeeping" url="{% url 'bookkeeping:index' %}">{{ request.user.year|title }}
+        <c-nav-item section="bookkeeping" url="{% url 'bookkeeping:index' %}">{{ request.user.selected_year|title }}
           <c-slot name="menu">
             {% for y in years %}
             <a href="{% url 'core:set_year' y %}">{{ y|safe }}</a>
@@ -92,7 +91,7 @@
           </c-slot>
         </c-nav-item>
         <c-day-of-year />
-        <c-nav-item section="settings" left>{{ user.username }}
+        <c-nav-item section="settings">{{ user.username }}
           <c-slot name="menu">
             <a href="{% url 'users:logout' %}">{% translate 'Log out' %}</a>
             <a href="{% url 'users:password_change' %}">{% translate 'Change password' %}</a>
