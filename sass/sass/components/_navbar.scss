@@ -1,11 +1,9 @@
 @use "../abstracts/variables" as *;
 
 // Both bundles import this, so the nav never forked: one design on every page.
-// Top-bar-only rules are scoped to #main-nav, clear of the drinks tab row.
 
 .dropdown {
     &:active,
-    &:focus,
     &:focus-within {
         .dropdown__menu {
             opacity: 1;
@@ -45,7 +43,8 @@
         color: $ink-muted;
     }
 
-    > *:hover {
+    > *:hover,
+    > *:focus {
         background: $hair-soft;
         color: $ink;
         transition: $transition;
@@ -61,6 +60,7 @@
 .dropdown__btn {
     border: 0;
     background: transparent;
+    color: $ink;
     cursor: pointer;
     touch-action: manipulation;
 
@@ -71,11 +71,14 @@
     }
 }
 
-// ---- shared structure -----------------------------------------------------
-[id*=-nav] {
+nav#main-nav {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0 1rem;
+    margin-bottom: $gap;
+    background: $paper;
+    border-bottom: 1px solid $hair;
 
     a {
         text-decoration: none;
@@ -86,13 +89,6 @@
         color: $ink;
     }
 
-    a:hover,
-    a:focus,
-    .dropdown__btn:hover {
-        transition: $transition;
-        color: $data;
-    }
-
     > div {
         display: flex;
         align-items: center;
@@ -101,15 +97,6 @@
     :has(.dropdown) {
         position: relative;
     }
-}
-
-// ---- the top bar ----------------------------------------------------------
-nav#main-nav {
-    margin-bottom: $gap;
-    background: $paper;
-    border-bottom: 1px solid $hair;
-
-    flex-wrap: wrap;
 
     > *:first-child {
         padding-left: 0.5rem;
@@ -123,7 +110,7 @@ nav#main-nav {
         border-bottom: 2px solid transparent;
 
         &:hover,
-        &:focus {
+        &:focus-within {
             transition: $transition;
             border-bottom-color: $hair;
         }
@@ -135,7 +122,6 @@ nav#main-nav {
 
         &:hover {
             border-bottom-color: transparent;
-            color: $ink-muted;
         }
     }
 
@@ -163,14 +149,9 @@ nav#main-nav {
         color: $ink;
         cursor: pointer;
 
-        &:hover {
-            transition: $transition;
-            background: $hair-soft;
-            color: $data;
-        }
-
+        &:hover,
         &:focus {
-            color: $data;
+            background: $hair-soft;
         }
     }
 }
