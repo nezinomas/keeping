@@ -1,5 +1,7 @@
 import pytest
 from django.test import TestCase
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 
 from ...core.tests.test_integration_browser import Browser
 
@@ -12,3 +14,21 @@ class BookkeepingIndex(TestCase, Browser):
         with self.assertNumQueries(32):
             self.browser.get(f"{self.live_server_url}")
             self.wait_until_idle()
+
+    def test_a_pressed_nav_act_closes_its_menu(self):
+        self.browser.get(f"{self.live_server_url}")
+        self.wait_until_idle()
+
+        act = self.browser.find_element(
+            By.CSS_SELECTOR, "#main-nav button[hx-get='/incomes/new/']"
+        )
+        menu = act.find_element(By.XPATH, "./ancestor::div[@class='dropdown']")
+        menu.find_element(By.CSS_SELECTOR, ".dropdown__btn").click()
+        WebDriverWait(self.browser, 2).until(lambda _: act.is_displayed())
+        act.click()
+        self.wait_until_idle()
+
+        assert self.browser.find_elements(By.CSS_SELECTOR, "#mainModal .modal-form")
+        assert not self.browser.execute_script(
+            "return arguments[0].matches(':focus-within')", menu
+        )
