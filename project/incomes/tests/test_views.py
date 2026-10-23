@@ -462,18 +462,31 @@ def test_types_tab_sorts_by_the_asked_column(client_logged):
     assert by_share.index(">Zeta<") < by_share.index(">Alga<")
 
 
-def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged):
+@pytest.mark.parametrize("order", ["share", "title"])
+def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged, order):
     url = reverse("incomes:tab_types")
 
-    content = client_logged.get(url, {"order": "share"}).content.decode()
+    content = client_logged.get(url, {"order": order}).content.decode()
 
     # pushed, so a reload keeps the sort
     assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
-    assert "<span>Dalis</span>" in content
-    for key in ("title", "this_year", "last_year", "last_income"):
-        assert f'<a role="button" hx-get="{url}?order={key}" hx-target' in content
+    for key, label in (
+        ("title", "Pajamų rūšis"),
+        ("this_year", "Šiemet"),
+        ("last_year", "Pernai"),
+        ("share", "Dalis"),
+        ("last_income", "Paskutinį kartą"),
+    ):
+        drawn = (
+            f'<a role="button" hx-get="{url}?order={key}"'
+            f' hx-target="#tab_content">{label}</a>'
+        )
+        if key == order:
+            drawn = f"<span>{label}</span>"
+        assert drawn in content
+    assert re.search(r'<th class="text-left">\s*<(span|a [^>]*)>Pajamų', content)
     # a save reloads the sort shown
-    assert f'<div hx-get="{url}?order=share" hx-target="#tab_content"' in content
+    assert f'<div hx-get="{url}?order={order}" hx-target="#tab_content"' in content
 
 
 def test_types_tab_draws_no_groups(client_logged):

@@ -268,8 +268,9 @@ def test_types_tab_lists_a_name_limited_to_another_year_with_its_year(client_log
     assert 'class="filter-line"' not in content
 
 
-def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged):
-    query = {"order": "share"}
+@pytest.mark.parametrize("order", ["share", "title"])
+def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged, order):
+    query = {"order": order}
 
     content = client_logged.get(reverse("expenses:tab_types"), query).content.decode()
 
@@ -279,13 +280,19 @@ def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged):
         ("title", "Rūšis / pavadinimas"),
         ("this_year", "Šiemet"),
         ("last_year", "Pernai"),
+        ("share", "Dalis"),
         ("last_expense", "Paskutinį kartą"),
     ):
-        link = f'<a role="button" hx-get="/expenses/types/?order={key}"'
-        assert f'{link} hx-target="#tab_content">{label}</a>' in content
-    assert "<span>Dalis</span>" in content
+        drawn = (
+            f'<a role="button" hx-get="/expenses/types/?order={key}"'
+            f' hx-target="#tab_content">{label}</a>'
+        )
+        if key == order:
+            drawn = f"<span>{label}</span>"
+        assert drawn in content
+    assert re.search(r'<th class="text-left">\s*<(span|a [^>]*)>Rūšis', content)
     # a save reloads the sort shown
-    reload = '<div hx-get="/expenses/types/?order=share" hx-target="#tab_content"'
+    reload = f'<div hx-get="/expenses/types/?order={order}" hx-target="#tab_content"'
     assert reload in content
 
 

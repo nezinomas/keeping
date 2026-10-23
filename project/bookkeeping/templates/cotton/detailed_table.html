@@ -9,20 +9,20 @@
 <table class="main striped hover">
     <thead class="sortable-header-row">
         <tr>
-            <c-sort-th key="title" :active=order :url=url :target="sort_target" class="text-left title-col">{{ title }}</c-sort-th>
-            <c-sort-th key="1" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'January' %}</span><span class="month-table__month-short">{% translate 'jan' %}</span></c-sort-th>
-            <c-sort-th key="2" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'February' %}</span><span class="month-table__month-short">{% translate 'feb' %}</span></c-sort-th>
-            <c-sort-th key="3" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'March' %}</span><span class="month-table__month-short">{% translate 'mar' %}</span></c-sort-th>
-            <c-sort-th key="4" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'April' %}</span><span class="month-table__month-short">{% translate 'apr' %}</span></c-sort-th>
-            <c-sort-th key="5" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'May' %}</span><span class="month-table__month-short">{% translate 'may' %}</span></c-sort-th>
-            <c-sort-th key="6" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'June' %}</span><span class="month-table__month-short">{% translate 'jun' %}</span></c-sort-th>
-            <c-sort-th key="7" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'July' %}</span><span class="month-table__month-short">{% translate 'jul' %}</span></c-sort-th>
-            <c-sort-th key="8" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'August' %}</span><span class="month-table__month-short">{% translate 'aug' %}</span></c-sort-th>
-            <c-sort-th key="9" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'September' %}</span><span class="month-table__month-short">{% translate 'sep' %}</span></c-sort-th>
-            <c-sort-th key="10" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'October' %}</span><span class="month-table__month-short">{% translate 'oct' %}</span></c-sort-th>
-            <c-sort-th key="11" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'November' %}</span><span class="month-table__month-short">{% translate 'nov' %}</span></c-sort-th>
-            <c-sort-th key="12" :active=order :url=url :target="sort_target"><span class="month-table__month-full">{% translate 'December' %}</span><span class="month-table__month-short">{% translate 'dec' %}</span></c-sort-th>
-            <c-sort-th key="total_col" :active=order :url=url :target="sort_target" class="month-table__total">{% translate 'Total' %}</c-sort-th>
+            <c-sort-th key="title" :active="order" :url="url" :target="sort_target" column="title">{{ title }}</c-sort-th>
+            <c-sort-th key="1" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'January' %}</span><span class="month-table__month-short">{% translate 'jan' %}</span></c-sort-th>
+            <c-sort-th key="2" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'February' %}</span><span class="month-table__month-short">{% translate 'feb' %}</span></c-sort-th>
+            <c-sort-th key="3" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'March' %}</span><span class="month-table__month-short">{% translate 'mar' %}</span></c-sort-th>
+            <c-sort-th key="4" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'April' %}</span><span class="month-table__month-short">{% translate 'apr' %}</span></c-sort-th>
+            <c-sort-th key="5" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'May' %}</span><span class="month-table__month-short">{% translate 'may' %}</span></c-sort-th>
+            <c-sort-th key="6" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'June' %}</span><span class="month-table__month-short">{% translate 'jun' %}</span></c-sort-th>
+            <c-sort-th key="7" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'July' %}</span><span class="month-table__month-short">{% translate 'jul' %}</span></c-sort-th>
+            <c-sort-th key="8" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'August' %}</span><span class="month-table__month-short">{% translate 'aug' %}</span></c-sort-th>
+            <c-sort-th key="9" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'September' %}</span><span class="month-table__month-short">{% translate 'sep' %}</span></c-sort-th>
+            <c-sort-th key="10" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'October' %}</span><span class="month-table__month-short">{% translate 'oct' %}</span></c-sort-th>
+            <c-sort-th key="11" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'November' %}</span><span class="month-table__month-short">{% translate 'nov' %}</span></c-sort-th>
+            <c-sort-th key="12" :active="order" :url="url" :target="sort_target"><span class="month-table__month-full">{% translate 'December' %}</span><span class="month-table__month-short">{% translate 'dec' %}</span></c-sort-th>
+            <c-sort-th key="total_col" :active="order" :url="url" :target="sort_target" column="total">{% translate 'Total' %}</c-sort-th>
         </tr>
     </thead>
 
