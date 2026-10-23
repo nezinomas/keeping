@@ -34,7 +34,6 @@ function chart_drinks_summary(idData, idContainer) {
                     y: -8,
                     crop: false,
                     overflow: "allow",
-                    style: paper.readingDataLabelStyle,
                     formatter: function () {
                         return this.y > 0
                             ? Highcharts.numberFormat(this.y, chartData.decimals)

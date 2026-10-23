@@ -106,9 +106,6 @@ function paperTwoPanes() {
             labels: { style: { color: blue } },
             title: Highcharts.merge(PAPER_PANE_TITLE, { style: { color: blue } }),
         },
-        readingDataLabelStyle: Highcharts.merge(PAPER_DATA_LABEL_STYLE, {
-            color: "var(--skin-ink)",
-        }),
         bottomBars: {
             type: "column",
             yAxis: 1,
@@ -120,9 +117,8 @@ function paperTwoPanes() {
                 enabled: true,
                 crop: false,
                 overflow: "allow",
-                style: Highcharts.merge(PAPER_DATA_LABEL_STYLE, {
-                    color: "var(--skin-ink-muted)",
-                }),
+                // the theme's `dataLabels.color` beats a `style.color`
+                color: "var(--skin-ink-muted)",
                 formatter: function () {
                     return this.y > 0 ? Highcharts.numberFormat(this.y, 1) : "";
                 },
