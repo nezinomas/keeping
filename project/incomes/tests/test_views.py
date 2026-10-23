@@ -9,7 +9,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.utils import view_for
+from ...core.tests.utils import quick_add_pills, view_for
 from .. import models, views
 from ..tabs import TABS
 from .factories import Income, IncomeFactory, IncomeTypeFactory
@@ -386,7 +386,10 @@ def test_nav_offers_every_tab(client_logged):
     content = client_logged.get(reverse("incomes:index")).content.decode()
 
     for tab in TABS:
-        assert f'hx-get="{tab.url}"' in content
+        assert re.search(
+            rf'<button\s+id="tab-{tab.name}"[^>]*hx-get="{re.escape(tab.url)}"',
+            content,
+        )
 
 
 @pytest.mark.parametrize(
@@ -498,17 +501,6 @@ def test_types_tab_draws_no_groups(client_logged):
     assert "table-group-divider" not in content
 
 
-def test_the_add_type_pill_waits_for_the_types_tab(client_logged):
-    link = reverse("incomes:type_new")
-
-    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
-
-    pill = f'class="quick-add__pill" hx-get="{link}"'
-
-    assert f"x-show=\"tab === 'types'\" x-cloak {pill}" in content
-    assert "Pridėti pajamų rūšį" in content
-
-
 @time_machine.travel("1999-09-15")
 def test_overview_states_the_year_in_three_cards(client_logged):
     alga = IncomeTypeFactory(title="Alga")
@@ -541,14 +533,13 @@ def test_overview_charts_the_year_against_last_year_to_the_same_day(client_logge
     assert data["1998"][8] == 800.0
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_every_tab_offers_one_add_income_pill(client_logged, tab):
-    content = client_logged.get(tab.url).content.decode()
-    link = reverse("incomes:new")
+def test_quick_add_offers_its_pills(client_logged):
+    content = client_logged.get(reverse("incomes:index")).content.decode()
 
-    assert content.count('class="quick-add__pill"') == 2
-    assert content.count(f'class="quick-add__pill" hx-get="{link}"') == 1
-    assert "Pridėti pajamas" in content
+    assert quick_add_pills(content) == [
+        ("button", "types", 'hx-get="/incomes/type/new/"', "Pridėti pajamų rūšį"),
+        ("button", "", 'hx-get="/incomes/new/"', "Pridėti pajamas"),
+    ]
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)

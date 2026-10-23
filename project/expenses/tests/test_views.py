@@ -11,7 +11,7 @@ from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.lib.utils import get_action_buttons_html
-from ...core.tests.utils import clean_content, view_for
+from ...core.tests.utils import clean_content, quick_add_pills, view_for
 from .. import models
 from ..forms import ExpenseNameChoicesMixin
 from ..forms_import import ReviewLineForm
@@ -118,18 +118,23 @@ def test_duomenys_and_its_list_have_no_route_without_a_month(client_logged, path
 def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
     content = client_logged.get(reverse("expenses:tab_index")).content.decode()
 
-    assert 'role="tablist"' in content
-    assert content.count('class="quick-add__pill"') == 4
-    assert 'class="quick-add__pill" href="/expenses/import/">Importuoti čekį' in content
-    assert 'class="quick-add__pill" hx-get="/expenses/new/"' in content
-    assert "Pridėti išlaidas" in content
-    for url_name, label in (
-        ("expenses:type_new", "Pridėti išlaidų rūšį"),
-        ("expenses:name_new", "Pridėti išlaidų pavadinimą"),
-    ):
-        pill = f'class="quick-add__pill" hx-get="{reverse(url_name)}"'
-        assert f"x-show=\"tab === 'types'\" x-cloak {pill}" in content
-        assert label in content
+    assert '<div class="tabs" role="tablist"' in content
+
+
+def test_quick_add_offers_its_pills(client_logged):
+    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
+
+    assert quick_add_pills(content) == [
+        ("a", "", 'href="/expenses/import/"', "Importuoti čekį"),
+        ("button", "", 'hx-get="/expenses/new/"', "Pridėti išlaidas"),
+        ("button", "types", 'hx-get="/expenses/type/new/"', "Pridėti išlaidų rūšį"),
+        (
+            "button",
+            "types",
+            'hx-get="/expenses/name/new/"',
+            "Pridėti išlaidų pavadinimą",
+        ),
+    ]
 
 
 def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
