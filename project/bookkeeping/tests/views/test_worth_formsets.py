@@ -1,3 +1,4 @@
+import re
 from datetime import UTC, datetime
 from typing import NamedTuple
 
@@ -8,7 +9,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
-from ....core.tests.utils import setup_view
+from ....core.tests.utils import PICKER_SCRIPT, setup_view
 from ....pensions.tests.factories import PensionTypeFactory
 from ....savings.tests.factories import SavingTypeFactory
 from ... import views
@@ -194,6 +195,28 @@ def test_modal_renders_the_formset_under_its_title_and_worth_css_class(client_lo
     assert "Sąskaitų vertė" in actual
     assert 'class="modal-body worth-form"' in actual
     assert f'<option value="{account.pk}" selected>A1</option>' in actual
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "send",
+    [
+        pytest.param(lambda client, url: client.get(url), id="get"),
+        pytest.param(
+            lambda client, url: client.post(
+                url, post_data([{"date": "x", "price": "x", "account": 0}])
+            ),
+            id="invalid_post",
+        ),
+    ],
+)
+def test_worth_modal_loads_the_date_picker_once(client_logged, send):
+    AccountFactory()
+
+    response = send(client_logged, reverse("bookkeeping:accounts_worth_new"))
+
+    actual = response.content.decode("utf-8")
+    assert re.findall(PICKER_SCRIPT, actual) == ["date-picker.js"]
 
 
 def worth_view(rf, main_user, view_class=views.AccountsWorthNew):

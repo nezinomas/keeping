@@ -13,3 +13,8 @@
     {% endfor %}
 
 {% endblock form %}
+
+{% block from_scripts %}
+    {# the parent's picker scripts read `form`, which an invalid POST does not pass #}
+    {% with form=formset.empty_form %}{{ block.super }}{% endwith %}
+{% endblock from_scripts %}
