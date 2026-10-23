@@ -20,11 +20,14 @@ class Browser(StaticLiveServerTestCase):
             options=chrome_options,
             service=ChromeService(ChromeDriverManager().install()),
         )
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.browser.quit()
-        super().tearDownClass()
+        # a cleanup, not tearDownClass: it runs even when the lines below raise
+        cls.addClassCleanup(cls.browser.quit)
+        # minimized, so a run never takes the desktop; the emulation keeps the page
+        # focused, or :focus-within stops matching when another window has focus
+        cls.browser.minimize_window()
+        cls.browser.execute_cdp_cmd(
+            "Emulation.setFocusEmulationEnabled", {"enabled": True}
+        )
 
     def setUp(self):
         super().setUp()
@@ -37,13 +40,14 @@ class Browser(StaticLiveServerTestCase):
         self.browser.add_cookie(
             {"name": "sessionid", "value": cookie.value, "secure": False, "path": "/"}
         )
-        self.browser.refresh()
+        # each test starts logged in on the index; not refresh(), which reloads the
+        # login the first get was sent to before the cookie existed
+        self.browser.get(self.live_server_url)
         self.wait_until_idle()
 
     def wait_until_idle(self, timeout=10):
-        # The test thread and the live server share one in-memory sqlite
-        # connection, so a query here during a request wedges both. A streak,
-        # because a swap starts the next wave of load-triggered requests.
+        # no query here mid-request: the test and the live server share one sqlite
+        # connection; a streak, since a swap starts the next load-triggered requests
         quiet = 0
 
         def settled(browser):
