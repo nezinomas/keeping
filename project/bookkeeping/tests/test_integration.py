@@ -25,15 +25,13 @@ class BookkeepingIndex(TestCase, Browser):
         assert self._index_queries() == queries_at_two
 
     def test_a_pressed_nav_act_closes_its_menu(self):
-        self.browser.get(f"{self.live_server_url}")
-        self.wait_until_idle()
-
+        url = reverse("incomes:new")
         act = self.browser.find_element(
-            By.CSS_SELECTOR, "#main-nav button[hx-get='/incomes/new/']"
+            By.CSS_SELECTOR, f"#main-nav button[hx-get='{url}']"
         )
         menu = act.find_element(By.XPATH, "./ancestor::div[@class='dropdown']")
         menu.find_element(By.CSS_SELECTOR, ".dropdown__btn").click()
-        WebDriverWait(self.browser, 2).until(lambda _: act.is_displayed())
+        WebDriverWait(self.browser, timeout=2).until(lambda _: act.is_displayed())
         act.click()
         self.wait_until_idle()
 
@@ -44,7 +42,7 @@ class BookkeepingIndex(TestCase, Browser):
 
     def test_insert_clears_each_worth_row(self):
         AccountFactory()
-        self.browser.get(f"{self.live_server_url}")
+        self.browser.get(self.live_server_url)
         self.wait_until_idle()
 
         url = reverse("bookkeeping:accounts_worth_new")
