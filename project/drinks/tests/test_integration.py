@@ -4,6 +4,7 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from ...core.tests.test_integration_browser import Browser
+from .factories import DrinkFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -11,10 +12,8 @@ pytestmark = pytest.mark.django_db
 @pytest.mark.webtest
 class DrinksQuickAdd(Browser):
     def test_more_button_opens_the_modal_without_replacing_it(self):
-        """The sheet's More... button goes through htmx.ajax(), which has no
-        source element and so reads its swap off the target. Anything "outer"
-        there replaces #mainModal itself, taking the Alpine scope its bindings
-        read - and every later modal - with it."""
+        # htmx.ajax() has no source element, so it reads its swap off the target:
+        # an "outer" swap replaces #mainModal and the Alpine scope every modal reads
         self.browser.get(f"{self.live_server_url}/drinks/")
         self.wait_until_idle()
 
@@ -68,3 +67,19 @@ class DrinksChartAxisTitle(Browser):
                 )
 
                 assert face == [size, spacing, transform, True]
+
+
+@pytest.mark.webtest
+class DrinksChartBarFigures(Browser):
+    def test_bar_figure_is_muted(self):
+        DrinkFactory()
+        self.browser.get(f"{self.live_server_url}/drinks/")
+        self.wait_until_idle()
+
+        fill = self.browser.execute_script(
+            "const t = document.querySelector('#chart-overview-container"
+            "  .highcharts-data-labels.highcharts-column-series text');"
+            "return getComputedStyle(t).fill;"
+        )
+
+        assert fill == "rgb(90, 106, 117)"
