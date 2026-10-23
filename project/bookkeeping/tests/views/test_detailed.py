@@ -173,6 +173,8 @@ def test_view_detailed_incomes_table_shape(client_logged):
         '<span class="month-table__month-full">Sausis</span>'
         '<span class="month-table__month-short">sau</span></a>'
     ) in content
+    assert '<th class="text-left title-col">' in content
+    assert '<th class="month-table__total">' in content
     assert '<tr class="main__total">' in content
     assert "month-table__total" in content
     assert "left-thick-border" not in content
@@ -211,6 +213,23 @@ def test_view_detailed_income_sorted_by_march(client_logged):
 
     first, second = _positions(content, "Bbb", "Aaa")
     assert first < second
+
+
+@factory.django.mute_signals(post_save)
+def test_view_detailed_every_header_sorts_but_the_shown_one(client_logged):
+    IncomeFactory()
+    url = "/detailed/incomes/"
+    keys = ["title", *map(str, range(1, 13)), "total_col"]
+
+    for order in keys:
+        content = client_logged.get(url, {"order": order}).content.decode()
+
+        expected = [
+            f'<a role="button" hx-get="{url}?order={key}" hx-target="#tab_content">'
+            for key in keys
+        ]
+        expected[keys.index(order)] = "<span>"
+        assert re.findall(r"<th[^>]*>\s*(<span>|<a [^>]*>)", content) == expected
 
 
 @pytest.mark.parametrize(

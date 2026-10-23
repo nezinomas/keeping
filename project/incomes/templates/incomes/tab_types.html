@@ -4,7 +4,7 @@
 <table class="main striped hover">
     <thead class="sortable-header-row" hx-push-url:inherited="true">
         <tr>
-            <c-sort-th key="title" :active="table.order" :url="sort_url" target="#tab_content" class="text-left">{% translate 'Incomes type' %}</c-sort-th>
+            <c-sort-th key="title" :active="table.order" :url="sort_url" target="#tab_content" align="left">{% translate 'Incomes type' %}</c-sort-th>
             <c-sort-th key="this_year" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'This year' %}</c-sort-th>
             <c-sort-th key="last_year" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Last year' %}</c-sort-th>
             <c-sort-th key="share" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Share' %}</c-sort-th>
@@ -21,7 +21,7 @@
             <td>{{ row.last_year }}</td>
             <td>{{ row.share }}</td>
             <td>{{ row.last_income }}</td>
-            <c-td-edit :url=url_update />
+            <c-td-edit :url="url_update" />
         </tr>
         {% endfor %}
     </tbody>
