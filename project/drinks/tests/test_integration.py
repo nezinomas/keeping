@@ -8,6 +8,9 @@ from .factories import DrinkFactory
 
 pytestmark = pytest.mark.django_db
 
+OVERVIEW_CHART = "#chart-overview-container"
+INK_MUTED = "rgb(90, 106, 117)"  # --skin-ink-muted
+
 
 @pytest.mark.webtest
 class DrinksQuickAdd(Browser):
@@ -33,8 +36,8 @@ class DrinksQuickAdd(Browser):
 @pytest.mark.webtest
 class DrinksChartAxisTitle(Browser):
     def test_axis_title_takes_its_face_by_width_inside_the_chart(self):
-        chart = "#chart-overview-container .highcharts-root"
-        title = "#chart-overview-container .highcharts-yaxis .highcharts-axis-title"
+        chart = f"{OVERVIEW_CHART} .highcharts-root"
+        title = f"{OVERVIEW_CHART} .highcharts-yaxis .highcharts-axis-title"
         self.addCleanup(
             self.browser.execute_cdp_cmd, "Emulation.clearDeviceMetricsOverride", {}
         )
@@ -77,9 +80,9 @@ class DrinksChartBarFigures(Browser):
         self.wait_until_idle()
 
         fill = self.browser.execute_script(
-            "const t = document.querySelector('#chart-overview-container"
-            "  .highcharts-data-labels.highcharts-column-series text');"
-            "return getComputedStyle(t).fill;"
+            "const t = document.querySelector(arguments[0]);"
+            "return getComputedStyle(t).fill;",
+            f"{OVERVIEW_CHART} .highcharts-data-labels.highcharts-column-series text",
         )
 
-        assert fill == "rgb(90, 106, 117)"
+        assert fill == INK_MUTED
