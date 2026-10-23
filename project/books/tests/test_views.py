@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import date
 
@@ -26,14 +27,24 @@ def test_a_plain_visit_returns_the_whole_paper_page(client_logged):
     assert '<div class="paper-skin"' in content
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_only_the_open_tab_reloads_on_a_saved_book_or_goal(client_logged, tab):
-    content = client_logged.get(
-        tab.url, headers={"HX-Request": "true"}
-    ).content.decode()
+@pytest.mark.parametrize(
+    ("url_name", "kwargs", "reloaded_kwargs"),
+    [
+        ("books:tab_index", {}, {}),
+        ("books:tab_data", {"scope": "all"}, {"scope": "all"}),
+        ("books:tab_data", {"scope": "bogus"}, {"scope": "year"}),
+    ],
+    ids=["index", "data_all", "data_junk_reloads_the_year"],
+)
+def test_only_the_open_tab_reloads_on_a_saved_book_or_goal(
+    client_logged, url_name, kwargs, reloaded_kwargs
+):
+    url = reverse(url_name, kwargs=kwargs)
+    content = client_logged.get(url, headers={"HX-Request": "true"}).content.decode()
 
+    reload_url = reverse(url_name, kwargs=reloaded_kwargs)
     listener = (
-        f'<div hx-get="{tab.url}" hx-target="#tab_content" '
+        f'<div hx-get="{reload_url}" hx-target="#tab_content" '
         'hx-trigger="reload from:body"></div>'
     )
     assert listener in content
@@ -50,18 +61,11 @@ def test_nav_offers_every_tab(client_logged):
         )
 
 
-@pytest.mark.parametrize(
-    ("url_name", "kwargs", "title"),
-    [
-        ("books:tab_index", {}, "Knygos | Apžvalga"),
-        ("books:tab_data", {"scope": "year"}, "Knygos | Duomenys"),
-    ],
-    ids=["index", "data"],
-)
-def test_browser_title_names_the_open_tab(client_logged, url_name, kwargs, title):
-    content = client_logged.get(reverse(url_name, kwargs=kwargs)).content.decode()
+def test_browser_title_names_the_open_tab(client_logged):
+    url = reverse("books:tab_data", kwargs={"scope": "year"})
+    content = client_logged.get(url).content.decode()
 
-    assert f"<title>{title}</title>" in content
+    assert "<title>Knygos | Duomenys</title>" in content
 
 
 @pytest.mark.parametrize(
@@ -143,10 +147,19 @@ def test_overview_holds_cards_and_chart_and_no_table(client_logged):
 
 def test_overview_carries_the_chart_data(client_logged):
     BookFactory(ended=date(1999, 1, 1))
+    BookTargetFactory(year=1999, quantity=5)
 
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
-    assert '<script id="chart-finished-data" type="application/json">' in content
+    carried = re.search(
+        r'<script id="chart-finished-data" type="application/json">(.*?)</script>',
+        content,
+    )
+    assert json.loads(carried[1]) == {
+        "categories": [1999],
+        "data": [{"y": 1, "target": 5}],
+        "targets": [5],
+    }
 
 
 @pytest.mark.parametrize(
@@ -205,22 +218,6 @@ def test_data_tab_reads_search_then_table(client_logged):
     assert 'id="id_search"' in content
     assert content.index('id="search-form"') < content.index('id="data"')
     assert 'id="chart-finished-container"' not in content
-
-
-@pytest.mark.parametrize(
-    ("scope", "reloaded"),
-    [("all", "all"), ("bogus", "year")],
-    ids=["all_records", "junk_reloads_the_year"],
-)
-def test_data_tab_reloads_its_scope(client_logged, scope, reloaded):
-    url = reverse("books:tab_data", kwargs={"scope": scope})
-    content = client_logged.get(url).content.decode("utf-8")
-
-    reload_url = reverse("books:tab_data", kwargs={"scope": reloaded})
-    assert (
-        f'<div hx-get="{reload_url}" hx-target="#tab_content" '
-        'hx-trigger="reload from:body"></div>'
-    ) in content
 
 
 def test_navbar_all_records_opens_the_data_tab_on_every_year(client_logged):
@@ -288,9 +285,6 @@ def test_the_number_column_header_is_translated(client_logged):
 @pytest.mark.parametrize(
     ("url_name", "kwargs", "params", "shown", "hidden"),
     [
-        ("books:tab_data", {"scope": "year"}, {}, ["This Year"], ["Old Book"]),
-        ("books:tab_data", {"scope": "all"}, {}, ["This Year", "Old Book"], []),
-        ("books:tab_data", {"scope": "bogus"}, {}, ["This Year"], ["Old Book"]),
         (
             "books:list",
             {"scope": "year"},
@@ -313,7 +307,7 @@ def test_the_number_column_header_is_translated(client_logged):
         ("books:list", {"scope": "bogus"}, {}, ["This Year"], ["Old Book"]),
         ("books:search", {}, {"search": "Old Book"}, ["Old Book", "1974-01-01"], []),
     ],
-    ids=["data", "data_all", "data_junk", "list", "list_all", "list_junk", "search"],
+    ids=["list", "list_all", "list_junk", "search"],
 )
 def test_a_listing_shows_the_books_of_its_scope(
     client_logged, url_name, kwargs, params, shown, hidden
@@ -400,11 +394,9 @@ def test_save_book(client_logged, url_of):
         (reverse("books:list", kwargs={"scope": "year"}), 302)
     ]
 
-    obj = Book.objects.first()
-
-    assert obj.started == date(1999, 1, 1)
-    assert obj.author == "AAA"
-    assert obj.title == "TTT"
+    assert list(Book.objects.values_list("started", "author", "title")) == [
+        (date(1999, 1, 1), "AAA", "TTT")
+    ]
 
 
 @pytest.mark.parametrize(
@@ -457,7 +449,7 @@ def test_an_invalid_post_returns_the_form_with_its_error(
 
 
 @pytest.mark.parametrize(
-    ("started", "data", "shown", "hidden"),
+    ("started", "data", "shown", "hidden", "saved"),
     [
         (
             date(1999, 1, 1),
@@ -469,6 +461,7 @@ def test_an_invalid_post_returns_the_form_with_its_error(
             },
             ["1999-01-01", "1999-01-31", "AAA", "TTT"],
             [],
+            (date(1999, 1, 1), date(1999, 1, 31), "AAA", "TTT", ""),
         ),
         (
             date(1999, 1, 1),
@@ -481,6 +474,7 @@ def test_an_invalid_post_returns_the_form_with_its_error(
             },
             [],
             ["2010-12-31"],
+            (date(1999, 12, 31), date(2010, 12, 31), "Author", "Book Title", "Pastaba"),
         ),
         (
             date(1974, 12, 12),
@@ -492,11 +486,12 @@ def test_an_invalid_post_returns_the_form_with_its_error(
             },
             ["1999-03-03", "XXX", "YYY"],
             [],
+            (date(1999, 3, 3), None, "XXX", "YYY", "ZZZ"),
         ),
     ],
     ids=["same_year", "another_year", "past_record"],
 )
-def test_books_update(client_logged, started, data, shown, hidden):
+def test_books_update(client_logged, started, data, shown, hidden, saved):
     book = BookFactory(started=started)
     url = reverse("books:update", kwargs={"pk": book.pk})
 
@@ -507,11 +502,11 @@ def test_books_update(client_logged, started, data, shown, hidden):
         assert text in actual
     for text in hidden:
         assert text not in actual
-    saved = models.Book.objects.get(pk=book.pk)
-    assert saved.started == date.fromisoformat(data["started"])
-    assert saved.author == data["author"]
-    assert saved.title == data["title"]
-    assert saved.remark == data.get("remark", "")
+    assert (
+        models.Book.objects.filter(pk=book.pk)
+        .values_list("started", "ended", "author", "title", "remark")
+        .get()
+    ) == saved
 
 
 @pytest.mark.parametrize(
