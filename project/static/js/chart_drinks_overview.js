@@ -114,7 +114,6 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     y: -8,
                     crop: false,
                     overflow: "allow",
-                    style: paper.readingDataLabelStyle,
                     formatter: function () {
                         return this.y > 0
                             ? Highcharts.numberFormat(this.y, consumption.decimals)
