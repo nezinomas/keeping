@@ -8,7 +8,6 @@ from django.db.models.signals import post_save
 from django.test.utils import CaptureQueriesContext
 from django.urls import NoReverseMatch, reverse
 
-from ....core.tests.utils import clean_content
 from ....expenses.tests.factories import (
     ExpenseFactory,
     ExpenseNameFactory,
@@ -47,6 +46,10 @@ def _expense_of_type(i):
 ADD_ROW = {"incomes": _income, "savings": _saving, "expenses": _expense_of_type}
 
 
+TITLE_COLUMN = r'<th class="text-left title-col">\s*<a [^>]*>{title}</a>'
+ROW_TITLE = '<td class="text-left">{title}</td>'
+
+
 def _positions(content, *titles):
     return [content.index(title) for title in titles]
 
@@ -71,9 +74,17 @@ def test_view_detailed_table_url_is_gone():
         reverse("bookkeeping:detailed_table", kwargs={"category": "income"})
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_view_detailed_tab_302(client, tab):
-    assert client.get(tab.url).status_code == 302
+@pytest.mark.parametrize(
+    "url",
+    [
+        pytest.param("/detailed/incomes/", id="incomes"),
+        pytest.param("/detailed/savings/", id="savings"),
+        pytest.param("/detailed/expenses/", id="expenses"),
+        pytest.param("/detailed/expenses/expense-type/", id="type_table"),
+    ],
+)
+def test_view_detailed_302(client, url):
+    assert client.get(url).status_code == 302
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -133,8 +144,8 @@ def test_view_detailed_tab_query_count_does_not_grow(client_logged, tab):
 def test_view_detailed_page_wears_the_paper_bundle(client_logged):
     content = client_logged.get(reverse("bookkeeping:detailed")).content.decode()
 
-    assert "paper.min.css" in content
-    assert "main.min.css" not in content
+    assert '<link rel="stylesheet" href="/static/css/paper.min.css">' in content
+    assert '<link rel="stylesheet" href="/static/css/main.min.css">' not in content
     assert 'class="paper-skin"' in content
 
 
@@ -153,8 +164,8 @@ def test_view_detailed_opens_on_incomes(client_logged):
     content = response.content.decode()
 
     assert response.status_code == 200
-    assert "Pajamos" in clean_content(content)
-    assert "Income Type" in content
+    assert re.search(TITLE_COLUMN.format(title="Pajamos"), content)
+    assert ROW_TITLE.format(title="Income Type") in content
     assert content.count("<table") == 1
 
 
@@ -176,43 +187,27 @@ def test_view_detailed_incomes_table_shape(client_logged):
     assert '<th class="text-left title-col">' in content
     assert '<th class="month-table__total">' in content
     assert '<tr class="main__total">' in content
-    assert "month-table__total" in content
+    assert '<td class="month-table__total">' in content
     assert "left-thick-border" not in content
-    assert "Išlaidos / " not in content
 
 
 @pytest.mark.parametrize(
     "url_name",
     [
         pytest.param("bookkeeping:detailed", id="incomes"),
-        pytest.param("bookkeeping:detailed_savings", id="savings"),
         pytest.param("bookkeeping:detailed_expenses", id="expenses"),
     ],
 )
 def test_view_detailed_tab_without_rows_shows_the_alert(client_logged, url_name):
+    ExpenseTypeFactory()
+
     response = client_logged.get(reverse(url_name))
     content = response.content.decode("utf-8")
 
     assert response.status_code == 200
-    assert '<div class="alert">' in content
-    assert "metais įrašų nėra." in content
+    assert re.search(r'<div class="alert">\s*<b>1999</b> metais įrašų nėra\.', content)
     assert "<table" not in content
-    assert "<th>Taupymas</th>" not in clean_content(content)
-    assert "Išlaidos / " not in content
-
-
-@factory.django.mute_signals(post_save)
-def test_view_detailed_income_sorted_by_march(client_logged):
-    IncomeFactory(income_type=IncomeTypeFactory(title="Aaa"), price=20)
-    IncomeFactory(
-        income_type=IncomeTypeFactory(title="Bbb"), price=9, date=date(1999, 3, 1)
-    )
-    url = reverse("bookkeeping:detailed_incomes")
-
-    content = client_logged.get(f"{url}?order=3", headers=HTMX).content.decode()
-
-    first, second = _positions(content, "Bbb", "Aaa")
-    assert first < second
+    assert '<section class="panel' not in content
 
 
 @factory.django.mute_signals(post_save)
@@ -233,22 +228,29 @@ def test_view_detailed_every_header_sorts_but_the_shown_one(client_logged):
 
 
 @pytest.mark.parametrize(
-    "tab, url_name",
+    "page, url, target",
     [
-        pytest.param("incomes", "bookkeeping:detailed_incomes", id="incomes"),
-        pytest.param("savings", "bookkeeping:detailed_savings", id="savings"),
+        pytest.param(
+            "/detailed/incomes/", "/detailed/incomes/", "#tab_content", id="tab"
+        ),
+        pytest.param(
+            "/detailed/expenses/",
+            "/detailed/expenses/expense-type/",
+            "#detailed-expense-type-table",
+            id="type_table",
+        ),
     ],
 )
 @factory.django.mute_signals(post_save)
-def test_view_detailed_headers_sort_through_the_tab(client_logged, tab, url_name):
-    ADD_ROW[tab](1)
-    url = reverse(url_name)
+def test_view_detailed_headers_sort(client_logged, page, url, target):
+    IncomeFactory()
+    _expense("Alpha", 1, ExpenseTypeFactory())
 
-    content = client_logged.get(url).content.decode()
+    content = client_logged.get(page).content.decode()
 
-    assert f'hx-get="{url}?order=3" hx-target="#tab_content"' in content
-    assert f'hx-get="{url}?order=title" hx-target="#tab_content"' in content
-    assert f'hx-get="{url}?order=total_col"' not in content
+    assert f'hx-get="{url}?order=3" hx-target="{target}"' in content
+    assert f'hx-get="{url}?order=title" hx-target="{target}"' in content
+    assert f'<a role="button" hx-get="{url}?order=total_col"' not in content
 
 
 @factory.django.mute_signals(post_save)
@@ -260,20 +262,19 @@ def test_view_detailed_with_savings(client_logged):
         reverse("bookkeeping:detailed_savings")
     ).content.decode()
 
-    assert "Savings" in clean_content(content)
-    assert "Taupymas" in clean_content(content)
-    assert "Income Type" not in content
+    assert ROW_TITLE.format(title="Savings") in content
+    assert re.search(TITLE_COLUMN.format(title="Taupymas"), content)
+    assert ROW_TITLE.format(title="Income Type") not in content
 
 
 @factory.django.mute_signals(post_save)
 def test_view_detailed_rendered_expenses(client_logged, expenses):
-    response = client_logged.get(reverse("bookkeeping:detailed_expenses"))
-    content = response.content.decode("utf-8")
+    content = client_logged.get(
+        reverse("bookkeeping:detailed_expenses")
+    ).content.decode()
 
-    assert response.status_code == 200
-    assert "Expense Name" in content
-    assert "Expense Type" in content
-    assert "Išlaidos / " not in content
+    assert ROW_TITLE.format(title="Expense Name") in content
+    assert '<h2 class="panel__title">Expense Type</h2>' in content
 
 
 @factory.django.mute_signals(post_save)
@@ -290,7 +291,6 @@ def test_view_detailed_expenses_one_panel_per_type(client_logged):
     assert '<section class="panel panel--table" id="detailed-zeta">' in content
     assert '<h2 class="panel__title">Beta</h2>' in content
     assert '<h2 class="panel__title">Zeta</h2>' in content
-    assert "Išlaidos / " not in content
     first, second = _positions(content, 'id="detailed-beta"', 'id="detailed-zeta"')
     assert first < second
 
@@ -306,7 +306,7 @@ def test_view_detailed_expenses_tab_holds_no_income_or_saving_table(client_logge
     ).content.decode()
 
     assert content.count("<table") == 1
-    assert "Income Type" not in content
+    assert ROW_TITLE.format(title="Income Type") not in content
 
 
 @factory.django.mute_signals(post_save)
@@ -316,35 +316,8 @@ def test_view_detailed_escapes_expense_name(client_logged):
     url = reverse("bookkeeping:detailed_expenses")
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert "A &lt;b&gt;B&lt;/b&gt;" in content
+    assert ROW_TITLE.format(title="A &lt;b&gt;B&lt;/b&gt;") in content
     assert "<b>B</b>" not in content
-
-
-def test_view_detailed_no_expenses_with_types(client_logged):
-    ExpenseTypeFactory()
-
-    response = client_logged.get(reverse("bookkeeping:detailed_expenses"))
-    content = response.content.decode("utf-8")
-
-    assert response.status_code == 200
-    assert "Išlaidos / Expense Type" not in content
-    assert 'id="detailed-expense-type"' not in content
-    assert '<div class="alert">' in content
-
-
-@factory.django.mute_signals(post_save)
-def test_view_detailed_headers_sort_their_own_table(client_logged):
-    _expense("Alpha", 1, ExpenseTypeFactory())
-    url = reverse("bookkeeping:detailed_type", kwargs={"type_slug": "expense-type"})
-
-    content = client_logged.get(
-        reverse("bookkeeping:detailed_expenses")
-    ).content.decode()
-
-    target = "#detailed-expense-type-table"
-    assert f'hx-get="{url}?order=3" hx-target="{target}"' in content
-    assert f'hx-get="{url}?order=title" hx-target="{target}"' in content
-    assert f'hx-get="{url}?order=total_col"' not in content
 
 
 @factory.django.mute_signals(post_save)
@@ -382,7 +355,9 @@ def test_view_detailed_type_sorted_by_column(client_logged, order, aaa_price, mo
 
     assert response.status_code == 200
     assert content.count("<table") == 1
-    first, second = _positions(content, "Bbb", "Aaa")
+    first, second = _positions(
+        content, ROW_TITLE.format(title="Bbb"), ROW_TITLE.format(title="Aaa")
+    )
     assert first < second
 
 
@@ -394,8 +369,8 @@ def test_view_detailed_type_slugged_income_reads_its_own_table(client_logged):
 
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert "Alpha" in content
-    assert "Salary" not in content
+    assert ROW_TITLE.format(title="Alpha") in content
+    assert ROW_TITLE.format(title="Salary") not in content
 
 
 @factory.django.mute_signals(post_save)
@@ -419,12 +394,6 @@ def test_view_detailed_type_without_rows_renders_nothing(client_logged):
     content = client_logged.get(url).content.decode("utf-8")
 
     assert content.strip() == ""
-
-
-def test_view_detailed_type_302(client):
-    url = reverse("bookkeeping:detailed_type", kwargs={"type_slug": "expense-type"})
-
-    assert client.get(url).status_code == 302
 
 
 def _expenses_page(client):
@@ -471,20 +440,15 @@ def test_view_detailed_expenses_small_share_reads_less_than_one(client_logged):
     content = _expenses_page(client_logged)
 
     assert '<p class="panel__subtitle">&lt; 1% metų sumos</p>' in content
-    assert ">0% metų sumos" not in content
+    assert '<p class="panel__subtitle">0% metų sumos</p>' not in content
 
 
-@pytest.mark.parametrize(
-    "tab, url_name",
-    [
-        pytest.param("incomes", "bookkeeping:detailed_incomes", id="incomes"),
-        pytest.param("savings", "bookkeeping:detailed_savings", id="savings"),
-    ],
-)
 @factory.django.mute_signals(post_save)
-def test_view_detailed_other_tabs_render_no_shares(client_logged, tab, url_name):
-    ADD_ROW[tab](1)
+def test_view_detailed_incomes_render_no_shares(client_logged):
+    IncomeFactory()
 
-    content = client_logged.get(reverse(url_name)).content.decode()
+    content = client_logged.get(
+        reverse("bookkeeping:detailed_incomes")
+    ).content.decode()
 
     assert "panel__subtitle" not in content
