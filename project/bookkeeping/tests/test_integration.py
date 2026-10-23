@@ -1,21 +1,28 @@
 import pytest
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
+from ...incomes.tests.factories import IncomeFactory
+from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
+from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 
 
 @pytest.mark.webtest
 class BookkeepingIndex(TestCase, Browser):
-    def test_index(self):
-        with self.assertNumQueries(32):
-            self.browser.get(f"{self.live_server_url}")
-            self.wait_until_idle()
+    def test_index_queries_do_not_grow_with_rows(self):
+        self._add_rows(range(2))
+        queries_at_two = self._index_queries()
+        self._add_rows(range(2, 6))
+
+        assert self._index_queries() == queries_at_two
 
     def test_a_pressed_nav_act_closes_its_menu(self):
         self.browser.get(f"{self.live_server_url}")
@@ -49,3 +56,16 @@ class BookkeepingIndex(TestCase, Browser):
 
         price = self.browser.find_element(By.ID, "id_form-0-price")
         assert price.get_attribute("value") == ""
+
+    def _add_rows(self, numbers):
+        # A type's save re-syncs its balances, so the rows come from records.
+        for i in numbers:
+            IncomeFactory(account=AccountFactory(title=f"Account {i}"))
+            SavingFactory(saving_type=SavingTypeFactory(title=f"Fund {i}"))
+            PensionFactory(pension_type=PensionTypeFactory(title=f"Pension {i}"))
+
+    def _index_queries(self):
+        with CaptureQueriesContext(connection) as queries:
+            self.browser.get(self.live_server_url)
+            self.wait_until_idle()
+        return len(queries)
