@@ -15,6 +15,18 @@ from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 
+# expense_list.html's cells, up to the edit and delete links
+COLUMNS = (
+    "date",
+    "type",
+    "name",
+    "quantity",
+    "price",
+    "remark",
+    "attachment",
+    "account",
+)
+
 
 @pytest.mark.webtest
 class Expenses(Browser):
@@ -33,24 +45,29 @@ class Expenses(Browser):
         ).click()
         self.wait_until_idle()
 
+    def _select(self, expense_type, expense_name, account):
+        for field, option in [
+            ("expense_type", expense_type),
+            ("expense_name", expense_name),
+            ("account", account),
+        ]:
+            Select(self.browser.find_element(By.ID, f"id_{field}")).select_by_value(
+                f"{option.pk}"
+            )
+
     def _fill_selects(self):
-        a = AccountFactory()
-        t = ExpenseTypeFactory()
-        n = ExpenseNameFactory()
+        account = AccountFactory()
+        expense_type = ExpenseTypeFactory()
+        expense_name = ExpenseNameFactory()
 
         self._open_add_expense(self.data_url())
+        self._select(expense_type, expense_name, account)
 
-        # select expense type
-        elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
-        elem.select_by_value(f"{t.id}")
-
-        # select expense name
-        elem = Select(self.browser.find_element(By.ID, "id_expense_name"))
-        elem.select_by_value(f"{n.id}")
-
-        # select Account
-        elem = Select(self.browser.find_element(By.ID, "id_account"))
-        elem.select_by_value(f"{a.id}")
+    def _listed_expenses(self):
+        return [
+            dict(zip(COLUMNS, [td.text for td in tr.find_elements(By.TAG_NAME, "td")]))
+            for tr in self.browser.find_elements(By.CSS_SELECTOR, "#data tbody tr")
+        ]
 
     def _open_update_form(self):
         self.browser.get(self.data_url())
@@ -63,21 +80,6 @@ class Expenses(Browser):
         self.browser.find_element(By.ID, "_close").click()
         self.wait_until_idle()
 
-    def test_add_one_expense_and_close_modal_form(self):
-        self._fill_selects()
-
-        self.browser.find_element(By.ID, "id_total_sum").send_keys("123.45")
-        self.browser.find_element(By.ID, "add_price").click()
-
-        # click 'Save and Close' button
-        self.browser.find_element(By.ID, "_close").click()
-        self.wait_until_idle()
-
-        page = self.browser.page_source
-        assert "Account1" in page
-        assert "Expense Name" in page
-        assert "123,45" in page
-
     def test_add_one_expense_and_hit_enter_key(self):
         self._fill_selects()
 
@@ -89,14 +91,15 @@ class Expenses(Browser):
         qty.send_keys(Keys.RETURN)
         self.wait_until_idle()
 
-        # click Esc button
         ActionChains(self.browser).send_keys(Keys.ESCAPE).perform()
         self.wait_until_idle()
 
-        page = self.browser.page_source
-        assert "Expense Type" in page
-        assert "Expense Name" in page
-        assert "123,45" in page
+        [expense] = self._listed_expenses()
+        assert (expense["type"], expense["name"], expense["price"]) == (
+            "Expense Type",
+            "Expense Name",
+            "123,45",
+        )
 
     def test_add_one_expense_check_quantity_and_price_fields_values(self):
         self._fill_selects()
@@ -111,19 +114,9 @@ class Expenses(Browser):
         qty.send_keys(Keys.ENTER)
         self.wait_until_idle()
 
-        assert (
-            self.browser.find_element(By.ID, "id_price").get_attribute("value") == "0.0"
-        )
-        assert (
-            self.browser.find_element(By.ID, "id_price").value_of_css_property(
-                "font-weight"
-            )
-            == "700"
-            or self.browser.find_element(By.ID, "id_price").value_of_css_property(
-                "font-weight"
-            )
-            == "bold"
-        )
+        price = self.browser.find_element(By.ID, "id_price")
+        assert price.get_attribute("value") == "0.0"
+        assert price.value_of_css_property("font-weight") == "700"
         assert (
             self.browser.find_element(By.ID, "id_quantity").get_attribute("value")
             == "1"
@@ -137,7 +130,6 @@ class Expenses(Browser):
 
         self.browser.find_element(By.ID, "id_exception").click()
 
-        # click 'Save and Close' button
         self.browser.find_element(By.ID, "_new").click()
         self.wait_until_idle()
 
@@ -145,75 +137,36 @@ class Expenses(Browser):
 
     @time_machine.travel("1999-12-01 10:11:12")
     def test_add_two_expenses(self):
-        a = AccountFactory()
-        t = ExpenseTypeFactory()
-        n = ExpenseNameFactory()
-        t1 = ExpenseTypeFactory(title="Expense Type 1")
-        n1 = ExpenseNameFactory(title="Expense Name 1", parent=t1)
+        account = AccountFactory()
+        first = ExpenseNameFactory()
+        second = ExpenseNameFactory(
+            title="Expense Name 1", parent=ExpenseTypeFactory(title="Expense Type 1")
+        )
 
-        self.browser.get(self.data_url())
-        self.wait_until_idle()
+        self._open_add_expense(self.data_url())
+        for name, total, submit in [
+            (first, "123.45", "_new"),
+            (second, "65.78", "_close"),
+        ]:
+            self._select(name.parent, name, account)
+            self.browser.find_element(By.ID, "id_total_sum").send_keys(total)
+            self.browser.find_element(By.ID, "add_price").click()
+            self.browser.find_element(By.ID, submit).click()
+            self.wait_until_idle()
 
-        # click Add Expenses button
-        self.browser.find_element(
-            By.XPATH, '//button[normalize-space()="Pridėti išlaidas"]'
-        ).click()
-        self.wait_until_idle()
-
-        # select expense type
-        elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
-        elem.select_by_value(f"{t.id}")
-
-        # select expense name
-        elem = Select(self.browser.find_element(By.ID, "id_expense_name"))
-        elem.select_by_value(f"{n.id}")
-
-        # select Account
-        elem = Select(self.browser.find_element(By.ID, "id_account"))
-        elem.select_by_value(f"{a.id}")
-
-        self.browser.find_element(By.ID, "id_total_sum").send_keys("123.45")
-        self.browser.find_element(By.ID, "add_price").click()
-
-        # # click Insert button
-        self.browser.find_element(By.ID, "_new").click()
-        self.wait_until_idle()
-
-        # ----------------------------- Second expense
-        # select ExpenseType
-        elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
-        elem.select_by_value(f"{t1.id}")
-
-        # select ExpenseName
-        elem = Select(self.browser.find_element(By.ID, "id_expense_name"))
-        elem.select_by_value(f"{n1.id}")
-
-        # select Account
-        elem = Select(self.browser.find_element(By.ID, "id_account"))
-        elem.select_by_value(f"{a.id}")
-
-        self.browser.find_element(By.ID, "id_total_sum").send_keys("65.78")
-        self.browser.find_element(By.ID, "add_price").click()
-
-        # click Insert button
-        self.browser.find_element(By.ID, "_close").click()
-        self.wait_until_idle()
-
-        page = self.browser.page_source
-
-        assert t.title in page
-        assert n.title in page
-        assert "123,45" in page
-
-        assert t1.title in page
-        assert n1.title in page
-        assert "65,78" in page
+        expenses = sorted(
+            (expense["type"], expense["name"], expense["price"], expense["account"])
+            for expense in self._listed_expenses()
+        )
+        assert expenses == [
+            ("Expense Type", "Expense Name", "123,45", "Account1"),
+            ("Expense Type 1", "Expense Name 1", "65,78", "Account1"),
+        ]
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_empty_required_fields(self):
         self._open_add_expense(f"{self.live_server_url}/expenses/")
 
-        # click 'Save And Close' button
         self.browser.find_element(By.ID, "_close").click()
         self.wait_until_idle()
 
@@ -221,12 +174,10 @@ class Expenses(Browser):
             xpath = f"//*[@id='{field_id}']/ancestor::div[div[contains(@class, 'invalid-feedback')]][1]//div[contains(@class, 'invalid-feedback')]"
             return self.browser.find_element(By.XPATH, xpath)
 
-        # Grab the errors
         e1 = get_error("id_expense_type")
         e2 = get_error("id_expense_name")
         e3 = get_error("id_price")
 
-        # Assertions (using 'in' is safer than '==' to avoid trailing whitespace issues)
         assert "Šis laukas yra privalomas." in e1.text
         assert "Šis laukas yra privalomas." in e2.text
         assert "Įsitikinkite, kad reikšmė yra didesnė arba lygi 0.01." in e3.text
@@ -261,9 +212,10 @@ class Expenses(Browser):
 
         self._submit_and_close_update_form()
 
-        page = self.browser.page_source
-        assert "6,48" in page
-        assert "invalid-feedback" not in page
+        assert not self.browser.find_elements(
+            By.CSS_SELECTOR, "#mainModal .invalid-feedback"
+        )
+        assert [expense["price"] for expense in self._listed_expenses()] == ["6,48"]
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_update_one_expense_account_keeps_the_price(self):
@@ -282,9 +234,10 @@ class Expenses(Browser):
 
         self._submit_and_close_update_form()
 
-        page = self.browser.page_source
-        assert "6,48" in page
-        assert "invalid-feedback" not in page
+        assert not self.browser.find_elements(
+            By.CSS_SELECTOR, "#mainModal .invalid-feedback"
+        )
+        assert [expense["price"] for expense in self._listed_expenses()] == ["6,48"]
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_search(self):
@@ -301,11 +254,7 @@ class Expenses(Browser):
         search.send_keys(Keys.RETURN)
         self.wait_until_idle()
 
-        rows = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr")
-        assert len(rows) == 1  # head row + find row
-
-        cells = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr[1]/td")
-        assert cells[5].text == "xxxx"
+        assert [expense["remark"] for expense in self._listed_expenses()] == ["xxxx"]
 
     def _modal_container(self):
         return self.browser.find_element(By.ID, "mainModalContainer")
@@ -325,8 +274,9 @@ class Expenses(Browser):
         assert self._modal_display() == "none"
 
     @time_machine.travel("1999-1-1 10:11:12")
-    def test_modal_closes_after_delete(self):
-        ExpenseFactory()
+    def test_delete_closes_the_modal_and_refreshes_the_table(self):
+        ExpenseFactory(remark="AAAA")
+        ExpenseFactory(remark="BBBB")
 
         self.browser.get(self.data_url())
         self.wait_until_idle()
@@ -339,24 +289,7 @@ class Expenses(Browser):
         self.wait_until_idle()
 
         assert self._modal_display() == "none"
-
-    @time_machine.travel("1999-1-1 10:11:12")
-    def test_delete_refreshes_the_table(self):
-        ExpenseFactory(remark="AAAA")
-        ExpenseFactory(remark="BBBB")
-
-        self.browser.get(self.data_url())
-        self.wait_until_idle()
-        rows_before = len(self.browser.find_elements(By.XPATH, "//table/tbody/tr"))
-
-        self.browser.find_element(By.CSS_SELECTOR, ".delete-col a").click()
-        self.wait_until_idle()
-        self.browser.find_element(By.ID, "_close").click()
-        self.wait_until_idle()
-
-        rows_after = len(self.browser.find_elements(By.XPATH, "//table/tbody/tr"))
-
-        assert rows_after == rows_before - 1
+        assert len(self._listed_expenses()) == 1
 
     def _click_the_backdrop(self):
         container = self._modal_container()
