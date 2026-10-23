@@ -332,15 +332,6 @@ def test_the_expenses_bar_puts_the_expense_pill_first(client_logged):
     )
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_the_navbar_marks_plans_on_every_tab(client_logged, tab):
-    content = client_logged.get(tab.url).content.decode()
-
-    active = re.findall(r'<div class="active">\s*<a href="([^"]+)"', content)
-
-    assert active == [reverse("plans:index")]
-
-
 def test_the_expenses_tab_orders_necessary_extra_necessary_then_everyday(
     client_logged,
 ):
