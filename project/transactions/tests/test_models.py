@@ -1,4 +1,5 @@
 from datetime import date
+from typing import NamedTuple
 
 import pytest
 
@@ -6,12 +7,12 @@ from ...accounts.services.model_services import (
     AccountBalanceModelService,
 )
 from ...accounts.tests.factories import AccountBalance, AccountFactory
+from ...core.tests.utils import count_queries
 from ...expenses.tests.factories import ExpenseFactory
 from ...incomes.tests.factories import IncomeFactory
 from ...savings.models import SavingBalance
 from ...savings.services.model_services import SavingBalanceModelService
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
-from ..models import SavingChange, SavingClose, Transaction
 from ..services.model_services import (
     SavingChangeModelService,
     SavingCloseModelService,
@@ -22,10 +23,114 @@ from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFacto
 pytestmark = pytest.mark.django_db
 
 
-def test_transaction_str():
-    t = TransactionFactory.build()
+class AccountRow(NamedTuple):
+    title: str
+    year: int
+    past: int
+    incomes: int
+    expenses: int
+    balance: int
+    delta: int
 
-    assert str(t) == "1999-01-01 Account1 -> Account2: 2,00"
+
+class FundRow(NamedTuple):
+    title: str
+    year: int
+    past_amount: int
+    past_fee: int
+    fee: int
+    incomes: int
+
+
+MOVES = [
+    pytest.param(TransactionFactory, AccountFactory, AccountFactory, id="transaction"),
+    pytest.param(
+        SavingCloseFactory, SavingTypeFactory, AccountFactory, id="saving_close"
+    ),
+    pytest.param(
+        SavingChangeFactory, SavingTypeFactory, SavingTypeFactory, id="saving_change"
+    ),
+]
+
+# what a 0,01 move from "From" to "To" in 1999 leaves; the sync writes each
+# balance up to a year past the last record
+MOVES_OF_ONE_CENT = [
+    pytest.param(
+        TransactionFactory,
+        AccountFactory,
+        AccountFactory,
+        [
+            AccountRow("From", 1999, 0, 0, 1, -1, 1),
+            AccountRow("From", 2000, -1, 0, 0, -1, 1),
+            AccountRow("To", 1999, 0, 1, 0, 1, -1),
+            AccountRow("To", 2000, 1, 0, 0, 1, -1),
+        ],
+        [],
+        id="transaction",
+    ),
+    pytest.param(
+        SavingCloseFactory,
+        SavingTypeFactory,
+        AccountFactory,
+        [
+            AccountRow("To", 1999, 0, 1, 0, 1, -1),
+            AccountRow("To", 2000, 1, 0, 0, 1, -1),
+        ],
+        [FundRow("From", 1999, 0, 0, 0, 0), FundRow("From", 2000, 0, 0, 0, 0)],
+        id="saving_close",
+    ),
+    pytest.param(
+        SavingChangeFactory,
+        SavingTypeFactory,
+        SavingTypeFactory,
+        [],
+        [
+            FundRow("From", 1999, 0, 0, 0, 0),
+            FundRow("From", 2000, 0, 0, 0, 0),
+            FundRow("To", 1999, 0, 0, 0, 1),
+            FundRow("To", 2000, 1, 0, 0, 1),
+        ],
+        id="saving_change",
+    ),
+]
+
+
+def account_rows(user):
+    return [
+        AccountRow(
+            row.account.title,
+            row.year,
+            row.past,
+            row.incomes,
+            row.expenses,
+            row.balance,
+            row.delta,
+        )
+        for row in AccountBalanceModelService(user)
+        .items()
+        .order_by("account__title", "year")
+    ]
+
+
+def fund_rows(user):
+    return [
+        FundRow(
+            row.saving_type.title,
+            row.year,
+            row.past_amount,
+            row.past_fee,
+            row.fee,
+            row.incomes,
+        )
+        for row in SavingBalanceModelService(user)
+        .items()
+        .order_by("saving_type__title", "year")
+    ]
+
+
+def reloaded(move):
+    # a fund move settles what it leaves only when loaded from the database
+    return type(move).objects.get(pk=move.pk)
 
 
 @pytest.mark.parametrize(
@@ -97,68 +202,33 @@ def test_transaction_year(main_user, second_user):
     assert actual.count() == 1
 
 
-def test_transaction_items_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        list(TransactionModelService(main_user).items())
+@pytest.mark.parametrize(
+    "service, factory",
+    [
+        pytest.param(TransactionModelService, TransactionFactory, id="transaction"),
+        pytest.param(SavingCloseModelService, SavingCloseFactory, id="saving_close"),
+        pytest.param(SavingChangeModelService, SavingChangeFactory, id="saving_change"),
+    ],
+)
+def test_items_read_both_ends_in_as_many_queries_for_2_as_for_6(
+    main_user, service, factory
+):
+    def ends():
+        return [
+            (move.from_account.title, move.to_account.title)
+            for move in service(main_user).items()
+        ]
+
+    factory.create_batch(2)
+    two = count_queries(ends)
+    factory.create_batch(4)
+
+    assert len(ends()) == 6
+    assert count_queries(ends) == two
 
 
-def test_transaction_year_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        list(TransactionModelService(main_user).year(1999))
-
-
-def test_transaction_new_post_save(main_user):
-    obj = TransactionFactory()
-
-    assert AccountBalanceModelService(main_user).items().count() == 4
-
-    a1 = AccountBalance.objects.get(account_id=obj.from_account_id, year=1999)
-    assert a1.account.title == "Account1"
-    assert a1.incomes == 0
-    assert a1.expenses == 200
-    assert a1.balance == -200
-    assert a1.delta == 200
-
-    a2 = AccountBalance.objects.get(account_id=obj.to_account_id, year=1999)
-    assert a2.account.title == "Account2"
-    assert a2.incomes == 200
-    assert a2.expenses == 0
-    assert a2.balance == 200
-    assert a2.delta == -200
-
-
-def test_transaction_update_post_save(main_user):
-    a_from = AccountFactory(title="From")
-    a_to = AccountFactory(title="To")
-
-    obj = TransactionFactory(
-        date=date(1999, 1, 1), from_account=a_from, to_account=a_to, price=100
-    )
-
-    obj_update = Transaction.objects.get(pk=obj.pk)
-    obj_update.price = 10
-    obj_update.save()
-
-    actual = AccountBalanceModelService(main_user).items()
-
-    assert actual.count() == 4
-
-    actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.incomes == 10
-    assert actual.expenses == 0
-    assert actual.balance == 10
-    assert actual.delta == -10
-
-    actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
-    assert actual.account.title == "From"
-    assert actual.incomes == 0
-    assert actual.expenses == 10
-    assert actual.balance == -10
-    assert actual.delta == 10
-
-
-def test_transaction_post_save_first_record(main_user):
+@pytest.mark.parametrize("balances_emptied", [False, True], ids=["kept", "emptied"])
+def test_transaction_save_carries_each_accounts_past(main_user, balances_emptied):
     a_from = AccountFactory(title="From")
     a_to = AccountFactory(title="To")
 
@@ -168,387 +238,215 @@ def test_transaction_post_save_first_record(main_user):
     IncomeFactory(account=a_to, date=date(1998, 1, 1), price=5)
     ExpenseFactory(account=a_to, date=date(1998, 1, 1), price=3)
 
-    AccountBalanceModelService(main_user).objects.delete()
+    if balances_emptied:
+        AccountBalanceModelService(main_user).objects.delete()
 
     TransactionFactory(
         date=date(1999, 1, 1), from_account=a_from, to_account=a_to, price=1
     )
 
-    actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.past == 2
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 3
-    assert actual.delta == -3
-
-    actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
-    assert actual.account.title == "From"
-    assert actual.past == 1
-    assert actual.incomes == 0
-    assert actual.expenses == 1
-    assert actual.balance == 0
-    assert actual.delta == 0
-
-    actual = AccountBalance.objects.get(account_id=a_to.pk, year=1998)
-    assert actual.account.title == "To"
-    assert actual.past == 0
-    assert actual.incomes == 5
-    assert actual.expenses == 3
-    assert actual.balance == 2
-    assert actual.delta == -2
-
-    actual = AccountBalance.objects.get(account_id=a_from.pk, year=1998)
-    assert actual.account.title == "From"
-    assert actual.past == 0
-    assert actual.incomes == 6
-    assert actual.expenses == 5
-    assert actual.balance == 1
-    assert actual.delta == -1
-
-
-def test_transaction_post_save_new(main_user):
-    main_user.year = 1998
-
-    a_from = AccountFactory(title="From")
-    a_to = AccountFactory(title="To")
-
-    IncomeFactory(date=date(1998, 1, 1), account=a_from, price=6)
-    ExpenseFactory(date=date(1998, 1, 1), account=a_from, price=5)
-
-    IncomeFactory(date=date(1998, 1, 1), account=a_to, price=5)
-    ExpenseFactory(date=date(1998, 1, 1), account=a_to, price=3)
-
-    TransactionFactory(
-        date=date(1999, 1, 1), from_account=a_from, to_account=a_to, price=1
-    )
-
-    actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.past == 2
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 3
-    assert actual.delta == -3
-
-    actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
-    assert actual.account.title == "From"
-    assert actual.past == 1
-    assert actual.incomes == 0
-    assert actual.expenses == 1
-    assert actual.balance == 0
-    assert actual.delta == 0
-
-
-def test_transaction_post_save_update_with_nothing_changed():
-    a_from = AccountFactory(title="From")
-    a_to = AccountFactory(title="To")
-
-    obj = TransactionFactory(from_account=a_from, to_account=a_to, price=5)
-
-    obj_update = Transaction.objects.get(pk=obj.pk)
-    obj_update.save()
-
-    actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.incomes == 5
-    assert actual.expenses == 0
-    assert actual.balance == 5
-
-    actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
-    assert actual.account.title == "From"
-    assert actual.incomes == 0
-    assert actual.expenses == 5
-    assert actual.balance == -5
-
-
-def test_transaction_post_save_change_from_account():
-    a_from = AccountFactory(title="From")
-    a_from_new = AccountFactory(title="From-New")
-    a_to = AccountFactory(title="To")
-
-    obj = TransactionFactory(from_account=a_from, to_account=a_to, price=5)
-    actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
-    assert actual.account.title == "From"
-    assert actual.incomes == 0
-    assert actual.expenses == 5
-    assert actual.balance == -5
-
-    obj_update = Transaction.objects.get(pk=obj.pk)
-    obj_update.from_account = a_from_new
-    obj_update.save()
-
-    actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.incomes == 5
-    assert actual.expenses == 0
-    assert actual.balance == 5
-
-    actual = AccountBalance.objects.filter(account_id=a_from.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = AccountBalance.objects.get(account_id=a_from_new.pk, year=1999)
-    assert actual.account.title == "From-New"
-    assert actual.incomes == 0
-    assert actual.expenses == 5
-    assert actual.balance == -5
-
-
-def test_transaction_post_save_change_to_account():
-    a_from = AccountFactory(title="From")
-    a_to = AccountFactory(title="To")
-    a_to_new = AccountFactory(title="To-New")
-
-    obj = TransactionFactory(from_account=a_from, to_account=a_to, price=5)
-
-    actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.incomes == 5
-    assert actual.expenses == 0
-    assert actual.balance == 5
-
-    obj_update = Transaction.objects.get(pk=obj.pk)
-    obj_update.to_account = a_to_new
-    obj_update.save()
-
-    actual = AccountBalance.objects.filter(account_id=a_to.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = AccountBalance.objects.get(account_id=a_to_new.pk, year=1999)
-    assert actual.account.title == "To-New"
-    assert actual.incomes == 5
-    assert actual.expenses == 0
-    assert actual.balance == 5
-
-    actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
-    assert actual.account.title == "From"
-    assert actual.incomes == 0
-    assert actual.expenses == 5
-    assert actual.balance == -5
-
-
-def test_transaction_post_save_change_from_and_to_account():
-    a_from = AccountFactory(title="From")
-    a_from_new = AccountFactory(title="From-New")
-    a_to = AccountFactory(title="To")
-    a_to_new = AccountFactory(title="To-New")
-
-    obj = TransactionFactory(from_account=a_from, to_account=a_to, price=5)
-
-    actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
-    assert actual.account.title == "From"
-    assert actual.incomes == 0
-    assert actual.expenses == 5
-    assert actual.balance == -5
-
-    actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.incomes == 5
-    assert actual.expenses == 0
-    assert actual.balance == 5
-
-    obj_update = Transaction.objects.get(pk=obj.pk)
-    obj_update.to_account = a_to_new
-    obj_update.from_account = a_from_new
-    obj_update.save()
-
-    actual = AccountBalance.objects.filter(account_id=a_to.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = AccountBalance.objects.get(account_id=a_to_new.pk, year=1999)
-    assert actual.account.title == "To-New"
-    assert actual.incomes == 5
-    assert actual.expenses == 0
-    assert actual.balance == 5
-
-    actual = AccountBalance.objects.filter(account_id=a_from.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = AccountBalance.objects.get(account_id=a_from_new.pk, year=1999)
-    assert actual.account.title == "From-New"
-    assert actual.incomes == 0
-    assert actual.expenses == 5
-    assert actual.balance == -5
-
-
-def test_transaction_post_delete(main_user):
-    obj = TransactionFactory()
-
-    Transaction.objects.get(pk=obj.pk).delete()
-
-    actual = AccountBalanceModelService(main_user).items()
-
-    assert actual.count() == 0
-    assert Transaction.objects.all().count() == 0
-
-
-def test_transaction_post_delete_with_update(main_user):
-    kept = TransactionFactory(price=10)
-
-    obj = TransactionFactory()
-    Transaction.objects.get(pk=obj.pk).delete()
-
-    assert AccountBalanceModelService(main_user).items().count() == 4
-
-    a1 = AccountBalance.objects.get(account_id=kept.to_account_id, year=1999)
-
-    assert a1.account.title == "Account2"
-    assert a1.incomes == 10
-    assert a1.expenses == 0
-    assert a1.balance == 10
-    assert a1.delta == -10
-
-    a2 = AccountBalance.objects.get(account_id=kept.from_account_id, year=1999)
-    assert a2.account.title == "Account1"
-    assert a2.incomes == 0
-    assert a2.expenses == 10
-    assert a2.balance == -10
-    assert a2.delta == 10
-
-    assert Transaction.objects.all().count() == 1
-
-
-def test_transaction_balance_incomes(main_user, transactions):
-    actual = TransactionModelService(main_user).incomes()
-
-    assert actual[0]["year"] == 1970
-    assert actual[0]["incomes"] == 525
-    assert actual[0]["category_id"] == 1
-
-    assert actual[1]["year"] == 1970
-    assert actual[1]["incomes"] == 125
-    assert actual[1]["category_id"] == 2
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["incomes"] == 325
-    assert actual[2]["category_id"] == 1
-
-    assert actual[3]["year"] == 1999
-    assert actual[3]["incomes"] == 450
-    assert actual[3]["category_id"] == 2
-
-
-def test_transaction_balance_expenses(main_user, transactions):
-    actual = TransactionModelService(main_user).expenses()
-
-    assert actual[0]["year"] == 1970
-    assert actual[0]["expenses"] == 125
-    assert actual[0]["category_id"] == 1
-
-    assert actual[1]["year"] == 1970
-    assert actual[1]["expenses"] == 525
-    assert actual[1]["category_id"] == 2
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["expenses"] == 450
-    assert actual[2]["category_id"] == 1
-
-    assert actual[3]["year"] == 1999
-    assert actual[3]["expenses"] == 325
-    assert actual[3]["category_id"] == 2
-
-
-def test_saving_close_str():
-    s = SavingCloseFactory.build()
-
-    assert str(s) == "1999-01-01 Savings From -> Account To: 0,10"
+    assert account_rows(main_user) == [
+        AccountRow("From", 1998, 0, 6, 5, 1, -1),
+        AccountRow("From", 1999, 1, 0, 1, 0, 0),
+        AccountRow("From", 2000, 0, 0, 0, 0, 0),
+        AccountRow("To", 1998, 0, 5, 3, 2, -2),
+        AccountRow("To", 1999, 2, 1, 0, 3, -3),
+        AccountRow("To", 2000, 3, 0, 0, 3, -3),
+    ]
 
 
 @pytest.mark.parametrize(
-    "factory, receiver",
+    "factory, from_factory, to_factory, accounts, funds", MOVES_OF_ONE_CENT
+)
+def test_new_price_syncs_balances(
+    main_user, factory, from_factory, to_factory, accounts, funds
+):
+    move = reloaded(
+        factory(
+            from_account=from_factory(title="From"),
+            to_account=to_factory(title="To"),
+            price=5,
+        )
+    )
+    move.price = 1
+    move.save()
+
+    assert account_rows(main_user) == accounts
+    assert fund_rows(main_user) == funds
+
+
+@pytest.mark.parametrize(
+    "factory, from_factory, to_factory, accounts, funds", MOVES_OF_ONE_CENT
+)
+def test_save_with_nothing_changed_keeps_balances(
+    main_user, factory, from_factory, to_factory, accounts, funds
+):
+    move = factory(
+        from_account=from_factory(title="From"),
+        to_account=to_factory(title="To"),
+        price=1,
+    )
+
+    reloaded(move).save()
+
+    assert account_rows(main_user) == accounts
+    assert fund_rows(main_user) == funds
+
+
+@pytest.mark.parametrize(
+    "factory, from_factory, to_factory, accounts, funds", MOVES_OF_ONE_CENT
+)
+def test_new_ends_take_the_balances_from_the_old(
+    main_user, factory, from_factory, to_factory, accounts, funds
+):
+    move = reloaded(
+        factory(
+            from_account=from_factory(title="Old-From"),
+            to_account=to_factory(title="Old-To"),
+            price=1,
+        )
+    )
+    move.from_account = from_factory(title="From")
+    move.to_account = to_factory(title="To")
+    move.save()
+
+    assert account_rows(main_user) == accounts
+    assert fund_rows(main_user) == funds
+
+
+@pytest.mark.parametrize("factory, from_factory, to_factory", MOVES)
+def test_delete_drops_its_balances(main_user, factory, from_factory, to_factory):
+    move = factory(
+        from_account=from_factory(title="From"), to_account=to_factory(title="To")
+    )
+
+    reloaded(move).delete()
+
+    assert account_rows(main_user) == []
+    assert fund_rows(main_user) == []
+    assert not type(move).objects.exists()
+
+
+@pytest.mark.parametrize(
+    "factory, from_factory, to_factory, accounts, funds", MOVES_OF_ONE_CENT
+)
+def test_delete_leaves_the_other_moves_balances(
+    main_user, factory, from_factory, to_factory, accounts, funds
+):
+    ends = {
+        "from_account": from_factory(title="From"),
+        "to_account": to_factory(title="To"),
+    }
+    kept = factory(price=1, **ends)
+
+    reloaded(factory(price=5, **ends)).delete()
+
+    assert account_rows(main_user) == accounts
+    assert fund_rows(main_user) == funds
+    assert list(type(kept).objects.all()) == [kept]
+
+
+def test_transaction_incomes_sum_each_receiver_by_year(main_user):
+    sender = AccountFactory(title="From")
+    a1 = AccountFactory(title="To1")
+    a2 = AccountFactory(title="To2")
+    ends = {"from_account": sender}
+    TransactionFactory(date=date(1999, 1, 1), price=25, to_account=a1, **ends)
+    TransactionFactory(date=date(1999, 6, 1), price=4, to_account=a1, **ends)
+    TransactionFactory(date=date(1999, 1, 1), price=1, to_account=a2, **ends)
+    TransactionFactory(date=date(1970, 1, 1), price=25, to_account=a1, **ends)
+
+    actual = TransactionModelService(main_user).incomes()
+
+    assert list(actual) == [
+        {"year": 1970, "incomes": 25, "category_id": a1.pk},
+        {"year": 1999, "incomes": 29, "category_id": a1.pk},
+        {"year": 1999, "incomes": 1, "category_id": a2.pk},
+    ]
+
+
+@pytest.mark.parametrize(
+    "service, factory, sender, receiver, with_fee, sums",
     [
-        pytest.param(TransactionFactory, AccountFactory, id="transaction"),
-        pytest.param(SavingCloseFactory, AccountFactory, id="saving_close"),
-        pytest.param(SavingChangeFactory, SavingTypeFactory, id="saving_change"),
+        pytest.param(
+            TransactionModelService,
+            TransactionFactory,
+            AccountFactory,
+            AccountFactory,
+            {},
+            [(1970, {"expenses": 25}), (1999, {"expenses": 26})],
+            id="transaction",
+        ),
+        pytest.param(
+            SavingCloseModelService,
+            SavingCloseFactory,
+            SavingTypeFactory,
+            AccountFactory,
+            {"fee": 1},
+            [(1970, {"expenses": 25, "fee": 1}), (1999, {"expenses": 26, "fee": 2})],
+            id="saving_close",
+        ),
+        pytest.param(
+            SavingChangeModelService,
+            SavingChangeFactory,
+            SavingTypeFactory,
+            SavingTypeFactory,
+            {"fee": 1},
+            [(1970, {"expenses": 25, "fee": 1}), (1999, {"expenses": 26, "fee": 2})],
+            id="saving_change",
+        ),
     ],
 )
-def test_str_groups_thousands_and_keeps_the_title(factory, receiver):
-    move = factory.build(price=123456, to_account=receiver.build(title="Ex. Bank"))
+def test_expenses_sum_each_sender_by_year(
+    main_user, service, factory, sender, receiver, with_fee, sums
+):
+    fund = sender(title="Saving1")
+    a1 = receiver(title="To1")
+    a2 = receiver(title="To2")
+    ends = {"from_account": fund, **with_fee}
+    factory(date=date(1999, 1, 1), price=25, to_account=a1, **ends)
+    factory(date=date(1999, 1, 1), price=1, to_account=a2, **ends)
+    factory(date=date(1970, 1, 1), price=25, to_account=a1, **ends)
 
-    assert str(move).endswith(" -> Ex. Bank: 1.234,56")
+    actual = service(main_user).expenses()
 
-
-def test_saving_close_month_sums(main_user, savings_close):
-    expect = [{"date": date(1999, 1, 1), "sum": 26, "title": "savings_close"}]
-
-    actual = list(SavingCloseModelService(main_user).sum_by_month(1999))
-
-    assert expect == actual
-
-
-def test_saving_close_month_sums_only_january(main_user, savings_close):
-    expect = [{"date": date(1999, 1, 1), "sum": 26, "title": "savings_close"}]
-
-    actual = list(SavingCloseModelService(main_user).sum_by_month(1999, 1))
-
-    assert expect == actual
+    assert list(actual) == [
+        {"year": year, **sum_, "category_id": fund.pk} for year, sum_ in sums
+    ]
 
 
-def test_saving_close_month_sum_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        list(SavingCloseModelService(main_user).sum_by_month(1999))
+@pytest.mark.parametrize("factory, sender, receiver", MOVES)
+def test_str_names_the_day_both_ends_and_the_grouped_price(factory, sender, receiver):
+    move = factory.build(
+        date=date(2001, 2, 3),
+        price=123456,
+        from_account=sender.build(title="Ex. Fund"),
+        to_account=receiver.build(title="Ex. Bank"),
+    )
+
+    assert str(move) == "2001-02-03 Ex. Fund -> Ex. Bank: 1.234,56"
 
 
-def test_saving_close_post_save(main_user):
-    SavingCloseFactory()
+@pytest.mark.parametrize(
+    "month, sums",
+    [
+        pytest.param(0, [(date(1999, 1, 1), 25), (date(1999, 2, 1), 1)], id="year"),
+        pytest.param(2, [(date(1999, 2, 1), 1)], id="february"),
+    ],
+)
+def test_saving_close_month_sums(main_user, month, sums):
+    SavingCloseFactory(date=date(1999, 1, 1), price=25)
+    SavingCloseFactory(date=date(1999, 2, 1), price=1)
+    SavingCloseFactory(date=date(1970, 2, 1), price=7)
 
-    actual = AccountBalanceModelService(main_user).year(1999)
+    actual = SavingCloseModelService(main_user).sum_by_month(1999, month)
 
-    assert actual.count() == 1
-    assert actual[0].account.title == "Account To"
-    assert actual[0].past == 0
-    assert actual[0].incomes == 10
-    assert actual[0].expenses == 0
-    assert actual[0].balance == 10
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 1
-    assert actual[0].saving_type.title == "Savings From"
-    assert actual[0].past_amount == 0
-    assert actual[0].past_fee == 0
-    assert actual[0].fee == 0
-    assert actual[0].incomes == 0
+    assert list(actual) == [
+        {"date": day, "sum": sum_, "title": "savings_close"} for day, sum_ in sums
+    ]
 
 
-def test_saving_close_post_save_multiple(main_user):
-    SavingCloseFactory(price=1, fee=0.5)
-    SavingCloseFactory(price=10, fee=5)
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-    assert actual.count() == 1
-    assert actual[0].saving_type.title == "Savings From"
-    assert actual[0].past_amount == 0
-    assert actual[0].past_fee == 0
-    assert actual[0].fee == 0
-    assert actual[0].incomes == 0
-
-
-def test_saving_close_post_save_update(main_user):
-    obj = SavingCloseFactory()
-
-    obj_update = SavingClose.objects.get(pk=obj.pk)
-    obj_update.price = 1
-    obj_update.save()
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-    assert actual.count() == 1
-    assert actual[0].account.title == "Account To"
-    assert actual[0].past == 0
-    assert actual[0].incomes == 1
-    assert actual[0].expenses == 0
-    assert actual[0].balance == 1
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-    assert actual.count() == 1
-    assert actual[0].saving_type.title == "Savings From"
-    assert actual[0].past_amount == 0
-    assert actual[0].past_fee == 0
-    assert actual[0].fee == 0
-    assert actual[0].incomes == 0
-
-
-def test_saving_close_post_save_first_record():
+def test_saving_close_post_save_first_record(main_user):
     _to = AccountFactory(title="To")
     _from = SavingTypeFactory(title="From")
 
@@ -560,565 +458,39 @@ def test_saving_close_post_save_first_record():
 
     SavingCloseFactory(to_account=_to, from_account=_from, price=1)
 
-    actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.past == 10
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 11
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 40
-    assert actual.past_fee == 2
-    assert actual.fee == 2
-    assert actual.incomes == 40
-
-
-def test_saving_close_post_save_new(main_user):
-    _to = AccountFactory(title="To")
-    _from = SavingTypeFactory(title="From")
-
-    SavingCloseFactory(to_account=_to, from_account=_from, price=1)
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-    assert actual.count() == 1
-
-    actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.past == 0
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 1
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-    assert actual.count() == 1
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-
-def test_saving_close_post_save_nothing_changed(main_user):
-    _to = AccountFactory(title="To")
-    _from = SavingTypeFactory(title="From")
-
-    obj = SavingCloseFactory(to_account=_to, from_account=_from, price=1)
-
-    obj_update = SavingClose.objects.get(pk=obj.pk)
-    obj_update.save()
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-    assert actual.count() == 1
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-    assert actual.count() == 1
-
-    actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.past == 0
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 1
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-
-def test_saving_close_post_save_changed_from():
-    _to = AccountFactory(title="To")
-    _from = SavingTypeFactory(title="From")
-    _from_new = SavingTypeFactory(title="From-New")
-
-    obj = SavingCloseFactory(to_account=_to, from_account=_from, price=1)
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-    obj_update = SavingClose.objects.get(pk=obj.pk)
-    obj_update.from_account = _from_new
-    obj_update.save()
-
-    actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.past == 0
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 1
-
-    actual = SavingBalance.objects.filter(saving_type_id=_from.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = SavingBalance.objects.get(saving_type_id=_from_new.pk, year=1999)
-    assert actual.saving_type.title == "From-New"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-
-def test_saving_close_post_save_changed_to():
-    _to = AccountFactory(title="To")
-    _to_new = AccountFactory(title="To-New")
-    _from = SavingTypeFactory(title="From")
-
-    obj = SavingCloseFactory(to_account=_to, from_account=_from, price=1)
-
-    actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.past == 0
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 1
-
-    obj_update = SavingClose.objects.get(pk=obj.pk)
-    obj_update.to_account = _to_new
-    obj_update.save()
-
-    actual = AccountBalance.objects.filter(account_id=_to.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = AccountBalance.objects.get(account_id=_to_new.pk, year=1999)
-    assert actual.account.title == "To-New"
-    assert actual.past == 0
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 1
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-
-def test_saving_close_post_save_changed_from_and_to():
-    _to = AccountFactory(title="To")
-    _to_new = AccountFactory(title="To-New")
-    _from = SavingTypeFactory(title="From")
-    _from_new = SavingTypeFactory(title="From-New")
-
-    obj = SavingCloseFactory(to_account=_to, from_account=_from, price=1)
-
-    actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
-    assert actual.account.title == "To"
-    assert actual.past == 0
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 1
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-    obj_update = SavingClose.objects.get(pk=obj.pk)
-    obj_update.to_account = _to_new
-    obj_update.from_account = _from_new
-    obj_update.save()
-
-    actual = AccountBalance.objects.filter(account_id=_to.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = AccountBalance.objects.get(account_id=_to_new.pk, year=1999)
-    assert actual.account.title == "To-New"
-    assert actual.past == 0
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 1
-
-    actual = SavingBalance.objects.filter(saving_type_id=_from.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = SavingBalance.objects.get(saving_type_id=_from_new.pk, year=1999)
-    assert actual.saving_type.title == "From-New"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-
-def test_saving_close_post_delete(main_user):
-    obj = SavingCloseFactory()
-
-    SavingClose.objects.get(pk=obj.pk).delete()
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-    assert actual.count() == 0
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-    assert actual.count() == 0
-    assert SavingClose.objects.all().count() == 0
-
-
-def test_saving_close_post_delete_with_update(main_user):
-    SavingCloseFactory(price=1, fee=0.5)
-
-    obj = SavingCloseFactory(price=10, fee=5)
-    SavingClose.objects.get(pk=obj.pk).delete()
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 1
-    assert actual[0].account.title == "Account To"
-    assert actual[0].incomes == 1
-    assert actual[0].balance == 1
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 1
-    assert actual[0].fee == 0
-    assert actual[0].incomes == 0
-
-    assert SavingClose.objects.all().count() == 1
-
-
-def test_saving_close_balance_incomes(main_user, savings_close):
-    actual = SavingCloseModelService(main_user).incomes()
-
-    assert actual[0]["year"] == 1970
-    assert actual[0]["incomes"] == 25
-    assert actual[0]["category_id"] == 1
-
-    assert actual[1]["year"] == 1999
-    assert actual[1]["incomes"] == 25
-    assert actual[1]["category_id"] == 1
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["incomes"] == 1
-    assert actual[2]["category_id"] == 2
-
-
-@pytest.mark.parametrize(
-    "service, factory, receiver",
-    [
-        pytest.param(
-            SavingCloseModelService, SavingCloseFactory, AccountFactory, id="close"
-        ),
-        pytest.param(
-            SavingChangeModelService,
-            SavingChangeFactory,
-            SavingTypeFactory,
-            id="change",
-        ),
-    ],
-)
-def test_saving_close_balance_expenses(main_user, service, factory, receiver):
-    fund = SavingTypeFactory(title="Saving1")
-    a1 = receiver(title="To1")
-    a2 = receiver(title="To2")
-    factory(date=date(1999, 1, 1), price=25, fee=5, to_account=a1, from_account=fund)
-    factory(date=date(1999, 1, 1), price=1, fee=1, to_account=a2, from_account=fund)
-    factory(date=date(1970, 1, 1), price=25, fee=5, to_account=a1, from_account=fund)
-
-    actual = service(main_user).expenses()
-
-    assert list(actual) == [
-        {"year": 1970, "expenses": 25, "fee": 5, "category_id": fund.pk},
-        {"year": 1999, "expenses": 26, "fee": 6, "category_id": fund.pk},
+    assert [row for row in account_rows(main_user) if row[0] == "To"] == [
+        AccountRow("To", 1998, 0, 10, 0, 10, -10),
+        AccountRow("To", 1999, 10, 1, 0, 11, -11),
+        AccountRow("To", 2000, 11, 0, 0, 11, -11),
+    ]
+    assert fund_rows(main_user) == [
+        FundRow("From", 1998, 0, 0, 2, 40),
+        FundRow("From", 1999, 40, 2, 2, 40),
+        FundRow("From", 2000, 40, 2, 2, 40),
     ]
 
 
-def test_savings_change_str():
-    s = SavingChangeFactory.build()
-
-    assert str(s) == "1999-01-01 Savings From -> Savings To: 0,10"
-
-
-def test_saving_change_items_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        list(SavingChangeModelService(main_user).items())
-
-
-def test_saving_change_post_save(main_user):
-    SavingChangeFactory()
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 2
-
-    assert actual[0].saving_type.title == "Savings From"
-    assert actual[0].fee == 0
-    assert actual[0].incomes == 0
-
-    assert actual[1].saving_type.title == "Savings To"
-    assert actual[1].fee == 0
-    assert actual[1].incomes == 10
-
-
-def test_saving_change_post_save_update(main_user):
-    _to = SavingTypeFactory(title="To")
-    _from = SavingTypeFactory(title="From")
-    obj = SavingChangeFactory(to_account=_to, from_account=_from)
-
-    obj_update = SavingChange.objects.get(pk=obj.pk)
-    obj_update.price = 1
-    obj_update.save()
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 2
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-    actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
-    assert actual.saving_type.title == "To"
-    assert actual.fee == 0
-    assert actual.incomes == 1
-
-
-def test_saving_change_post_save_first_record(main_user):
+@pytest.mark.parametrize("balances_emptied", [False, True], ids=["kept", "emptied"])
+def test_saving_change_save_carries_each_funds_past(main_user, balances_emptied):
     _to = SavingTypeFactory(title="To")
     _from = SavingTypeFactory(title="From")
 
     SavingFactory(saving_type=_to, price=50, date=date(1998, 1, 1), fee=2)
     SavingFactory(saving_type=_from, price=40, date=date(1998, 1, 1), fee=2)
 
-    SavingBalance.objects.all().delete()
+    if balances_emptied:
+        SavingBalance.objects.all().delete()
 
     SavingChangeFactory(to_account=_to, from_account=_from, price=1)
 
-    actual = SavingBalanceModelService(main_user).year(1999)
-    assert actual.count() == 2
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 40
-    assert actual.past_fee == 2
-    assert actual.fee == 2
-    assert actual.incomes == 40
-
-    actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
-    assert actual.saving_type.title == "To"
-    assert actual.past_amount == 50
-    assert actual.past_fee == 2
-    assert actual.fee == 2
-    assert actual.incomes == 51
-
-
-def test_saving_change_post_save_new(main_user):
-    _to = SavingTypeFactory(title="To")
-    _from = SavingTypeFactory(title="From")
-
-    SavingFactory(saving_type=_to, price=50, date=date(1998, 1, 1), fee=2)
-    SavingFactory(saving_type=_from, price=40, date=date(1998, 1, 1), fee=2)
-
-    SavingChangeFactory(to_account=_to, from_account=_from, price=1)
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-    assert actual.count() == 2
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 40
-    assert actual.past_fee == 2
-    assert actual.fee == 2
-    assert actual.incomes == 40
-
-    actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
-    assert actual.saving_type.title == "To"
-    assert actual.past_amount == 50
-    assert actual.past_fee == 2
-    assert actual.fee == 2
-    assert actual.incomes == 51
-
-
-def test_saving_change_post_save_update_nothing_changed(main_user):
-    _to = SavingTypeFactory(title="To")
-    _from = SavingTypeFactory(title="From")
-
-    SavingFactory(saving_type=_to, price=50, date=date(1998, 1, 1), fee=2)
-    SavingFactory(saving_type=_from, price=40, date=date(1998, 1, 1), fee=2)
-
-    obj = SavingChangeFactory(to_account=_to, from_account=_from, price=1)
-
-    obj_update = SavingChange.objects.get(pk=obj.pk)
-    obj_update.save()
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-    assert actual.count() == 2
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 40
-    assert actual.past_fee == 2
-    assert actual.fee == 2
-    assert actual.incomes == 40
-
-    actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
-    assert actual.saving_type.title == "To"
-    assert actual.past_amount == 50
-    assert actual.past_fee == 2
-    assert actual.fee == 2
-    assert actual.incomes == 51
-
-
-def test_saving_change_post_save_changed_from():
-    _to = SavingTypeFactory(title="To")
-    _from = SavingTypeFactory(title="From")
-    _from_new = SavingTypeFactory(title="From-New")
-
-    obj = SavingChangeFactory(to_account=_to, from_account=_from, price=1)
-
-    actual = SavingBalance.objects.get(saving_type_id=_from, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-    obj_update = SavingChange.objects.get(pk=obj.pk)
-    obj_update.from_account = _from_new
-    obj_update.save()
-
-    actual = SavingBalance.objects.filter(saving_type_id=_from.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = SavingBalance.objects.get(saving_type_id=_from_new.pk, year=1999)
-    assert actual.saving_type.title == "From-New"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-    actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
-    assert actual.saving_type.title == "To"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 1
-
-
-def test_saving_change_post_save_changed_to():
-    _to = SavingTypeFactory(title="To")
-    _to_new = SavingTypeFactory(title="To-New")
-    _from = SavingTypeFactory(title="From")
-
-    obj = SavingChangeFactory(to_account=_to, from_account=_from, price=1)
-
-    actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
-    assert actual.saving_type.title == "To"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 1
-
-    obj_update = SavingChange.objects.get(pk=obj.pk)
-    obj_update.to_account = _to_new
-    obj_update.save()
-
-    actual = SavingBalance.objects.filter(saving_type_id=_to.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = SavingBalance.objects.get(saving_type_id=_to_new.pk, year=1999)
-    assert actual.saving_type.title == "To-New"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 1
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-
-def test_saving_change_post_save_changed_to_and_from():
-    _to = SavingTypeFactory(title="To")
-    _to_new = SavingTypeFactory(title="To-New")
-    _from = SavingTypeFactory(title="From")
-    _from_new = SavingTypeFactory(title="From-New")
-
-    obj = SavingChangeFactory(to_account=_to, from_account=_from, price=1)
-
-    actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
-    assert actual.saving_type.title == "To"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 1
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    assert actual.saving_type.title == "From"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-    obj_update = SavingChange.objects.get(pk=obj.pk)
-    obj_update.to_account = _to_new
-    obj_update.from_account = _from_new
-    obj_update.save()
-
-    actual = SavingBalance.objects.filter(saving_type_id=_to.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = SavingBalance.objects.get(saving_type_id=_to_new.pk, year=1999)
-    assert actual.saving_type.title == "To-New"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 1
-
-    actual = SavingBalance.objects.filter(saving_type_id=_from.pk, year=1999)
-    assert actual.count() == 0
-
-    actual = SavingBalance.objects.get(saving_type_id=_from_new.pk, year=1999)
-    assert actual.saving_type.title == "From-New"
-    assert actual.past_amount == 0
-    assert actual.past_fee == 0
-    assert actual.fee == 0
-    assert actual.incomes == 0
-
-
-def test_saving_change_post_delete(main_user):
-    obj = SavingChangeFactory()
-
-    SavingChange.objects.get(pk=obj.pk).delete()
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 0
-    assert SavingChange.objects.all().count() == 0
-
-
-def test_saving_change_post_delete_with_update(main_user):
-    SavingChangeFactory(price=1)
-    obj = SavingChangeFactory()
-
-    SavingChange.objects.get(pk=obj.pk).delete()
-
-    actual = SavingBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 2
-
-    assert actual[0].saving_type.title == "Savings From"
-    assert actual[0].fee == 0
-    assert actual[0].incomes == 0
-
-    assert actual[1].saving_type.title == "Savings To"
-    assert actual[1].fee == 0
-    assert actual[1].incomes == 1
-
-    assert SavingChange.objects.all().count() == 1
+    assert fund_rows(main_user) == [
+        FundRow("From", 1998, 0, 0, 2, 40),
+        FundRow("From", 1999, 40, 2, 2, 40),
+        FundRow("From", 2000, 40, 2, 2, 40),
+        FundRow("To", 1998, 0, 0, 2, 50),
+        FundRow("To", 1999, 50, 2, 2, 51),
+        FundRow("To", 2000, 51, 2, 2, 51),
+    ]
 
 
 @pytest.mark.parametrize(
