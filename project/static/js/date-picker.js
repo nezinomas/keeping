@@ -3,16 +3,10 @@ function initializeLitepicker(input) {
     const config = {
         element: input,
         format: 'YYYY-MM-DD',
+        lang: datePickerTrans.lang,
+        tooltipText: datePickerTrans.tooltipText,
     };
 
-    // Apply translations if available
-    if (typeof datePickerTrans !== 'undefined') {
-        config.lang = datePickerTrans.lang;
-        config.months = datePickerTrans.months;
-        config.weekdays = datePickerTrans.weekdays;
-        config.weekdaysShort = datePickerTrans.weekdaysShort;
-        config.tooltipText = datePickerTrans.tooltipText;
-    }
     try {
         new Litepicker(config);
     } catch (error) {
