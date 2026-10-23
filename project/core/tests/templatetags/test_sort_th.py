@@ -25,3 +25,46 @@ def test_a_sort_link_adds_its_order_to_the_urls_query(url, expected):
     )
 
     assert f'<a role="button" {expected} hx-target="#t">T</a>' in content
+
+
+@pytest.mark.parametrize(
+    "state, expected",
+    [
+        pytest.param('align="left"', '<th class="text-left">', id="left"),
+        pytest.param(
+            'column="title"', '<th class="text-left title-col">', id="title_column"
+        ),
+        pytest.param(
+            'column="total"', '<th class="month-table__total">', id="total_column"
+        ),
+        pytest.param('align="right"', "<th>", id="other_value"),
+        pytest.param('class="x"', "<th>", id="class_passed"),
+    ],
+)
+def test_a_sort_header_maps_its_state_to_a_class(state, expected):
+    content = _render(
+        f'<c-sort-th key="title" active="share" url="/t/" {state}>T</c-sort-th>', {}
+    )
+
+    assert content.strip().startswith(expected)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        pytest.param("<c-sort-th>T</c-sort-th>", id="span"),
+        # a given key draws the link, where a leaked url, target or active shows
+        pytest.param('<c-sort-th key="title">T</c-sort-th>', id="link"),
+    ],
+)
+def test_a_sort_header_draws_nothing_it_is_not_given(source):
+    page = {
+        "key": "Puslapio",
+        "active": "title",
+        "url": "/puslapio/",
+        "target": "#puslapio",
+        "align": "left",
+        "column": "title",
+    }
+
+    assert _render(source, page) == _render(source, {})
