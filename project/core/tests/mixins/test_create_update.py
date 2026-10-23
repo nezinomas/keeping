@@ -8,8 +8,7 @@ from django.views.generic.base import ContextMixin
 from ...lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ...mixins.create_update import CreateUpdateMixin
 from ...mixins.delete import DeleteMixin
-
-PICKER_SCRIPT = r'<script[^>]*src="[^"]*/js/([a-z]+-picker\.js)"'
+from ..utils import PICKER_SCRIPT
 
 
 @pytest.mark.parametrize(
