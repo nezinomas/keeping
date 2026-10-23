@@ -11,7 +11,18 @@ def money(cents: int) -> str:
     return number_format(int_cents_to_float(cents), 2, force_grouping=True)
 
 
-class Transaction(models.Model):
+class Move:
+    def __str__(self):
+        _from = f"{self.date} {self.from_account}"
+        _to = f"{self.to_account}: {money(self.price)}"
+        return f"{_from} -> {_to}"
+
+    @property
+    def journal(self):
+        return self.from_account.journal
+
+
+class Transaction(Move, models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account, on_delete=models.CASCADE, related_name="transactions_from"
@@ -28,17 +39,8 @@ class Transaction(models.Model):
             models.Index(fields=["to_account"]),
         ]
 
-    def __str__(self):
-        _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {money(self.price)}"
-        return f"{_from} -> {_to}"
 
-    @property
-    def journal(self):
-        return self.from_account.journal
-
-
-class FundMove:
+class FundMove(Move):
     """A move out of a fund; the receiver reads `close_rule` (the form's word) once,
     and `Removed` for the fund it was loaded from when it leaves it or is deleted."""
 
@@ -54,10 +56,6 @@ class FundMove:
             instance.settle()
 
         return instance
-
-    @property
-    def journal(self):
-        return self.from_account.journal
 
     @property
     def left_funds(self) -> tuple[Removed, ...]:
@@ -88,11 +86,6 @@ class SavingClose(FundMove, models.Model):
             models.Index(fields=["to_account"]),
         ]
 
-    def __str__(self):
-        _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {money(self.price)}"
-        return f"{_from} -> {_to}"
-
 
 class SavingChange(FundMove, models.Model):
     date = models.DateField()
@@ -111,8 +104,3 @@ class SavingChange(FundMove, models.Model):
             models.Index(fields=["from_account"]),
             models.Index(fields=["to_account"]),
         ]
-
-    def __str__(self):
-        _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {money(self.price)}"
-        return f"{_from} -> {_to}"
