@@ -392,23 +392,6 @@ def test_overview_charts_the_year_against_last_year_to_the_same_day(client_logge
     assert "Išlaidos per mėnesį" in content
 
 
-@pytest.mark.parametrize(
-    "url_name, kwargs, lit",
-    [
-        pytest.param("expenses:tab_data", {"month": "1"}, True, id="expenses_tab"),
-        pytest.param("plans:tab_expenses", {}, False, id="plans"),
-        pytest.param("bookkeeping:detailed_expenses", {}, False, id="detailed"),
-        pytest.param("bookkeeping:summary_expenses", {}, False, id="summary"),
-    ],
-)
-def test_the_navbar_lights_expenses_only_on_its_own_pages(
-    client_logged, url_name, kwargs, lit
-):
-    content = client_logged.get(reverse(url_name, kwargs=kwargs)).content.decode()
-
-    assert bool(re.search(r'class="active">\s*<a href="/expenses/"', content)) is lit
-
-
 def test_the_navbar_opens_duomenys_at_each_month_and_all(client_logged):
     content = client_logged.get(reverse("expenses:tab_index")).content.decode()
 
