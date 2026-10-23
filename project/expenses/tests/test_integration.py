@@ -40,6 +40,9 @@ class Expenses(Browser):
     def _open_add_expense(self, url):
         self.browser.get(url)
         self.wait_until_idle()
+        self._press_add_expense()
+
+    def _press_add_expense(self):
         self.browser.find_element(
             By.CSS_SELECTOR, f'.quick-add__pill[hx-get="{reverse("expenses:new")}"]'
         ).click()
@@ -195,6 +198,19 @@ class Expenses(Browser):
                     By.CSS_SELECTOR, ".litepicker .month-item-name"
                 )
                 assert picker.text == month
+
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_a_reopened_form_leaves_one_date_picker(self):
+        self._open_add_expense(f"{self.live_server_url}{reverse('expenses:index')}")
+        self.browser.find_element(By.CSS_SELECTOR, "#mainModal .modal-close").click()
+        self._press_add_expense()
+
+        self.browser.find_element(By.ID, "id_date").click()
+
+        pickers = self.browser.find_elements(By.CSS_SELECTOR, ".litepicker")
+        assert [
+            p.find_element(By.CLASS_NAME, "month-item-name").text for p in pickers
+        ] == ["sausis"]
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_update_one_expense_price(self):
