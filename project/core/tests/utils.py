@@ -1,4 +1,5 @@
 import functools
+import re
 import time
 from statistics import stdev
 
@@ -9,6 +10,15 @@ from django.urls import reverse
 
 def clean_content(rendered):
     return str(rendered).replace("\n", "").replace("\t", "").replace("  ", "")
+
+
+def quick_add_pills(content):
+    """(tag, the tab it waits for or "", its url attribute, label) of each pill."""
+    return re.findall(
+        r"<(a|button)(?:[^>]*x-show=\"tab === '(\w+)'\" x-cloak)?[^>]*"
+        r' class="quick-add__pill" ((?:href|hx-get)="[^"]*")[^>]*>([^<]*)</\1>',
+        content,
+    )
 
 
 def count_queries(run):
