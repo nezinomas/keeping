@@ -16,8 +16,6 @@
             padding: 0 0 0.7rem;
             text-align: left;
             color: $ink;
-            background: transparent;
-            border-bottom: 0;
         }
 
         // a caption may carry a sentence as well as its label — read as prose,
@@ -47,7 +45,7 @@
         thead th {
             @include tokens.label;
 
-            background: $table-header-bg;
+            background: $paper;
             border-bottom: 1px solid $ink;
 
             // caps at their 12px floor push a phone's table past the page, so a
@@ -202,12 +200,6 @@
 
         thead th {
             padding-top: 0.6rem;
-            background: $table-header-bg;
-        }
-
-        :where(td, th) {
-            padding-left: $gap;
-            padding-right: $gap;
         }
 
         // rows scroll under the pinned header
