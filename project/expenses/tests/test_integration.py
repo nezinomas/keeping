@@ -10,6 +10,7 @@ from selenium.webdriver.support.ui import Select
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
+from ...journals.models import Journal
 from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -24,19 +25,20 @@ class Expenses(Browser):
         month = date.today().month
         return f"{self.live_server_url}{reverse('expenses:tab_data', args=[month])}"
 
+    def _open_add_expense(self, url):
+        self.browser.get(url)
+        self.wait_until_idle()
+        self.browser.find_element(
+            By.CSS_SELECTOR, f'.quick-add__pill[hx-get="{reverse("expenses:new")}"]'
+        ).click()
+        self.wait_until_idle()
+
     def _fill_selects(self):
         a = AccountFactory()
         t = ExpenseTypeFactory()
         n = ExpenseNameFactory()
 
-        self.browser.get(self.data_url())
-        self.wait_until_idle()
-
-        # click Add Expenses button
-        self.browser.find_element(
-            By.XPATH, '//button[normalize-space()="Pridėti išlaidas"]'
-        ).click()
-        self.wait_until_idle()
+        self._open_add_expense(self.data_url())
 
         # select expense type
         elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
@@ -209,14 +211,7 @@ class Expenses(Browser):
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_empty_required_fields(self):
-        self.browser.get(f"{self.live_server_url}/expenses/")
-        self.wait_until_idle()
-
-        # click Add Expenses button
-        self.browser.find_element(
-            By.XPATH, '//button[normalize-space()="Pridėti išlaidas"]'
-        ).click()
-        self.wait_until_idle()
+        self._open_add_expense(f"{self.live_server_url}/expenses/")
 
         # click 'Save And Close' button
         self.browser.find_element(By.ID, "_close").click()
@@ -235,6 +230,20 @@ class Expenses(Browser):
         assert "Šis laukas yra privalomas." in e1.text
         assert "Šis laukas yra privalomas." in e2.text
         assert "Įsitikinkite, kad reikšmė yra didesnė arba lygi 0.01." in e3.text
+
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_the_date_picker_names_its_month_in_the_journals_language(self):
+        for lang, month in [("lt", "sausis"), ("en", "January")]:
+            with self.subTest(lang=lang):
+                Journal.objects.update(lang=lang)
+                self._open_add_expense(f"{self.live_server_url}/expenses/")
+
+                self.browser.find_element(By.ID, "id_date").click()
+
+                picker = self.browser.find_element(
+                    By.CSS_SELECTOR, ".litepicker .month-item-name"
+                )
+                assert picker.text == month
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_update_one_expense_price(self):

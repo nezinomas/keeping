@@ -7,12 +7,13 @@ from django.forms import (
     SelectMultiple,
 )
 
+from ..lib.form_widgets import DatePickerWidget, YearPickerWidget
+
 register = template.Library()
 
 
 @register.filter(name="is_select")
 def is_select(field):
-    # Checks for both standard dropdowns and multi-selects
     return isinstance(field.field.widget, (Select, SelectMultiple))
 
 
@@ -23,5 +24,22 @@ def is_checkbox(field):
 
 @register.filter(name="is_file")
 def is_file(field):
-    # Checks for standard file inputs and Django's default clearable inputs
     return isinstance(field.field.widget, (FileInput, ClearableFileInput))
+
+
+@register.filter(name="has_date_picker")
+def has_date_picker(form):
+    return _has_widget(form, DatePickerWidget)
+
+
+@register.filter(name="has_year_picker")
+def has_year_picker(form):
+    return _has_widget(form, YearPickerWidget)
+
+
+def _has_widget(form, widget_class):
+    # `{% if %}` hands a missing `form` to the filter as None
+    if form is None:
+        return False
+
+    return any(isinstance(field.field.widget, widget_class) for field in form)
