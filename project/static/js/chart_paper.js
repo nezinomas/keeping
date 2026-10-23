@@ -1,6 +1,10 @@
 // The paper skin's chart half, loaded only by pages wearing `.paper-skin`.
 // Colours are `--skin-*` tokens; `var()` resolves in Highcharts' inline SVG styles.
-//
+
+// The chart's small mono face: every figure, y label and rule label.
+// `var`, because a re-run page script would throw on a redeclared `const`.
+var PAPER_MONO_SMALL = { fontFamily: "var(--skin-mono)", fontSize: "10px" };
+
 // A rule's label: on the right, as the left corner holds the pane name; on a
 // paper chip, so a mark crossing the rule never covers it.
 function paperRuleLabel(text, color) {
@@ -8,15 +12,15 @@ function paperRuleLabel(text, color) {
         useHTML: true,
         align: "right",
         x: -6,
-        y: -13,
+        y: -13, // the chip clears its rule
         text: `<span style="background: var(--skin-paper); padding: 0 4px;`
-            + ` color: ${color}; font-family: var(--skin-mono); font-size: 10px;`
-            + ` letter-spacing: 0.1em; white-space: nowrap;">${text}</span>`,
+            + ` color: ${color}; font-family: ${PAPER_MONO_SMALL.fontFamily};`
+            + ` font-size: ${PAPER_MONO_SMALL.fontSize}; letter-spacing: 0.1em;`
+            + ` white-space: nowrap;">${text}</span>`,
     };
 }
 
 // The two chart heights. Standard is the theme's; a chart with two panes asks for large.
-// `var`, because a re-run page script would throw on a redeclared `const`.
 var PAPER_CHART_HEIGHT = { standard: 350, large: 420 };
 
 // Read once, at the table headers' breakpoint: caps at their 12px floor overflow a phone,
@@ -27,8 +31,7 @@ var PAPER_AXIS_TITLE_FACE = window.matchMedia("(min-width: 768px)").matches
 
 // Every figure printed on a mark; each use adds only its colour.
 var PAPER_DATA_LABEL_STYLE = {
-    fontFamily: "var(--skin-mono)",
-    fontSize: "10px",
+    ...PAPER_MONO_SMALL,
     fontWeight: "400",
     textOutline: "none",
 };
@@ -54,8 +57,9 @@ function paperFixEdges() {
     }
 }
 
-// A y-axis title laid flat above the plot, where a rotated one would not fit.
-// Its chart merges in `PAPER_PANE_TITLE_SPACE`: room for the name or a rule label.
+// A y-axis title laid flat above the plot, where a rotated one would not fit. It rises
+// this far; its chart's top margin holds the rise and the title's 12px line above it.
+var PAPER_PANE_TITLE_RISE = 18;
 var PAPER_PANE_TITLE = {
     align: "high",
     rotation: 0,
@@ -63,15 +67,18 @@ var PAPER_PANE_TITLE = {
     reserveSpace: false,
     textAlign: "left",
     x: 0,
-    y: -18,
+    y: -PAPER_PANE_TITLE_RISE,
     style: { whiteSpace: "nowrap", textOverflow: "clip" },
 };
-var PAPER_PANE_TITLE_SPACE = { marginTop: 30 };
+var PAPER_PANE_TITLE_SPACE = { marginTop: PAPER_PANE_TITLE_RISE + 12 };
 
 // The parts of a two-pane chart: a reading on top, bars below. Pieces, not one
 // config, because `Highcharts.merge` replaces arrays instead of merging them.
 function paperTwoPanes() {
     const blue = "var(--skin-data)";
+    // the bottom pane takes what the top pane and the gap between them leave
+    const topHeight = 68;
+    const gap = 12;
 
     return {
         base: {
@@ -92,7 +99,7 @@ function paperTwoPanes() {
         paneTop: {
             min: 0,
             top: "0%",
-            height: "68%",
+            height: `${topHeight}%`,
             title: PAPER_PANE_TITLE,
         },
         paneBottom: {
@@ -100,8 +107,8 @@ function paperTwoPanes() {
             endOnTick: false,
             // headroom, so the tallest bar's label stays clear of the pane name
             maxPadding: 0.3,
-            top: "80%",
-            height: "20%",
+            top: `${topHeight + gap}%`,
+            height: `${100 - topHeight - gap}%`,
             offset: 0,
             labels: { style: { color: blue } },
             title: Highcharts.merge(PAPER_PANE_TITLE, { style: { color: blue } }),
@@ -151,7 +158,6 @@ Highcharts.setOptions({
     title: {
         text: null,
     },
-    // recessive axes: one ink baseline, hairline grid, mono labels
     xAxis: {
         lineColor: "var(--skin-ink)",
         lineWidth: 1,
@@ -181,8 +187,7 @@ Highcharts.setOptions({
         labels: {
             style: {
                 color: "var(--skin-ink-muted)",
-                fontFamily: "var(--skin-mono)",
-                fontSize: "10px",
+                ...PAPER_MONO_SMALL,
             },
         },
     },
