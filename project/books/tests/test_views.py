@@ -4,11 +4,15 @@ from datetime import date
 
 import pytest
 import time_machine
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from ...core.tests.utils import view_for
+from ...core.tests.utils import (
+    count_queries,
+    form_posts_to,
+    nav_tabs,
+    quick_add_pills,
+    view_for,
+)
 from ...users.tests.factories import UserFactory
 from .. import models, views
 from ..forms import BookTargetForm
@@ -53,8 +57,7 @@ def test_only_the_open_tab_reloads_on_a_saved_book_or_goal(
 def test_nav_offers_every_tab(client_logged):
     content = client_logged.get(reverse("books:index")).content.decode()
 
-    tabs = re.findall(r'<button\s+id="tab-(\w+)"[^>]*hx-get="([^"]*)"', content)
-    assert tabs == [
+    assert nav_tabs(content) == [
         ("index", reverse("books:tab_index")),
         ("data", reverse("books:tab_data", kwargs={"scope": "year"})),
     ]
@@ -88,19 +91,10 @@ def test_books_index_shows_its_heading_chart_theme_and_finished_panel(
 def test_books_adds_a_book_from_the_foot_of_the_page(client_logged):
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
-    link = reverse("books:new")
-
     assert '<div class="quick-add"' in content
-    assert (
-        f'<button type="button" class="quick-add__pill" hx-get="{link}" '
-        'hx-target="#mainModal">Pridėti knygą</button>'
-    ) in content
-
-
-def _page_queries(client, url):
-    with CaptureQueriesContext(connection) as queries:
-        client.get(url)
-    return len(queries)
+    assert quick_add_pills(content) == [
+        ("button", "", f'hx-get="{reverse("books:new")}"', "Pridėti knygą")
+    ]
 
 
 @pytest.mark.parametrize(
@@ -116,13 +110,13 @@ def test_page_query_count_does_not_grow_with_the_books(client_logged, url_name, 
     url = reverse(url_name, kwargs=kwargs)
     BookFactory()
     BookFactory(ended=date(1999, 2, 1))
-    two = _page_queries(client_logged, url)
+    two = count_queries(lambda: client_logged.get(url))
 
     BookFactory()
     BookFactory(ended=date(1999, 3, 1))
     for year in (1997, 1998):
         BookFactory(started=date(year, 1, 1), ended=date(year, 2, 1))
-    six = _page_queries(client_logged, url)
+    six = count_queries(lambda: client_logged.get(url))
 
     assert six == two
 
@@ -364,10 +358,7 @@ def test_books_load_form(client_logged, url_of, expected):
 
     actual = client_logged.get(url).content.decode()
 
-    assert re.search(
-        rf'<form method="POST" id="generic-form"[^>]*hx-post="{re.escape(url)}"',
-        actual,
-    )
+    assert form_posts_to(actual, "generic-form", url)
     for pattern in expected:
         assert re.search(pattern, actual)
 
@@ -521,10 +512,7 @@ def test_view_books_delete_load_form(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert re.search(
-        rf'<form method="POST" id="delete-form"[^>]*hx-post="{re.escape(url)}"',
-        actual,
-    )
+    assert form_posts_to(actual, "delete-form", url)
     assert "Ar tikrai norite ištrinti: <strong>Book Title</strong>?" in actual
 
 
@@ -633,10 +621,7 @@ def test_target_load_form(client_logged, make_url):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert re.search(
-        rf'<form method="POST" id="generic-form"[^>]*hx-post="{re.escape(url)}"',
-        actual,
-    )
+    assert form_posts_to(actual, "generic-form", url)
     assert '<input type="text" name="year" value="1999"' in actual
 
 
