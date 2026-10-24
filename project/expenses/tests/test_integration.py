@@ -31,7 +31,12 @@ COLUMNS = (
 @pytest.mark.webtest
 class Expenses(Browser):
     def test_overview_chart_draws_on_load_and_after_a_tab_swap(self):
-        self.assert_overview_chart_redraws("/expenses/", "chart-months-container")
+        self.assert_overview_chart_redraws(
+            reverse("expenses:index"), "chart-months-container"
+        )
+
+    def index_url(self):
+        return f"{self.live_server_url}{reverse('expenses:index')}"
 
     def data_url(self):
         month = date.today().month
@@ -94,7 +99,7 @@ class Expenses(Browser):
         qty.send_keys(Keys.RETURN)
         self.wait_until_idle()
 
-        ActionChains(self.browser).send_keys(Keys.ESCAPE).perform()
+        self._press_escape()
         self.wait_until_idle()
 
         [expense] = self._listed_expenses()
@@ -103,40 +108,6 @@ class Expenses(Browser):
             "Expense Name",
             "123,45",
         )
-
-    def test_add_one_expense_check_quantity_and_price_fields_values(self):
-        self._fill_selects()
-
-        price = self.browser.find_element(By.ID, "id_total_sum")
-        price.send_keys("123.45")
-        price.send_keys(Keys.RETURN)
-
-        qty = self.browser.find_element(By.ID, "id_quantity")
-        qty.clear()
-        qty.send_keys("66")
-        qty.send_keys(Keys.ENTER)
-        self.wait_until_idle()
-
-        price = self.browser.find_element(By.ID, "id_price")
-        assert price.get_attribute("value") == "0.0"
-        assert price.value_of_css_property("font-weight") == "700"
-        assert (
-            self.browser.find_element(By.ID, "id_quantity").get_attribute("value")
-            == "1"
-        )
-
-    def test_exclude_expense_reset_after_submit(self):
-        self._fill_selects()
-
-        self.browser.find_element(By.ID, "id_total_sum").send_keys("123.45")
-        self.browser.find_element(By.ID, "add_price").click()
-
-        self.browser.find_element(By.ID, "id_exception").click()
-
-        self.browser.find_element(By.ID, "_new").click()
-        self.wait_until_idle()
-
-        assert not self.browser.find_element(By.ID, "id_exception").is_selected()
 
     @time_machine.travel("1999-12-01 10:11:12")
     def test_add_two_expenses(self):
@@ -168,29 +139,31 @@ class Expenses(Browser):
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_empty_required_fields(self):
-        self._open_add_expense(f"{self.live_server_url}/expenses/")
+        self._open_add_expense(self.index_url())
 
         self.browser.find_element(By.ID, "_close").click()
         self.wait_until_idle()
 
-        def get_error(field_id):
-            xpath = f"//*[@id='{field_id}']/ancestor::div[div[contains(@class, 'invalid-feedback')]][1]//div[contains(@class, 'invalid-feedback')]"
-            return self.browser.find_element(By.XPATH, xpath)
-
-        e1 = get_error("id_expense_type")
-        e2 = get_error("id_expense_name")
-        e3 = get_error("id_price")
-
-        assert "Šis laukas yra privalomas." in e1.text
-        assert "Šis laukas yra privalomas." in e2.text
-        assert "Įsitikinkite, kad reikšmė yra didesnė arba lygi 0.01." in e3.text
+        feedback = "div[@class='invalid-feedback']"
+        errors = {
+            field: self.browser.find_element(
+                By.XPATH,
+                f"//*[@id='id_{field}']/ancestor::div[{feedback}][1]/{feedback}",
+            ).text
+            for field in ("expense_type", "expense_name", "price")
+        }
+        assert errors == {
+            "expense_type": "Šis laukas yra privalomas.",
+            "expense_name": "Šis laukas yra privalomas.",
+            "price": "Įsitikinkite, kad reikšmė yra didesnė arba lygi 0.01.",
+        }
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_the_date_picker_names_its_month_in_the_journals_language(self):
         for lang, month in [("lt", "sausis"), ("en", "January")]:
             with self.subTest(lang=lang):
                 Journal.objects.update(lang=lang)
-                self._open_add_expense(f"{self.live_server_url}/expenses/")
+                self._open_add_expense(self.index_url())
 
                 self.browser.find_element(By.ID, "id_date").click()
 
@@ -201,7 +174,7 @@ class Expenses(Browser):
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_a_reopened_form_leaves_one_date_picker(self):
-        self._open_add_expense(f"{self.live_server_url}{reverse('expenses:index')}")
+        self._open_add_expense(self.index_url())
         self.browser.find_element(By.CSS_SELECTOR, "#mainModal .modal-close").click()
         self._press_add_expense()
 
@@ -234,28 +207,6 @@ class Expenses(Browser):
         assert [expense["price"] for expense in self._listed_expenses()] == ["6,48"]
 
     @time_machine.travel("1999-1-1 10:11:12")
-    def test_update_one_expense_account_keeps_the_price(self):
-        account = AccountFactory(title="Account2")
-        ExpenseFactory(price=648)
-
-        self._open_update_form()
-
-        assert (
-            self.browser.find_element(By.ID, "id_price").get_attribute("value")
-            == "6.48"
-        )
-
-        elem = Select(self.browser.find_element(By.ID, "id_account"))
-        elem.select_by_value(f"{account.id}")
-
-        self._submit_and_close_update_form()
-
-        assert not self.browser.find_elements(
-            By.CSS_SELECTOR, "#mainModal .invalid-feedback"
-        )
-        assert [expense["price"] for expense in self._listed_expenses()] == ["6,48"]
-
-    @time_machine.travel("1999-1-1 10:11:12")
     def test_search(self):
         ExpenseFactory(remark="xxxx")
         ExpenseFactory(remark="yyyy")
@@ -277,17 +228,6 @@ class Expenses(Browser):
 
     def _modal_display(self):
         return self._modal_container().value_of_css_property("display")
-
-    @time_machine.travel("1999-1-1 10:11:12")
-    def test_modal_closes_after_update_and_close(self):
-        ExpenseFactory()
-
-        self._open_update_form()
-        assert self._modal_display() == "block"
-
-        self._submit_and_close_update_form()
-
-        assert self._modal_display() == "none"
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_delete_closes_the_modal_and_refreshes_the_table(self):
@@ -322,12 +262,13 @@ class Expenses(Browser):
         ActionChains(self.browser).send_keys(Keys.ESCAPE).perform()
 
     @time_machine.travel("1999-1-1 10:11:12")
-    def test_modal_closes_by_backdrop_button_and_escape(self):
+    def test_modal_closes_by_backdrop_button_escape_and_save(self):
         ExpenseFactory()
         closers = {
             "backdrop": self._click_the_backdrop,
             "button": self._press_the_close_button,
             "escape": self._press_escape,
+            "save": self._submit_and_close_update_form,
         }
 
         for name, close in closers.items():
@@ -352,6 +293,7 @@ class Expenses(Browser):
         self.browser.find_element(By.ID, "id_total_sum").send_keys("123.45")
         self.browser.find_element(By.ID, "add_price").click()
         self.browser.find_element(By.ID, "id_remark").send_keys("AAAA")
+        self.browser.find_element(By.ID, "id_exception").click()
         self.browser.find_element(By.ID, "_new").click()
         self.wait_until_idle()
 
@@ -362,6 +304,9 @@ class Expenses(Browser):
             for field in ("price", "quantity", "remark")
         }
         assert values == {"price": "0.0", "quantity": "1", "remark": ""}
+        assert not self.browser.find_element(By.ID, "id_exception").is_selected()
+        price = self.browser.find_element(By.ID, "id_price")
+        assert price.value_of_css_property("font-weight") == "700"
         for marker in (".invalid-feedback", ".is-invalid"):
             assert not self.browser.find_elements(
                 By.CSS_SELECTOR, f"#mainModal {marker}"
@@ -371,7 +316,7 @@ class Expenses(Browser):
     def test_a_receipt_image_opens_in_the_image_modal(self):
         ExpenseFactory(attachment="receipt.jpg")
         # from Apžvalga, so imgModal's container arrives with the Duomenys swap
-        self.browser.get(f"{self.live_server_url}/expenses/")
+        self.browser.get(self.index_url())
         self.wait_until_idle()
         self.browser.find_element(By.ID, "tab-data").click()
         self.wait_until_idle()
