@@ -15,13 +15,17 @@ class Modal {
         return this.container?.querySelector('.modal-form');
     }
 
+    get isOpen() {
+        return this.container?.hidden === false;
+    }
+
     show() {
         const container = this.container;
         if (!container) {
             return;
         }
 
-        container.style.display = 'block';
+        container.hidden = false;
 
         // a pressed menu act keeps focus, and :focus-within would hold its menu open
         if (document.activeElement?.closest('.dropdown__menu')) {
@@ -35,7 +39,7 @@ class Modal {
             return;
         }
 
-        container.style.display = 'none';
+        container.hidden = true;
 
         const form = this.form;
         if (form) {
@@ -50,17 +54,9 @@ class Modal {
             return;
         }
 
-        const formSetForms = form.querySelector('#id_form-TOTAL_FORMS')?.value;
-
-        FORM_FIELDS.forEach((field) => {
-            if (formSetForms) {
-                for (let i = 0; i < formSetForms; i++) {
-                    this.#resetField(form, `#id_form-${i}-${field}`);
-                }
-            } else {
-                this.#resetField(form, `#id_${field}`);
-            }
-        });
+        this.#fieldSelectors(form).forEach(
+            (selector) => this.#resetField(form, selector)
+        );
     }
 
     resetErrorMessages() {
@@ -69,8 +65,10 @@ class Modal {
             return;
         }
 
-        form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
-        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach((el) => el.remove());
+        form.querySelectorAll('.is-invalid').forEach(
+            (el) => el.classList.remove('is-invalid')
+        );
     }
 
     #hxTrigger(form) {
@@ -82,8 +80,20 @@ class Modal {
         }
     }
 
-    #resetField(form, field) {
-        const input = form.querySelector(field);
+    #fieldSelectors(form) {
+        const totalForms = form.querySelector('#id_form-TOTAL_FORMS');
+        if (!totalForms) {
+            return FORM_FIELDS.map((field) => `#id_${field}`);
+        }
+
+        const rows = Array.from({ length: Number(totalForms.value) }, (_, i) => i);
+        return FORM_FIELDS.flatMap(
+            (field) => rows.map((i) => `#id_form-${i}-${field}`)
+        );
+    }
+
+    #resetField(form, selector) {
+        const input = form.querySelector(selector);
         if (input) {
             input.value = '';
         }
@@ -93,7 +103,7 @@ class Modal {
 
 const MODALS = {
     mainModal: new Modal('mainModal'),
-    imgModal: new Modal('imgModal')
+    imgModal: new Modal('imgModal'),
 };
 
 
@@ -102,10 +112,21 @@ function hideModalIn(container) {
 }
 
 
+function readSwap(e) {
+    const ctx = e.detail.ctx;
+    return {
+        targetId: ctx?.target?.id,
+        text: ctx?.text,
+        url: ctx?.sourceElement?.dataset?.url,
+        submitterId: ctx?.request?.submitter?.id,
+    };
+}
+
+
 function showImage(e) {
     const modal = MODALS.imgModal;
-    const url = e.detail.ctx?.sourceElement?.dataset?.url;
-    if (e.detail.ctx?.target?.id !== modal.id || !url) {
+    const { targetId, url } = readSwap(e);
+    if (targetId !== modal.id || !url) {
         return;
     }
 
@@ -133,21 +154,22 @@ function initializeModals() {
 
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-            document.querySelectorAll('.modal[style*="display: block"]').forEach(
-                (container) => hideModalIn(container)
+            Object.values(MODALS).filter((modal) => modal.isOpen).forEach(
+                (modal) => modal.hide()
             );
         }
     });
 
 
     htmx.on('htmx:after:swap', (e) => {
+        const { targetId, text } = readSwap(e);
         // an empty response closed the modal in before:swap, but htmx 4 still
         // fires this event for it and the dialog would reopen empty
-        if (!e.detail.ctx?.text) {
+        if (!text) {
             return;
         }
 
-        MODALS[e.detail.ctx?.target?.id]?.show();
+        MODALS[targetId]?.show();
     });
 
 
@@ -155,17 +177,14 @@ function initializeModals() {
 
 
     htmx.on('htmx:before:swap', (e) => {
-        const targetId = e.detail.ctx?.target?.id;
-        const responseText = e.detail.ctx?.text;
-
-        if (targetId !== MODALS.mainModal.id || responseText) {
+        const { targetId, text, submitterId } = readSwap(e);
+        if (targetId !== MODALS.mainModal.id || text) {
             return;
         }
 
         MODALS.mainModal.resetErrorMessages();
         MODALS.mainModal.resetForm();
 
-        const submitterId = e.detail.ctx?.request?.submitter?.id;
         if (submitterId === '_close') {
             MODALS.mainModal.hide();
         }
