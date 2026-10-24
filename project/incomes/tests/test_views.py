@@ -9,7 +9,12 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.utils import quick_add_pills, view_for
+from ...core.tests.utils import (
+    quick_add_pills,
+    stat_card_tooltips,
+    stat_cards,
+    view_for,
+)
 from .. import models, views
 from ..tabs import TABS
 from .factories import Income, IncomeFactory, IncomeTypeFactory
@@ -29,14 +34,16 @@ def _update_data(income, on="1999-12-31"):
 
 @time_machine.travel("2000-01-01")
 @pytest.mark.parametrize(
-    "url_of, expected_of",
+    "url_of, trigger, expected_of",
     [
         (
             lambda i: reverse("incomes:new"),
-            lambda i: ['data-hx-trigger-form="reload"', "1999-01-01"],
+            "reload",
+            lambda i: ['<input type="text" name="date" value="1999-01-01"'],
         ),
         (
             lambda i: reverse("incomes:update", kwargs={"pk": i.pk}),
+            "",
             lambda i: [
                 '<input type="text" name="date" value="1999-01-01"',
                 '<input type="text" name="price" value="77.77"',
@@ -48,31 +55,45 @@ def _update_data(income, on="1999-12-31"):
     ],
     ids=["new", "update"],
 )
-def test_income_load_form(client_logged, url_of, expected_of):
+def test_income_load_form(client_logged, url_of, trigger, expected_of):
     income = IncomeFactory(price=7777, remark="Pastaba")
     url = url_of(income)
 
     actual = client_logged.get(url).content.decode("utf-8")
 
-    assert f'hx-post="{url}"' in actual
+    assert re.search(
+        rf'id="generic-form"[^>]*hx-post="{url}"[^>]*data-hx-trigger-form="{trigger}"',
+        actual,
+    )
     for text in expected_of(income):
         assert text in actual
 
 
 @pytest.mark.parametrize(
-    "name, data, shown",
+    "name, data, row",
     [
         (
             "incomes:new",
             {"date": "1999-01-01", "price": "111"},
-            ["1999-01-01", "111", "Account1", "Income Type"],
+            r'<td class="text-left">1999-01-01</td>\s*'
+            r'<td class="text-left">Income Type</td>\s*'
+            r'<td class="text-left">Account1</td>\s*'
+            r'<td class="text-left"></td>\s*<td>111,00</td>',
         ),
-        ("incomes:type_new", {"title": "TTT", "type": "salary"}, ["TTT"]),
-        ("incomes:type_update", {"title": "TTT", "type": "other"}, ["TTT"]),
+        (
+            "incomes:type_new",
+            {"title": "TTT", "type": "salary"},
+            r'<td class="text-left">TTT</td>',
+        ),
+        (
+            "incomes:type_update",
+            {"title": "TTT", "type": "other"},
+            r'<td class="text-left">TTT</td>',
+        ),
     ],
     ids=["income", "type", "type_update"],
 )
-def test_save_follows_to_the_list_showing_the_row(client_logged, name, data, shown):
+def test_save_follows_to_the_list_showing_the_row(client_logged, name, data, row):
     income_type = IncomeTypeFactory()
     # the type forms ignore the account and income type they do not ask for
     posted = data | {"account": AccountFactory().pk, "income_type": income_type.pk}
@@ -80,9 +101,7 @@ def test_save_follows_to_the_list_showing_the_row(client_logged, name, data, sho
 
     response = client_logged.post(reverse(name, kwargs=kwargs), posted, follow=True)
 
-    actual = response.content.decode("utf-8")
-    for text in shown:
-        assert text in actual
+    assert re.search(row, response.content.decode("utf-8"))
 
 
 def test_income_save_htmx_answers_204_and_stores_the_row(client_logged):
@@ -183,8 +202,9 @@ def test_incomes_data_search_form(client_logged):
     url = reverse("incomes:tab_data")
     response = client_logged.get(url).content.decode("utf-8")
 
+    search = reverse("incomes:search")
     assert '<input type="search" name="search"' in response
-    assert reverse("incomes:search") in response
+    assert re.search(rf'id="search-form"\s+hx-get="{search}"', response)
 
 
 @pytest.mark.parametrize(
@@ -199,7 +219,7 @@ def test_incomes_list_shows_the_price_with_the_subnav_only_on_the_tab(
 
     content = client_logged.get(reverse(url)).content.decode()
 
-    assert "10,00</td>" in content
+    assert "<td>10,00</td>" in content
     assert ('<nav class="subnav">' in content) is has_subnav
 
 
@@ -230,8 +250,9 @@ def test_view_incomes_delete_load_form(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert f'hx-post="{url}"' in actual
-    assert '<form method="POST"' in actual
+    assert re.search(
+        rf'<form method="POST" id="delete-form"[^>]*hx-post="{url}"', actual
+    )
     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
 
@@ -280,8 +301,9 @@ def test_type_load_form(client_logged, name, with_pk):
     response = client_logged.get(url)
     actual = response.content.decode()
 
-    assert f'hx-post="{url}"' in actual
-    assert 'data-hx-trigger-form=""' in actual
+    assert re.search(
+        rf'id="generic-form"[^>]*hx-post="{url}"[^>]*data-hx-trigger-form=""', actual
+    )
 
 
 def test_type_save_htmx_trigger_value(client_logged):
@@ -305,7 +327,16 @@ def test_income_type_not_load_other_journal(client_logged, second_user):
 
 @pytest.mark.parametrize(
     "search, shown",
-    [("xxx", ["Nieko nerasta"]), ("1999 type", ["1999-01-01", "remark"])],
+    [
+        ("xxx", r'<div class="alert alert-warning">\s*Nieko nerasta\s*</div>'),
+        (
+            "1999 type",
+            r'<td class="text-left">1999-01-01</td>\s*'
+            r'<td class="text-left">Income Type</td>\s*'
+            r'<td class="text-left">Account1</td>\s*'
+            r'<td class="text-left">remark</td>',
+        ),
+    ],
     ids=["not_found", "found"],
 )
 def test_search_answers_the_matches_or_nothing_found(client_logged, search, shown):
@@ -313,9 +344,7 @@ def test_search_answers_the_matches_or_nothing_found(client_logged, search, show
 
     response = client_logged.get(reverse("incomes:search"), {"search": search})
 
-    actual = response.content.decode("utf-8")
-    for text in shown:
-        assert text in actual
+    assert re.search(shown, response.content.decode("utf-8"))
 
 
 @pytest.mark.parametrize(
@@ -333,7 +362,7 @@ def test_search_pagination(client_logged, query, expected):
     response = client_logged.get(url, query)
     actual = response.content.decode("utf-8")
 
-    assert actual.count("Income Type") == expected
+    assert actual.count('<td class="text-left">Income Type</td>') == expected
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -341,7 +370,7 @@ def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
     content = client_logged.get(tab.url).content.decode()
 
     assert '<nav class="subnav">' in content
-    assert "paper.min.css" in content
+    assert '<link rel="stylesheet" href="/static/css/paper.min.css">' in content
     assert 'class="paper-skin"' in content
 
 
@@ -351,8 +380,9 @@ def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, t
         tab.url, headers={"HX-Request": "true"}
     ).content.decode()
 
+    title = {"index": "Apžvalga", "data": "Duomenys", "types": "Rūšys"}[tab.name]
     assert '<nav class="subnav">' not in content
-    assert "<title>" in content
+    assert f"<title>Pajamos | {title}</title>" in content
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -421,8 +451,11 @@ def test_types_tab_states_each_type_in_a_table(client_logged):
     content = client_logged.get(reverse("incomes:tab_types")).content.decode()
 
     assert '<td class="text-left">Kita</td>' in content
-    assert re.search(r">Alga</td>\s*<td>900</td>\s*<td>700</td>", content)
-    assert "Paskutinį kartą" in content
+    assert re.search(
+        r">Alga</td>\s*<td>900</td>\s*<td>700</td>\s*<td>100%</td>\s*"
+        r"<td>1999-02-05</td>",
+        content,
+    )
     assert "c-accordion" not in content and 'class="accordion"' not in content
 
 
@@ -437,7 +470,7 @@ def test_types_tab_of_a_past_year_shows_its_own_last_income(main_user, client_lo
     content = client_logged.get(reverse("incomes:tab_types")).content.decode()
 
     assert "<td>1999-05-05</td>" in content
-    assert "2000-02-02" not in content
+    assert "<td>2000-02-02</td>" not in content
 
 
 def test_types_tab_edits_each_type_from_its_row(client_logged):
@@ -461,8 +494,9 @@ def test_types_tab_sorts_by_the_asked_column(client_logged):
     by_title = client_logged.get(url).content.decode()
     by_share = client_logged.get(url, {"order": "share"}).content.decode()
 
-    assert by_title.index(">Alga<") < by_title.index(">Zeta<")
-    assert by_share.index(">Zeta<") < by_share.index(">Alga<")
+    title_cells = r'<td class="text-left">([^<]*)</td>'
+    assert re.findall(title_cells, by_title) == ["Alga", "Zeta", "Viso"]
+    assert re.findall(title_cells, by_share) == ["Zeta", "Alga", "Viso"]
 
 
 @pytest.mark.parametrize("order", ["share", "title"])
@@ -510,11 +544,15 @@ def test_overview_states_the_year_in_three_cards(client_logged):
 
     content = client_logged.get(reverse("incomes:tab_index")).content.decode()
 
-    assert "Didžiausia rūšis" in content
-    assert "Alga" in content
-    assert "Pernai 800<" in content
-    assert "9 mėnesiai" in content
-    assert "Didžiausią šių metų dalį sudaranti pajamų rūšis" in content
+    assert stat_cards(content) == [
+        ("Šiais metais", "900", "Pernai 800"),
+        ("Per mėnesį", "100", "9 mėnesiai"),
+        ("Didžiausia rūšis", "Alga", "100% metų sumos"),
+    ]
+    assert stat_card_tooltips(content) == [
+        "Metų suma, padalinta iš prabėgusių mėnesių",
+        "Didžiausią šių metų dalį sudaranti pajamų rūšis",
+    ]
 
 
 @time_machine.travel("1999-09-15")
@@ -546,7 +584,7 @@ def test_quick_add_offers_its_pills(client_logged):
 def test_the_pill_stays_outside_the_swapped_tab(client_logged, tab):
     content = client_logged.get(tab.url, headers={"HX-Request": "true"}).content
 
-    assert b"quick-add" not in content
+    assert b'class="quick-add' not in content
 
 
 def _tab_queries(client, tab):
