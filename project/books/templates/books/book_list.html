@@ -28,7 +28,7 @@
             <td class="text-left">„{{ object.title }}”</td>
             <td class="text-left">{{ object.remark }}</td>
             <td class="text-center date-col">{{ object.started|date:"Y-m-d" }}</td>
-            <td class="text-center date-col">{{ object.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
+            <td class="text-center date-col">{{ object.ended|date:"Y-m-d"|default:'-' }}</td>
             <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
         </tr>
