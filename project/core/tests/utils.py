@@ -2,7 +2,6 @@ import re
 
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
-from django.urls import reverse
 
 PICKER_SCRIPT = r'<script[^>]*src="[^"]*/js/([a-z]+-picker\.js)"'
 
@@ -20,28 +19,34 @@ def quick_add_pills(content):
     )
 
 
+# an empty Card has no figure: stop at the next label, never pair across Cards
+IN_CARD = r"(?:(?!trend-card__label).)*?"
+CARD = re.compile(
+    rf'<div class="trend-card__label">([^<]*)</div>{IN_CARD}'
+    rf'<span class="trend-card__figure"[^>]*>([^<]*)</span>{IN_CARD}'
+    r'<div class="trend-card__note">([^<]*)</div>',
+    re.S,
+)
+TOOLTIP = re.compile(r'<span class="trend-card__explanation" role="tooltip"><p>([^<]*)')
+
+
+def stat_cards(content):
+    """(label, figure, note) of each Card."""
+    return CARD.findall(content)
+
+
+def stat_card_tooltips(content):
+    return TOOLTIP.findall(content)
+
+
 def count_queries(run):
     with CaptureQueriesContext(connection) as queries:
         run()
     return len(queries)
 
 
-def change_profile_year(client, year=1):
-    url = reverse("bookkeeping:index")
-    response = client.get(url)
-
-    u = response.wsgi_request.user
-    u.year = year
-    u.save()
-
-
 def setup_view(view, request, *args, **kwargs):
-    """
-    Mimic ``as_view()``, but returns view instance.
-    Use this function to get view instances on which you can run unit tests,
-    by testing specific methods.
-    """
-
+    """`as_view()` without dispatch: the view instance, to test its methods."""
     view.request = request
     view.args = args
     view.kwargs = kwargs
