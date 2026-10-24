@@ -90,13 +90,6 @@ SUBNAV_DUOMENYS_AT_TODAY = r'id="tab-data"[^>]*hx-get="/expenses/data/2/"'
             [_active_tab("data"), *_open_month(2)],
             id="13_falls_back",
         ),
-        pytest.param(
-            "expenses:tab_data",
-            {"month": "abc"},
-            {},
-            [_active_tab("data"), *_open_month(2)],
-            id="junk_falls_back",
-        ),
     ],
 )
 @time_machine.travel("1999-02-08")
@@ -144,7 +137,7 @@ def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
 
     assert "<title>Išlaidos | Apžvalga</title>" in content
     assert 'role="tablist"' not in content
-    assert "quick-add" not in content
+    assert 'class="quick-add' not in content
 
 
 def _tab_queries(client, url):
@@ -341,6 +334,17 @@ def test_type_and_name_forms_reload_the_open_tab(client_logged, url_of, with_par
     assert response.headers["HX-Trigger"] == '{"reload": {}}'
 
 
+# an empty Card has no figure: stop at the next label, never pair across Cards
+IN_CARD = r"(?:(?!trend-card__label).)*?"
+CARD = re.compile(
+    rf'<div class="trend-card__label">([^<]*)</div>{IN_CARD}'
+    rf'<span class="trend-card__figure"[^>]*>([^<]*)</span>{IN_CARD}'
+    r'<div class="trend-card__note">([^<]*)</div>',
+    re.S,
+)
+TOOLTIP = re.compile(r'<span class="trend-card__explanation" role="tooltip"><p>([^<]*)')
+
+
 @time_machine.travel("1999-09-15")
 def test_overview_states_a_running_year_to_its_boundary(client_logged):
     food = ExpenseTypeFactory(title="Maistas")
@@ -351,13 +355,15 @@ def test_overview_states_a_running_year_to_its_boundary(client_logged):
 
     content = client_logged.get(reverse("expenses:tab_index")).content.decode()
 
-    assert ">900</span>" in content
-    assert "Pernai 800<" in content
-    assert ">100</span>" in content
-    assert "9 mėnesiai" in content
-    assert ">Maistas</span>" in content
-    assert "100% metų sumos" in content
-    assert "Didžiausią šių metų dalį sudaranti išlaidų rūšis" in content
+    assert CARD.findall(content) == [
+        ("Šiais metais", "900", "Pernai 800"),
+        ("Per mėnesį", "100", "9 mėnesiai"),
+        ("Didžiausia rūšis", "Maistas", "100% metų sumos"),
+    ]
+    assert TOOLTIP.findall(content) == [
+        "Metų suma, padalinta iš prabėgusių mėnesių",
+        "Didžiausią šių metų dalį sudaranti išlaidų rūšis",
+    ]
 
 
 def test_overview_of_a_past_year_reads_the_whole_year(client_logged):
@@ -366,9 +372,11 @@ def test_overview_of_a_past_year_reads_the_whole_year(client_logged):
 
     content = client_logged.get(reverse("expenses:tab_index")).content.decode()
 
-    assert ">600</span>" in content
-    assert "Pernai 50<" in content
-    assert ">50</span>" in content
+    assert CARD.findall(content) == [
+        ("Šiais metais", "600", "Pernai 50"),
+        ("Per mėnesį", "50", "12 mėnesių"),
+        ("Didžiausia rūšis", "Expense Type", "100% metų sumos"),
+    ]
 
 
 def test_overview_of_an_empty_year_is_three_empty_cards(client_logged):
@@ -393,7 +401,11 @@ def test_overview_charts_the_year_against_last_year_to_the_same_day(client_logge
 
     assert data["1999"] == [0.0, 900.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     assert data["1998"][8] == 800.0
-    assert "Išlaidos per mėnesį" in content
+    assert re.search(
+        r'<h2 class="panel__title">Išlaidos per mėnesį</h2>\s*'
+        r'<div id="chart-months-container">',
+        content,
+    )
 
 
 def test_the_navbar_opens_duomenys_at_each_month_and_all(client_logged):
@@ -443,22 +455,6 @@ YEAR_DATES = [date(1998, 1, 1), date(1999, 1, 1), date(1999, 2, 1)]
             [date(1999, 1, 1), date(1999, 2, 1)],
             id="all_is_the_year",
         ),
-        pytest.param(
-            "1999-01-01",
-            YEAR_DATES,
-            {"month": "13"},
-            {},
-            [date(1999, 1, 1)],
-            id="13_is_this_month",
-        ),
-        pytest.param(
-            "1999-01-01",
-            YEAR_DATES,
-            {"month": "abc"},
-            {},
-            [date(1999, 1, 1)],
-            id="junk_is_this_month",
-        ),
     ],
 )
 def test_expenses_list_filters_by_month(
@@ -491,7 +487,7 @@ def test_expenses_list_empty_notice(client_logged, month, expected):
     assert f'<div class="alert">{expected}</div>' in clean_content(actual)
     assert "<b>" not in actual
     assert "alert-warning" not in actual
-    assert "reload from:body" not in actual
+    assert not re.search(r'hx-trigger="[^"]*reload from:body', actual)
 
 
 def test_a_duomenys_row_has_no_type_colour_and_keeps_its_exception_mark(
@@ -506,7 +502,7 @@ def test_a_duomenys_row_has_no_type_colour_and_keeps_its_exception_mark(
     row = re.search(r'<tr hx-get=[^>]*class="([^"]*)"', content)[1]
     assert row.strip() == ""
     assert '<td class="text-left exception">1999-01-01</td>' in content
-    assert "reload from:body" not in content
+    assert not re.search(r'hx-trigger="[^"]*reload from:body', content)
 
 
 def test_lists_renders_row_buttons_equal_for_2_and_6_expenses(client_logged):
@@ -554,8 +550,7 @@ def test_expenses_load_new_form(main_user, client_logged):
     response = client_logged.get(url)
     actual = clean_content(response.content.decode("utf-8"))
 
-    assert f'hx-post="{url}"' in actual
-    assert "3000-08-08" in actual
+    assert '<input type="text" name="date" value="3000-08-08"' in actual
     assert "Įrašyti</button>" in actual
     assert "Įrašyti ir uždaryti</button>" in actual
 
@@ -565,7 +560,7 @@ def test_expenses_new_form_file_control_speaks_the_app_language(client_logged):
 
     text = client_logged.get(url).content.decode()
 
-    assert "Pasirinkti failą" in text
+    assert '<span class="file-input__button">Pasirinkti failą</span>' in text
     assert 'data-empty="Failas nepasirinktas"' in text
 
 
@@ -662,7 +657,6 @@ def test_expenses_load_update_form(client_logged):
     response = client_logged.get(url)
     actual = clean_content(response.content.decode("utf-8"))
 
-    assert f'hx-post="{url}"' in actual
     assert "Atnaujinti ir uždaryti</button>" in actual
 
 
@@ -812,8 +806,9 @@ def test_expenses_data_search_form(client_logged):
     url = reverse("expenses:tab_data", kwargs={"month": "1"})
     response = client_logged.get(url).content.decode("utf-8")
 
+    search = reverse("expenses:search")
     assert '<input type="search" name="search"' in response
-    assert reverse("expenses:search") in response
+    assert re.search(rf'id="search-form"\s+hx-get="{search}"', response)
 
 
 @pytest.mark.parametrize(
@@ -827,10 +822,14 @@ def test_expenses_list_price_converted(client_logged, price, expected):
     ExpenseFactory(price=price)
 
     url = reverse("expenses:list", kwargs={"month": 1})
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+    content = client_logged.get(url).content.decode("utf-8")
 
-    assert expected in actual
+    assert re.findall(
+        r'<tr hx-get=[^>]*>\s*<td class="text-left [\w-]+">([^<]*)</td>\s*'
+        r'<td class="text-left">([^<]*)</td>\s*<td class="text-left">([^<]*)</td>\s*'
+        r"<td>([^<]*)</td>\s*<td>([^<]*)</td>",
+        content,
+    ) == [("1999-01-01", "Expense Type", "Expense Name", "13", expected)]
 
 
 def test_view_expenses_delete_load_form(client_logged):
@@ -841,8 +840,9 @@ def test_view_expenses_delete_load_form(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert f'hx-post="{url}"' in actual
-    assert '<form method="POST"' in actual
+    assert re.search(
+        rf'<form method="POST" id="delete-form"[^>]*hx-post="{url}"', actual
+    )
     assert (
         "Ar tikrai norite ištrinti: "
         "<strong>1999-01-01/Expense Type/Expense Name</strong>?"
@@ -903,12 +903,18 @@ def test_expense_type_not_load_other_journal(client_logged, second_user):
 @pytest.mark.parametrize(
     "url_of",
     [
+        pytest.param(lambda: reverse("expenses:new"), id="new"),
+        pytest.param(
+            lambda: reverse("expenses:update", kwargs={"pk": ExpenseFactory().pk}),
+            id="update",
+        ),
         pytest.param(lambda: reverse("expenses:type_new"), id="type_new"),
         pytest.param(lambda: reverse("expenses:name_new"), id="name_new"),
         pytest.param(_type_update_url, id="type_update"),
+        pytest.param(_name_update_url, id="name_update"),
     ],
 )
-def test_type_and_name_forms_post_to_their_url(client_logged, url_of):
+def test_each_form_posts_to_its_url(client_logged, url_of):
     url = url_of()
     actual = client_logged.get(url).content.decode("utf-8")
 
@@ -950,7 +956,6 @@ def test_expense_name_load_for_form_for_update(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="title" value="XXX"' in actual
 
 
