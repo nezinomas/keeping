@@ -8,9 +8,12 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
+from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
 from ....core.tests.utils import PICKER_SCRIPT, setup_view
+from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionTypeFactory
+from ....savings.models import SavingBalance
 from ....savings.tests.factories import SavingTypeFactory
 from ... import views
 from ...models import AccountWorth, PensionWorth, SavingWorth
@@ -41,40 +44,64 @@ def test_post_writes_all_rows_in_one_insert(client_logged, count):
 
 class Worth(NamedTuple):
     url: str
+    view: type
     fund_factory: type
     worth_factory: type
     fund_field: str
     model: type
+    title: str
+    duplicate_message: str
+    balance: type
+    balance_field: str
+    closed_listed: bool
 
 
 WORTH_FORMSETS = [
     pytest.param(
         Worth(
-            "bookkeeping:accounts_worth_new",
-            AccountFactory,
-            AccountWorthFactory,
-            "account",
-            AccountWorth,
+            url="bookkeeping:accounts_worth_new",
+            view=views.AccountsWorthNew,
+            fund_factory=AccountFactory,
+            worth_factory=AccountWorthFactory,
+            fund_field="account",
+            model=AccountWorth,
+            title="Sąskaitų vertė",
+            duplicate_message="Pasirinktos vienodos sąskaitos.",
+            balance=AccountBalance,
+            balance_field="have",
+            closed_listed=False,
         ),
         id="account",
     ),
     pytest.param(
         Worth(
-            "bookkeeping:savings_worth_new",
-            SavingTypeFactory,
-            SavingWorthFactory,
-            "saving_type",
-            SavingWorth,
+            url="bookkeeping:savings_worth_new",
+            view=views.SavingsWorthNew,
+            fund_factory=SavingTypeFactory,
+            worth_factory=SavingWorthFactory,
+            fund_field="saving_type",
+            model=SavingWorth,
+            title="Fondų vertė",
+            duplicate_message="Pasirinkti vienodi fondai.",
+            balance=SavingBalance,
+            balance_field="market_value",
+            closed_listed=False,
         ),
         id="saving_type",
     ),
     pytest.param(
         Worth(
-            "bookkeeping:pensions_worth_new",
-            PensionTypeFactory,
-            PensionWorthFactory,
-            "pension_type",
-            PensionWorth,
+            url="bookkeeping:pensions_worth_new",
+            view=views.PensionsWorthNew,
+            fund_factory=PensionTypeFactory,
+            worth_factory=PensionWorthFactory,
+            fund_field="pension_type",
+            model=PensionWorth,
+            title="Pensijų vertė",
+            duplicate_message="Pasirinktos vienodos pensijos.",
+            balance=PensionBalance,
+            balance_field="market_value",
+            closed_listed=True,
         ),
         id="pension",
     ),
@@ -118,31 +145,16 @@ def test_post_query_count_does_not_grow_with_the_rows(client_logged, worth, dupl
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "url, factory, closed_listed",
-    [
-        pytest.param(
-            "bookkeeping:accounts_worth_new", AccountFactory, False, id="account"
-        ),
-        pytest.param(
-            "bookkeeping:savings_worth_new", SavingTypeFactory, False, id="saving_type"
-        ),
-        pytest.param(
-            "bookkeeping:pensions_worth_new", PensionTypeFactory, True, id="pension"
-        ),
-    ],
-)
-def test_worth_form_lists_the_users_funds(
-    client_logged, main_user, second_user, url, factory, closed_listed
-):
-    factory(title="Open")
-    factory(title="Closed", closed=main_user.year - 1)
-    factory(title="Foreign", journal=second_user.journal)
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
+def test_worth_form_lists_the_users_funds(client_logged, main_user, second_user, worth):
+    worth.fund_factory(title="Open")
+    worth.fund_factory(title="Closed", closed=main_user.year - 1)
+    worth.fund_factory(title="Foreign", journal=second_user.journal)
 
-    actual = client_logged.get(reverse(url)).content.decode("utf-8")
+    actual = client_logged.get(reverse(worth.url)).content.decode("utf-8")
 
     assert ">Open</option>" in actual
-    assert (">Closed</option>" in actual) is closed_listed
+    assert (">Closed</option>" in actual) is worth.closed_listed
     assert ">Foreign</option>" not in actual
 
 
@@ -186,15 +198,32 @@ def test_worth_form_ignores_a_posted_row_id(
 
 
 @pytest.mark.django_db
-def test_modal_renders_the_formset_under_its_title_and_worth_css_class(client_logged):
-    account = AccountFactory(title="A1")
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
+def test_modal_renders_the_formset_under_its_title_and_worth_css_class(
+    client_logged, worth
+):
+    fund = worth.fund_factory(title="F1")
+
+    response = client_logged.get(reverse(worth.url))
+
+    actual = response.content.decode("utf-8")
+    assert f'<h5 class="modal-title">{worth.title}</h5>' in actual
+    assert 'class="modal-body worth-form"' in actual
+    assert f'<option value="{fund.pk}" selected>F1</option>' in actual
+
+
+@pytest.mark.django_db
+def test_formset_has_one_empty_price_per_account(client_logged):
+    AccountFactory(title="A1")
+    AccountFactory(title="A2")
 
     response = client_logged.get(reverse("bookkeeping:accounts_worth_new"))
 
-    actual = response.content.decode("utf-8")
-    assert "Sąskaitų vertė" in actual
-    assert 'class="modal-body worth-form"' in actual
-    assert f'<option value="{account.pk}" selected>A1</option>' in actual
+    prices = re.findall(
+        r'<input[^>]*name="form-\d+-price"[^>]*>', response.content.decode()
+    )
+    assert len(prices) == 2
+    assert not any("value=" in price for price in prices)
 
 
 @pytest.mark.django_db
@@ -277,14 +306,17 @@ def test_bound_formset_renders_only_the_posted_rows(rf, main_user):
 
 
 @pytest.mark.django_db
-def test_post_with_invalid_formset_returns_the_formset_with_its_errors(rf, main_user):
-    view = posted_view(rf, main_user, [{"date": "x", "price": "x", "account": 0}])
+def test_post_with_invalid_formset_returns_the_formset_with_its_errors(client_logged):
+    row = {"date": "x", "price": "x", "account": 0}
 
-    response = view.post(view.request)
+    response = client_logged.post(
+        reverse("bookkeeping:accounts_worth_new"), post_data([row])
+    )
 
-    formset = response.context_data["formset"]
-    assert not formset.is_valid()
-    assert set(formset.errors[0]) == {"date", "price", "account"}
+    actual = re.findall(
+        r'aria-describedby="id_form-0-(\w+)_error"', response.content.decode("utf-8")
+    )
+    assert sorted(actual) == ["account", "date", "price"]
     assert not AccountWorth.objects.exists()
 
 
@@ -296,6 +328,11 @@ def test_post_with_invalid_formset_returns_the_formset_with_its_errors(rf, main_
             [{"price": "100"}, {"price": ""}],
             [("A1", 10000, "1999-09-09")],
             id="some_priced",
+        ),
+        pytest.param(
+            [{"price": "0"}, {"price": ""}],
+            [("A1", 0, "1999-09-09")],
+            id="zero_priced",
         ),
         pytest.param([{"price": ""}, {}], [], id="none_priced"),
     ],
@@ -319,57 +356,29 @@ def test_post_saves_only_the_rows_with_a_price(rf, main_user, prices, saved):
 
 
 @pytest.mark.django_db
-def test_post_syncs_the_balances_of_the_saved_rows_user(rf, main_user, mocker):
-    a1 = AccountFactory(title="A1")
-    view = posted_view(
-        rf, main_user, [{"date": "1999-9-9", "price": "100", "account": a1.pk}]
-    )
-    mock_sync = mocker.patch.object(views.AccountsWorthNew, "balance_sync")
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
+def test_post_syncs_the_balances_of_the_saved_rows_user(client_logged, worth):
+    fund = worth.fund_factory()
+    row = {"date": "1999-9-9", "price": "0.01", worth.fund_field: fund.pk}
 
-    view.post(view.request)
+    client_logged.post(reverse(worth.url), post_data([row]))
 
-    mock_sync.assert_called_once_with(main_user)
+    actual = worth.balance.objects.values_list("year", worth.balance_field)
+    assert list(actual) == [(1999, 1), (2000, 1)]
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "view_class, factory, fund_field, message",
-    [
-        pytest.param(
-            views.AccountsWorthNew,
-            AccountFactory,
-            "account",
-            "Pasirinktos vienodos sąskaitos.",
-            id="account",
-        ),
-        pytest.param(
-            views.SavingsWorthNew,
-            SavingTypeFactory,
-            "saving_type",
-            "Pasirinkti vienodi fondai.",
-            id="saving_type",
-        ),
-        pytest.param(
-            views.PensionsWorthNew,
-            PensionTypeFactory,
-            "pension_type",
-            "Pasirinktos vienodos pensijos.",
-            id="pension",
-        ),
-    ],
-)
-@pytest.mark.parametrize("copies", [2, 3])
-def test_clean_tags_the_fund_field_the_model_names(
-    rf, main_user, view_class, factory, fund_field, message, copies
-):
-    fund = factory()
-    view = worth_view(rf, main_user, view_class)
-    row = {"date": "1999-9-9", "price": "5", fund_field: fund.pk}
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
+def test_clean_tags_the_fund_field_the_model_names(rf, main_user, worth):
+    fund = worth.fund_factory()
+    view = worth_view(rf, main_user, worth.view)
+    row = {"date": "1999-9-9", "price": "5", worth.fund_field: fund.pk}
 
-    actual = bound_formset(view, [row] * copies)
+    actual = bound_formset(view, [row] * 3)
 
     assert not actual.is_valid()
-    assert [form.errors for form in actual.forms] == [{fund_field: [message]}] * copies
+    expected = [{worth.fund_field: [worth.duplicate_message]}] * 3
+    assert [form.errors for form in actual.forms] == expected
 
 
 @pytest.mark.django_db
