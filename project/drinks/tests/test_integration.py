@@ -33,30 +33,29 @@ class DrinksQuickAdd(Browser):
         assert self.browser.find_elements(By.CSS_SELECTOR, "#mainModal .modal-form")
 
 
+def open_drinks_at(test: Browser, width: int):
+    test.addCleanup(
+        test.browser.execute_cdp_cmd, "Emulation.clearDeviceMetricsOverride", {}
+    )
+    test.browser.execute_cdp_cmd(
+        "Emulation.setDeviceMetricsOverride",
+        {"width": width, "height": 900, "deviceScaleFactor": 1, "mobile": False},
+    )
+    test.browser.get(f"{test.live_server_url}/drinks/")
+    test.wait_until_idle()
+
+
 @pytest.mark.webtest
 class DrinksChartAxisTitle(Browser):
     def test_axis_title_takes_its_face_by_width_inside_the_chart(self):
         chart = f"{OVERVIEW_CHART} .highcharts-root"
         title = f"{OVERVIEW_CHART} .highcharts-yaxis .highcharts-axis-title"
-        self.addCleanup(
-            self.browser.execute_cdp_cmd, "Emulation.clearDeviceMetricsOverride", {}
-        )
         for width, size, spacing, transform in (
             (1280, "12px", "1.44px", "uppercase"),
             (360, "10.88px", "0.6528px", "none"),
         ):
             with self.subTest(width=width):
-                self.browser.execute_cdp_cmd(
-                    "Emulation.setDeviceMetricsOverride",
-                    {
-                        "width": width,
-                        "height": 900,
-                        "deviceScaleFactor": 1,
-                        "mobile": False,
-                    },
-                )
-                self.browser.get(f"{self.live_server_url}/drinks/")
-                self.wait_until_idle()
+                open_drinks_at(self, width)
                 face = self.browser.execute_script(
                     "const t = document.querySelector(arguments[0]);"
                     "const s = getComputedStyle(t);"
@@ -70,6 +69,31 @@ class DrinksChartAxisTitle(Browser):
                 )
 
                 assert face == [size, spacing, transform, True]
+
+
+@pytest.mark.webtest
+class DrinksChartRuleLabel(Browser):
+    def test_heavy_day_label_fits_inside_its_chart_at_each_width(self):
+        DrinkFactory(stdav=8)
+        for width, text in (
+            (1280, "Rizikingo vartojimo diena: > 6 Std Av"),
+            (360, "> 6 Std Av"),
+        ):
+            with self.subTest(width=width):
+                open_drinks_at(self, width)
+                self.browser.find_element(By.ID, "tab-habits").click()
+                self.wait_until_idle()
+                labels = self.browser.execute_script(
+                    "return [...document.querySelectorAll("
+                    "  '.highcharts-plot-line-label span')].map(s => {"
+                    "  const r = s.getBoundingClientRect();"
+                    "  const c = s.closest('.highcharts-container')"
+                    "    .getBoundingClientRect();"
+                    "  return [s.textContent, r.left >= c.left && r.right <= c.right];"
+                    "});"
+                )
+
+                assert labels == [[text, True], [text, True]]
 
 
 @pytest.mark.webtest
