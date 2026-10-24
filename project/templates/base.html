@@ -112,7 +112,7 @@
     {% endblock body %}
 
     <footer>
-      <div id="mainModalContainer" class="modal">
+      <div id="mainModalContainer" class="modal" hidden>
         {# no hx-swap: htmx.ajax reads the swap off its target, and "outer" would replace this div and its x-data #}
         <div id="mainModal" class="modal-dialog" hx-target:inherited="#mainModal" x-data="{ inserted: false }"></div>
       </div>
