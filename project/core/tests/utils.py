@@ -10,6 +10,16 @@ def clean_content(rendered):
     return str(rendered).replace("\n", "").replace("\t", "").replace("  ", "")
 
 
+def form_posts_to(content, form_id, url):
+    form = rf'<form method="POST" id="{form_id}"[^>]* hx-post="{re.escape(url)}"'
+    return bool(re.search(form, content))
+
+
+def nav_tabs(content):
+    """(name, url) of each tab the subnav offers."""
+    return re.findall(r'<button\s+id="tab-(\w+)"[^>]*hx-get="([^"]*)"', content)
+
+
 def quick_add_pills(content):
     """(tag, the tab it waits for or "", its url attribute, label) of each pill."""
     return re.findall(

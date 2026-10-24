@@ -11,7 +11,13 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils.html import escape
 
-from ...core.tests.utils import quick_add_pills, view_for
+from ...core.tests.utils import (
+    count_queries,
+    form_posts_to,
+    nav_tabs,
+    quick_add_pills,
+    view_for,
+)
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
 from ...savings.tests.factories import SavingTypeFactory
@@ -187,11 +193,6 @@ def _month_cells(table, figure):
     return re.findall(rf'<td class="[^"]*" data-cell="[^"]*">{figure}</td>', table)
 
 
-def _form_posts_to(content, form_id, url):
-    form = rf'<form method="POST" id="{form_id}"[^>]* hx-post="{re.escape(url)}"'
-    return re.search(form, content)
-
-
 def _assert_reload_triggered(response):
     assert json.loads(response.headers["HX-Trigger"]) == {"reload": {}}
 
@@ -296,8 +297,7 @@ def test_every_panel_on_a_tab_is_a_table_panel(client_logged, tab):
 def test_nav_offers_every_tab(client_logged):
     content = client_logged.get(reverse("plans:index")).content.decode()
 
-    tabs = re.findall(r'<button\s+id="tab-(\w+)"[^>]*hx-get="([^"]*)"', content)
-    assert tabs == [
+    assert nav_tabs(content) == [
         ("incomes", reverse("plans:tab_incomes")),
         ("expenses", reverse("plans:tab_expenses")),
         ("savings", reverse("plans:tab_savings")),
@@ -446,7 +446,7 @@ def test_plan_load_form(client_logged, kind):
     actual = response.content.decode()
 
     assert response.status_code == 200
-    assert _form_posts_to(actual, "generic-form", url)
+    assert form_posts_to(actual, "generic-form", url)
     assert 'class="modal-body plans-form"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
@@ -548,7 +548,7 @@ def test_plan_load_update_load_form(client_logged, kind):
     response = client_logged.get(url)
     actual = response.content.decode()
 
-    assert _form_posts_to(actual, "generic-form", url)
+    assert form_posts_to(actual, "generic-form", url)
     assert 'class="modal-body plans-form"' in actual
 
 
@@ -803,7 +803,7 @@ def test_plan_delete_load_form(client_logged, kind):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert _form_posts_to(actual, "delete-form", url)
+    assert form_posts_to(actual, "delete-form", url)
     assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
 
 
@@ -1047,7 +1047,7 @@ def test_copy_load_form(client_logged):
 
     content = client_logged.get(url).content.decode()
 
-    assert _form_posts_to(content, "generic-form", url)
+    assert form_posts_to(content, "generic-form", url)
     for name in (
         "year_from",
         "year_to",
@@ -1096,12 +1096,6 @@ def test_copy_year_to_same_as_user_year(main_user, client_logged):
 
 
 # Query counts
-def _tab_queries(client, tab):
-    with CaptureQueriesContext(connection) as queries:
-        client.get(tab.url, headers={"HX-Request": "true"})
-    return len(queries)
-
-
 def _income_plans(numbers):
     for i in numbers:
         IncomePlanFactory(income_type=IncomeTypeFactory(title=f"I{i}"))
@@ -1146,19 +1140,22 @@ def _plans_of_every_type(numbers):
     ],
 )
 def test_tab_query_count_does_not_grow_with_the_plans(client_logged, tab_name, build):
-    tab = [t for t in TABS if t.name == tab_name][0]
+    url = TABS[tab_name].url
+
+    def load_tab():
+        client_logged.get(url, headers={"HX-Request": "true"})
 
     build(range(2))
-    two = _tab_queries(client_logged, tab)
+    two = count_queries(load_tab)
 
     build(range(2, 6))
-    six = _tab_queries(client_logged, tab)
+    six = count_queries(load_tab)
 
     assert six == two
 
 
 def test_expenses_tab_reads_no_income_saving_or_day_plans(client_logged):
-    tab = [t for t in TABS if t.name == "expenses"][0]
+    tab = TABS["expenses"]
     ExpensePlanFactory()
     NecessaryPlanFactory()
 
