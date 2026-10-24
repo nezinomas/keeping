@@ -134,7 +134,7 @@ ROW = re.compile(
     r'<td class="text-center date-col">([^<]*)</td>\s*'
     r'<td class="text-center date-col">([^<]*)</td>'
 )
-THIS_YEAR = ("Author", "This Year", "Remark", "1999-01-01", "")
+THIS_YEAR = ("Author", "This Year", "Remark", "1999-01-01", "-")
 OLD_BOOK = ("Author", "Old Book", "Remark", "1974-01-01", "1974-01-31")
 
 
@@ -470,7 +470,7 @@ def test_an_invalid_post_returns_the_form_with_its_error(
                 "title": "YYY",
                 "remark": "ZZZ",
             },
-            [("XXX", "YYY", "ZZZ", "1999-03-03", "")],
+            [("XXX", "YYY", "ZZZ", "1999-03-03", "-")],
             (date(1999, 3, 3), None, "XXX", "YYY", "ZZZ"),
         ),
     ],
@@ -534,7 +534,7 @@ def test_books_delete(client_logged, second_user, owned, remaining):
     ("search", "rows", "notices"),
     [
         ("xxx", [], 1),
-        ("1999 title", [("Author", "Book Title", "Remark", "1999-01-01", "")], 0),
+        ("1999 title", [("Author", "Book Title", "Remark", "1999-01-01", "-")], 0),
     ],
     ids=["not_found", "found"],
 )
