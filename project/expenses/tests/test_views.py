@@ -11,7 +11,13 @@ from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.lib.utils import get_action_buttons_html
-from ...core.tests.utils import clean_content, quick_add_pills, view_for
+from ...core.tests.utils import (
+    clean_content,
+    quick_add_pills,
+    stat_card_tooltips,
+    stat_cards,
+    view_for,
+)
 from .. import models
 from ..forms import ExpenseNameChoicesMixin
 from ..forms_import import ReviewLineForm
@@ -334,17 +340,6 @@ def test_type_and_name_forms_reload_the_open_tab(client_logged, url_of, with_par
     assert response.headers["HX-Trigger"] == '{"reload": {}}'
 
 
-# an empty Card has no figure: stop at the next label, never pair across Cards
-IN_CARD = r"(?:(?!trend-card__label).)*?"
-CARD = re.compile(
-    rf'<div class="trend-card__label">([^<]*)</div>{IN_CARD}'
-    rf'<span class="trend-card__figure"[^>]*>([^<]*)</span>{IN_CARD}'
-    r'<div class="trend-card__note">([^<]*)</div>',
-    re.S,
-)
-TOOLTIP = re.compile(r'<span class="trend-card__explanation" role="tooltip"><p>([^<]*)')
-
-
 @time_machine.travel("1999-09-15")
 def test_overview_states_a_running_year_to_its_boundary(client_logged):
     food = ExpenseTypeFactory(title="Maistas")
@@ -355,12 +350,12 @@ def test_overview_states_a_running_year_to_its_boundary(client_logged):
 
     content = client_logged.get(reverse("expenses:tab_index")).content.decode()
 
-    assert CARD.findall(content) == [
+    assert stat_cards(content) == [
         ("Šiais metais", "900", "Pernai 800"),
         ("Per mėnesį", "100", "9 mėnesiai"),
         ("Didžiausia rūšis", "Maistas", "100% metų sumos"),
     ]
-    assert TOOLTIP.findall(content) == [
+    assert stat_card_tooltips(content) == [
         "Metų suma, padalinta iš prabėgusių mėnesių",
         "Didžiausią šių metų dalį sudaranti išlaidų rūšis",
     ]
@@ -372,7 +367,7 @@ def test_overview_of_a_past_year_reads_the_whole_year(client_logged):
 
     content = client_logged.get(reverse("expenses:tab_index")).content.decode()
 
-    assert CARD.findall(content) == [
+    assert stat_cards(content) == [
         ("Šiais metais", "600", "Pernai 50"),
         ("Per mėnesį", "50", "12 mėnesių"),
         ("Didžiausia rūšis", "Expense Type", "100% metų sumos"),
