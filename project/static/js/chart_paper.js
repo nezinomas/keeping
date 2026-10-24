@@ -23,9 +23,12 @@ function paperRuleLabel(text, color) {
 // The two chart heights. Standard is the theme's; a chart with two panes asks for large.
 var PAPER_CHART_HEIGHT = { standard: 350, large: 420 };
 
-// Read once, at the table headers' breakpoint: caps at their 12px floor overflow a phone,
-// which drops them as the headers do (`themes/theme.js` sets the caps).
-var PAPER_AXIS_TITLE_FACE = window.matchMedia("(min-width: 768px)").matches
+// Read once, at the table headers' breakpoint: below it a chart's text is cut to fit.
+var PAPER_WIDE = window.matchMedia("(min-width: 768px)").matches;
+
+// Caps at their 12px floor overflow a phone, which drops them as the headers do
+// (`themes/theme.js` sets the caps).
+var PAPER_AXIS_TITLE_FACE = PAPER_WIDE
     ? { fontSize: "12px", letterSpacing: "0.12em" }
     : { fontSize: "0.68rem", letterSpacing: "0.06em", textTransform: "none" };
 
