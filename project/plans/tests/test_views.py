@@ -65,6 +65,11 @@ TAB_TABLE_PANELS = {
     "day": ["day-plans", "calculations-spend", "calculations-check"],
 }
 
+PLANS_TABLE_PANELS = {
+    tab: [panel for panel in panels if not panel.startswith("calculations-")]
+    for tab, panels in TAB_TABLE_PANELS.items()
+}
+
 MONTHS = (
     "january",
     "february",
@@ -291,6 +296,18 @@ def test_every_panel_on_a_tab_is_a_table_panel(client_logged, tab):
     for panel_id in TAB_TABLE_PANELS[tab.name]:
         assert f'<section class="panel panel--table" id="{panel_id}">' in content
     assert '<section class="panel" ' not in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_an_empty_plans_table_names_the_plan_year(client_logged, main_user, tab):
+    content = client_logged.get(
+        tab.url, headers={"HX-Request": "true"}
+    ).content.decode()
+
+    for panel_id in PLANS_TABLE_PANELS[tab.name]:
+        assert f"<b>{main_user.year}</b> metais įrašų nėra." in _panel(
+            content, panel_id
+        )
 
 
 def test_nav_offers_every_tab(client_logged):
@@ -966,16 +983,14 @@ def test_day_tab_calculations_breakdown_reads_the_plans(client_logged):
     assert _first_month_cell(content, "Taupymas") == "30,00"
 
 
-def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
-    client_logged,
-):
+@pytest.mark.parametrize("panel", ["day-plans", "calculations-spend"])
+def test_day_tab_marks_the_day_plan_cell_above_the_sum_per_day(client_logged, panel):
     DayPlanFactory(month=1, price=5_000)
 
     response = client_logged.get(reverse("plans:tab_day"))
     content = response.content.decode("utf-8")
-    actual = _between(content, "calculations-spend", "calculations-check")
 
-    assert actual.count("plans-table__over") == 1
+    assert _panel(content, panel).count("plans-table__over") == 1
 
 
 def test_necessary_new_not_load_other_journal(client_logged, second_user):

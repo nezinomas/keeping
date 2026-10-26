@@ -1,17 +1,15 @@
 {% load i18n %}
 
 <div class="stat-cards">
-    <c-stat-cards :cards=cards />
+    <c-stat-cards :cards="cards" />
 </div>
 
-{% with object_list=day_plans %}
 <c-panel table id="day-plans" title="{% translate 'Sum per day' %}">
-    <c-plans-table :year=request.user.year :items=object_list kind='day' type="{% translate 'Daily' %}" update='plans:day_update' delete='plans:day_delete' :states=day_states />
+    <c-plans-table :rows="day_plans" :year="plan_year" />
 </c-panel>
-{% endwith %}
 
 {% for block in calculations %}
 <c-panel table id="calculations-{{ block.key }}" title="{{ block.title }}">
-    <c-calculations-table :rows=block.rows />
+    <c-calculations-table :rows="block.rows" />
 </c-panel>
 {% endfor %}
