@@ -42,7 +42,7 @@ class Calculations:
         return [self._spend_block(), self._check_block()]
 
     def _row(self, label, words, row, part=False, states=()):
-        row_states = [WITHIN] * 12
+        row_states = [WITHIN] * len(MONTH_NUMS)
         if states:
             row_states = list(states)
 

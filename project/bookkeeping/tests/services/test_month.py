@@ -225,8 +225,8 @@ def test_info_builder_delta():
 def test_plans_property(month_dto):
     plans = MonthContextPresenter(2026, 4, month_dto, TODAY).plans
 
-    assert plans.row(InputRow.DAY_PLAN) == 40
-    assert plans.row(CalcRow.EXPENSES_FREE) == 2700
+    assert plans.cell(InputRow.DAY_PLAN, 4) == 40
+    assert plans.cell(CalcRow.EXPENSES_FREE, 4) == 2700
 
 
 def test_info_context_plan_state(month_dto):
