@@ -13,7 +13,13 @@ from django.utils.html import escape
 from django.utils.translation import gettext as _
 
 from ...core.mixins import kwargs as core_kwargs
-from ...core.tests.utils import setup_view, stat_card_edit_urls, view_for
+from ...core.tests.utils import (
+    setup_view,
+    stat_card_edit_urls,
+    stat_card_values,
+    stat_cards,
+    view_for,
+)
 from ...users.tests.factories import User
 from .. import forms, models, views
 from ..services.history import HistoryService
@@ -446,22 +452,21 @@ def test_tab_titles_its_panels(client_logged, tab, titles):
 
 
 @pytest.mark.parametrize(
-    "tab, charts, markup, cards",
+    "tab, charts, markup",
     [
         pytest.param(
             "index",
             ["quantity", "consumption"],
             # the Converted table's rows exist only while the breakdown has data
             ('<tr class="main__total">', "<td>0,40</td>"),
-            6,
             id="index",
         ),
-        pytest.param("habits", ["weekday"], (), 1, id="habits"),
-        pytest.param("trends", ["trend"], (), 5, id="trends"),
-        pytest.param("risk", ["weekly", "heavy"], (), 4, id="risk"),
+        pytest.param("habits", ["weekday"], (), id="habits"),
+        pytest.param("trends", ["trend"], (), id="trends"),
+        pytest.param("risk", ["weekly", "heavy"], (), id="risk"),
     ],
 )
-def test_tab_renders_its_charts_and_cards(client_logged, tab, charts, markup, cards):
+def test_tab_renders_its_charts(client_logged, tab, charts, markup):
     DrinkFactory()
 
     page = client_logged.get(reverse(TABS[tab])).content.decode()
@@ -470,7 +475,17 @@ def test_tab_renders_its_charts_and_cards(client_logged, tab, charts, markup, ca
         assert isinstance(chart_data(page, chart), dict)
     for text in markup:
         assert text in page
-    assert page.count('<div class="trend-card">') == cards
+
+
+@pytest.mark.parametrize(
+    "tab, cards", [("index", 6), ("habits", 1), ("trends", 5), ("risk", 4)]
+)
+def test_tab_renders_its_cards(client_logged, tab, cards):
+    DrinkFactory()
+
+    page = client_logged.get(reverse(TABS[tab])).content.decode()
+
+    assert len(stat_cards(page)) == cards
 
 
 def test_back_reloads_the_page_rather_than_restoring_a_snapshot(client_logged):
@@ -559,78 +574,67 @@ def test_tab_index_daily_limit_edit_link_uses_target_update(client_logged):
     assert stat_card_edit_urls(content) == [edit_url]
 
 
-def test_tab_index_daily_limit_edit_link_sits_above_the_unit(client_logged):
-    DrinkTargetFactory()
+@pytest.mark.parametrize(
+    "factory, label, element",
+    [
+        pytest.param(DrinkTargetFactory, "Daily limit", "trend-card__edit", id="edit"),
+        pytest.param(DrinkFactory, "Avg per day", "trend-card__info", id="info"),
+    ],
+)
+def test_tab_index_meta_element_sits_above_the_unit(
+    client_logged, factory, label, element
+):
+    factory()
 
-    response = client_logged.get(reverse("drinks:tab_index"))
-    content = response.content.decode()
+    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
 
-    meta = re.search(r'<span class="trend-card__meta">(.*?)</div>', content, re.S)
-    assert meta
-    assert meta.group(1).index("trend-card__edit") < meta.group(1).index(
-        "trend-card__unit"
-    )
-
-
-def test_tab_index_info_icon_sits_above_the_unit(client_logged):
-    DrinkFactory()
-
-    response = client_logged.get(reverse("drinks:tab_index"))
-    content = response.content.decode()
-
-    metas = re.findall(r'<span class="trend-card__meta">(.*?)</div>', content, re.S)
-    stacked = [
-        m
-        for m in metas
-        if "trend-card__info" in m
-        and "trend-card__unit" in m
-        and m.index("trend-card__info") < m.index("trend-card__unit")
-    ]
-    assert stacked
+    value = stat_card_values(content)[_(label)]
+    assert value.index(element) < value.index("trend-card__unit")
 
 
-@time_machine.travel("1999-06-01")
 def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged):
     # the arrow is set below the figure's size, so it needs its own element;
     # Drinking days has a direction only with a year to compare against
     DrinkFactory(date=date(1999, 1, 10), stdav=7)
     DrinkFactory(date=date(1998, 1, 10), stdav=8)
 
-    response = client_logged.get(reverse("drinks:tab_index"))
-    content = response.content.decode()
+    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
 
-    assert 'class="trend-card__arrow"' in content
+    value = stat_card_values(content)[_("Drinking days")]
+    assert '<span class="trend-card__arrow">' in value
 
 
-@time_machine.travel("1999-06-01")
 def test_tab_index_renders_the_state_modifier_for_a_compared_card(client_logged):
     DrinkFactory(date=date(1999, 1, 10), stdav=7)
     DrinkFactory(date=date(1998, 1, 10), stdav=8)
 
-    response = client_logged.get(reverse("drinks:tab_index"))
-    content = response.content.decode()
+    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
 
-    assert 'class="trend-card__value trend-card__value--improving"' in content
-    assert 'trend-card__value--"' not in content
+    values = stat_card_values(content)
+    assert values[_("Drinking days")].startswith(
+        '<div class="trend-card__value trend-card__value--improving">'
+    )
+    assert [label for label, v in values.items() if 'value--"' in v] == []
 
 
 def test_tab_index_renders_the_unit_apart_from_the_figure(client_logged):
     # the skin sets a unit at a third of the figure's size, so it needs an element
     DrinkFactory()
 
-    response = client_logged.get(reverse("drinks:tab_index"))
-    content = response.content.decode()
+    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
 
-    assert '<span class="trend-card__unit">L</span>' in content
+    value = stat_card_values(content)[_("Pure alcohol")]
+    assert '<span class="trend-card__unit">L</span>' in value
 
 
 def test_tab_index_omits_the_unit_element_when_there_is_no_unit(client_logged):
     DrinkFactory()
 
-    response = client_logged.get(reverse("drinks:tab_index"))
-    content = response.content.decode()
+    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
 
-    assert '<span class="trend-card__unit"></span>' not in content
+    values = stat_card_values(content)
+    assert values
+    assert [label for label, v in values.items() if 'unit"></span>' in v] == []
 
 
 def test_tab_index_calendar_days_are_reachable_by_keyboard(client_logged):
