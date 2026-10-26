@@ -43,6 +43,11 @@ EDIT_BUTTON = re.compile(
     r'<button type="button" class="trend-card__edit" hx-get="([^"]*)"'
     r'[^>]*hx-target="#mainModal"[^>]*><i class="bi bi-pencil"'
 )
+CARD_VALUE = re.compile(
+    r'<div class="trend-card__label">([^<]*)</div>\s*'
+    r'(<div class="trend-card__value[^>]*>.*?</div>)',
+    re.S,
+)
 
 
 def stat_cards(content):
@@ -53,6 +58,11 @@ def stat_cards(content):
 def stat_card_edit_urls(content):
     """The url each Card's pencil opens in the modal."""
     return EDIT_BUTTON.findall(content)
+
+
+def stat_card_values(content):
+    """Each Card's value element (arrow, figure, meta stack), by its label."""
+    return dict(CARD_VALUE.findall(content))
 
 
 def stat_card_tooltips(content):
