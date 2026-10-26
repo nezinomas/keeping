@@ -18,6 +18,30 @@
     @include tokens.label;
     color: $ink;
     margin: 0 0 10px;
+
+    // a phone has no room beside the hint, so the tip opens under the title
+    @media only screen and (max-width: 767px) {
+        position: relative;
+
+        .panel__hint {
+            position: static;
+
+            &::before {
+                top: 100%;
+                left: 0;
+                right: 0;
+                min-width: 0;
+                margin: 8px 0 0;
+                transform: none;
+                // over the table's sticky first column (z-index 1)
+                z-index: 2;
+            }
+
+            &::after {
+                display: none;
+            }
+        }
+    }
 }
 
 .panel__subtitle {
