@@ -11,6 +11,7 @@ from ...core.tests.utils import (
     form_posts_to,
     nav_tabs,
     quick_add_pills,
+    stat_cards,
     view_for,
 )
 from ...users.tests.factories import UserFactory
@@ -121,11 +122,6 @@ def test_page_query_count_does_not_grow_with_the_books(client_logged, url_name, 
     assert six == two
 
 
-CARD = re.compile(
-    r'trend-card__label">(.*?)</div>\s*<div class="trend-card__value[^"]*">'
-    r'(?:<span class="trend-card__figure"[^>]*>)?([^<]*)',
-    re.S,
-)
 # a Book table row's author, title, remark, started and ended cells
 ROW = re.compile(
     r'<td class="text-left">([^<]*)</td>\s*'
@@ -170,8 +166,22 @@ def test_overview_carries_the_chart_data(client_logged):
 @pytest.mark.parametrize(
     ("open_books", "finished_books", "goals", "expected"),
     [
-        (2, 1, 1, [("Perskaitytos", "1"), ("Skaitomos", "2"), ("Tikslas", "5")]),
-        (0, 0, 0, [("Perskaitytos", "0"), ("Skaitomos", "0"), ("Tikslas", "&mdash;")]),
+        (
+            2,
+            1,
+            1,
+            [("Perskaitytos", "1", ""), ("Skaitomos", "2", ""), ("Tikslas", "5", "")],
+        ),
+        (
+            0,
+            0,
+            0,
+            [
+                ("Perskaitytos", "0", ""),
+                ("Skaitomos", "0", ""),
+                ("Tikslas", "&mdash;", "Neįvestas tikslas"),
+            ],
+        ),
     ],
     ids=["cards", "cards_no_data"],
 )
@@ -183,7 +193,7 @@ def test_overview_cards(client_logged, open_books, finished_books, goals, expect
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     assert content.count('class="trend-card"') == 3
-    assert re.findall(CARD, content) == expected
+    assert stat_cards(content) == expected
 
 
 def _new_goal_url():
@@ -199,25 +209,17 @@ GOAL_URL = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.parametrize(
-    ("make_url", "notes"),
-    [(_new_goal_url, 1), (_update_goal_url, 0)],
-    ids=["target_new", "target_update"],
-)
-def test_overview_goal_pencil_opens_the_goal_form(client_logged, make_url, notes):
+@GOAL_URL
+def test_overview_goal_pencil_opens_the_goal_form(client_logged, make_url):
     link = make_url()
 
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
-    assert content.count(f'hx-get="{link}"') == 1
-    assert f'<button type="button" class="trend-card__edit" hx-get="{link}"' in content
-    assert re.search(
-        rf'trend-card__edit" hx-get="{link}"[^>]*hx-target="#mainModal"[^>]*>'
-        r'<i class="bi bi-pencil"',
+    assert re.findall(
+        r'<button type="button" class="trend-card__edit" hx-get="([^"]*)"'
+        r'[^>]*hx-target="#mainModal"[^>]*><i class="bi bi-pencil"',
         content,
-    )
-    no_goal = '<div class="trend-card__note">Neįvestas tikslas</div>'
-    assert content.count(no_goal) == notes
+    ) == [link]
 
 
 def test_data_tab_reads_search_then_table(client_logged):
