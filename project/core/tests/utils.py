@@ -29,11 +29,12 @@ def quick_add_pills(content):
     )
 
 
-# an empty Card has no figure: stop at the next label, never pair across Cards
+# an empty Card's figure is its bare dash; stop at the next label, never pair Cards
 IN_CARD = r"(?:(?!trend-card__label).)*?"
 CARD = re.compile(
     rf'<div class="trend-card__label">([^<]*)</div>{IN_CARD}'
-    rf'<span class="trend-card__figure"[^>]*>([^<]*)</span>{IN_CARD}'
+    r'(?:<span class="trend-card__figure"[^>]*>|trend-card__value--empty">)'
+    rf"([^<]*){IN_CARD}"
     r'<div class="trend-card__note">([^<]*)</div>',
     re.S,
 )
