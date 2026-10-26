@@ -65,7 +65,7 @@ class IncomeCards:
         if not total:
             return EmptyStatCard(title)
 
-        cents = PlanCalculateDaySum(self.data).row(CalcRow.INCOMES_AVG)["1"]
+        cents = PlanCalculateDaySum(self.data).cell(CalcRow.INCOMES_AVG, 1)
 
         return StatCard(title=title, value=_whole_euros(cents))
 
@@ -117,37 +117,31 @@ class ExpenseCards:
 
 @dataclass(frozen=True)
 class DayCards:
-    data: DataDto
+    calc: PlanCalculateDaySum
     month: int
 
     @classmethod
-    def build(cls, data: DataDto, month: int) -> list[Card]:
-        return cls(data, month)._cards()
+    def build(cls, calc: PlanCalculateDaySum, month: int) -> list[Card]:
+        return cls(calc, month)._cards()
 
     def _cards(self) -> list[Card]:
-        sum_per_day = _("Sum per day this month")
-        day_plan = _("Day plan this month")
-
-        calc = PlanCalculateDaySum(self.data)
-        month = str(self.month)
-
         return [
-            self._sum_per_day(sum_per_day, calc, month),
-            self._day_plan(day_plan, calc, month),
+            self._sum_per_day(_("Sum per day this month")),
+            self._day_plan(_("Day plan this month")),
         ]
 
-    def _sum_per_day(self, title: str, calc: PlanCalculateDaySum, month: str) -> Card:
-        if not _sum(self.data.incomes):
+    def _sum_per_day(self, title: str) -> Card:
+        if not sum(self.calc.row(InputRow.INCOMES).values()):
             return EmptyStatCard(title)
 
-        return StatCard(
-            title=title, value=_euros_and_cents(calc.row(CalcRow.SUM_PER_DAY)[month])
-        )
+        cents = self.calc.cell(CalcRow.SUM_PER_DAY, self.month)
+        return StatCard(title=title, value=_euros_and_cents(cents))
 
-    def _day_plan(self, title: str, calc: PlanCalculateDaySum, month: str) -> Card:
-        cents = calc.row(InputRow.DAY_PLAN)[month]
+    def _day_plan(self, title: str) -> Card:
+        cents = self.calc.cell(InputRow.DAY_PLAN, self.month)
         if not cents:
             return EmptyStatCard(title)
 
-        state = HIGH if calc.day_plan_states()[month] == OVER else NEUTRAL
+        over = self.calc.day_plan_states()[str(self.month)] == OVER
+        state = HIGH if over else NEUTRAL
         return LevelStatCard(title=title, value=_euros_and_cents(cents), state=state)

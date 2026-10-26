@@ -5,7 +5,7 @@ from django.test.utils import CaptureQueriesContext
 
 from ....core.lib.convert_price import int_cents_to_float
 from ....core.lib.stat_card import EMPTY, HIGH, NEUTRAL
-from ...lib.calc_day_sum import CalcRow, DataDto, PlanCalculateDaySum, PlanCollectData
+from ...lib.calc_day_sum import DataDto, PlanCalculateDaySum, PlanCollectData
 from ...services.cards import DayCards, ExpenseCards, IncomeCards, SavingCards
 from ..factories import ExpensePlanFactory, NecessaryPlanFactory
 
@@ -66,17 +66,13 @@ def test_income_cards_per_year_is_the_year_total():
     assert card.value == _euro(sum(incomes))
 
 
-def test_income_cards_median_equals_calc_day_sum_row_one():
-    incomes = [1000] * 11 + [100_000]
-    data = _data(incomes=incomes)
-
-    expected = PlanCalculateDaySum(data).row(CalcRow.INCOMES_AVG)["1"]
+def test_income_cards_median_is_the_monthly_median():
+    # the mean is 9250 cents, the median 1000
+    data = _data(incomes=[1000] * 11 + [100_000])
 
     card = _card(IncomeCards.build(data), "Mėnesio mediana")
 
-    assert card.value == _euro(expected)
-    # median (1000) must differ from mean, so the test proves it reads the median
-    assert expected != sum(incomes) / 12
+    assert card.value == "10"
 
 
 def test_income_cards_are_empty_when_no_income_plans():
@@ -290,10 +286,14 @@ def test_expense_cards_necessary_and_everyday_add_up_to_the_year():
 INCOMES_FOR_25_PER_DAY = [75_000] * 12
 
 
+def _day_cards(data):
+    return DayCards.build(PlanCalculateDaySum(data), 6)
+
+
 def test_day_cards_titles_in_order():
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[3000] * 12)
 
-    cards = {card.title: card for card in DayCards.build(data, 6)}
+    cards = {card.title: card for card in _day_cards(data)}
 
     assert list(cards) == ["Suma dienai šį mėnesį", "Dienos planas šį mėnesį"]
 
@@ -304,7 +304,7 @@ def test_day_cards_read_the_given_month_not_another():
     per_day[0] = 1000
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=per_day)
 
-    card = _card(DayCards.build(data, 6), "Dienos planas šį mėnesį")
+    card = _card(_day_cards(data), "Dienos planas šį mėnesį")
 
     assert card.value == _euro_cents(3000)
 
@@ -312,7 +312,7 @@ def test_day_cards_read_the_given_month_not_another():
 def test_day_cards_state_high_when_day_plan_is_above_sum_per_day():
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[3000] * 12)
 
-    card = _card(DayCards.build(data, 6), "Dienos planas šį mėnesį")
+    card = _card(_day_cards(data), "Dienos planas šį mėnesį")
 
     assert card.state == HIGH
 
@@ -320,7 +320,7 @@ def test_day_cards_state_high_when_day_plan_is_above_sum_per_day():
 def test_day_cards_state_neutral_when_day_plan_equals_sum_per_day():
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[2500] * 12)
 
-    card = _card(DayCards.build(data, 6), "Dienos planas šį mėnesį")
+    card = _card(_day_cards(data), "Dienos planas šį mėnesį")
 
     assert card.state == NEUTRAL
 
@@ -328,7 +328,7 @@ def test_day_cards_state_neutral_when_day_plan_equals_sum_per_day():
 def test_day_cards_day_plan_is_empty_without_a_day_plan_for_the_month():
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=ZERO_MONTHS)
 
-    card = _card(DayCards.build(data, 6), "Dienos planas šį mėnesį")
+    card = _card(_day_cards(data), "Dienos planas šį mėnesį")
 
     assert card.state == EMPTY
 
@@ -336,29 +336,26 @@ def test_day_cards_day_plan_is_empty_without_a_day_plan_for_the_month():
 def test_day_cards_sum_per_day_is_empty_without_income_plans():
     data = _data(incomes=ZERO_MONTHS, per_day=[3000] * 12)
 
-    card = _card(DayCards.build(data, 6), "Suma dienai šį mėnesį")
+    card = _card(_day_cards(data), "Suma dienai šį mėnesį")
 
     assert card.state == EMPTY
 
 
 def test_day_cards_sum_per_day_shows_even_when_negative():
+    # (100 − 100 000) ÷ 30 days = −3330 cents
     data = _data(
         incomes=[100] * 12, expenses_necessary=[100_000] * 12, per_day=[3000] * 12
     )
 
-    expected = PlanCalculateDaySum(data).row(CalcRow.SUM_PER_DAY)["6"]
+    card = _card(_day_cards(data), "Suma dienai šį mėnesį")
 
-    card = _card(DayCards.build(data, 6), "Suma dienai šį mėnesį")
-
-    assert card.state != EMPTY
-    assert card.value == _euro_cents(expected)
-    assert expected < 0
+    assert card.value == "-33,30"
 
 
 def test_day_cards_value_formatted_with_two_decimals():
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[3000] * 12)
 
-    cards = {c.title: c for c in DayCards.build(data, 6)}
+    cards = {c.title: c for c in _day_cards(data)}
 
     assert cards["Suma dienai šį mėnesį"].value == "25,00"
     assert cards["Dienos planas šį mėnesį"].value == "30,00"

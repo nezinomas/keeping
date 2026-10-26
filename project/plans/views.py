@@ -173,7 +173,7 @@ class TabDay(TabViewMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             "day_plans": DayPlanModelService(user).rows(year, calc.day_plan_states()),
             "calculations": Calculations.build(calc),
-            "cards": DayCards.build(data, month),
+            "cards": DayCards.build(calc, month),
         }
 
 

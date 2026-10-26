@@ -35,7 +35,10 @@ class MonthContextPresenter:
 
     @cached_property
     def plans(self) -> PlanCalculateDaySum:
-        return PlanCalculateDaySum(data=self.dto.plans_data, month=self.month)
+        return PlanCalculateDaySum(self.dto.plans_data)
+
+    def _planned(self, name: CalcRow | InputRow) -> float:
+        return self.plans.cell(name, self.month)
 
     @cached_property
     def spending(self) -> DaySpending:
@@ -48,8 +51,8 @@ class MonthContextPresenter:
         return DaySpending(
             expense=expense_df_object,
             necessary=self.dto.necessary_expense_types,
-            per_day=self.plans.row(InputRow.DAY_PLAN),
-            free=self.plans.row(CalcRow.EXPENSES_FREE),
+            per_day=self._planned(InputRow.DAY_PLAN),
+            free=self._planned(CalcRow.EXPENSES_FREE),
             today=self.today,
         )
 
@@ -92,17 +95,17 @@ class MonthContextPresenter:
             ),
         )
 
-        savings = self.plans.row(InputRow.SAVINGS)
+        savings = self._planned(InputRow.SAVINGS)
         plan_state = InfoState(
-            income=self.plans.row(InputRow.INCOMES),
+            income=self._planned(InputRow.INCOMES),
             expense=(
-                self.plans.row(CalcRow.EXPENSES_NECESSARY)
-                + self.plans.row(CalcRow.EXPENSES_FREE)
+                self._planned(CalcRow.EXPENSES_NECESSARY)
+                + self._planned(CalcRow.EXPENSES_FREE)
                 - savings
             ),
             saving=savings,
-            per_day=self.plans.row(InputRow.DAY_PLAN),
-            balance=self.plans.row(CalcRow.REMAINS),
+            per_day=self._planned(InputRow.DAY_PLAN),
+            balance=self._planned(CalcRow.REMAINS),
         )
 
         return InfoBuilder.build(fact=fact_state, plan=plan_state)

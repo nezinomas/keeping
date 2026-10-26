@@ -71,16 +71,14 @@ class PlanCollectData:
     def __map_month_day_len(self):
         return [
             {"month": month, "amount": calendar.monthrange(self.year, month)[1]}
-            for month in range(1, 13)
+            for month in map(int, MONTH_NUMS)
         ]
 
 
 class PlanCalculateDaySum:
-    def __init__(self, data: DataDto, month: int = 0):
+    def __init__(self, data: DataDto):
         self._data: DataDto = data
         self._calculated: bool = False
-
-        self.month: int = month
 
         self.df: pl.DataFrame = pl.DataFrame()
 
@@ -95,7 +93,10 @@ class PlanCalculateDaySum:
             for month in MONTH_NUMS
         }
 
-    def row(self, name: CalcRow | InputRow) -> int | dict:
+    def cell(self, name: CalcRow | InputRow, month: int) -> float:
+        return self.row(name)[str(month)]
+
+    def row(self, name: CalcRow | InputRow) -> dict[str, float]:
         if not self._calculated:
             df = self._create_df()
             self.df = self._calculate_df(df)
@@ -103,14 +104,7 @@ class PlanCalculateDaySum:
 
         data = self.df.filter(pl.col("name") == name)
 
-        return self._return_data(data)
-
-    def _return_data(self, data: pl.DataFrame) -> int | dict:
-        return (
-            data.select(pl.first(str(self.month))).item()
-            if self.month
-            else data.select(MONTH_NUMS).to_dicts()[0]
-        )
+        return data.select(MONTH_NUMS).to_dicts()[0]
 
     def _create_data(self):
         table = {
