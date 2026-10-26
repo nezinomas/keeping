@@ -429,6 +429,37 @@ def test_plan_tab_edit_delete_urls(client_logged, main_user, kind):
     ]
 
 
+@pytest.mark.parametrize(
+    "kind, count",
+    [
+        pytest.param(INCOME, 2, id="type_branch"),
+        pytest.param(NECESSARY, 2, id="necessary_branch"),
+        pytest.param(DAY, 1, id="day_branch"),  # one Day plan row a year
+    ],
+)
+def test_a_plan_row_opens_its_update_form_on_a_double_click(
+    client_logged, main_user, kind, count
+):
+    plans = [kind.factory(**kind.owner(title=title)) for title in "AB"[:count]]
+
+    response = client_logged.get(reverse(kind.tab))
+    actual = response.content.decode("utf-8")
+
+    rows = re.findall(
+        r'<tr hx-get="([^"]*)" hx-target="#mainModal" hx-trigger="dblclick">'
+        r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
+        r'.*?<td class="delete-col">\s*<a role="button" hx-get="([^"]*)"',
+        actual,
+        re.DOTALL,
+    )
+    expected = []
+    for plan in plans:
+        kwargs = {"year": main_user.year, **kind.own_kwargs(plan)}
+        update = reverse(kind.update, kwargs=kwargs)
+        expected.append((update, update, reverse(kind.delete, kwargs=kwargs)))
+    assert rows == expected
+
+
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize(
     "kind",
