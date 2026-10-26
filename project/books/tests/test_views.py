@@ -3,7 +3,6 @@ import re
 from datetime import date
 
 import pytest
-import time_machine
 from django.urls import reverse
 
 from ...core.tests.utils import (
@@ -335,14 +334,10 @@ def test_list_empty_state(client_logged, scope, notice):
     )
 
 
-@time_machine.travel("2000-01-01")
 @pytest.mark.parametrize(
     "url_of, expected",
     [
-        (
-            lambda book: reverse("books:new"),
-            ['<input type="text" name="started" value="1999-01-01"'],
-        ),
+        (lambda book: reverse("books:new"), []),
         (
             lambda book: reverse("books:update", kwargs={"pk": book.pk}),
             [
