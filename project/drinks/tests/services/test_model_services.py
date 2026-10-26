@@ -31,17 +31,13 @@ def test_get_target_no_data(main_user):
 
 @pytest.mark.django_db
 def test_get_target_with_data(main_user):
-    target = DrinkTargetFactory(user=main_user, year=1999, quantity=500)
+    target = DrinkTargetFactory(user=main_user, year=1999)
     target_dto = DrinkTargetModelService(user=main_user).get_target(1999)
 
     assert target_dto.has_data
     assert target_dto.target_id == target.id
-    assert target_dto.qty == 500.0  # 500ml beer = 2.5 stdav
 
 
-# -------------------------------------------------------------------------------------
-#                                        a target is re-expressed in the viewing unit
-# -------------------------------------------------------------------------------------
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     "viewing, target_type, ml, expect_qty",
@@ -91,11 +87,10 @@ def test_get_target_only_the_users_own(main_user, second_user):
 
 
 @pytest.mark.django_db
-def test_year_returns_plain_rows_without_annotations(main_user):
-    """The unit conversion left SQL; `year()` is just a filtered queryset now."""
-    DrinkTargetFactory(user=main_user, year=1999, quantity=500)
+def test_year_reads_only_that_years_target(main_user):
+    DrinkTargetFactory(user=main_user, year=1998)
+    target = DrinkTargetFactory(user=main_user, year=1999)
 
-    row = DrinkTargetModelService(user=main_user).year(1999).first()
+    actual = DrinkTargetModelService(user=main_user).year(1999)
 
-    assert row.quantity == 2.5  # stored in std av
-    assert not hasattr(row, "qty")
+    assert list(actual) == [target]

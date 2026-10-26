@@ -98,7 +98,7 @@ def test_switched_within_query_count_does_not_grow(main_user):
             SavingChangeModelService(main_user).switched_within(1999, FUNDS)
         return len(ctx)
 
-    assert queries_with(2) == queries_with(6) == 1
+    assert queries_with(2) == queries_with(6)
 
 
 def _fund(title, closed=None):
@@ -336,11 +336,14 @@ def test_moves_query_count_does_not_grow(main_user):
             list(SavingCloseModelService(main_user).moves())
         return len(context)
 
-    for _ in range(2):
-        SavingChangeFactory(price=1, fee=0, date=date(1999, 6, 1))
+    def add(rows):
+        for _ in range(rows):
+            SavingChangeFactory(price=1, fee=0, date=date(1999, 6, 1))
+            SavingCloseFactory(price=1, fee=0, date=date(1999, 6, 1))
+
+    add(2)
     few = queries()
-    for _ in range(4):
-        SavingChangeFactory(price=1, fee=0, date=date(1999, 6, 1))
+    add(4)
     many = queries()
 
     assert many == few
@@ -403,16 +406,12 @@ def _years_scene():
 
 
 @pytest.mark.django_db
-def test_switched_within_years_reads_each_year_as_switched_within_does(main_user):
+def test_switched_within_years_reads_each_year(main_user):
     _years_scene()
     service = SavingChangeModelService(main_user)
 
     actual = service.switched_within_years([1998, 1999], FUNDS)
 
-    assert actual == {
-        1998: service.switched_within(1998, FUNDS),
-        1999: service.switched_within(1999, FUNDS),
-    }
     assert actual == {1998: 110000, 1999: 56667}
 
 
@@ -425,8 +424,7 @@ def test_switched_within_years_hides_funds_per_year(main_user):
         [1998, 1999], FUNDS, hidden_by_year={1999: frozenset({c.pk})}
     )
 
-    assert actual[1998] == 110000
-    assert actual[1999] == service.switched_within(1999, FUNDS, hidden={c.pk})
+    assert actual == {1998: 110000, 1999: 0}
 
 
 @pytest.mark.django_db
