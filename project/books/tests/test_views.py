@@ -10,6 +10,7 @@ from ...core.tests.utils import (
     form_posts_to,
     nav_tabs,
     quick_add_pills,
+    stat_card_edit_urls,
     stat_cards,
     view_for,
 )
@@ -191,7 +192,6 @@ def test_overview_cards(client_logged, open_books, finished_books, goals, expect
 
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
-    assert content.count('class="trend-card"') == 3
     assert stat_cards(content) == expected
 
 
@@ -214,11 +214,7 @@ def test_overview_goal_pencil_opens_the_goal_form(client_logged, make_url):
 
     content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
-    assert re.findall(
-        r'<button type="button" class="trend-card__edit" hx-get="([^"]*)"'
-        r'[^>]*hx-target="#mainModal"[^>]*><i class="bi bi-pencil"',
-        content,
-    ) == [link]
+    assert stat_card_edit_urls(content) == [link]
 
 
 def test_data_tab_reads_search_then_table(client_logged):

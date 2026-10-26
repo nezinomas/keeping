@@ -39,11 +39,20 @@ CARD = re.compile(
     re.S,
 )
 TOOLTIP = re.compile(r'<span class="trend-card__explanation" role="tooltip"><p>([^<]*)')
+EDIT_BUTTON = re.compile(
+    r'<button type="button" class="trend-card__edit" hx-get="([^"]*)"'
+    r'[^>]*hx-target="#mainModal"[^>]*><i class="bi bi-pencil"'
+)
 
 
 def stat_cards(content):
     """(label, figure, note) of each Card."""
     return CARD.findall(content)
+
+
+def stat_card_edit_urls(content):
+    """The url each Card's pencil opens in the modal."""
+    return EDIT_BUTTON.findall(content)
 
 
 def stat_card_tooltips(content):
