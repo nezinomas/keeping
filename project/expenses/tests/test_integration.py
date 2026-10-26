@@ -71,12 +71,6 @@ class Expenses(Browser):
         self._open_add_expense(self.data_url())
         self._select(expense_type, expense_name, account)
 
-    def _listed_expenses(self):
-        return [
-            dict(zip(COLUMNS, [td.text for td in tr.find_elements(By.TAG_NAME, "td")]))
-            for tr in self.browser.find_elements(By.CSS_SELECTOR, "#data tbody tr")
-        ]
-
     def _open_update_form(self):
         self.browser.get(self.data_url())
         self.wait_until_idle()
@@ -102,7 +96,7 @@ class Expenses(Browser):
         self._press_escape()
         self.wait_until_idle()
 
-        [expense] = self._listed_expenses()
+        [expense] = self.listed_rows(COLUMNS)
         assert (expense["type"], expense["name"], expense["price"]) == (
             "Expense Type",
             "Expense Name",
@@ -130,7 +124,7 @@ class Expenses(Browser):
 
         expenses = sorted(
             (expense["type"], expense["name"], expense["price"], expense["account"])
-            for expense in self._listed_expenses()
+            for expense in self.listed_rows(COLUMNS)
         )
         assert expenses == [
             ("Expense Type", "Expense Name", "123,45", "Account1"),
@@ -204,7 +198,7 @@ class Expenses(Browser):
         assert not self.browser.find_elements(
             By.CSS_SELECTOR, "#mainModal .invalid-feedback"
         )
-        assert [expense["price"] for expense in self._listed_expenses()] == ["6,48"]
+        assert [expense["price"] for expense in self.listed_rows(COLUMNS)] == ["6,48"]
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_search(self):
@@ -221,7 +215,7 @@ class Expenses(Browser):
         search.send_keys(Keys.RETURN)
         self.wait_until_idle()
 
-        assert [expense["remark"] for expense in self._listed_expenses()] == ["xxxx"]
+        assert [expense["remark"] for expense in self.listed_rows(COLUMNS)] == ["xxxx"]
 
     def _modal_container(self):
         return self.browser.find_element(By.ID, "mainModalContainer")
@@ -245,7 +239,7 @@ class Expenses(Browser):
         self.wait_until_idle()
 
         assert self._modal_display() == "none"
-        assert len(self._listed_expenses()) == 1
+        assert len(self.listed_rows(COLUMNS)) == 1
 
     def _click_the_backdrop(self):
         container = self._modal_container()

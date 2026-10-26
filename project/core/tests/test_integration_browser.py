@@ -72,6 +72,12 @@ class Browser(StaticLiveServerTestCase):
 
         assert self._chart_drawn_in(container), "no chart after a tab swap"
 
+    def listed_rows(self, columns: tuple[str, ...]) -> list[dict[str, str]]:
+        return [
+            dict(zip(columns, [td.text for td in tr.find_elements(By.TAG_NAME, "td")]))
+            for tr in self.browser.find_elements(By.CSS_SELECTOR, "#data tbody tr")
+        ]
+
     def _chart_drawn_in(self, container: str) -> bool:
         return bool(
             self.browser.find_elements(
