@@ -13,7 +13,7 @@ from django.utils.html import escape
 from django.utils.translation import gettext as _
 
 from ...core.mixins import kwargs as core_kwargs
-from ...core.tests.utils import setup_view, view_for
+from ...core.tests.utils import setup_view, stat_card_edit_urls, view_for
 from ...users.tests.factories import User
 from .. import forms, models, views
 from ..services.history import HistoryService
@@ -556,9 +556,7 @@ def test_tab_index_daily_limit_edit_link_uses_target_update(client_logged):
     content = response.content.decode()
 
     edit_url = reverse("drinks:target_update", kwargs={"pk": target.pk})
-    assert (
-        f'<button type="button" class="trend-card__edit" hx-get="{edit_url}"' in content
-    )
+    assert stat_card_edit_urls(content) == [edit_url]
 
 
 def test_tab_index_daily_limit_edit_link_sits_above_the_unit(client_logged):
