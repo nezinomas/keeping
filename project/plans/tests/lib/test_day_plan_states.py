@@ -1,6 +1,7 @@
 import pytest
 
-from ...lib.calc_day_sum import OVER, WITHIN, DataDto, PlanCalculateDaySum
+from ...lib.calc_day_sum import DataDto, PlanCalculateDaySum
+from ...lib.month_states import OVER, WITHIN
 
 MONTH_LEN = [{"month": m, "amount": 100} for m in range(1, 13)]
 INCOMES = [{"month": m, "amount": 2500} for m in range(1, 13)]

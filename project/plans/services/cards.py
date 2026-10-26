@@ -14,13 +14,8 @@ from ...core.lib.stat_card import (
     LevelStatCard,
     StatCard,
 )
-from ..lib.calc_day_sum import (
-    OVER,
-    CalcRow,
-    DataDto,
-    InputRow,
-    PlanCalculateDaySum,
-)
+from ..lib.calc_day_sum import CalcRow, DataDto, InputRow, PlanCalculateDaySum
+from ..lib.month_states import OVER
 
 MONTHS = 12
 

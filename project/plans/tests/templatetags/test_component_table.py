@@ -1,6 +1,12 @@
+import re
+
 import pytest
-from django.template import loader
-from django.urls import reverse
+from django.template import engines
+from django_cotton.compiler_regex import CottonCompiler
+
+from ...services.plan_rows import PlanRow
+
+ALL_WITHIN = ["within"] * 12
 
 
 def _remove_line_end(rendered):
@@ -8,131 +14,51 @@ def _remove_line_end(rendered):
 
 
 @pytest.fixture(name="table")
-def fixture_table(fake_request):
-    def _func(ctx):
-        template = loader.get_template("cotton/plans_table.html")
-        return _remove_line_end(template.render(ctx, fake_request))
+def fixture_table():
+    def _func(rows, year=2026):
+        processed = CottonCompiler().process(
+            '<c-plans-table :rows="rows" :year="year" />'
+        )
+        template = engines["django"].from_string(processed)
+        return _remove_line_end(template.render({"rows": rows, "year": year}))
 
     return _func
 
 
-def test_renders_standard_row(table):
-    context = {
-        "object_list": {"Salary": {}},
-    }
+def _row(title="Salary", states=ALL_WITHIN):
+    return PlanRow(
+        title=title,
+        update_url="/update/",
+        delete_url="/delete/",
+        cells=[(0, state) for state in states],
+    )
 
-    actual = table(context)
+
+def test_renders_a_row_with_its_title(table):
+    actual = table([_row("Salary")])
 
     assert '<td class="text-left">Salary</td>' in actual
 
 
-def test_renders_necessary_plan_tuple_format(table):
-    class MockExpenseType:
-        title = "Car"
+def test_the_empty_row_spans_the_header_and_closes(table):
+    actual = table([])
 
-    expense_type = MockExpenseType()
-    title_str = "Insurance"
-
-    context = {
-        "kind": "necessary",
-        "object_list": {(expense_type, title_str): {}},
-    }
-
-    actual = table(context)
-
-    assert "Insurance (Car)" in actual
+    header = actual.split("<thead>")[1].split("</thead>")[0]
+    body = actual.split("<tbody>")[1].split("</tbody>")[0]
+    assert len(re.findall(r"<th[ >]", header)) == 15
+    assert re.findall(r"<td([^>]*)>(.*?)</td>", body) == [
+        (' colspan="15"', "<b>2026</b> metais įrašų nėra.")
+    ]
 
 
-def test_renders_necessary_plan_urls(table):
-    class MockExpenseType:
-        id = 5
-        title = "Car"
+@pytest.mark.parametrize(
+    "states, count",
+    [
+        pytest.param(["over"] + ALL_WITHIN[1:], 1, id="one_over"),
+        pytest.param(ALL_WITHIN, 0, id="all_within"),
+    ],
+)
+def test_renders_over_class_only_on_the_over_months(table, states, count):
+    actual = table([_row(states=states)])
 
-    expense_type = MockExpenseType()
-    title_str = "Insurance"
-
-    context = {
-        "kind": "necessary",
-        "year": 2026,
-        "update": "plans:necessary_update",
-        "delete": "plans:necessary_delete",
-        "object_list": {(expense_type, title_str): {}},
-    }
-
-    actual = table(context)
-
-    expect_update = reverse("plans:necessary_update", args=[2026, 5, "Insurance"])
-    expect_delete = reverse("plans:necessary_delete", args=[2026, 5, "Insurance"])
-
-    assert expect_update in actual
-    assert expect_delete in actual
-
-
-def test_renders_no_residual_wash_for_string_title(table):
-    context = {"object_list": {"8. Likutis (3 - 7 * dienų)": {}}}
-
-    actual = table(context)
-
-    assert "plans-residual-row" not in actual
-
-
-def test_renders_no_residual_wash_for_object_title_attribute(table):
-    class MockCalculationRow:
-        title = "Likutis"
-
-        def __str__(self):
-            return "Likutis"
-
-    context = {"object_list": {MockCalculationRow(): {}}}
-
-    actual = table(context)
-
-    assert "plans-residual-row" not in actual
-
-
-def test_renders_month_headers_full_and_short(table):
-    context = {"object_list": {}}
-
-    actual = table(context)
-
-    assert '<span class="month-table__month-full">Sausis</span>' in actual
-    assert '<span class="month-table__month-short">sau</span>' in actual
-    assert '<span class="month-table__month-full">Rugsėjis</span>' in actual
-    assert '<span class="month-table__month-short">rugs</span>' in actual
-
-
-def test_renders_empty_state_correctly(table):
-    context = {"year": 2026, "object_list": {}}
-
-    actual = table(context)
-
-    expect = "<b>2026</b> metais įrašų nėra."
-    assert expect in actual
-
-
-def test_renders_none_state_correctly(table):
-    context = {"year": 2026, "object_list": None}
-
-    actual = table(context)
-
-    expect = "<b>2026</b> metais įrašų nėra."
-    assert expect in actual
-
-
-def test_renders_over_class_only_on_the_over_months(table):
-    context = {
-        "object_list": {"Dienos planas": {}},
-        "states": {"1": "over", "2": "within"},
-    }
-
-    actual = table(context)
-
-    assert actual.count("plans-table__over") == 1
-
-
-def test_renders_no_over_class_without_states(table):
-    context = {"object_list": {"Dienos planas": {}}}
-
-    actual = table(context)
-
-    assert "plans-table__over" not in actual
+    assert actual.count("plans-table__over") == count

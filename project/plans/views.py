@@ -34,6 +34,12 @@ class TabViewMixin(CoreTabViewMixin):
     app_title = _("Plans")
     page_template = "plans/index.html"
 
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "plan_year": self.request.user.selected_year(),
+        }
+
     def plan_data(self) -> DataDto:
         user = self.request.user
         return PlanCollectData(user, user.selected_year()).get_data()
@@ -44,11 +50,10 @@ class TabIncomes(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
+        year = user.selected_year()
         return {
             **super().get_context_data(**kwargs),
-            "income_plans": IncomePlanModelService(user).pivot_table(
-                user.selected_year()
-            ),
+            "income_plans": IncomePlanModelService(user).rows(year),
             "cards": IncomeCards.build(self.plan_data()),
         }
 
@@ -86,8 +91,8 @@ class TabExpenses(TabViewMixin, TemplateViewMixin):
         year = user.selected_year()
         return {
             **super().get_context_data(**kwargs),
-            "expense_plans": ExpensePlanModelService(user).pivot_tables(year),
-            "necessary_plans": NecessaryPlanModelService(user).pivot_table(year),
+            "expense_plans": ExpensePlanModelService(user).row_tables(year),
+            "necessary_plans": NecessaryPlanModelService(user).rows(year),
             "cards": ExpenseCards.build(self.plan_data()),
         }
 
@@ -122,11 +127,10 @@ class TabSavings(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
+        year = user.selected_year()
         return {
             **super().get_context_data(**kwargs),
-            "saving_plans": SavingPlanModelService(user).pivot_table(
-                user.selected_year()
-            ),
+            "saving_plans": SavingPlanModelService(user).rows(year),
             "cards": SavingCards.build(self.plan_data()),
         }
 
@@ -159,6 +163,7 @@ class SavingsDelete(PlanDeleteMixin, DeleteViewMixin):
 class TabDay(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         user = self.request.user
+        year = user.selected_year()
         data = self.plan_data()
         calc = PlanCalculateDaySum(data)
         # this month = today's month number, in whichever Plan year is selected
@@ -166,10 +171,9 @@ class TabDay(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            "day_plans": DayPlanModelService(user).pivot_table(user.selected_year()),
+            "day_plans": DayPlanModelService(user).rows(year, calc.day_plan_states()),
             "calculations": Calculations.build(calc),
             "cards": DayCards.build(data, month),
-            "day_states": calc.day_plan_states(),
         }
 
 

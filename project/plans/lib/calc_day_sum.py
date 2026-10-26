@@ -12,11 +12,7 @@ from ..services.model_services import (
     NecessaryPlanModelService,
     SavingPlanModelService,
 )
-
-MONTH_NUMS = [str(i) for i in range(1, 13)]
-
-OVER = "over"
-WITHIN = "within"
+from .month_states import MONTH_NUMS, OVER, WITHIN
 
 
 class InputRow(StrEnum):
