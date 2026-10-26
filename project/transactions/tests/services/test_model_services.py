@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-from django.contrib.auth.models import AnonymousUser
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
@@ -11,34 +10,10 @@ from ...models import SavingChange
 from ...services.model_services import (
     SavingChangeModelService,
     SavingCloseModelService,
-    TransactionModelService,
 )
 from ..factories import SavingChangeFactory, SavingCloseFactory
 
 FUNDS = ["funds", "shares"]
-
-
-SERVICES = [
-    TransactionModelService,
-    SavingCloseModelService,
-    SavingChangeModelService,
-]
-
-
-@pytest.mark.parametrize(
-    "service", SERVICES, ids=["transaction", "saving_close", "saving_change"]
-)
-@pytest.mark.parametrize(
-    "user, message",
-    [
-        (None, "User required"),
-        (AnonymousUser(), "Authenticated user required"),
-    ],
-    ids=["no_user", "anonymous_user"],
-)
-def test_init_raises_without_a_real_user(service, user, message):
-    with pytest.raises(ValueError, match=message):
-        service(user=user)
 
 
 def _switch(

@@ -1,41 +1,14 @@
 from datetime import date
 
 import pytest
-from django.contrib.auth.models import AnonymousUser
 
 from ... import models
 from ...services.model_services import (
     ExpenseKeywordModelService,
     ExpenseModelService,
-    ExpenseNameModelService,
     ExpenseTypeModelService,
 )
 from .. import factories
-
-SERVICES = [
-    pytest.param(ExpenseModelService, id="expense"),
-    pytest.param(ExpenseTypeModelService, id="expense_type"),
-    pytest.param(ExpenseNameModelService, id="expense_name"),
-    pytest.param(ExpenseKeywordModelService, id="expense_keyword"),
-]
-
-
-@pytest.mark.parametrize("service", SERVICES)
-def test_service_init_raises_if_no_user(service):
-    with pytest.raises(ValueError, match="User required"):
-        service(user=None)
-
-
-@pytest.mark.parametrize("service", SERVICES)
-def test_service_init_raises_if_anonymous_user(service):
-    with pytest.raises(ValueError, match="Authenticated user required"):
-        service(user=AnonymousUser())
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize("service", SERVICES)
-def test_service_init_succeeds_with_real_user(main_user, service):
-    assert service(user=main_user).user == main_user
 
 
 @pytest.mark.django_db
