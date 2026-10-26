@@ -246,15 +246,31 @@ def test_the_old_spellings_are_gone(client_logged, url):
 
 
 @pytest.mark.parametrize(
-    ("url_name", "kwargs", "params", "link_name", "query"),
+    ("url_name", "kwargs", "params", "link_name", "link_kwargs", "query"),
     [
-        ("books:list", {"scope": "all"}, {}, "books:list", "page=2"),
-        ("books:tab_data", {"scope": "all"}, {}, "books:list", "page=2"),
+        ("books:list", {"scope": "all"}, {}, "books:list", {"scope": "all"}, "page=2"),
+        (
+            "books:list",
+            {"scope": "bogus"},
+            {},
+            "books:list",
+            {"scope": "year"},
+            "page=2",
+        ),
+        (
+            "books:tab_data",
+            {"scope": "all"},
+            {},
+            "books:list",
+            {"scope": "all"},
+            "page=2",
+        ),
         (
             "books:search",
             {},
             {"search": "title & author"},
             "books:search",
+            {},
             "page=2&search=title%20%26%20author",
         ),
         (
@@ -262,20 +278,27 @@ def test_the_old_spellings_are_gone(client_logged, url):
             {},
             {"search": "title & author", "page": 2},
             "books:search",
+            {},
             "page=1&search=title%20%26%20author",
         ),
     ],
-    ids=["all_records", "data_all_records", "search_encoded", "search_encoded_back"],
+    ids=[
+        "all_records",
+        "list_junk",
+        "data_all_records",
+        "search_encoded",
+        "search_encoded_back",
+    ],
 )
 def test_page_links_keep_their_query(
-    client_logged, url_name, kwargs, params, link_name, query
+    client_logged, url_name, kwargs, params, link_name, link_kwargs, query
 ):
     models.Book.objects.bulk_create(BookFactory.build_batch(51, user=UserFactory()))
 
     url = reverse(url_name, kwargs=kwargs)
     content = client_logged.get(url, params).content.decode("utf-8")
 
-    link = reverse(link_name, kwargs=kwargs)
+    link = reverse(link_name, kwargs=link_kwargs)
     # the other page's number and the next or previous arrow
     page_link = rf'<a role="button"[^>]*hx-get="{re.escape(f"{link}?{query}")}"'
     assert len(re.findall(page_link, content)) == 2
@@ -331,11 +354,12 @@ def test_list_empty_state(client_logged, scope, notice):
 
 
 @pytest.mark.parametrize(
-    "url_of, expected",
+    "url_of, form_id, expected",
     [
-        (lambda book: reverse("books:new"), []),
+        (lambda book: reverse("books:new"), "generic-form", []),
         (
             lambda book: reverse("books:update", kwargs={"pk": book.pk}),
+            "generic-form",
             [
                 '<input type="text" name="started" value="1999-01-01"',
                 '<input type="text" name="author" value="Author"',
@@ -343,33 +367,28 @@ def test_list_empty_state(client_logged, scope, notice):
                 r'<textarea name="remark"[^>]*>\s*Remark</textarea>',
             ],
         ),
+        (
+            lambda book: reverse("books:delete", kwargs={"pk": book.pk}),
+            "delete-form",
+            [r"Ar tikrai norite ištrinti: <strong>Book Title</strong>\?"],
+        ),
     ],
-    ids=["new", "update"],
+    ids=["new", "update", "delete"],
 )
-def test_books_load_form(client_logged, url_of, expected):
+def test_books_load_form(client_logged, url_of, form_id, expected):
     url = url_of(BookFactory())
 
     actual = client_logged.get(url).content.decode()
 
-    assert form_posts_to(actual, "generic-form", url)
+    assert form_posts_to(actual, form_id, url)
     for pattern in expected:
         assert re.search(pattern, actual)
 
 
-@pytest.mark.parametrize(
-    "url_of",
-    [
-        lambda: reverse("books:new"),
-        lambda: reverse("books:update", kwargs={"pk": BookFactory().pk}),
-    ],
-    ids=["new", "update"],
-)
-def test_save_book(client_logged, url_of):
+def test_save_book(client_logged):
     data = {"started": "1999-01-01", "author": "AAA", "title": "TTT"}
 
-    url = url_of()
-
-    response = client_logged.post(url, data, follow=True)
+    response = client_logged.post(reverse("books:new"), data, follow=True)
 
     assert response.redirect_chain == [
         (reverse("books:list", kwargs={"scope": "year"}), 302)
@@ -495,18 +514,6 @@ def test_books_form_of_another_users_book_is_not_found(
     response = client_logged.get(reverse(url_name, kwargs={"pk": obj.pk}))
 
     assert response.status_code == 404
-
-
-def test_view_books_delete_load_form(client_logged):
-    p = BookFactory()
-
-    url = reverse("books:delete", kwargs={"pk": p.pk})
-    response = client_logged.get(url)
-
-    actual = response.content.decode("utf-8")
-
-    assert form_posts_to(actual, "delete-form", url)
-    assert "Ar tikrai norite ištrinti: <strong>Book Title</strong>?" in actual
 
 
 @pytest.mark.parametrize(
