@@ -33,18 +33,6 @@ class DrinksQuickAdd(Browser):
         assert self.browser.find_elements(By.CSS_SELECTOR, "#mainModal .modal-form")
 
 
-def open_drinks_at(test: Browser, width: int):
-    test.addCleanup(
-        test.browser.execute_cdp_cmd, "Emulation.clearDeviceMetricsOverride", {}
-    )
-    test.browser.execute_cdp_cmd(
-        "Emulation.setDeviceMetricsOverride",
-        {"width": width, "height": 900, "deviceScaleFactor": 1, "mobile": False},
-    )
-    test.browser.get(f"{test.live_server_url}/drinks/")
-    test.wait_until_idle()
-
-
 @pytest.mark.webtest
 class DrinksChartAxisTitle(Browser):
     def test_axis_title_takes_its_face_by_width_inside_the_chart(self):
@@ -55,7 +43,7 @@ class DrinksChartAxisTitle(Browser):
             (360, "10.88px", "0.6528px", "none"),
         ):
             with self.subTest(width=width):
-                open_drinks_at(self, width)
+                self.open_at("/drinks/", width)
                 face = self.browser.execute_script(
                     "const t = document.querySelector(arguments[0]);"
                     "const s = getComputedStyle(t);"
@@ -80,7 +68,7 @@ class DrinksChartRuleLabel(Browser):
             (360, "> 6 Std Av"),
         ):
             with self.subTest(width=width):
-                open_drinks_at(self, width)
+                self.open_at("/drinks/", width)
                 self.browser.find_element(By.ID, "tab-habits").click()
                 self.wait_until_idle()
                 labels = self.browser.execute_script(

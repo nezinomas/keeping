@@ -61,6 +61,17 @@ class Browser(StaticLiveServerTestCase):
 
         WebDriverWait(self.browser, timeout, poll_frequency=0.1).until(settled)
 
+    def open_at(self, path: str, width: int):
+        self.addCleanup(
+            self.browser.execute_cdp_cmd, "Emulation.clearDeviceMetricsOverride", {}
+        )
+        self.browser.execute_cdp_cmd(
+            "Emulation.setDeviceMetricsOverride",
+            {"width": width, "height": 900, "deviceScaleFactor": 1, "mobile": False},
+        )
+        self.browser.get(f"{self.live_server_url}{path}")
+        self.wait_until_idle()
+
     def assert_overview_chart_redraws(self, path: str, container: str):
         self.browser.get(f"{self.live_server_url}{path}")
         self.wait_until_idle()
