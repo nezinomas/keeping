@@ -1,4 +1,3 @@
-import itertools as it
 from abc import ABC, abstractmethod
 
 import polars as pl
@@ -37,10 +36,14 @@ class SignalBase(ABC):
     @abstractmethod
     def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame: ...
 
-    def _make_df(self, arr: list[dict]) -> pl.LazyFrame:
-        if not arr:
-            return pl.LazyFrame(arr, schema=self.schema)
+    def _build_table(self, data: GetData, df: pl.LazyFrame) -> pl.LazyFrame:
+        # an empty journal has no years to lay the grid over
+        if not (data.incomes or data.expenses or data.have):
+            return df
 
+        return self.make_table(df)
+
+    def _make_df(self, arr: list[dict]) -> pl.LazyFrame:
         return (
             pl.from_dicts(arr, schema=self.schema)
             .lazy()
@@ -92,16 +95,13 @@ class SignalBase(ABC):
 
 class Accounts(SignalBase):
     def __init__(self, data: GetData):
-        _df = self._make_df(it.chain(data.incomes, data.expenses))
+        _df = self._make_df([*data.incomes, *data.expenses])
         _hv = self._make_have(data.have)
         _df = self._join_df(_df, _hv)
 
         self._types = data.types
 
-        try:
-            self._table = self.make_table(_df)
-        except TypeError:
-            self._table = _df
+        self._table = self._build_table(data, _df)
 
     def _fill_missing_past_future_rows(self, df: pl.LazyFrame) -> pl.LazyFrame:
         numeric_columns = [
@@ -180,10 +180,7 @@ class Savings(SignalBase):
         self._types = data.types
         self._moves = self._make_moves(data.moves)
 
-        try:
-            self._table = self.make_table(_df)
-        except TypeError:
-            self._table = _df
+        self._table = self._build_table(data, _df)
 
     def _fill_missing_past_future_rows(self, df: pl.LazyFrame) -> pl.LazyFrame:
         numeric_columns = [

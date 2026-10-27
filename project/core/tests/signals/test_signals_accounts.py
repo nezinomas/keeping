@@ -535,6 +535,14 @@ def test_table_incomes_expenses_empty(types):
     assert actual == expect
 
 
+def test_table_of_rows_without_a_year_raises(types):
+    incomes = [{"year": None, "incomes": 5, "category_id": 1}]
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
+
+    with pytest.raises(TypeError):
+        Accounts(data)
+
+
 def test_table_only_have(have, types):
     data = SimpleNamespace(incomes=[], expenses=[], have=have, types=types)
     actual = Accounts(data).df.collect().to_dicts()

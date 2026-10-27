@@ -630,6 +630,21 @@ def test_table_expenses_empty(incomes, types):
     assert not actual[2]["latest_check"]
 
 
+def test_table_incomes_expenses_empty(types):
+    data = SimpleNamespace(moves=[], incomes=[], expenses=[], have=[], types=types)
+    actual = Savings(data).df.collect().to_dicts()
+
+    assert actual == []
+
+
+def test_table_of_rows_without_a_year_raises(types):
+    incomes = [{"year": None, "incomes": 5, "fee": 1, "category_id": 1}]
+    data = SimpleNamespace(moves=[], incomes=incomes, expenses=[], have=[], types=types)
+
+    with pytest.raises(TypeError):
+        Savings(data)
+
+
 def test_table_only_have(have, types):
     data = SimpleNamespace(
         moves=[], incomes=[], expenses=[], have=have[:2], types=types
