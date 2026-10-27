@@ -2,7 +2,6 @@ import json
 import re
 from datetime import date
 from types import SimpleNamespace
-from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
@@ -87,7 +86,7 @@ def test_index_takes_its_legend_position_from_the_paper_charts(client_logged):
     # chart_paper.js places every paper legend, so Drinks keeps no file of its own
     content = client_logged.get(reverse("drinks:index")).content.decode()
 
-    assert "js/chart_paper.js" in content
+    assert re.search(r'<script[^>]* src="[^"]*js/chart_paper\.js"', content)
     assert "js/chart_drinks_legend.js" not in content
 
 
@@ -495,8 +494,9 @@ def test_tab_index_figure_panels_keep_their_frame(client_logged, panel_id):
     assert f'<section class="panel" id="{panel_id}">' in content
 
 
-def test_tab_index_query_count_does_not_grow_with_the_drinks(client_logged):
-    url = reverse("drinks:tab_index")
+@pytest.mark.parametrize("url_name", TABS.values())
+def test_tab_query_count_does_not_grow_with_the_drinks(client_logged, url_name):
+    url = reverse(url_name)
 
     for i in range(2):
         DrinkFactory(date=date(1999, 1, i + 1))
@@ -602,7 +602,7 @@ def test_tab_index_htmx_fragment_carries_no_inline_script(client_logged):
 
     opening_tags = re.findall(r"<script[^>]*>", fragment)
 
-    assert "heat-card" in fragment
+    assert '<div class="heat-card" id="heat-card">' in fragment
     assert opening_tags
     assert all('type="application/json"' in tag for tag in opening_tags)
 
@@ -613,7 +613,7 @@ def test_tab_index_loads_the_calendar_script_as_a_static_file(client_logged):
     response = client_logged.get(reverse("drinks:tab_index"))
     html = response.content.decode("utf-8")
 
-    assert "js/calendar.js" in html
+    assert re.search(r'<script[^>]* src="[^"]*js/calendar\.js"', html)
 
 
 # TypicalYearChart View
@@ -952,22 +952,10 @@ def test_invalid_form_retargets_itself_and_leaves_the_chart(
 @pytest.mark.parametrize(
     "view, url_name, tab, trigger",
     [
-        pytest.param(views.New, "drinks:new", "index", "reloadIndex", id="new_index"),
-        pytest.param(views.New, "drinks:new", "data", "reloadData", id="new_data"),
         pytest.param(
             views.New, "drinks:new", "history", "reloadHistory", id="new_history"
         ),
         pytest.param(views.New, "drinks:new", "xxx", "reloadData", id="new_unknown"),
-        pytest.param(
-            views.TargetNew,
-            "drinks:target_new",
-            "index",
-            "reloadIndex",
-            id="target_index",
-        ),
-        pytest.param(
-            views.TargetNew, "drinks:target_new", "data", "reloadData", id="target_data"
-        ),
         pytest.param(
             views.TargetNew,
             "drinks:target_new",
@@ -1041,8 +1029,6 @@ def test_an_edit_reloads_the_tab_its_row_is_on(
 @pytest.mark.parametrize(
     "tab, posts_to",
     [
-        ("index", "index"),
-        ("data", "data"),
         ("history", "history"),
         ("xxx", "index"),
     ],
@@ -1291,9 +1277,7 @@ def _typical_year_last(view):
 
 def _typical_year_post(view):
     form = SimpleNamespace(cleaned_data={"year_from": 1998, "year_to": 1999})
-    # render() runs the context processors, which raise on a no-year user themselves
-    with patch.object(views, "render"):
-        return view.form_valid(form)
+    return view.form_valid(form)
 
 
 @pytest.mark.parametrize(
@@ -1343,8 +1327,10 @@ def _typical_year_post(view):
         ),
     ],
 )
-def test_a_user_with_no_year_raises(rf, main_user, call):
+def test_a_user_with_no_year_raises(rf, main_user, mocker, call):
     main_user.year = None
+    # render() runs the context processors, which raise on a no-year user themselves
+    mocker.patch.object(views, "render")
 
     with pytest.raises(ValueError, match="has no year"):
         call(rf, main_user)
