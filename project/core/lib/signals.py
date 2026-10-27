@@ -8,21 +8,16 @@ from ...users.models import User
 
 class GetData:
     def __init__(self, user: User, conf: dict):
-        self.incomes = list(self._get_data(user, conf.get("incomes")))
-        self.expenses = list(self._get_data(user, conf.get("expenses")))
-        self.moves = list(self._get_data(user, conf.get("moves")))
-        self.have = list(self._get_data(user, conf.get("have")))
-        self.types = list(self._get_data(user, conf.get("types")))
+        self.incomes = list(self._get_data(user, conf.get("incomes", ())))
+        self.expenses = list(self._get_data(user, conf.get("expenses", ())))
+        self.moves = list(self._get_data(user, conf.get("moves", ())))
+        self.have = list(self._get_data(user, conf.get("have", ())))
+        self.types = list(self._get_data(user, conf.get("types", ())))
 
     @staticmethod
     def _get_data(user: User, sources: tuple):
-        if not sources:
-            return
-
         for source_callable in sources:
-            # Execute the lambda, passing the user.
-            if _qs := source_callable(user):
-                yield from _qs
+            yield from source_callable(user)
 
 
 class SignalBase(ABC):
@@ -77,10 +72,8 @@ class SignalBase(ABC):
         ).lazy()
 
     def _create_year_grid(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        # Get min_year per category_id
         years_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
 
-        # Create a LazyFrame of all years from 0 to global_max_year + 1
         global_max_year = df.select(pl.col("year").max()).collect().item()
         global_min_year = df.select(pl.col("year").min()).collect().item()
 
@@ -92,10 +85,7 @@ class SignalBase(ABC):
             .select(["category_id", "year"])
             .join(df, on=["category_id", "year"], how="left")
             .join(self._closed_years(), on="category_id", how="inner")
-            .filter(
-                (pl.col("closed").is_null())  # Keep rows where closed is null
-                | (pl.col("year") <= pl.col("closed"))  # or year < closed
-            )
+            .filter(pl.col("closed").is_null() | (pl.col("year") <= pl.col("closed")))
             .select(df.collect_schema().names())
         )
 
@@ -196,7 +186,6 @@ class Savings(SignalBase):
             self._table = _df
 
     def _fill_missing_past_future_rows(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        # Define columns to fill
         numeric_columns = [
             col
             for col in df.collect_schema().names()
@@ -206,9 +195,7 @@ class Savings(SignalBase):
         return (
             df.pipe(self._create_year_grid)
             .with_columns(
-                # Fill numeric columns with 0
                 *[pl.col(col).fill_null(0) for col in numeric_columns],
-                # Forward fill market_value and latest_check
                 pl.col("market_value")
                 .fill_null(strategy="forward")
                 .over("category_id"),
@@ -306,9 +293,7 @@ class Savings(SignalBase):
     def _join_df(
         self, inc: pl.LazyFrame, exp: pl.LazyFrame, hv: pl.LazyFrame
     ) -> pl.LazyFrame:
-        # drop expenses column
         inc = inc.drop("expenses")
-        # drop incomes column, rename fee
         exp = exp.drop("incomes")
         exp = exp.rename({"fee": "sold_fee", "expenses": "sold"})
 
