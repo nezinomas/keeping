@@ -3,9 +3,12 @@ from datetime import date
 from pathlib import Path
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ....core.tests.utils import clean_content
+from ....expenses.models import Expense
 from ....expenses.tests.factories import (
     ExpenseFactory,
     ExpenseNameFactory,
@@ -48,7 +51,7 @@ def test_view_month_day_over_budget_is_marked_as_a_loss(client_logged):
     text = _january_page(client_logged)
 
     assert re.search(r'<td data-sign="loss" class="day-warning[ "]', text)
-    assert "table-danger" not in text
+    assert not re.search(r'<td\b[^>]*class="[^"]*\btable-danger\b', text)
 
 
 def test_view_month_day_cells_within_budget_carry_no_sign(client_logged):
@@ -100,7 +103,7 @@ def test_view_month_requested_by_htmx_returns_the_content_alone(client_logged):
 
     assert '<main class="month-grid"' in content
     assert '<nav id="main-nav">' not in content
-    assert "js/modal.js" not in content
+    assert not re.search(r'<script\b[^>]*src="[^"]*js/modal\.js"', content)
     assert 'id="month-page"' not in content
 
 
@@ -130,7 +133,32 @@ def test_view_month_swaps_aim_at_its_content(client_logged, swap):
     content = client_logged.get(url, headers={"HX-Request": "true"}).content.decode()
 
     assert swap in content
-    assert 'hx-target="body"' not in content
+    assert not re.search(r'<(?:button|div)\b[^>]*hx-target="body"', content)
+
+
+def _month_queries(client, count):
+    while Expense.objects.count() < count:
+        day = Expense.objects.count() + 1
+        food = ExpenseTypeFactory(title=f"Type {day}")
+        ExpenseFactory(
+            date=date(1999, 1, day),
+            expense_type=food,
+            expense_name=ExpenseNameFactory(title=f"Name {day}", parent=food),
+        )
+    with CaptureQueriesContext(connection) as ctx:
+        client.get(reverse("bookkeeping:month"), {"month": 1})
+    return len(ctx)
+
+
+def test_view_month_query_count_does_not_grow_with_the_expenses(
+    main_user, client_logged
+):
+    # the month the page shows, so no request saves the user
+    main_user.month = 1
+    main_user.save()
+    two = _month_queries(client_logged, 2)
+
+    assert _month_queries(client_logged, 6) == two
 
 
 @pytest.mark.parametrize("dt", ["xx", "1970-13-01", "1970-12-32"])

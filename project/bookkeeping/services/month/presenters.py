@@ -21,17 +21,20 @@ class MonthContextPresenter:
         self.today = today
 
     @cached_property
-    def month_table(self) -> MonthTableBuilder:
-        expense_df_object = MakeDataFrame.for_month(
+    def expense_frame(self) -> MakeDataFrame:
+        return MakeDataFrame.for_month(
             year=self.year,
             month=self.month,
             data=self.dto.expenses,
             columns=self.dto.expense_types,
         )
+
+    @cached_property
+    def month_table(self) -> MonthTableBuilder:
         saving_df_object = MakeDataFrame.for_month(
             year=self.year, month=self.month, data=self.dto.savings
         )
-        return MonthTableBuilder(expense_df_object.data, saving_df_object.data)
+        return MonthTableBuilder(self.expense_frame.data, saving_df_object.data)
 
     @cached_property
     def plans(self) -> PlanCalculateDaySum:
@@ -42,14 +45,8 @@ class MonthContextPresenter:
 
     @cached_property
     def spending(self) -> DaySpending:
-        expense_df_object = MakeDataFrame.for_month(
-            year=self.year,
-            month=self.month,
-            data=self.dto.expenses,
-            columns=self.dto.expense_types,
-        )
         return DaySpending(
-            expense=expense_df_object,
+            expense=self.expense_frame,
             necessary=self.dto.necessary_expense_types,
             per_day=self._planned(InputRow.DAY_PLAN),
             free=self._planned(CalcRow.EXPENSES_FREE),

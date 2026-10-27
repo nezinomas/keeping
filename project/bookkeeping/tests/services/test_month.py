@@ -3,10 +3,9 @@ from datetime import date
 
 import pytest
 
-from project.bookkeeping.lib.make_dataframe import MakeDataFrame
-
 from ....expenses.tests.factories import ExpenseTypeFactory
 from ....plans.lib.calc_day_sum import CalcRow, DataDto, InputRow
+from ...lib.make_dataframe import MakeDataFrame
 from ...services.month.builders import ChartBuilder, InfoBuilder, MonthTableBuilder
 from ...services.month.dtos import InfoState, MonthDataDTO
 from ...services.month.presenters import MonthContextPresenter, load_service
@@ -243,7 +242,7 @@ def test_info_context_plan_state(month_dto):
         "saving": 70,
         "expense": 2930,
         "per_day": 40,
-        "balance": 2630 - 40 * 30,
+        "balance": 1430,
     }
 
 
@@ -260,61 +259,37 @@ def test_spending_property(month_dto):
     }
 
 
-def test_totals_property(mocker, month_dto):
-    presenter = MonthContextPresenter(2026, 4, month_dto, TODAY)
-
-    mock_month_table = mocker.Mock()
-    mock_month_table.total_row = {"total": 400, "savings": 50}
-
-    mock_spending = mocker.Mock(avg_per_day=12)
-
-    mocker.patch.object(
-        MonthContextPresenter,
-        "month_table",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_month_table,
-    )
-    mocker.patch.object(
-        MonthContextPresenter,
-        "spending",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_spending,
-    )
-
-    actual = presenter.totals
+def test_totals_property(month_dto):
+    actual = MonthContextPresenter(2026, 4, month_dto, TODAY).totals
 
     assert actual == {
         "income": 1000,
-        "expense": 400,
+        "expense": 510,
         "saving": 50,
-        "avg_per_day": 12,
+        "avg_per_day": 5,
     }
 
 
-def test_tables_property(mocker, month_dto):
-    presenter = MonthContextPresenter(2026, 4, month_dto, TODAY)
+def test_tables_property(month_dto):
+    actual = MonthContextPresenter(2026, 4, month_dto, TODAY).tables
 
-    mock_month_table = mocker.Mock(table=["main_data"], total_row={"total": 10})
-    mock_spending = mocker.Mock(spending=["spending_data"])
-
-    mocker.patch.object(
-        MonthContextPresenter,
-        "month_table",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_month_table,
-    )
-    mocker.patch.object(
-        MonthContextPresenter,
-        "spending",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_spending,
-    )
-
-    assert presenter.tables == {
-        "main_table": ["main_data"],
-        "spending_table": ["spending_data"],
-        "total_row": {"total": 10},
+    assert len(actual["main_table"]) == 30
+    assert actual["main_table"][0] == {
+        "date": date(2026, 4, 1),
+        "Food": 10,
+        "Rent": 500,
+        "total": 510,
+        "savings": 50,
     }
+    assert actual["spending_table"][1] == {
+        "date": date(2026, 4, 2),
+        "total": 0,
+        "day": 40,
+        "teoretical": 2620,
+        "real": 2690,
+        "full": 70,
+    }
+    assert actual["total_row"] == {"Food": 10, "Rent": 500, "total": 510, "savings": 50}
 
 
 def test_charts_property(month_dto):
