@@ -136,9 +136,12 @@
             text-align: center;
         }
 
-        .edit-col a,
-        .delete-col a {
+        .edit-col a {
             color: $ink-muted;
+        }
+
+        .delete-col a {
+            color: $harm;
         }
 
         // an empty or zero cell (the `cell_state` filter): present, not read
