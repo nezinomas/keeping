@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
+from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeFactory
 from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
@@ -60,6 +61,21 @@ class BookkeepingIndex(TestCase, Browser):
             for price_id in price_ids
         ]
         assert values == ["", ""]
+
+    def test_month_page_fits_a_phone_and_its_table_scrolls_in_its_box(self):
+        # a column per type: ten make the table wider than the phone
+        for i in range(10):
+            ExpenseTypeFactory(title=f"Expense Type {i}")
+        self.open_at(reverse("bookkeeping:month"), 360)
+
+        overflow = self.browser.execute_script(
+            "const page = document.documentElement;"
+            " const box = document.getElementById('month-content');"
+            " return {width: innerWidth,"
+            " page_overflow: page.scrollWidth - page.clientWidth,"
+            " table_scrolls: box.scrollWidth > box.clientWidth};"
+        )
+        assert overflow == {"width": 360, "page_overflow": 0, "table_scrolls": True}
 
     def _add_rows(self, numbers):
         # A type's save re-syncs its balances, so the rows come from records.

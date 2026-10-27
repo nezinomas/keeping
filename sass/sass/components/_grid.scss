@@ -371,6 +371,14 @@
         "month-add-buttons"
     ;
 
+    @media only screen and (min-width: 992px) {
+        grid-template-columns: 2fr 33%;
+        grid-template-areas:
+            "month-content      month-chart-and-info-table"
+            "month-buttons      month-add-buttons"
+        ;
+    }
+
     #month-chart-and-info-table {
         display: flex;
         flex-direction: column;
@@ -385,6 +393,7 @@
 
     #month-buttons {
         grid-area: month-buttons;
+        overflow-x: auto;
     }
 
     #month-add-buttons {
@@ -428,14 +437,6 @@
                 "accounts   balance-short-and-no-incomes   wealth-avg-debts"
             ;
         }
-    }
-
-    .month-grid {
-        grid-template-columns: 2fr 33%;
-        grid-template-areas:
-            "month-content      month-chart-and-info-table"
-            "month-buttons      month-add-buttons"
-        ;
     }
 
     .debts-grid {
