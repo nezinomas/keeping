@@ -43,8 +43,8 @@
                 <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
                 <td class="text-left">{{ object.expense_type__title }}</td>
                 <td class="text-left">{{ object.expense_name__title }}</td>
-                <td>{{ object.quantity }}</td>
-                <td>{{ object.price_str }}</td>
+                <td class="main__figure">{{ object.quantity }}</td>
+                <td class="main__figure">{{ object.price_str }}</td>
                 <td class="text-left cell-padding remark">{{ object.remark }}</td>
                 <td>
                     {% if object.attachment %}
@@ -67,8 +67,8 @@
                 <td class="text-left">{% translate 'Total' %}</td>
                 <td></td>
                 <td></td>
-                <td>{{sum_quantity|floatformat:"0g"}}</td>
-                <td>{{sum_price|price|cellformat}}</td>
+                <td class="main__figure">{{sum_quantity|floatformat:"0g"}}</td>
+                <td class="main__figure">{{sum_price|price|cellformat}}</td>
                 <td colspan="5"></td>
             </tr>
         </tfoot>

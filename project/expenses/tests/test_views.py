@@ -202,13 +202,16 @@ def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
 
     content = client_logged.get(reverse("expenses:tab_types")).content.decode()
 
-    def cells(*values):
-        return r"\s*".join(f"<td>{value}</td>" for value in values)
+    def figures(*values):
+        return r"\s*".join(f'<td class="main__figure">{value}</td>' for value in values)
+
+    def cells(this_year, last_year, share, last_expense):
+        return rf"{figures(this_year, last_year, share)}\s*<td>{last_expense}</td>"
 
     def name_cells(this_year, last_year, share, last_expense):
-        share_cell = f'<td class="main__share">{share}</td>'
+        share_cell = f'<td class="main__figure main__share">{share}</td>'
         return r"\s*".join(
-            (cells(this_year, last_year), share_cell, cells(last_expense))
+            (figures(this_year, last_year), share_cell, f"<td>{last_expense}</td>")
         )
 
     rows = [
@@ -228,7 +231,7 @@ def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
         r'</tbody>\s*<tbody>\s*<tr class="main__group table-group-divider"[^>]*>\s*'
         r'<td class="text-left">Tuščia</td>\s*' + cells("–", "–", "–", "–"),
         r'</tbody>\s*<tfoot>\s*<tr class="main__total">\s*'
-        r'<td class="text-left">Viso</td>\s*' + cells("1.000", 200, "100%"),
+        r'<td class="text-left">Viso</td>\s*' + figures("1.000", 200, "100%"),
     ]
     assert re.search(r"[\s\S]*?".join(rows), content)
 
@@ -823,7 +826,7 @@ def test_expenses_list_price_converted(client_logged, price, expected):
     assert re.findall(
         r'<tr hx-get=[^>]*>\s*<td class="text-left [\w-]+">([^<]*)</td>\s*'
         r'<td class="text-left">([^<]*)</td>\s*<td class="text-left">([^<]*)</td>\s*'
-        r"<td>([^<]*)</td>\s*<td>([^<]*)</td>",
+        r'<td class="main__figure">([^<]*)</td>\s*<td class="main__figure">([^<]*)</td>',
         content,
     ) == [("1999-01-01", "Expense Type", "Expense Name", "13", expected)]
 
@@ -1158,7 +1161,8 @@ def test_search_totals_row_sums_the_quantity_and_price_under_their_columns(
 
     assert re.search(
         r'<tfoot>\s*<tr class="main__total">\s*<td class="text-left">Viso</td>'
-        r"\s*<td></td>\s*<td></td>\s*<td>5</td>\s*<td>5,00</td>\s*"
+        r"\s*<td></td>\s*<td></td>\s*"
+        r'<td class="main__figure">5</td>\s*<td class="main__figure">5,00</td>\s*'
         r'<td colspan="5"></td>',
         actual,
     )

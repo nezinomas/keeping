@@ -19,10 +19,10 @@
         {% for item in ctx.items %}
         <tr {% if 'Av' in item.title %}class="main__total"{% endif %}>
             <td class="text-left">{{ item.title }}</td>
-            <td>{{item.total|cellformat}}</td>
-            <td>{{item.per_day|cellformat}}</td>
-            <td>{{item.per_week|cellformat}}</td>
-            <td>{{item.per_month|cellformat}}</td>
+            <td class="main__figure">{{item.total|cellformat}}</td>
+            <td class="main__figure">{{item.per_day|cellformat}}</td>
+            <td class="main__figure">{{item.per_week|cellformat}}</td>
+            <td class="main__figure">{{item.per_month|cellformat}}</td>
         </tr>
         {% empty %}
         <tr><td colspan="5">{% translate 'No data' %}</td></tr>

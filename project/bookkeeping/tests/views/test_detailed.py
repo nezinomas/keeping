@@ -187,7 +187,9 @@ def test_view_detailed_incomes_table_shape(client_logged):
     assert '<th class="text-left title-col">' in content
     assert '<th class="month-table__total">' in content
     assert '<tr class="main__total">' in content
-    assert '<td class="month-table__total">' in content
+    assert content.count('<td class="main__figure month-table__total">') == 2
+    # one income in one month: eleven empty months in its row and in the total row
+    assert content.count('<td class="main__figure" data-cell="empty">') == 22
     assert "left-thick-border" not in content
 
 

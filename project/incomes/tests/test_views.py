@@ -78,7 +78,7 @@ def test_income_load_form(client_logged, url_of, trigger, expected_of):
             r'<td class="text-left">1999-01-01</td>\s*'
             r'<td class="text-left">Income Type</td>\s*'
             r'<td class="text-left">Account1</td>\s*'
-            r'<td class="text-left"></td>\s*<td>111,00</td>',
+            r'<td class="text-left"></td>\s*<td class="main__figure">111,00</td>',
         ),
         (
             "incomes:type_new",
@@ -219,8 +219,16 @@ def test_incomes_list_shows_the_price_with_the_subnav_only_on_the_tab(
 
     content = client_logged.get(reverse(url)).content.decode()
 
-    assert "<td>10,00</td>" in content
+    assert '<td class="main__figure">10,00</td>' in content
     assert ('<nav class="subnav">' in content) is has_subnav
+
+
+def test_list_empty_state_names_the_selected_year(client_logged):
+    actual = client_logged.get(reverse("incomes:list")).content.decode("utf-8")
+
+    assert re.search(
+        r'<div class="alert[^"]*">\s*<b>1999</b> metais įrašų nėra\.', actual
+    )
 
 
 @pytest.mark.parametrize(
@@ -452,8 +460,15 @@ def test_types_tab_states_each_type_in_a_table(client_logged):
 
     assert '<td class="text-left">Kita</td>' in content
     assert re.search(
-        r">Alga</td>\s*<td>900</td>\s*<td>700</td>\s*<td>100%</td>\s*"
+        r'>Alga</td>\s*<td class="main__figure">900</td>\s*'
+        r'<td class="main__figure">700</td>\s*<td class="main__figure">100%</td>\s*'
         r"<td>1999-02-05</td>",
+        content,
+    )
+    assert re.search(
+        r'<tr class="main__total">\s*<td class="text-left">Viso</td>\s*'
+        r'<td class="main__figure">900</td>\s*<td class="main__figure">700</td>\s*'
+        r'<td class="main__figure">100%</td>',
         content,
     )
     assert "c-accordion" not in content and 'class="accordion"' not in content

@@ -25,7 +25,7 @@
             <td class="text-left">{{ object.income_type__title }}</td>
             <td class="text-left">{{ object.account__title }}</td>
             <td class="text-left">{{ object.remark }}</td>
-            <td>{{object.price|price|cellformat}}</td>
+            <td class="main__figure">{{object.price|price|cellformat}}</td>
             <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
         </tr>
@@ -42,7 +42,7 @@
 {% if notice %}
     {{ notice }}
 {% else %}
-    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+    {% blocktranslate with year=request.user.selected_year %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 {% endif %}
 </div>
 

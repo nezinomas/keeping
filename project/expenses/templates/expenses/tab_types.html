@@ -17,9 +17,9 @@
         {% url 'expenses:type_update' row.pk as url_update %}
         <tr class="main__group{% if not forloop.first %} table-group-divider{% endif %}" hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
             <td class="text-left">{{ row.title }}{% if row.necessary %} <span class="main__mark">{% translate 'necessary' context 'expense type caption' %}</span>{% endif %}</td>
-            <td>{{ row.this_year }}</td>
-            <td>{{ row.last_year }}</td>
-            <td>{{ row.share }}</td>
+            <td class="main__figure">{{ row.this_year }}</td>
+            <td class="main__figure">{{ row.last_year }}</td>
+            <td class="main__figure">{{ row.share }}</td>
             <td>{{ row.last_expense }}</td>
             <c-td-edit :url="url_update" />
         </tr>
@@ -27,9 +27,9 @@
         {% url 'expenses:name_update' name.pk as name_update %}
         <tr hx-get="{{ name_update }}" hx-trigger="dblclick" hx-target="#mainModal">
             <td class="text-left main__child">{{ name.title }}{% if name.year %} <span class="main__year">{{ name.year }}</span>{% endif %}</td>
-            <td>{{ name.this_year }}</td>
-            <td>{{ name.last_year }}</td>
-            <td class="main__share">{{ name.share }}</td>
+            <td class="main__figure">{{ name.this_year }}</td>
+            <td class="main__figure">{{ name.last_year }}</td>
+            <td class="main__figure main__share">{{ name.share }}</td>
             <td>{{ name.last_expense }}</td>
             <c-td-edit :url="name_update" />
         </tr>
@@ -39,9 +39,9 @@
     <tfoot>
         <tr class="main__total">
             <td class="text-left">{% translate 'Total' %}</td>
-            <td>{{ table.total.this_year }}</td>
-            <td>{{ table.total.last_year }}</td>
-            <td>{{ table.total.share }}</td>
+            <td class="main__figure">{{ table.total.this_year }}</td>
+            <td class="main__figure">{{ table.total.last_year }}</td>
+            <td class="main__figure">{{ table.total.share }}</td>
             <td></td>
             <td class="edit-col"></td>
         </tr>

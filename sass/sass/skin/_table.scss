@@ -41,22 +41,24 @@
         }
 
         thead th {
-            @include tokens.label;
+            font-family: $display;
+            font-size: 0.8125rem;
+            font-weight: 400;
+            color: $ink;
+            background: $band;
+        }
 
-            background: $paper;
+        thead tr:last-child th {
             border-bottom: 1px solid $ink;
-
-            // caps at their 12px floor push a phone's table past the page, so a
-            // phone's header is lowercase, which the floor does not cover
-            @media only screen and (max-width: 767px) {
-                font-size: 0.68rem;
-                letter-spacing: 0.06em;
-                text-transform: none;
-            }
         }
 
         tbody td {
             border-bottom: 1px solid $hair-soft;
+        }
+
+        .main__figure {
+            font-family: $figures;
+            font-size: 0.86rem;
         }
 
         tbody tr.main__group td {
@@ -67,11 +69,6 @@
             @media only screen and (max-width: 767px) {
                 padding-top: $gap;
             }
-        }
-
-        tbody tr.main__group td:first-child {
-            font-family: $display;
-            font-size: 1.05rem;
         }
 
         td.main__child {
@@ -190,7 +187,6 @@
         // a sticky header on a collapsed table loses its borders and fill
         border-collapse: separate;
         border-spacing: 0;
-        border: 1px solid $hair;
 
         thead th {
             padding-top: 0.6rem;

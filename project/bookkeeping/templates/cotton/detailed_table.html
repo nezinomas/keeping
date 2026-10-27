@@ -33,13 +33,13 @@
 
             {% for num in months %}
                 {% with cell_value=row|get_item:num %}
-                    <td data-cell="{{cell_value|cell_state}}">
+                    <td class="main__figure" data-cell="{{cell_value|cell_state}}">
                         {{ cell_value|price|cellformat:"0,00" }}
                     </td>
                 {% endwith %}
             {% endfor %}
 
-            <td class="month-table__total">{{ row.total_col|price|cellformat:"0,00" }}</td>
+            <td class="main__figure month-table__total">{{ row.total_col|price|cellformat:"0,00" }}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -50,13 +50,13 @@
 
             {% for num in months %}
                 {% with cell_value=total|get_item:num %}
-                    <td data-cell="{{cell_value|cell_state}}">
+                    <td class="main__figure" data-cell="{{cell_value|cell_state}}">
                         {{ cell_value|price|cellformat:"0,00" }}
                     </td>
                 {% endwith %}
             {% endfor %}
 
-            <td class="month-table__total">{{ total.total_col|price|cellformat:"0,00" }}</td>
+            <td class="main__figure month-table__total">{{ total.total_col|price|cellformat:"0,00" }}</td>
         </tr>
     </tfoot>
 </table>
