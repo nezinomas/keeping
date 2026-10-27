@@ -1,8 +1,7 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// `.main` is what a table is called everywhere in this app. The paper bundle
-// does not import components/_table, so this is its only definition here.
+// The paper bundle does not import components/_table: `.main`'s only definition.
 
 .paper-skin {
     .main {
@@ -30,8 +29,7 @@
             color: $ink-muted;
         }
 
-        // figures right, the row's name left. Zero specificity, so the markup's
-        // own .text-left / .text-center still place a cell where it asks to be
+        // zero specificity, so the markup's .text-left / .text-center still win
         :where(th, td) {
             padding: 0.35rem $gap;
             text-align: right;
@@ -61,7 +59,6 @@
             border-bottom: 1px solid $hair-soft;
         }
 
-        // a grouped table: the group's own row is the heading, its children indent
         tbody tr.main__group td {
             padding-top: 1.5 * $gap;
             padding-bottom: 0.5rem;
@@ -85,7 +82,6 @@
             }
         }
 
-        // a caption beside a title (a name's year, a type's mark), ink only
         .main__year,
         .main__mark {
             font-family: $mono;
@@ -94,7 +90,7 @@
             color: $ink-muted;
         }
 
-        // a name's share is of its type, not of the year as its type's is
+        // muted: a name's share is of its type, the type's share of the year
         td.main__share {
             color: $ink-muted;
         }
@@ -105,8 +101,6 @@
             border-top: 2px solid $hair;
         }
 
-        // a summary row, its name set as a label; the ink rule above it is the
-        // upper row's (below)
         :is(tbody, tfoot) tr.main__total td {
             border-bottom: 0;
             font-weight: 600;
@@ -127,7 +121,6 @@
             border-bottom-color: $ink;
         }
 
-        // action columns (shared <c-td-edit> / <c-td-delete> markup)
         .edit-col,
         .delete-col {
             width: 2.25rem;
@@ -144,7 +137,7 @@
             color: $harm;
         }
 
-        // an empty or zero cell (the `cell_state` filter): present, not read
+        // a zero is present, not read (the `cell_state` filter's "empty")
         [data-cell="empty"] {
             color: $ink-faint;
         }
@@ -160,8 +153,6 @@
         }
     }
 
-    // a sortable header (<c-sort-th>): the active column is a span, every other one
-    // a link; the glyph is the hint, inked darker on the column in use
     .sortable-header-row th {
         > span,
         > a {
@@ -205,7 +196,7 @@
             padding-top: 0.6rem;
         }
 
-        // rows scroll under the pinned header
+        // opaque: the rows scroll under the pinned header
         &.striped tbody tr:nth-child(even) > td {
             @include tokens.opaque-stripe;
         }
