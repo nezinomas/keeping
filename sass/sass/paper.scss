@@ -27,6 +27,7 @@
 
 // 5. The skin — tokens first, so its mixins exist for the partials after them
 @use 'skin/tokens';
+@use 'skin/fonts';
 @use 'skin/notice';
 @use 'skin/sheet';
 @use 'skin/panel';
