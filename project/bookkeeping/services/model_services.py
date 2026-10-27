@@ -22,9 +22,10 @@ class CommonMethodsMixin:
             )
         ]
 
-        # items = [ <Q AND( ('date': datetime), ('field_id': int) )>, ... ]
         fld = f"{field}_id"
         items = [Q(date=x["latest_date"]) & Q(**{fld: x[fld]}) for x in qs]
+        if not items:
+            return []
 
         return (
             self.objects.filter(reduce(or_, items))
@@ -37,8 +38,6 @@ class CommonMethodsMixin:
                 category_id=F(f"{field}__id"),
                 have=F("price"),
             )
-            if items
-            else None
         )
 
 

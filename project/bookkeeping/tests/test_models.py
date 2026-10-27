@@ -29,20 +29,6 @@ def test_account_worth_str():
     assert str(actual) == "1999-01-01 02:03 - Account1"
 
 
-def test_account_worth_related(main_user, second_user):
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2", journal=second_user.journal)
-
-    AccountWorthFactory(account=a1)
-    AccountWorthFactory(account=a2)
-
-    actual = AccountWorthModelService(main_user).objects
-
-    assert len(actual) == 1
-    assert str(actual[0].account) == "A1"
-    assert actual[0].account.journal.users.first().username == "bob"
-
-
 def test_account_worth_post_save(main_user):
     AccountWorthFactory(date=dt(1999, 1, 1, tzinfo=ZoneInfo("UTC")))
 
@@ -68,42 +54,11 @@ def test_account_worth_post_save_new():
     assert actual.have == 5
 
 
-def test_account_worth_have(main_user):
-    AccountWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo("UTC")), price=1)
-    AccountWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo("UTC")), price=2)
-    AccountWorthFactory(date=dt(2000, 12, 31, 1, 1, 1, tzinfo=ZoneInfo("UTC")), price=3)
-    AccountWorthFactory(date=dt(2000, 12, 31, 3, 2, 1, tzinfo=ZoneInfo("UTC")), price=4)
-
-    actual = AccountWorthModelService(main_user).have()
-
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["have"] == 2
-
-    assert actual[1]["year"] == 2000
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["have"] == 4
-
-
 # SavingWorth
 def test_saving_worth_str():
     model = SavingWorthFactory()
 
     assert str(model) == "1999-01-01 02:03 - Savings"
-
-
-def test_saving_worth_related(main_user, second_user):
-    s1 = SavingTypeFactory(title="S1")
-    s2 = SavingTypeFactory(title="S2", journal=second_user.journal)
-
-    SavingWorthFactory(saving_type=s1)
-    SavingWorthFactory(saving_type=s2)
-
-    actual = SavingWorthModelService(main_user).objects
-
-    assert len(actual) == 1
-    assert str(actual[0].saving_type) == "S1"
-    assert actual[0].saving_type.journal.users.first().username == "bob"
 
 
 def test_saving_worth_post_save():
@@ -140,42 +95,11 @@ def test_saving_worth_post_save_new():
     assert actual.market_value == 30
 
 
-def test_saving_worth_have(main_user):
-    SavingWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo("UTC")), price=1)
-    SavingWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo("UTC")), price=2)
-    SavingWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo("UTC")), price=3)
-    SavingWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo("UTC")), price=4)
-
-    actual = SavingWorthModelService(main_user).have()
-
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["have"] == 2
-
-    assert actual[1]["year"] == 2000
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["have"] == 4
-
-
 # PensionWorth
 def test_pension_worth_str():
     model = PensionWorthFactory()
 
     assert str(model) == "1999-01-01 02:03 - PensionType"
-
-
-def test_pension_worth_related(main_user, second_user):
-    p1 = PensionTypeFactory(title="P1")
-    p2 = PensionTypeFactory(title="P2", journal=second_user.journal)
-
-    PensionWorthFactory(pension_type=p1)
-    PensionWorthFactory(pension_type=p2)
-
-    actual = PensionWorthModelService(main_user).objects
-
-    assert len(actual) == 1
-    assert str(actual[0].pension_type) == "P1"
-    assert actual[0].pension_type.journal.users.first().username == "bob"
 
 
 def test_pension_worth_post_save():
@@ -208,34 +132,88 @@ def test_pension_worth_post_save_new():
     assert actual.market_value == 3
 
 
-def test_pension_worth_have(main_user):
-    PensionWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo("UTC")), price=1)
-    PensionWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo("UTC")), price=2)
-    PensionWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo("UTC")), price=3)
-    PensionWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo("UTC")), price=4)
-
-    actual = PensionWorthModelService(main_user).have()
-
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["have"] == 2
-
-    assert actual[1]["year"] == 2000
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["have"] == 4
-
-
 WORTH_FACTORIES = [AccountWorthFactory, SavingWorthFactory, PensionWorthFactory]
 
 
-@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "service, factory, field, fund_factory",
+    [
+        (AccountWorthModelService, AccountWorthFactory, "account", AccountFactory),
+        (SavingWorthModelService, SavingWorthFactory, "saving_type", SavingTypeFactory),
+        (
+            PensionWorthModelService,
+            PensionWorthFactory,
+            "pension_type",
+            PensionTypeFactory,
+        ),
+    ],
+)
+def test_worth_objects_are_the_users_journals(
+    main_user, second_user, service, factory, field, fund_factory
+):
+    mine = fund_factory(title="Mine")
+    factory(**{field: mine})
+    factory(**{field: fund_factory(title="Theirs", journal=second_user.journal)})
+
+    actual = service(main_user).objects
+
+    assert [getattr(worth, field) for worth in actual] == [mine]
+
+
+# the account row's two 2000 worths share a day, so the later time is the latest
+@pytest.mark.parametrize(
+    "service, factory, first_2000, last_2000",
+    [
+        (
+            AccountWorthModelService,
+            AccountWorthFactory,
+            dt(2000, 12, 31, 1, 1, 1, tzinfo=ZoneInfo("UTC")),
+            dt(2000, 12, 31, 3, 2, 1, tzinfo=ZoneInfo("UTC")),
+        ),
+        (
+            SavingWorthModelService,
+            SavingWorthFactory,
+            dt(2000, 1, 1, tzinfo=ZoneInfo("UTC")),
+            dt(2000, 12, 31, tzinfo=ZoneInfo("UTC")),
+        ),
+        (
+            PensionWorthModelService,
+            PensionWorthFactory,
+            dt(2000, 1, 1, tzinfo=ZoneInfo("UTC")),
+            dt(2000, 12, 31, tzinfo=ZoneInfo("UTC")),
+        ),
+    ],
+)
+def test_worth_have_is_each_years_latest_worth(
+    main_user, service, factory, first_2000, last_2000
+):
+    factory(date=dt(1970, 1, 1, tzinfo=ZoneInfo("UTC")), price=1)
+    factory(date=dt(1970, 12, 31, tzinfo=ZoneInfo("UTC")), price=2)
+    factory(date=first_2000, price=3)
+    factory(date=last_2000, price=4)
+
+    actual = service(main_user).have()
+
+    assert [(x["year"], x["category_id"], x["have"]) for x in actual] == [
+        (1970, 1, 2),
+        (2000, 1, 4),
+    ]
+
+
+@pytest.mark.parametrize(
+    "service",
+    [AccountWorthModelService, SavingWorthModelService, PensionWorthModelService],
+)
+def test_worth_have_of_a_journal_with_no_worth_is_empty(main_user, service):
+    assert service(main_user).have() == []
+
+
 @pytest.mark.parametrize("factory", WORTH_FACTORIES)
 def test_worth_price_is_never_null(factory):
     with pytest.raises(IntegrityError), transaction.atomic():
         factory(price=None)
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize("factory", WORTH_FACTORIES)
 def test_worth_price_is_required(factory):
     worth = factory.build(price=None)
