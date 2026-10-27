@@ -64,6 +64,13 @@ def test_nav_offers_every_tab(client_logged):
     ]
 
 
+def test_nav_selects_the_open_tab(client_logged):
+    url = reverse("books:tab_data", kwargs={"scope": "year"})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert re.findall(r'id="tab-(\w+)"[^>]*aria-selected="true"', content) == ["data"]
+
+
 def test_browser_title_names_the_open_tab(client_logged):
     url = reverse("books:tab_data", kwargs={"scope": "year"})
     content = client_logged.get(url).content.decode()
@@ -300,7 +307,10 @@ def test_page_links_keep_their_query(
 
     link = reverse(link_name, kwargs=link_kwargs)
     # the other page's number and the next or previous arrow
-    page_link = rf'<a role="button"[^>]*hx-get="{re.escape(f"{link}?{query}")}"'
+    page_link = (
+        rf'<a role="button"[^>]*hx-get="{re.escape(f"{link}?{query}")}"'
+        r'[^>]* hx-target="#data"'
+    )
     assert len(re.findall(page_link, content)) == 2
 
 
@@ -333,6 +343,39 @@ def test_a_listing_shows_the_books_of_its_scope(
     actual = client_logged.get(url, params).content.decode("utf-8")
 
     assert ROW.findall(actual) == rows
+
+
+def test_a_book_row_opens_its_own_forms(client_logged):
+    book = BookFactory()
+
+    url = reverse("books:list", kwargs={"scope": "year"})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    rows = re.findall(
+        r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
+        r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
+        r'.*?<td class="delete-col">\s*<a role="button" hx-get="([^"]*)"',
+        actual,
+        re.DOTALL,
+    )
+    update = f"/books/update/{book.pk}/"
+    assert rows == [(update, update, f"/books/delete/{book.pk}/")]
+
+
+@pytest.mark.parametrize(
+    ("ended", "row_class"),
+    [(None, "currently-reading-book"), (date(1999, 1, 31), "")],
+    ids=["open_book_is_marked", "finished_book_is_not"],
+)
+def test_a_book_row_marks_a_book_still_being_read(client_logged, ended, row_class):
+    BookFactory(ended=ended)
+
+    url = reverse("books:list", kwargs={"scope": "year"})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert re.findall(r'<tr hx-get="[^"]*"[^>]* class="([^"]*)">', actual) == [
+        row_class
+    ]
 
 
 @pytest.mark.parametrize(
@@ -615,7 +658,7 @@ def test_a_user_with_no_year_raises(rf, main_user, call):
 
 
 @GOAL_URL
-def test_target_load_form(client_logged, make_url):
+def test_goal_load_form(client_logged, make_url):
     url = make_url()
 
     response = client_logged.get(url)
@@ -626,7 +669,7 @@ def test_target_load_form(client_logged, make_url):
 
 
 @GOAL_URL
-def test_target_save(client_logged, make_url):
+def test_goal_save(client_logged, make_url):
     url = make_url()
 
     client_logged.post(url, {"year": 1999, "quantity": 66})

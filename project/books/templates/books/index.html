@@ -26,7 +26,7 @@
 
 <h1 class="visually-hidden">{% translate 'Books' %}</h1>
 
-<c-subnav :tabs=tabs :active=tab />
+<c-subnav :tabs="tabs" :active="tab" />
 
 <main id="tab_content" class="grid-one-col" role="tabpanel" :aria-labelledby="'tab-' + tab">
     {% include 'core/includes/tab_reload.html' %}
