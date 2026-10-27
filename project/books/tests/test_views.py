@@ -23,7 +23,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_a_plain_visit_returns_the_whole_paper_page(client_logged):
-    content = client_logged.get(reverse("books:tab_index")).content.decode()
+    content = client_logged.get(reverse("books:tab_index")).content.decode("utf-8")
 
     assert '<nav class="subnav">' in content
     assert re.search(r'<link[^>]*href="[^"]*css/paper\.min\.css[^"]*"', content)
@@ -44,7 +44,9 @@ def test_only_the_open_tab_reloads_on_a_saved_book_or_goal(
     client_logged, url_name, kwargs, reloaded_kwargs
 ):
     url = reverse(url_name, kwargs=kwargs)
-    content = client_logged.get(url, headers={"HX-Request": "true"}).content.decode()
+    content = client_logged.get(url, headers={"HX-Request": "true"}).content.decode(
+        "utf-8"
+    )
 
     reload_url = reverse(url_name, kwargs=reloaded_kwargs)
     listener = (
@@ -56,7 +58,7 @@ def test_only_the_open_tab_reloads_on_a_saved_book_or_goal(
 
 
 def test_nav_offers_every_tab(client_logged):
-    content = client_logged.get(reverse("books:index")).content.decode()
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     assert nav_tabs(content) == [
         ("index", reverse("books:tab_index")),
@@ -73,7 +75,7 @@ def test_nav_selects_the_open_tab(client_logged):
 
 def test_browser_title_names_the_open_tab(client_logged):
     url = reverse("books:tab_data", kwargs={"scope": "year"})
-    content = client_logged.get(url).content.decode()
+    content = client_logged.get(url).content.decode("utf-8")
 
     assert "<title>Knygos | Duomenys</title>" in content
 
@@ -396,12 +398,24 @@ def test_list_empty_state(client_logged, scope, notice):
     )
 
 
+def _new_book_url():
+    return reverse("books:new")
+
+
+def _update_book_url():
+    return reverse("books:update", kwargs={"pk": BookFactory().pk})
+
+
+def _delete_book_url():
+    return reverse("books:delete", kwargs={"pk": BookFactory().pk})
+
+
 @pytest.mark.parametrize(
-    "url_of, form_id, expected",
+    "make_url, form_id, expected",
     [
-        (lambda book: reverse("books:new"), "generic-form", []),
+        (_new_book_url, "generic-form", []),
         (
-            lambda book: reverse("books:update", kwargs={"pk": book.pk}),
+            _update_book_url,
             "generic-form",
             [
                 '<input type="text" name="started" value="1999-01-01"',
@@ -411,21 +425,20 @@ def test_list_empty_state(client_logged, scope, notice):
             ],
         ),
         (
-            lambda book: reverse("books:delete", kwargs={"pk": book.pk}),
+            _delete_book_url,
             "delete-form",
             [r"Ar tikrai norite ištrinti: <strong>Book Title</strong>\?"],
         ),
     ],
     ids=["new", "update", "delete"],
 )
-def test_books_load_form(client_logged, url_of, form_id, expected):
-    url = url_of(BookFactory())
+def test_books_load_form(client_logged, make_url, form_id, expected):
+    url = make_url()
 
-    actual = client_logged.get(url).content.decode()
+    actual = client_logged.get(url).content.decode("utf-8")
 
     assert form_posts_to(actual, form_id, url)
-    for pattern in expected:
-        assert re.search(pattern, actual)
+    assert [pattern for pattern in expected if not re.search(pattern, actual)] == []
 
 
 def test_save_book(client_logged):
@@ -443,18 +456,16 @@ def test_save_book(client_logged):
 
 
 @pytest.mark.parametrize(
-    ("url_name", "has_book", "data", "field", "message"),
+    ("make_url", "data", "field", "message"),
     [
         (
-            "books:new",
-            False,
+            _new_book_url,
             {"started": "", "author": "A", "title": "T"},
             "started",
             "Šis laukas yra privalomas.",
         ),
         (
-            "books:update",
-            True,
+            _update_book_url,
             {
                 "started": "",
                 "ended": "2010-12-31",
@@ -466,8 +477,7 @@ def test_save_book(client_logged):
             "Šis laukas yra privalomas.",
         ),
         (
-            "books:target_new",
-            False,
+            _new_goal_url,
             {"year": -2, "quantity": "x"},
             "year",
             "Įsitikinkite, kad reikšmė yra didesnė arba lygi 0.",
@@ -476,13 +486,9 @@ def test_save_book(client_logged):
     ids=["book", "book_update", "goal"],
 )
 def test_an_invalid_post_returns_the_form_with_its_error(
-    client_logged, url_name, has_book, data, field, message
+    client_logged, make_url, data, field, message
 ):
-    kwargs = {}
-    if has_book:
-        kwargs = {"pk": BookFactory().pk}
-
-    response = client_logged.post(reverse(url_name, kwargs=kwargs), data)
+    response = client_logged.post(make_url(), data)
 
     actual = response.content.decode("utf-8")
     assert re.search(
@@ -551,7 +557,6 @@ def test_books_update(client_logged, started, data, rows, saved):
 def test_books_form_of_another_users_book_is_not_found(
     client_logged, second_user, url_name
 ):
-    BookFactory()
     obj = BookFactory(author="xxx", title="yyy", user=second_user)
 
     response = client_logged.get(reverse(url_name, kwargs={"pk": obj.pk}))
@@ -560,17 +565,22 @@ def test_books_form_of_another_users_book_is_not_found(
 
 
 @pytest.mark.parametrize(
-    ("owned", "remaining"), [(True, 0), (False, 1)], ids=["own_book", "other_user"]
+    ("deleted", "remaining"),
+    [("Mine", ["Kept", "Theirs"]), ("Theirs", ["Kept", "Mine", "Theirs"])],
+    ids=["own_book", "other_user"],
 )
-def test_books_delete(client_logged, second_user, owned, remaining):
-    book = BookFactory() if owned else BookFactory(user=second_user)
-
-    assert models.Book.objects.all().count() == 1
-    url = reverse("books:delete", kwargs={"pk": book.pk})
+def test_books_delete(client_logged, second_user, deleted, remaining):
+    books = {
+        "Mine": BookFactory(title="Mine"),
+        "Kept": BookFactory(title="Kept"),
+        "Theirs": BookFactory(title="Theirs", user=second_user),
+    }
+    url = reverse("books:delete", kwargs={"pk": books[deleted].pk})
 
     client_logged.post(url, {}, follow=True)
 
-    assert models.Book.objects.all().count() == remaining
+    titles = models.Book.objects.order_by("title").values_list("title", flat=True)
+    assert list(titles) == remaining
 
 
 @pytest.mark.parametrize(
@@ -669,12 +679,13 @@ def test_goal_load_form(client_logged, make_url):
 
 
 @GOAL_URL
-def test_goal_save(client_logged, make_url):
+def test_goal_save(client_logged, main_user, make_url):
     url = make_url()
 
     client_logged.post(url, {"year": 1999, "quantity": 66})
 
-    assert models.BookTarget.objects.first().quantity == 66
+    saved = models.BookTarget.objects.values_list("user", "year", "quantity")
+    assert list(saved) == [(main_user.pk, 1999, 66)]
 
 
 @GOAL_URL
