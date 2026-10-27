@@ -195,7 +195,9 @@ def _row_titles(table):
 
 
 def _month_cells(table, figure):
-    return re.findall(rf'<td class="[^"]*" data-cell="[^"]*">{figure}</td>', table)
+    return re.findall(
+        rf'<td class="main__figure[^"]*" data-cell="[^"]*">{figure}</td>', table
+    )
 
 
 def _assert_reload_triggered(response):
@@ -962,6 +964,7 @@ def test_day_tab_calculations_renders_two_panels_each_with_its_own_header(
 
     assert spend.count("<thead") == 1
     assert check.count("<thead") == 1
+    assert '<td class="main__figure" data-cell="empty">' in spend
 
 
 def _first_month_cell(content, label):

@@ -414,7 +414,8 @@ def test_tab_titles_its_panels(client_logged, tab, titles):
             ["quantity", "consumption"],
             # the Converted table's rows exist only while the breakdown has data
             (
-                r'<td class="text-left">Alus, 0.5L</td>\s*<td>0,40</td>',
+                r'<td class="text-left">Alus, 0.5L</td>\s*<td class="main__figure">0,40</td>'
+                r'(\s*<td class="main__figure">[^<]*</td>){3}\s*</tr>',
                 r'<tr class="main__total">\s*<td class="text-left">Std Av</td>',
             ),
             id="index",
@@ -774,7 +775,7 @@ def test_tab_data(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert '<td class="text-left">19,0 vnt</td>' in actual
+    assert '<td class="text-left main__figure">19,0 vnt</td>' in actual
     assert f'<a role="button" hx-get="{reverse("drinks:update", args=[p.pk])}"' in (
         actual
     )
@@ -802,7 +803,7 @@ def test_tab_data_quantity_value(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert '<td class="text-left">500 ml</td>' in actual
+    assert '<td class="text-left main__figure">500 ml</td>' in actual
 
 
 # TabHistory View
@@ -1051,7 +1052,7 @@ def test_new_tab_data(client_logged):
     actual = response.content.decode()
     drink = models.Drink.objects.get()
 
-    assert '<td class="text-left">19,0 vnt</td>' in actual
+    assert '<td class="text-left main__figure">19,0 vnt</td>' in actual
     assert f'<a role="button" hx-get="{reverse("drinks:update", args=[drink.pk])}"' in (
         actual
     )
@@ -1092,7 +1093,7 @@ def test_update(client_logged):
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode()
 
-    assert '<td class="text-left">0,7 vnt</td>' in actual
+    assert '<td class="text-left main__figure">0,7 vnt</td>' in actual
     assert f'<a role="button" hx-get="{url}"' in actual
 
 

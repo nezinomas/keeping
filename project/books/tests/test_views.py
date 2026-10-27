@@ -640,7 +640,7 @@ def test_pagination(client_logged, name, kwargs, params, expected, first_numbers
     actual = response.content.decode("utf-8")
 
     assert len(ROW.findall(actual)) == expected
-    numbers = re.findall(r'<td class="text-left">(\d+)</td>', actual)
+    numbers = re.findall(r'<td class="text-left main__figure">(\d+)</td>', actual)
     assert numbers[:1] == first_numbers
 
 

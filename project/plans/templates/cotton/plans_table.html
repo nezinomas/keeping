@@ -17,7 +17,7 @@
         <tr hx-get="{{ row.update_url }}" hx-target="#mainModal" hx-trigger="dblclick">
             <td class="text-left">{{ row.title }}</td>
             {% for value, state in row.cells %}
-            <td class="{% if state == 'over' %} plans-table__over{% endif %}" data-cell="{{value|cell_state}}">{{value|price|cellformat:"0,00"}}</td>
+            <td class="main__figure{% if state == 'over' %} plans-table__over{% endif %}" data-cell="{{value|cell_state}}">{{value|price|cellformat:"0,00"}}</td>
             {% endfor %}
             <c-td-edit :url="row.update_url" />
             <c-td-delete :url="row.delete_url" />

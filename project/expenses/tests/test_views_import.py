@@ -895,6 +895,7 @@ def test_import_review_tfoot_cells_collapsed_without_shop_money(
     for row in rows:
         cells = re.findall(r"<td[^>]*>", row)
         assert len(cells) == 3
+        assert cells[1] == '<td class="main__figure">'
         assert 'colspan="3"' in cells[-1]
     assert "<td></td>" not in _section(text, "tfoot")
 
@@ -916,6 +917,7 @@ def test_import_review_tfoot_cells_collapsed_with_shop_money(main_user, client_l
     for row in rows:
         cells = re.findall(r"<td[^>]*>", row)
         assert len(cells) == 3
+        assert cells[1] == '<td class="main__figure">'
         assert 'colspan="4"' in cells[-1]
     assert "<td></td>" not in _section(text, "tfoot")
 
