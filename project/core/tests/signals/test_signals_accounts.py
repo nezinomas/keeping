@@ -6,7 +6,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from ...lib.signals import Accounts
-from .strategies import rows
+from .strategies import HAVE, TYPES, rows, worth
 
 
 @pytest.fixture(name="incomes")
@@ -62,14 +62,6 @@ def fixture_have():
             "have": 25,
             "latest_check": datetime(2000, 1, 6, 3, 2, 1),
         },
-    ]
-
-
-@pytest.fixture(name="types")
-def fixture_types():
-    return [
-        SimpleNamespace(pk=1, closed=None),
-        SimpleNamespace(pk=2, closed=None),
     ]
 
 
@@ -164,50 +156,6 @@ def test_table(incomes, expenses, have, types):
     assert actual[7]["latest_check"] == datetime(2000, 1, 6, 3, 2, 1)
 
 
-def test_table_filtered_closed_categories():
-    incomes = [
-        {"year": 1999, "incomes": 50, "category_id": 1},
-        {"year": 1999, "incomes": 55, "category_id": 2},
-        {"year": 2000, "incomes": 110, "category_id": 2},
-    ]
-
-    types = [
-        SimpleNamespace(pk=1, closed=1999),
-        SimpleNamespace(pk=2, closed=None),
-    ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-    actual = Accounts(data).df.collect()
-
-    assert actual["category_id"].to_list() == [1, 2, 2, 2]
-    assert actual["year"].to_list() == [1999, 1999, 2000, 2001]
-
-
-def test_table_one_record(types):
-    incomes = [{"year": 1997, "incomes": 5, "category_id": 1}]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-    actual = Accounts(data).df.collect().to_dicts()
-
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["year"] == 1997
-    assert actual[0]["past"] == 0
-    assert actual[0]["incomes"] == 5
-    assert actual[0]["expenses"] == 0
-    assert actual[0]["balance"] == 5
-    assert actual[0]["have"] == 0
-    assert actual[0]["delta"] == -5
-    assert not actual[0]["latest_check"]
-
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["year"] == 1998
-    assert actual[1]["past"] == 5
-    assert actual[1]["incomes"] == 0
-    assert actual[1]["expenses"] == 0
-    assert actual[1]["balance"] == 5
-    assert actual[1]["have"] == 0
-    assert actual[1]["delta"] == -5
-    assert not actual[1]["latest_check"]
-
-
 def test_copy_have_and_latest_from_previous_year(types):
     have = [
         {
@@ -298,328 +246,140 @@ def test_copy_have_and_latest_from_previous_year(types):
     }
 
 
-def test_table_with_types(types):
+@pytest.mark.parametrize(
+    "extra_types, extra_incomes, extra_rows",
+    [
+        pytest.param([], [], {}, id="types"),
+        pytest.param(
+            [SimpleNamespace(pk=666, closed=None)], [], {}, id="type_without_records"
+        ),
+        pytest.param(
+            [SimpleNamespace(pk=666, closed=None)],
+            [{"year": 1974, "incomes": 1, "category_id": 666}],
+            {666: [(1974, 1, 0), *[(year, 0, 1) for year in range(1975, 2001)]]},
+            id="old_type",
+        ),
+    ],
+)
+def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
     incomes = [
         {"year": 1998, "incomes": 1, "category_id": 1},
         {"year": 1998, "incomes": 2, "category_id": 2},
         {"year": 1999, "incomes": 3, "category_id": 1},
+        *extra_incomes,
     ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-    actual = Accounts(data).df.collect().to_dicts()
+    data = SimpleNamespace(
+        incomes=incomes, expenses=[], have=[], types=[*types, *extra_types]
+    )
+    actual = {}
+    for row in Accounts(data).df.collect().to_dicts():
+        actual.setdefault(row["category_id"], []).append(
+            (row["year"], row["incomes"], row["past"])
+        )
 
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["year"] == 1998
-    assert actual[3]["past"] == 0
-    assert actual[3]["incomes"] == 2
-
-    assert actual[4]["category_id"] == 2
-    assert actual[4]["year"] == 1999
-    assert actual[4]["past"] == 2
-    assert actual[4]["incomes"] == 0
-
-
-def test_table_type_without_recods(types):
-    types.append(SimpleNamespace(pk=666, closed=None))
-    incomes = [
-        {"year": 1998, "incomes": 1, "category_id": 1},
-        {"year": 1998, "incomes": 2, "category_id": 2},
-        {"year": 1999, "incomes": 3, "category_id": 1},
-    ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-    actual = Accounts(data).df.collect().to_dicts()
-
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["year"] == 1998
-    assert actual[3]["past"] == 0
-    assert actual[3]["incomes"] == 2
-
-    assert actual[4]["category_id"] == 2
-    assert actual[4]["year"] == 1999
-    assert actual[4]["past"] == 2
-    assert actual[4]["incomes"] == 0
+    assert actual == {
+        1: [(1998, 1, 0), (1999, 3, 1), (2000, 0, 4)],
+        2: [(1998, 2, 0), (1999, 0, 2), (2000, 0, 2)],
+        **extra_rows,
+    }
 
 
-def test_table_old_type(types):
-    types.append(SimpleNamespace(pk=666, closed=None))
-    incomes = [
-        {"year": 1974, "incomes": 1, "category_id": 666},
-        {"year": 1998, "incomes": 1, "category_id": 1},
-        {"year": 1998, "incomes": 2, "category_id": 2},
-        {"year": 1999, "incomes": 3, "category_id": 1},
-    ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-    actual = Accounts(data).df.collect().to_dicts()
+@pytest.mark.parametrize(
+    "given_inputs, expected",
+    [
+        pytest.param(
+            ("incomes", "expenses"),
+            {
+                "category_id": [1, 1, 1, 2, 2, 2],
+                "year": [1999, 2000, 2001, 1999, 2000, 2001],
+                "past": [0, 50, 150, 0, 110, 220],
+                "incomes": [100, 200, 0, 110, 220, 0],
+                "expenses": [50, 100, 0, 0, 110, 0],
+                "balance": [50, 150, 150, 110, 220, 220],
+                "have": [0, 0, 0, 0, 0, 0],
+                "delta": [-50, -150, -150, -110, -220, -220],
+                "latest_check": [None] * 6,
+            },
+            id="incomes_and_expenses",
+        ),
+        pytest.param(
+            ("expenses",),
+            {
+                "category_id": [1, 1, 1, 2, 2],
+                "year": [1999, 2000, 2001, 2000, 2001],
+                "past": [0, -50, -150, 0, -110],
+                "incomes": [0, 0, 0, 0, 0],
+                "expenses": [50, 100, 0, 110, 0],
+                "balance": [-50, -150, -150, -110, -110],
+                "have": [0, 0, 0, 0, 0],
+                "delta": [50, 150, 150, 110, 110],
+                "latest_check": [None] * 5,
+            },
+            id="expenses",
+        ),
+        pytest.param(
+            ("incomes",),
+            {
+                "category_id": [1, 1, 1, 2, 2, 2],
+                "year": [1999, 2000, 2001, 1999, 2000, 2001],
+                "past": [0, 100, 300, 0, 110, 330],
+                "incomes": [100, 200, 0, 110, 220, 0],
+                "expenses": [0, 0, 0, 0, 0, 0],
+                "balance": [100, 300, 300, 110, 330, 330],
+                "have": [0, 0, 0, 0, 0, 0],
+                "delta": [-100, -300, -300, -110, -330, -330],
+                "latest_check": [None] * 6,
+            },
+            id="incomes",
+        ),
+        pytest.param(
+            ("have",),
+            {
+                "category_id": [1, 1, 1, 2, 2, 2],
+                "year": [1999, 2000, 2001, 1999, 2000, 2001],
+                "past": [0, 0, 0, 0, 0, 0],
+                "incomes": [0, 0, 0, 0, 0, 0],
+                "expenses": [0, 0, 0, 0, 0, 0],
+                "balance": [0, 0, 0, 0, 0, 0],
+                "have": [10, 15, 15, 20, 25, 25],
+                "delta": [10, 15, 15, 20, 25, 25],
+                "latest_check": [
+                    datetime(1999, 1, 1, 3, 2, 1),
+                    datetime(2000, 1, 4, 3, 2, 1),
+                    datetime(2000, 1, 4, 3, 2, 1),
+                    datetime(1999, 1, 2, 3, 2, 1),
+                    datetime(2000, 1, 6, 3, 2, 1),
+                    datetime(2000, 1, 6, 3, 2, 1),
+                ],
+            },
+            id="have",
+        ),
+        pytest.param((), {"category_id": [], "year": []}, id="nothing"),
+    ],
+)
+def test_table_from_the_inputs_given(
+    incomes, expenses, have, types, given_inputs, expected
+):
+    inputs = {"incomes": incomes, "expenses": expenses, "have": have}
+    data = SimpleNamespace(
+        types=types,
+        **{
+            name: given if name in given_inputs else []
+            for name, given in inputs.items()
+        },
+    )
+    actual = Accounts(data).df.collect()
 
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["year"] == 1998
-    assert actual[3]["past"] == 0
-    assert actual[3]["incomes"] == 2
-
-    assert actual[4]["category_id"] == 2
-    assert actual[4]["year"] == 1999
-    assert actual[4]["past"] == 2
-    assert actual[4]["incomes"] == 0
-
-
-def test_table_have_empty(incomes, expenses, types):
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=[], types=types)
-    actual = Accounts(data).df.collect().to_dicts()
-
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["year"] == 1999
-    assert actual[0]["past"] == 0
-    assert actual[0]["incomes"] == 100
-    assert actual[0]["expenses"] == 50
-    assert actual[0]["balance"] == 50
-    assert actual[0]["have"] == 0
-    assert actual[0]["delta"] == -50
-    assert not actual[0]["latest_check"]
-
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["year"] == 2000
-    assert actual[1]["past"] == 50
-    assert actual[1]["incomes"] == 200
-    assert actual[1]["expenses"] == 100
-    assert actual[1]["balance"] == 150
-    assert actual[1]["have"] == 0
-    assert actual[1]["delta"] == -150
-    assert not actual[1]["latest_check"]
-
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["year"] == 1999
-    assert actual[3]["past"] == 0
-    assert actual[3]["incomes"] == 110
-    assert actual[3]["expenses"] == 0
-    assert actual[3]["balance"] == 110
-    assert actual[3]["have"] == 0
-    assert actual[3]["delta"] == -110
-    assert not actual[3]["latest_check"]
-
-    assert actual[4]["category_id"] == 2
-    assert actual[4]["year"] == 2000
-    assert actual[4]["past"] == 110
-    assert actual[4]["incomes"] == 220
-    assert actual[4]["expenses"] == 110
-    assert actual[4]["balance"] == 220
-    assert actual[4]["have"] == 0
-    assert actual[4]["delta"] == -220
-    assert not actual[4]["latest_check"]
-
-
-def test_table_incomes_empty(expenses, types):
-    data = SimpleNamespace(incomes=[], expenses=expenses, have=[], types=types)
-    actual = Accounts(data).df.collect().to_dicts()
-
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["year"] == 1999
-    assert actual[0]["past"] == 0
-    assert actual[0]["incomes"] == 0
-    assert actual[0]["expenses"] == 50
-    assert actual[0]["balance"] == -50
-    assert actual[0]["have"] == 0
-    assert actual[0]["delta"] == 50
-    assert not actual[0]["latest_check"]
-
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["year"] == 2000
-    assert actual[1]["past"] == -50
-    assert actual[1]["incomes"] == 0
-    assert actual[1]["expenses"] == 100
-    assert actual[1]["balance"] == -150
-    assert actual[1]["have"] == 0
-    assert actual[1]["delta"] == 150
-    assert not actual[1]["latest_check"]
-
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["year"] == 2001
-    assert actual[2]["past"] == -150
-    assert actual[2]["incomes"] == 0
-    assert actual[2]["expenses"] == 0
-    assert actual[2]["balance"] == -150
-    assert actual[2]["have"] == 0
-    assert actual[2]["delta"] == 150
-    assert not actual[2]["latest_check"]
-
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["year"] == 2000
-    assert actual[3]["past"] == 0
-    assert actual[3]["incomes"] == 0
-    assert actual[3]["expenses"] == 110
-    assert actual[3]["balance"] == -110
-    assert actual[3]["have"] == 0
-    assert actual[3]["delta"] == 110
-    assert not actual[3]["latest_check"]
-
-    assert actual[4]["category_id"] == 2
-    assert actual[4]["year"] == 2001
-    assert actual[4]["past"] == -110
-    assert actual[4]["incomes"] == 0
-    assert actual[4]["expenses"] == 0
-    assert actual[4]["balance"] == -110
-    assert actual[4]["have"] == 0
-    assert actual[4]["delta"] == 110
-    assert not actual[4]["latest_check"]
-
-
-def test_table_expenses_empty(incomes, types):
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-    actual = Accounts(data).df.collect().to_dicts()
-
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["year"] == 1999
-    assert actual[0]["past"] == 0
-    assert actual[0]["incomes"] == 100
-    assert actual[0]["expenses"] == 0
-    assert actual[0]["balance"] == 100
-    assert actual[0]["have"] == 0
-    assert actual[0]["delta"] == -100
-    assert not actual[0]["latest_check"]
-
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["year"] == 2000
-    assert actual[1]["past"] == 100
-    assert actual[1]["incomes"] == 200
-    assert actual[1]["expenses"] == 0
-    assert actual[1]["balance"] == 300
-    assert actual[1]["have"] == 0
-    assert actual[1]["delta"] == -300
-    assert not actual[1]["latest_check"]
-
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["year"] == 2001
-    assert actual[2]["past"] == 300
-    assert actual[2]["incomes"] == 0
-    assert actual[2]["expenses"] == 0
-    assert actual[2]["balance"] == 300
-    assert actual[2]["have"] == 0
-    assert actual[2]["delta"] == -300
-    assert not actual[2]["latest_check"]
-
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["year"] == 1999
-    assert actual[3]["past"] == 0
-    assert actual[3]["incomes"] == 110
-    assert actual[3]["expenses"] == 0
-    assert actual[3]["balance"] == 110
-    assert actual[3]["have"] == 0
-    assert actual[3]["delta"] == -110
-    assert not actual[3]["latest_check"]
-
-    assert actual[4]["category_id"] == 2
-    assert actual[4]["year"] == 2000
-    assert actual[4]["past"] == 110
-    assert actual[4]["incomes"] == 220
-    assert actual[4]["expenses"] == 0
-    assert actual[4]["balance"] == 330
-    assert actual[4]["have"] == 0
-    assert actual[4]["delta"] == -330
-    assert not actual[4]["latest_check"]
-
-    assert actual[5]["category_id"] == 2
-    assert actual[5]["year"] == 2001
-    assert actual[5]["past"] == 330
-    assert actual[5]["incomes"] == 0
-    assert actual[5]["expenses"] == 0
-    assert actual[5]["balance"] == 330
-    assert actual[5]["have"] == 0
-    assert actual[5]["delta"] == -330
-    assert not actual[5]["latest_check"]
-
-
-def test_table_incomes_expenses_empty(types):
-    data = SimpleNamespace(incomes=[], expenses=[], have=[], types=types)
-    actual = Accounts(data).df.collect().to_dicts()
-
-    expect = []
-
-    assert actual == expect
-
-
-def test_table_of_rows_without_a_year_raises(types):
-    incomes = [{"year": None, "incomes": 5, "category_id": 1}]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-
-    with pytest.raises(TypeError):
-        Accounts(data)
-
-
-def test_table_only_have(have, types):
-    data = SimpleNamespace(incomes=[], expenses=[], have=have, types=types)
-    actual = Accounts(data).df.collect().to_dicts()
-
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["year"] == 1999
-    assert actual[0]["past"] == 0
-    assert actual[0]["incomes"] == 0
-    assert actual[0]["expenses"] == 0
-    assert actual[0]["balance"] == 0
-    assert actual[0]["have"] == 10
-    assert actual[0]["delta"] == 10
-    assert actual[0]["latest_check"] == datetime(1999, 1, 1, 3, 2, 1)
-
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["year"] == 2000
-    assert actual[1]["past"] == 0
-    assert actual[1]["incomes"] == 0
-    assert actual[1]["expenses"] == 0
-    assert actual[1]["balance"] == 0
-    assert actual[1]["have"] == 15
-    assert actual[1]["delta"] == 15
-    assert actual[1]["latest_check"] == datetime(2000, 1, 4, 3, 2, 1)
-
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["year"] == 2001
-    assert actual[2]["past"] == 0
-    assert actual[2]["incomes"] == 0
-    assert actual[2]["expenses"] == 0
-    assert actual[2]["balance"] == 0
-    assert actual[2]["have"] == 15
-    assert actual[2]["delta"] == 15
-    assert actual[2]["latest_check"] == datetime(2000, 1, 4, 3, 2, 1)
-
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["year"] == 1999
-    assert actual[3]["past"] == 0
-    assert actual[3]["incomes"] == 0
-    assert actual[3]["expenses"] == 0
-    assert actual[3]["balance"] == 0
-    assert actual[3]["have"] == 20
-    assert actual[3]["delta"] == 20
-    assert actual[3]["latest_check"] == datetime(1999, 1, 2, 3, 2, 1)
-
-    assert actual[4]["category_id"] == 2
-    assert actual[4]["year"] == 2000
-    assert actual[4]["past"] == 0
-    assert actual[4]["incomes"] == 0
-    assert actual[4]["expenses"] == 0
-    assert actual[4]["balance"] == 0
-    assert actual[4]["have"] == 25
-    assert actual[4]["delta"] == 25
-    assert actual[4]["latest_check"] == datetime(2000, 1, 6, 3, 2, 1)
-
-    assert actual[5]["category_id"] == 2
-    assert actual[5]["year"] == 2001
-    assert actual[5]["past"] == 0
-    assert actual[5]["incomes"] == 0
-    assert actual[5]["expenses"] == 0
-    assert actual[5]["balance"] == 0
-    assert actual[5]["have"] == 25
-    assert actual[5]["delta"] == 25
-    assert actual[5]["latest_check"] == datetime(2000, 1, 6, 3, 2, 1)
+    assert {column: actual[column].to_list() for column in expected} == expected
 
 
 @given(
     st.lists(rows("incomes"), min_size=1, max_size=12),
     st.lists(rows("expenses"), max_size=12),
-    st.lists(
-        rows("have", latest_check=st.just(datetime(1995, 1, 1))),
-        max_size=6,
-        unique_by=lambda x: (x["category_id"], x["year"]),
-    ),
+    HAVE,
 )
 def test_table_year_balance_follows_the_year_before(incomes, expenses, have):
-    types = [SimpleNamespace(pk=pk, closed=None) for pk in (1, 2, 3)]
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
+    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=TYPES)
     actual = Accounts(data).df.collect().to_dicts()
     previous = {}
 
@@ -630,14 +390,6 @@ def test_table_year_balance_follows_the_year_before(incomes, expenses, have):
             if x["category_id"] == row["category_id"] and x["year"] == row["year"]
         )
 
-    def worth(row):
-        checked = [
-            x
-            for x in have
-            if x["category_id"] == row["category_id"] and x["year"] <= row["year"]
-        ]
-        return max(checked, key=lambda x: x["year"])["have"] if checked else 0
-
     assert actual
     for row in actual:
         before = previous.get(
@@ -647,7 +399,7 @@ def test_table_year_balance_follows_the_year_before(incomes, expenses, have):
         assert row["year"] == before["year"] + 1
         assert row["incomes"] == total(incomes, "incomes", row)
         assert row["expenses"] == total(expenses, "expenses", row)
-        assert row["have"] == worth(row)
+        assert row["have"] == worth(have, row)
         assert row["past"] == before["balance"]
         assert row["balance"] == row["past"] + row["incomes"] - row["expenses"]
         assert row["delta"] == row["have"] - row["balance"]
