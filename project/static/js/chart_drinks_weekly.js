@@ -42,8 +42,7 @@ function chartDrinksWeekly(idData, idContainer) {
                     // the rule keeps the soft harm step; its label does not,
                     // because that step is a mark colour and fails AA as text
                     label: paperRuleLabel(
-                        `${chartData.text.guideline}: ${chartData.low_risk.toFixed(1)}`,
-                        "var(--skin-ink-muted)"
+                        `${chartData.text.guideline}: ${chartData.low_risk.toFixed(1)}`
                     )
                 },
                 {
@@ -54,7 +53,7 @@ function chartDrinksWeekly(idData, idContainer) {
                     zIndex: 5,
                     label: paperRuleLabel(
                         `${chartData.text.high_risk_guideline}: ${chartData.high_risk.toFixed(1)}`,
-                        "var(--skin-harm)"
+                        "harm"
                     )
                 }
             ]

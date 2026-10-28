@@ -139,7 +139,7 @@ function chartDrinksProfile(idData, idContainer) {
                         dashStyle: "Dash",
                         value: chartData.heavy_threshold,
                         zIndex: 5,
-                        label: paperRuleLabel(heavyRuleText, "var(--skin-ink-muted)")
+                        label: paperRuleLabel(heavyRuleText)
                     }
                 ]
             }
@@ -169,7 +169,7 @@ function chartDrinksProfile(idData, idContainer) {
                 // the legend
                 groups.reverse();
 
-                let out = `<span style="font-size: 0.9em">${this.points[0].key}</span>`;
+                let out = this.points[0].key;
 
                 groups.forEach(function (group) {
                     // a single layer needs no heading: the tab names its span

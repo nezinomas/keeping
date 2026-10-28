@@ -12,7 +12,7 @@ function chartTrend(idData, idContainer) {
         zIndex: 10,
         label: paperRuleLabel(
             `${chartData.text.limit}: ${chartData.target.toFixed(chartData.decimals)}`,
-            "var(--skin-harm)"
+            "harm"
         )
     }] : [];
 
@@ -72,7 +72,7 @@ function chartTrend(idData, idContainer) {
             pointPadding: 0,
             crisp: false,
             tooltip: {
-                pointFormat: `<span style='color: var(--skin-ink-muted)'>{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
+                pointFormat: `<span class="chart-tip--muted">{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
             }
         },
         {

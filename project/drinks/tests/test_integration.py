@@ -10,6 +10,7 @@ pytestmark = pytest.mark.django_db
 
 OVERVIEW_CHART = "#chart-overview-container"
 INK_MUTED = "rgb(90, 106, 117)"  # --skin-ink-muted
+HARM = "rgb(125, 39, 51)"  # --skin-harm
 
 
 @pytest.mark.webtest
@@ -35,13 +36,10 @@ class DrinksQuickAdd(Browser):
 
 @pytest.mark.webtest
 class DrinksChartAxisTitle(Browser):
-    def test_axis_title_takes_its_face_by_width_inside_the_chart(self):
+    def test_axis_title_is_written_as_in_a_sentence_inside_the_chart(self):
         chart = f"{OVERVIEW_CHART} .highcharts-root"
         title = f"{OVERVIEW_CHART} .highcharts-yaxis .highcharts-axis-title"
-        for width, size, spacing, transform in (
-            (1280, "12px", "1.44px", "uppercase"),
-            (360, "10.88px", "0.6528px", "none"),
-        ):
+        for width in (1280, 360):
             with self.subTest(width=width):
                 self.open_at("/drinks/", width)
                 face = self.browser.execute_script(
@@ -56,7 +54,7 @@ class DrinksChartAxisTitle(Browser):
                     chart,
                 )
 
-                assert face == [size, spacing, transform, True]
+                assert face == ["12px", "normal", "none", True]
 
 
 @pytest.mark.webtest
@@ -82,6 +80,45 @@ class DrinksChartRuleLabel(Browser):
                 )
 
                 assert labels == [[text, True], [text, True]]
+
+    def test_rule_label_wears_its_rule_state(self):
+        # a week past the high-risk threshold, or Highcharts drops both rules off the axis
+        DrinkFactory(stdav=30)
+        self.browser.get(f"{self.live_server_url}/drinks/")
+        self.wait_until_idle()
+        self.browser.find_element(By.ID, "tab-risk").click()
+        self.wait_until_idle()
+
+        labels = self.browser.execute_script(
+            "return [...document.querySelectorAll("
+            "  '#chart-weekly-container .highcharts-plot-line-label span')]"
+            "  .map(s => [s.textContent.split(':')[0], getComputedStyle(s).color]);"
+        )
+
+        assert labels == [
+            ["Mažos rizikos riba", INK_MUTED],
+            ["Aukštos rizikos riba", HARM],
+        ]
+
+
+@pytest.mark.webtest
+class DrinksChartTooltip(Browser):
+    def test_profile_tooltip_heads_with_the_day_at_the_tooltip_size(self):
+        DrinkFactory()
+        self.browser.get(f"{self.live_server_url}/drinks/")
+        self.wait_until_idle()
+        self.browser.find_element(By.ID, "tab-habits").click()
+        self.wait_until_idle()
+
+        head = self.browser.execute_script(
+            "const c = Highcharts.charts.find("
+            "  c => c && c.renderTo.id === 'chart-weekday-container');"
+            "c.tooltip.refresh(c.series.map(s => s.points[0]));"
+            "const t = c.tooltip.container.querySelector('.highcharts-tooltip span');"
+            "return [t.innerHTML.split('<br>')[0], getComputedStyle(t).fontSize];"
+        )
+
+        assert head == ["Pirmadienis", "12px"]
 
 
 @pytest.mark.webtest
