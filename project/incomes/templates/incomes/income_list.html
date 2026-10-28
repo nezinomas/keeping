@@ -26,19 +26,19 @@
             <td class="text-left">{{ object.account__title }}</td>
             <td class="text-left">{{ object.remark }}</td>
             <td class="main__figure">{{object.price|price|cellformat}}</td>
-            <c-td-edit :url=url_update />
-            <c-td-delete :url=url_delete />
+            <c-td-edit :url="url_update" />
+            <c-td-delete :url="url_delete" />
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
 
-<c-paging :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#data"/>
+<c-paging :url="url" :search="search" :paginator_object="paginator_object" :page_obj="object_list" target="#data"/>
 
 {% else %}
 
-<div class="alert alert-warning">
+<div class="alert">
 {% if notice %}
     {{ notice }}
 {% else %}

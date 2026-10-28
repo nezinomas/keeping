@@ -393,7 +393,7 @@ def test_list_empty_state(client_logged, scope, notice):
     actual = client_logged.get(url).content.decode("utf-8")
 
     assert re.fullmatch(
-        rf'\s*<div class="alert alert-warning">\s*{re.escape(notice)}\s*</div>\s*',
+        rf'\s*<div class="alert">\s*{re.escape(notice)}\s*</div>\s*',
         actual,
     )
 
@@ -599,7 +599,7 @@ def test_search(client_logged, search, rows, notices):
     actual = response.content.decode("utf-8")
 
     assert ROW.findall(actual) == rows
-    notice = r'<div class="alert alert-warning">\s*Nieko nerasta\s*</div>'
+    notice = r'<div class="alert">\s*Nieko nerasta\s*</div>'
     assert len(re.findall(notice, actual)) == notices
 
 
