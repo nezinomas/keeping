@@ -12,6 +12,7 @@ from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
 from ...journals.models import Journal
 from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
+from .receipts.pdfs import FIXTURES
 
 pytestmark = pytest.mark.django_db
 
@@ -331,3 +332,32 @@ class Expenses(Browser):
             assert not self.browser.find_element(
                 By.ID, "imgModalContainer"
             ).is_displayed()
+
+    def _type_price(self, line, value):
+        price = self.browser.find_element(By.NAME, f"form-{line}-price")
+        price.send_keys(Keys.CONTROL, "a")
+        price.send_keys(value)
+
+    def _review_totals(self):
+        lines_total = self.browser.find_element(By.CSS_SELECTOR, "#review tfoot span")
+        notice = self.browser.find_element(
+            By.XPATH, "//form[@id='review']/p[contains(., 'Sumos nesutampa')]"
+        )
+        return lines_total.text, notice.is_displayed()
+
+    def test_the_import_review_lines_total_follows_a_typed_price(self):
+        AccountFactory()
+        self.browser.get(f"{self.live_server_url}{reverse('expenses:import')}")
+        self.wait_until_idle()
+        self.browser.find_element(By.ID, "id_pdf").send_keys(
+            str(FIXTURES / "barbora.pdf")
+        )
+        self.browser.find_element(By.CSS_SELECTOR, "#upload button").click()
+        self.wait_until_idle()
+
+        # line 2 reads 2,80 of the receipt's 71,35
+        self._type_price(1, "12,80")
+        assert self._review_totals() == ("81,35", True)
+
+        self._type_price(1, "2,80")
+        assert self._review_totals() == ("71,35", False)
