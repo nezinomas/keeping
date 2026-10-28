@@ -1,5 +1,4 @@
 @use "../abstracts/variables" as *;
-@use "tokens";
 
 // One line of filter items (a tab's months, its name scope): centred while it fits,
 // scrolling sideways with a fade at each edge when it does not.
@@ -35,9 +34,10 @@ $fade: 1.75rem;
     }
 
     .filter-line__item {
-        @include tokens.label;
-
         flex: none;
+        font-family: $display;
+        font-size: 0.875rem;
+        font-weight: 400;
         padding: 0.55rem 0.5rem;
         border: 0;
         border-bottom: 2px solid transparent;

@@ -11,9 +11,8 @@
         margin-top: calc($gap * 1.5);
 
         li {
-            font-family: $mono;
-            font-size: 0.68rem;
-            letter-spacing: 0.06em;
+            font-family: $display;
+            font-size: 0.875rem;
             color: $ink-muted;
 
             // <c-paging> draws a page as an <a>, a <div> or a bare <i>

@@ -37,7 +37,8 @@
         grid-template-rows: repeat(7, 16px);
         gap: 3px;
         margin-right: 4px;
-        font-size: 0.62rem;
+        font-family: $display;
+        font-size: 0.75rem;
         color: $ink-muted;
 
         span {
@@ -85,6 +86,7 @@
 
         .mlabel {
             text-align: center;
+            font-family: $display;
             font-size: 0.75rem;
             color: $ink-muted;
         }
@@ -96,7 +98,8 @@
         align-items: flex-start;
         gap: 0.35rem 0.5rem;
         margin-top: 0.7rem;
-        font-size: 0.72rem;
+        font-family: $display;
+        font-size: 0.8125rem;
         color: $ink-muted;
 
         i {
@@ -138,15 +141,13 @@
 
         &__bounds {
             margin-top: 2px;
-            font-size: 0.62rem;
+            font-size: 0.75rem;
             text-align: center;
-            color: $ink-muted;
         }
 
         &__unit {
-            font-size: 0.62rem;
+            font-size: 0.75rem;
             text-align: center;
-            color: $ink-muted;
         }
 
         &__spacer {

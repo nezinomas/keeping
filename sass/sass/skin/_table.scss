@@ -10,22 +10,19 @@
         font-variant-numeric: tabular-nums;
 
         caption {
-            @include tokens.label;
+            @include tokens.title;
 
             padding: 0 0 0.7rem;
             text-align: left;
-            color: $ink;
         }
 
-        // a caption may carry a sentence as well as its label — read as prose,
-        // not as another mono label
+        // a caption may carry a sentence as well as its title, read as prose
         caption .main__note {
             display: block;
             margin-top: 0.25rem;
             font-family: $body;
             font-size: 0.72rem;
-            letter-spacing: normal;
-            text-transform: none;
+            font-weight: 400;
             color: $ink-muted;
         }
 
@@ -81,8 +78,8 @@
 
         .main__year,
         .main__mark {
-            font-family: $mono;
-            font-size: 0.68rem;
+            font-family: $display;
+            font-size: 0.75rem;
             font-weight: 400;
             color: $ink-muted;
         }
@@ -102,13 +99,6 @@
             border-bottom: 0;
             font-weight: 600;
             color: $ink;
-
-            &:first-child {
-                @include tokens.label;
-
-                font-weight: 600;
-                color: $ink;
-            }
         }
 
         // drawn from the row above: border-collapse gives a 1px tie to the upper

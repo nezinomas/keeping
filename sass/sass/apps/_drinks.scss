@@ -43,13 +43,13 @@
         border-top: 1px solid $hair-soft;
 
         summary {
-            @include tokens.label;
-
             display: flex;
             align-items: center;
             gap: 0.4rem;
             padding: 0.7rem 0 0;
-            font-weight: 400;
+            font-family: $display;
+            font-size: 0.75rem;
+            color: $ink-muted;
             list-style: none;
             cursor: pointer;
 
