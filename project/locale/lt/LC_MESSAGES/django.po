@@ -2787,3 +2787,67 @@ msgstr "Pridėti išlaidų pavadinimą"
 msgctxt "expense type caption"
 msgid "necessary"
 msgstr "būtinos"
+
+msgctxt "month abbreviation"
+msgid "Jan."
+msgstr "Saus."
+
+msgctxt "month abbreviation"
+msgid "Feb."
+msgstr "Vas."
+
+msgctxt "month abbreviation"
+msgid "Mar."
+msgstr "Kov."
+
+msgctxt "month abbreviation"
+msgid "Apr."
+msgstr "Bal."
+
+msgctxt "month abbreviation"
+msgid "May"
+msgstr "Geg."
+
+msgctxt "month abbreviation"
+msgid "Jun."
+msgstr "Birž."
+
+msgctxt "month abbreviation"
+msgid "Jul."
+msgstr "Liep."
+
+msgctxt "month abbreviation"
+msgid "Aug."
+msgstr "Rugp."
+
+msgctxt "month abbreviation"
+msgid "Sep."
+msgstr "Rugs."
+
+msgctxt "month abbreviation"
+msgid "Oct."
+msgstr "Spal."
+
+msgctxt "month abbreviation"
+msgid "Nov."
+msgstr "Lapkr."
+
+msgctxt "month abbreviation"
+msgid "Dec."
+msgstr "Gruod."
+
+msgctxt "quarter"
+msgid "Q1"
+msgstr "I ketv."
+
+msgctxt "quarter"
+msgid "Q2"
+msgstr "II ketv."
+
+msgctxt "quarter"
+msgid "Q3"
+msgstr "III ketv."
+
+msgctxt "quarter"
+msgid "Q4"
+msgstr "IV ketv."
