@@ -77,6 +77,28 @@ class BookkeepingIndex(TestCase, Browser):
         )
         assert overflow == {"width": 360, "page_overflow": 0, "table_scrolls": True}
 
+    def test_month_table_rules_run_from_the_band_to_the_foot(self):
+        IncomeFactory()
+        self.open_at(reverse("bookkeeping:detailed"), 1280)
+
+        # per row, each cell with a left rule, by position from 1, and its colour;
+        # no width: a scaled display snaps 1px to a device pixel (0.8px at 125%)
+        ruled = self.browser.execute_script(
+            "return [...document.querySelectorAll('.month-table tr')].map(tr =>"
+            " [...tr.children].flatMap((c, i) => {"
+            " const s = getComputedStyle(c);"
+            " return s.borderLeftStyle === 'solid' ? [[i + 1, s.borderLeftColor]] : [];"
+            " }));"
+        )
+        hair, soft = "rgb(207, 214, 218)", "rgb(225, 230, 232)"
+        body = [[5, soft], [8, soft], [11, soft], [14, hair]]
+        assert ruled == [
+            [[3, hair], [4, hair], [5, hair], [6, hair]],
+            [[5, hair], [8, hair], [11, hair], [14, hair]],
+            body,
+            body,
+        ]
+
     def _add_rows(self, numbers):
         # A type's save re-syncs its balances, so the rows come from records.
         for i in numbers:
