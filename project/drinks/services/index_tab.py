@@ -84,6 +84,7 @@ class ConversionRowViewModel:
     per_day: float
     per_week: float
     per_month: float
+    is_total: bool
 
 
 @dataclass(frozen=True)
@@ -453,6 +454,7 @@ class IndexBuilder:
             per_day=per_day,
             per_week=per_week,
             per_month=per_month,
+            is_total=converter.is_canonical,
         )
 
     def _get_period_counts(self, year: int) -> tuple[int, int, int]:

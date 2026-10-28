@@ -99,20 +99,20 @@ def test_dry_days(latest, expect, main_user, drink_converter):
         pytest.param(
             2019,
             [
-                ("Alus, 0.5L", 273.5, 0.97, 6.67, 27.35),
-                ("Vynas, 0.75L", 85.47, 0.3, 2.08, 8.55),
-                ("Degtinė, 1L", 17.09, 0.06, 0.42, 1.71),
-                ("Std Av", 683.75, 2.42, 16.68, 68.38),
+                ("Alus, 0.5L", 273.5, 0.97, 6.67, 27.35, False),
+                ("Vynas, 0.75L", 85.47, 0.3, 2.08, 8.55, False),
+                ("Degtinė, 1L", 17.09, 0.06, 0.42, 1.71, False),
+                ("Std Av", 683.75, 2.42, 16.68, 68.38, True),
             ],
             id="std_av",
         ),
         pytest.param(
             1999,
             [
-                ("Alus, 0.5L", 273.5, 0.75, 5.26, 22.79),
-                ("Vynas, 0.75L", 85.47, 0.23, 1.64, 7.12),
-                ("Degtinė, 1L", 17.09, 0.05, 0.33, 1.42),
-                ("Std Av", 683.75, 1.87, 13.15, 56.98),
+                ("Alus, 0.5L", 273.5, 0.75, 5.26, 22.79, False),
+                ("Vynas, 0.75L", 85.47, 0.23, 1.64, 7.12, False),
+                ("Degtinė, 1L", 17.09, 0.05, 0.33, 1.42, False),
+                ("Std Av", 683.75, 1.87, 13.15, 56.98, True),
             ],
             id="std_av_past_recods",
         ),
@@ -130,6 +130,7 @@ def test_tbl_std_av_reads_the_year_in_every_drink_type(drink_converter, year, ex
             round(row.per_day, 2),
             round(row.per_week, 2),
             round(row.per_month, 2),
+            row.is_total,
         )
         for row in builder.tbl_std_av().items
     ]

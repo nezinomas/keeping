@@ -17,7 +17,7 @@
     </thead>
     <tbody>
         {% for item in ctx.items %}
-        <tr {% if 'Av' in item.title %}class="main__total"{% endif %}>
+        <tr{% if item.is_total %} class="main__total"{% endif %}>
             <td class="text-left">{{ item.title }}</td>
             <td class="main__figure">{{item.total|cellformat}}</td>
             <td class="main__figure">{{item.per_day|cellformat}}</td>
