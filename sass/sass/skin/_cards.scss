@@ -47,12 +47,12 @@
         --cols: 3;
     }
 
-    // three Cards keep one row even on a phone, so there their figures shrink
-    // with the screen; a value still too long ends in an ellipsis
+    // three Cards keep one row on a phone, their figures shrinking with the screen and
+    // 4% below Bahnschrift's fit, as Barlow off Windows is that much wider; else ellipsis
     @media only screen and (max-width: 767px) {
         .stat-cards:has(.trend-card:nth-child(3)):not(:has(.trend-card:nth-child(4)))
             .trend-card__value {
-            font-size: clamp(1.6rem, 8vw, 3.1rem);
+            font-size: clamp(1.55rem, 7.7vw, 3.1rem);
         }
     }
 
