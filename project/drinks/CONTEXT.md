@@ -149,7 +149,7 @@ _Avoid_: trend card, widget, KPI, metric box
 
 **Paper skin**:
 The visual language every Tab wears: a white ground, chrome in ink, hairline
-Panels, figures in a condensed display face and every label in mono. It is
+Panels, chrome in a condensed display face and what the user reads in the body face. It is
 scoped to the `.paper-skin` wrapper `index.html` puts around every Tab, so no
 app still on the old design inherits it; the `--skin-*` tokens it is built from
 are declared on `:root` instead, because Highcharts renders a tooltip outside

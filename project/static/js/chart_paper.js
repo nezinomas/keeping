@@ -1,22 +1,23 @@
 // The paper skin's chart half, loaded only by pages wearing `.paper-skin`.
 // Colours are `--skin-*` tokens; `var()` resolves in Highcharts' inline SVG styles.
 
-// The chart's small mono face: every figure, y label and rule label.
+// A chart's small text: every axis label and title, figure on a mark and rule label.
 // `var`, because a re-run page script would throw on a redeclared `const`.
-var PAPER_MONO_SMALL = { fontFamily: "var(--skin-mono)", fontSize: "10px" };
+var PAPER_CHART_TEXT_PX = 12;
+var PAPER_CHART_TEXT = {
+    fontFamily: "var(--skin-display)",
+    fontSize: `${PAPER_CHART_TEXT_PX}px`,
+};
 
-// A rule's label: on the right, as the left corner holds the pane name; on a
-// paper chip, so a mark crossing the rule never covers it.
-function paperRuleLabel(text, color) {
+// A rule's label, on the right, as the left corner holds the pane name; its chip is
+// `skin/_chart.scss`'s. `state` is "muted" for a guide, "harm" for a limit.
+function paperRuleLabel(text, state = "muted") {
     return {
         useHTML: true,
         align: "right",
         x: -6,
         y: -13, // the chip clears its rule
-        text: `<span style="background: var(--skin-paper); padding: 0 4px;`
-            + ` color: ${color}; font-family: ${PAPER_MONO_SMALL.fontFamily};`
-            + ` font-size: ${PAPER_MONO_SMALL.fontSize}; letter-spacing: 0.1em;`
-            + ` white-space: nowrap;">${text}</span>`,
+        text: `<span class="chart-rule-label chart-rule-label--${state}">${text}</span>`,
     };
 }
 
@@ -26,15 +27,9 @@ var PAPER_CHART_HEIGHT = { standard: 350, large: 420 };
 // Read once, at the table headers' breakpoint: below it a chart's text is cut to fit.
 var PAPER_WIDE = window.matchMedia("(min-width: 768px)").matches;
 
-// Caps at their 12px floor overflow a phone, which drops them as the headers do
-// (`themes/theme.js` sets the caps).
-var PAPER_AXIS_TITLE_FACE = PAPER_WIDE
-    ? { fontSize: "12px", letterSpacing: "0.12em" }
-    : { fontSize: "0.68rem", letterSpacing: "0.06em", textTransform: "none" };
-
 // Every figure printed on a mark; each use adds only its colour.
 var PAPER_DATA_LABEL_STYLE = {
-    ...PAPER_MONO_SMALL,
+    ...PAPER_CHART_TEXT,
     fontWeight: "400",
     textOutline: "none",
 };
@@ -61,7 +56,7 @@ function paperFixEdges() {
 }
 
 // A y-axis title laid flat above the plot, where a rotated one would not fit. It rises
-// this far; its chart's top margin holds the rise and the title's 12px line above it.
+// this far; its chart's top margin holds the rise and the title's line above it.
 var PAPER_PANE_TITLE_RISE = 18;
 var PAPER_PANE_TITLE = {
     align: "high",
@@ -73,7 +68,7 @@ var PAPER_PANE_TITLE = {
     y: -PAPER_PANE_TITLE_RISE,
     style: { whiteSpace: "nowrap", textOverflow: "clip" },
 };
-var PAPER_PANE_TITLE_SPACE = { marginTop: PAPER_PANE_TITLE_RISE + 12 };
+var PAPER_PANE_TITLE_SPACE = { marginTop: PAPER_PANE_TITLE_RISE + PAPER_CHART_TEXT_PX };
 
 // The parts of a two-pane chart: a reading on top, bars below. Pieces, not one
 // config, because `Highcharts.merge` replaces arrays instead of merging them.
@@ -153,7 +148,7 @@ Highcharts.setOptions({
         height: PAPER_CHART_HEIGHT.standard,
         spacing: [12, 6, 10, 6],
         style: {
-            fontFamily: "var(--skin-body)",
+            fontFamily: PAPER_CHART_TEXT.fontFamily,
         },
     },
     // the Panel title is drawn in HTML, above the chart (core/CONTEXT.md); a
@@ -166,13 +161,10 @@ Highcharts.setOptions({
         lineWidth: 1,
         tickColor: "var(--skin-hair)",
         gridLineWidth: 0,
-        // an x label names a month, a weekday or a year, so it reads as a word;
-        // the axis title below is chrome and keeps the mono caps
         labels: {
             style: {
                 color: "var(--skin-ink-muted)",
-                fontFamily: "var(--skin-body)",
-                fontSize: "11px",
+                ...PAPER_CHART_TEXT,
             },
         },
     },
@@ -180,17 +172,18 @@ Highcharts.setOptions({
         gridLineColor: "var(--skin-hair-soft)",
         gridLineWidth: 1,
         lineWidth: 0,
+        // written as in a sentence, over the caps `themes/theme.js` gives a legacy chart
         title: {
             style: {
                 color: "var(--skin-ink-muted)",
-                fontFamily: "var(--skin-mono)",
-                ...PAPER_AXIS_TITLE_FACE,
+                ...PAPER_CHART_TEXT,
+                textTransform: "none",
             },
         },
         labels: {
             style: {
                 color: "var(--skin-ink-muted)",
-                ...PAPER_MONO_SMALL,
+                ...PAPER_CHART_TEXT,
             },
         },
     },
@@ -210,8 +203,8 @@ Highcharts.setOptions({
         backgroundColor: "transparent",
         itemStyle: {
             color: "var(--skin-ink-muted)",
-            fontFamily: "var(--skin-body)",
-            fontSize: "12px",
+            ...PAPER_CHART_TEXT,
+            fontSize: "13px",
             fontWeight: "400",
         },
         itemHoverStyle: {

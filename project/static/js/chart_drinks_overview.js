@@ -4,12 +4,9 @@ function chartOverview(consumptionId, quantityId, containerId) {
     const consumption = JSON.parse(document.getElementById(consumptionId).textContent);
     const quantity = JSON.parse(document.getElementById(quantityId).textContent);
 
-    // the average is furniture: a level to read the months against, not a
-    // verdict. It stays in ink whichever side of the Limit it falls, because the
-    // area already turns above the Limit and the Stat Card already says which
-    // side it is on
+    // a level to read the months against, not a verdict: muted on either side of the
+    // Limit, as the area and the Stat Card already tell which side it is on
     const avgLineColor = "var(--skin-ink-muted)";
-    const avgTextColor = "var(--skin-ink-muted)";
 
     // without a Drink Target the chart draws no Limit rule and no harm zone
     const limit = consumption.limit;
@@ -27,7 +24,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
         label: Object.assign(
             paperRuleLabel(
                 `${consumption.text.limit}: ${limit.amount.toFixed(consumption.decimals)}`,
-                "var(--skin-harm)"
+                "harm"
             ),
             // the two rules step apart when they nearly coincide
             { y: targetLabelY - 8 }
@@ -72,8 +69,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         zIndex: 11,
                         label: Object.assign(
                             paperRuleLabel(
-                                `Avg: ${consumption.avg.toFixed(consumption.decimals)}`,
-                                avgTextColor
+                                `Avg: ${consumption.avg.toFixed(consumption.decimals)}`
                             ),
                             { y: avgLabelY - 8 }
                         )
