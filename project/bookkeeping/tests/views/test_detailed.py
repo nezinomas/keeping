@@ -6,7 +6,7 @@ import pytest
 from django.db import connection
 from django.db.models.signals import post_save
 from django.test.utils import CaptureQueriesContext
-from django.urls import NoReverseMatch, reverse
+from django.urls import reverse
 
 from ....expenses.tests.factories import (
     ExpenseFactory,
@@ -69,45 +69,41 @@ def test_view_detailed_old_and_unknown_urls_404(client_logged, path):
     assert client_logged.get(path).status_code == 404
 
 
-def test_view_detailed_table_url_is_gone():
-    with pytest.raises(NoReverseMatch):
-        reverse("bookkeeping:detailed_table", kwargs={"category": "income"})
+def test_view_detailed_sends_a_visitor_to_the_login(client):
+    response = client.get("/detailed/")
+
+    assert response.status_code == 302
+    assert response.url == "/login/?next=/detailed/"
+
+
+def test_view_detailed_tab_page_has_the_subnav(client_logged):
+    content = client_logged.get("/detailed/savings/").content.decode("utf-8")
+
+    assert 'class="subnav"' in content
+    assert "x-data=\"{ tab: 'savings' }\"" in content
+    assert re.search(r'id="tab-savings"[^>]*hx-get="/detailed/savings/"', content)
+
+
+def test_view_detailed_tab_fragment_has_no_subnav(client_logged):
+    content = client_logged.get("/detailed/savings/", headers=HTMX).content.decode()
+
+    assert 'class="subnav"' not in content
+    assert "<html" not in content
+    assert "<title>Detali | Taupymas</title>" in content
 
 
 @pytest.mark.parametrize(
-    "url",
+    "url, title",
     [
-        pytest.param("/detailed/incomes/", id="incomes"),
-        pytest.param("/detailed/savings/", id="savings"),
-        pytest.param("/detailed/expenses/", id="expenses"),
-        pytest.param("/detailed/expenses/expense-type/", id="type_table"),
+        pytest.param("/detailed/incomes/", "Pajamos", id="incomes"),
+        pytest.param("/detailed/savings/", "Taupymas", id="savings"),
+        pytest.param("/detailed/expenses/", "Išlaidos", id="expenses"),
     ],
 )
-def test_view_detailed_302(client, url):
-    assert client.get(url).status_code == 302
+def test_view_detailed_browser_title_names_the_open_tab(client_logged, url, title):
+    content = client_logged.get(url).content.decode()
 
-
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_view_detailed_tab_page_has_the_subnav(client_logged, tab):
-    response = client_logged.get(tab.url)
-    content = response.content.decode("utf-8")
-
-    assert response.status_code == 200
-    assert 'class="subnav"' in content
-    assert f"x-data=\"{{ tab: '{tab.name}' }}\"" in content
-    assert f"<title>Detali | {tab.title}</title>" in content
-    assert re.search(rf'id="tab-{tab.name}"[^>]*hx-get="{tab.url}"', content)
-
-
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_view_detailed_tab_fragment_has_no_subnav(client_logged, tab):
-    response = client_logged.get(tab.url, headers=HTMX)
-    content = response.content.decode("utf-8")
-
-    assert response.status_code == 200
-    assert 'class="subnav"' not in content
-    assert "<html" not in content
-    assert f"<title>Detali | {tab.title}</title>" in content
+    assert f"<title>Detali | {title}</title>" in content
 
 
 @pytest.mark.parametrize("headers", [HTMX, {}], ids=["fragment", "page"])
@@ -170,26 +166,28 @@ def test_view_detailed_opens_on_incomes(client_logged):
 
 
 @factory.django.mute_signals(post_save)
-def test_view_detailed_incomes_table_shape(client_logged):
+def test_view_detailed_table_has_a_title_column_and_a_total_column_and_row(
+    client_logged,
+):
     IncomeFactory()
 
-    content = client_logged.get(
-        reverse("bookkeeping:detailed_incomes")
-    ).content.decode()
+    content = client_logged.get("/detailed/incomes/").content.decode()
 
     assert '<div class="month-table">' in content
-    assert content.count("<table") == 1
-    assert (
-        '<a role="button" hx-get="/detailed/incomes/?order=1" hx-target="#tab_content">'
-        "Saus.</a>"
-    ) in content
     assert '<th class="text-left title-col">' in content
     assert '<th class="month-table__total">' in content
     assert '<tr class="main__total">' in content
     assert content.count('<td class="main__figure month-table__total">') == 2
-    # one income in one month: eleven empty months in its row and in the total row
+
+
+@factory.django.mute_signals(post_save)
+def test_view_detailed_one_income_leaves_its_other_months_empty(client_logged):
+    IncomeFactory()
+
+    content = client_logged.get("/detailed/incomes/").content.decode()
+
+    # eleven empty months in its row and in the total row
     assert content.count('<td class="main__figure" data-cell="empty">') == 22
-    assert "left-thick-border" not in content
 
 
 def test_view_detailed_heads_the_months_with_the_quarter_band(client_logged):

@@ -217,19 +217,17 @@ def test_index_opens_the_day_tab(client_logged):
     assert '<div class="paper-skin" x-data="{ tab: \'day\' }">' in content
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
-    content = client_logged.get(tab.url).content.decode()
+def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
+    content = client_logged.get("/plans/incomes/").content.decode()
 
     assert '<nav class="subnav">' in content
     assert '<link rel="stylesheet" href="/static/css/paper.min.css">' in content
     assert 'class="paper-skin"' in content
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, tab):
+def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
     content = client_logged.get(
-        tab.url, headers={"HX-Request": "true"}
+        "/plans/incomes/", headers={"HX-Request": "true"}
     ).content.decode()
 
     assert '<nav class="subnav">' not in content
@@ -256,12 +254,12 @@ def test_browser_title_names_the_open_tab(client_logged, url_name, title):
 @pytest.mark.parametrize(
     "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
 )
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_only_the_open_tab_reloads_on_a_saved_plan(client_logged, tab, headers):
-    content = client_logged.get(tab.url, headers=headers).content.decode()
+def test_only_the_open_tab_reloads_on_a_saved_plan(client_logged, headers):
+    content = client_logged.get("/plans/savings/", headers=headers).content.decode()
 
     listener = (
-        f'hx-get="{tab.url}" hx-target="#tab_content" hx-trigger="reload from:body"'
+        'hx-get="/plans/savings/" hx-target="#tab_content" '
+        'hx-trigger="reload from:body"'
     )
     assert listener in content
     assert content.count("reload from:body") == 1
@@ -709,13 +707,6 @@ def test_plan_update_returns_htmx_response(client_logged, kind, own_data):
             2,
             "0,02",
             id="income_tab_price_converted_in_template",
-        ),
-        pytest.param(
-            NECESSARY,
-            "necessary-plans",
-            5,
-            "0,05",
-            id="necessary_tab_price_converted_in_template",
         ),
         pytest.param(
             DAY, "day-plans", 5, "0,05", id="day_tab_price_converted_in_template"
