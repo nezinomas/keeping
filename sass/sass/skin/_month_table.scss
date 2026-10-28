@@ -44,7 +44,6 @@
     .month-table__total {
         font-weight: 600;
         color: $ink;
-        border-left: 1px solid $hair;
     }
 
     .month-table__quarter {
@@ -59,7 +58,20 @@
     }
 
     // months 4, 7 and 10, after the title column
-    :is(tbody, tfoot) td:is(:nth-child(5), :nth-child(8), :nth-child(11)) {
+    $quarter-starts: ":is(:nth-child(5), :nth-child(8), :nth-child(11))";
+
+    thead tr:last-child > #{$quarter-starts} {
+        border-left: 1px solid $hair;
+    }
+
+    :is(tbody, tfoot) td#{$quarter-starts} {
         border-left: 1px solid $hair-soft;
+    }
+
+    // the first column after December, from the band down
+    .month-table__quarter + :not(.month-table__quarter),
+    thead tr:last-child > :nth-child(14),
+    :is(tbody, tfoot) td:nth-child(14) {
+        border-left: 1px solid $hair;
     }
 }
