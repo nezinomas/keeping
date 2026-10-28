@@ -83,7 +83,6 @@
     --skin-hair-soft: #{$hair-soft};
 
     --skin-data: #{$data};
-    --skin-data-soft: #{$data-soft};
     --skin-data-wash: #{rgba($data, 0.12)};
     --skin-data-tint: #{rgba($data, 0.22)};
     --skin-data-faint: #{rgba($data, 0.09)};
@@ -94,7 +93,7 @@
 
     --skin-harm: #{$harm};
     --skin-harm-soft: #{$harm-soft};
-    --skin-harm-wash: #{rgba($harm, 0.11)};
+    --skin-harm-tint: #{$harm-tint};
 
     --skin-attention: #{$attention};
     --skin-attention-wash: #{rgba($attention, 0.3)};
