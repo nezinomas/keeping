@@ -1,13 +1,5 @@
-{% load i18n %}
-<th>{% translate "Jan." context "month abbreviation" %}</th>
-<th>{% translate "Feb." context "month abbreviation" %}</th>
-<th>{% translate "Mar." context "month abbreviation" %}</th>
-<th>{% translate "Apr." context "month abbreviation" %}</th>
-<th>{% translate "May" context "month abbreviation" %}</th>
-<th>{% translate "Jun." context "month abbreviation" %}</th>
-<th>{% translate "Jul." context "month abbreviation" %}</th>
-<th>{% translate "Aug." context "month abbreviation" %}</th>
-<th>{% translate "Sep." context "month abbreviation" %}</th>
-<th>{% translate "Oct." context "month abbreviation" %}</th>
-<th>{% translate "Nov." context "month abbreviation" %}</th>
-<th>{% translate "Dec." context "month abbreviation" %}</th>
+{% load months %}
+{% month_abbreviations as abbreviations %}
+{% for key, label in abbreviations %}
+<th>{{ label }}</th>
+{% endfor %}
