@@ -3,6 +3,7 @@
 {% load cache %}
 {% load get_item %}
 {% load cell_format %}
+{% load months %}
 
 {% if data %}
 {% firstof target "#"|add:table_id as sort_target %}
@@ -15,18 +16,10 @@
         </tr>
         <tr>
             <c-sort-th key="title" :active="order" :url="url" :target="sort_target" column="title">{{ title }}</c-sort-th>
-            <c-sort-th key="1" :active="order" :url="url" :target="sort_target">{% translate "Jan." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="2" :active="order" :url="url" :target="sort_target">{% translate "Feb." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="3" :active="order" :url="url" :target="sort_target">{% translate "Mar." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="4" :active="order" :url="url" :target="sort_target">{% translate "Apr." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="5" :active="order" :url="url" :target="sort_target">{% translate "May" context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="6" :active="order" :url="url" :target="sort_target">{% translate "Jun." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="7" :active="order" :url="url" :target="sort_target">{% translate "Jul." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="8" :active="order" :url="url" :target="sort_target">{% translate "Aug." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="9" :active="order" :url="url" :target="sort_target">{% translate "Sep." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="10" :active="order" :url="url" :target="sort_target">{% translate "Oct." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="11" :active="order" :url="url" :target="sort_target">{% translate "Nov." context "month abbreviation" %}</c-sort-th>
-            <c-sort-th key="12" :active="order" :url="url" :target="sort_target">{% translate "Dec." context "month abbreviation" %}</c-sort-th>
+            {% month_abbreviations as abbreviations %}
+            {% for key, label in abbreviations %}
+            <c-sort-th :key="key" :active="order" :url="url" :target="sort_target">{{ label }}</c-sort-th>
+            {% endfor %}
             <c-sort-th key="total_col" :active="order" :url="url" :target="sort_target" column="total">{% translate 'Total' %}</c-sort-th>
         </tr>
     </thead>

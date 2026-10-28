@@ -1,4 +1,21 @@
 from django.utils.translation import gettext as _
+from django.utils.translation import pgettext_lazy
+
+# each key is the month's `?order=` value on a sortable Month table
+MONTH_ABBREVIATIONS = (
+    ("1", pgettext_lazy("month abbreviation", "Jan.")),
+    ("2", pgettext_lazy("month abbreviation", "Feb.")),
+    ("3", pgettext_lazy("month abbreviation", "Mar.")),
+    ("4", pgettext_lazy("month abbreviation", "Apr.")),
+    ("5", pgettext_lazy("month abbreviation", "May")),
+    ("6", pgettext_lazy("month abbreviation", "Jun.")),
+    ("7", pgettext_lazy("month abbreviation", "Jul.")),
+    ("8", pgettext_lazy("month abbreviation", "Aug.")),
+    ("9", pgettext_lazy("month abbreviation", "Sep.")),
+    ("10", pgettext_lazy("month abbreviation", "Oct.")),
+    ("11", pgettext_lazy("month abbreviation", "Nov.")),
+    ("12", pgettext_lazy("month abbreviation", "Dec.")),
+)
 
 
 def month_names():
