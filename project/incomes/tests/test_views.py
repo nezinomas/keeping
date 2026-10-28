@@ -336,7 +336,7 @@ def test_income_type_not_load_other_journal(client_logged, second_user):
 @pytest.mark.parametrize(
     "search, shown",
     [
-        ("xxx", r'<div class="alert alert-warning">\s*Nieko nerasta\s*</div>'),
+        ("xxx", r'<div class="alert">\s*Nieko nerasta\s*</div>'),
         (
             "1999 type",
             r'<td class="text-left">1999-01-01</td>\s*'
@@ -371,6 +371,38 @@ def test_search_pagination(client_logged, query, expected):
     actual = response.content.decode("utf-8")
 
     assert actual.count('<td class="text-left">Income Type</td>') == expected
+
+
+def test_search_page_links_keep_the_search(client_logged):
+    a = AccountFactory()
+    t = IncomeTypeFactory()
+    Income.objects.bulk_create(IncomeFactory.build_batch(51, account=a, income_type=t))
+
+    url = reverse("incomes:search")
+    content = client_logged.get(url, {"search": "type"}).content.decode("utf-8")
+
+    # the other page's number and the next arrow
+    page_link = (
+        r'<a role="button"[^>]*hx-get="/incomes/search/\?page=2&search=type"'
+        r'[^>]* hx-target="#data"'
+    )
+    assert len(re.findall(page_link, content)) == 2
+
+
+def test_an_income_row_opens_its_own_forms(client_logged):
+    income = IncomeFactory()
+
+    actual = client_logged.get(reverse("incomes:list")).content.decode("utf-8")
+
+    rows = re.findall(
+        r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
+        r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
+        r'.*?<td class="delete-col">\s*<a role="button" hx-get="([^"]*)"',
+        actual,
+        re.DOTALL,
+    )
+    update = f"/incomes/update/{income.pk}/"
+    assert rows == [(update, update, f"/incomes/delete/{income.pk}/")]
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
