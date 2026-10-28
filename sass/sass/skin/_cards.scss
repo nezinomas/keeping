@@ -107,14 +107,11 @@
         text-align: center;
 
         &__label {
-            @include tokens.label;
+            @include tokens.caps;
 
-            letter-spacing: 0.22em;
-
-            // a label tracked at 0.22em is wider than a phone's Card, and it
-            // overflows into the label of the Card beside it rather than wrapping
+            // a long word is wider than a phone's Card, and it overflows into the
+            // label of the Card beside it rather than wrapping
             @media only screen and (max-width: 767px) {
-                letter-spacing: 0.1em;
                 overflow-wrap: anywhere;
             }
         }

@@ -48,11 +48,9 @@
     }
 
     .month-table__quarter {
-        font-size: 0.6875rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        @include tokens.caps(0.6875rem);
+
         text-align: center;
-        color: $ink-muted;
         border-bottom: 1px solid $hair;
     }
 

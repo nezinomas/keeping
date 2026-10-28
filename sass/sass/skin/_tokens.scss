@@ -1,9 +1,8 @@
 @use "sass:list";
 @use "../abstracts/variables" as *;
 
-// The paper skin's mixins and the token block every paper chart reads.
-// On `:root`, not `.paper-skin`: Highcharts draws a tooltip outside the wrapper,
-// and a token it cannot resolve there comes out black.
+// The paper skin's mixins, and the tokens every chart reads, on `:root`: Highcharts
+// draws a tooltip outside `.paper-skin`, and an unresolved token comes out black.
 
 @mixin panel {
     position: relative;
@@ -13,17 +12,26 @@
     border-radius: 0;
 }
 
-@mixin label {
-    font-family: $mono;
-    // 12px is the floor for uppercase mono, whose letterforms are already tight
-    font-size: 0.75rem;
+// A Panel's or a table's title.
+@mixin title {
+    font-family: $display;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: $ink;
+}
+
+// A small label a level above what it names; 12px is the floor for capitals in the
+// narrow face, the quarter band's 11px aside.
+@mixin caps($size: 0.75rem) {
+    font-family: $display;
+    font-size: $size;
     font-weight: 400;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: $ink-muted;
 }
 
-// The body face and no tracking, because mono caps are chrome and an action is a word.
+// The body face and no tracking: an action is a word, not a label.
 @mixin face {
     font-family: $body;
     font-size: 0.8125rem;

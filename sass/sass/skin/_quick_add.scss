@@ -106,7 +106,7 @@ body:has(.paper-skin) {
         .day-of-year {
             flex: none;
             white-space: nowrap;
-            font-family: $mono;
+            font-family: $display;
             font-size: 0.8125rem;
             color: $ink-muted;
         }
@@ -163,7 +163,7 @@ body:has(.paper-skin) {
             border: 1px solid $hair;
             box-shadow: none;
 
-            // a choice is a word, so the menu wears the button face, not mono caps
+            // a choice is a word, so the menu wears the button face
             > * {
                 @include tokens.face;
 

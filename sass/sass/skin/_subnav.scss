@@ -1,5 +1,4 @@
 @use "../abstracts/variables" as *;
-@use "tokens";
 
 // The secondary nav a redesigned app wears under the site nav. Shared, so a rule
 // one app's row needs is written here for every app's, never in apps/.
@@ -10,15 +9,21 @@
         justify-content: center;
         margin-bottom: calc($gap * 1.5);
 
+        // a scroll container's min-width is 0, so a row too wide for the screen
+        // scrolls inside itself, and one that fits stays centred
         .tabs {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
             gap: 0 1.6rem;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
 
         .tab {
-            @include tokens.label;
+            flex: none;
+            font-family: $display;
+            font-size: 0.9375rem;
+            font-weight: 400;
+            color: $ink-muted;
 
             // the height grows above the label, so the underline that marks the
             // open tab stays the same distance under it
@@ -42,7 +47,7 @@
 
             &.active {
                 color: $ink;
-                font-weight: 400;
+                font-weight: 600;
                 border-bottom-color: $ink;
             }
         }
