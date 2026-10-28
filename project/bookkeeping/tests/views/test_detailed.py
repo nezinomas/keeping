@@ -181,8 +181,7 @@ def test_view_detailed_incomes_table_shape(client_logged):
     assert content.count("<table") == 1
     assert (
         '<a role="button" hx-get="/detailed/incomes/?order=1" hx-target="#tab_content">'
-        '<span class="month-table__month-full">Sausis</span>'
-        '<span class="month-table__month-short">sau</span></a>'
+        "Saus.</a>"
     ) in content
     assert '<th class="text-left title-col">' in content
     assert '<th class="month-table__total">' in content
@@ -191,6 +190,30 @@ def test_view_detailed_incomes_table_shape(client_logged):
     # one income in one month: eleven empty months in its row and in the total row
     assert content.count('<td class="main__figure" data-cell="empty">') == 22
     assert "left-thick-border" not in content
+
+
+def test_view_detailed_heads_the_months_with_the_quarter_band(client_logged):
+    IncomeFactory()
+
+    content = client_logged.get(
+        reverse("bookkeeping:detailed_incomes")
+    ).content.decode()
+
+    head = content.split("<thead")[1].split("</thead>")[0]
+    band, months = re.findall(r"<tr[^>]*>(.*?)</tr>", head, re.S)
+    quarter = ' class="month-table__quarter" colspan="3"'
+    assert re.findall(r"<(?:a [^>]*|span)>(.*?)</", months) == [
+        "Pajamos", "Saus.", "Vas.", "Kov.", "Bal.", "Geg.", "Birž.",
+        "Liep.", "Rugp.", "Rugs.", "Spal.", "Lapkr.", "Gruod.", "Viso",
+    ]  # fmt: skip
+    assert re.findall(r"<th([^>]*)>(.*?)</th>", band) == [
+        (' class="title-col"', ""),
+        (quarter, "I ketv."),
+        (quarter, "II ketv."),
+        (quarter, "III ketv."),
+        (quarter, "IV ketv."),
+        ("", ""),
+    ]
 
 
 @pytest.mark.parametrize(

@@ -986,6 +986,35 @@ def test_day_tab_calculations_breakdown_reads_the_plans(client_logged):
     assert _first_month_cell(content, "Taupymas") == "30,00"
 
 
+QUARTERS = [
+    (' class="month-table__quarter" colspan="3"', quarter)
+    for quarter in ["I ketv.", "II ketv.", "III ketv.", "IV ketv."]
+]
+
+
+@pytest.mark.parametrize(
+    "panel, after",
+    [
+        pytest.param(
+            "day-plans",
+            [(' class="edit-col"', ""), (' class="delete-col"', "")],
+            id="plans",
+        ),
+        pytest.param("calculations-spend", [], id="calculations"),
+    ],
+)
+def test_day_tab_tables_head_their_months_with_the_quarter_band(
+    client_logged, panel, after
+):
+    content = client_logged.get(reverse("plans:tab_day")).content.decode()
+
+    head = _panel(content, panel).split("<thead>")[1].split("</thead>")[0]
+    band = re.search(r"<tr[^>]*>(.*?)</tr>", head, re.S).group(1)
+    actual = re.findall(r"<th([^>]*)>(.*?)</th>", band)
+
+    assert actual == [(' class="title-col"', ""), *QUARTERS, *after]
+
+
 @pytest.mark.parametrize("panel", ["day-plans", "calculations-spend"])
 def test_day_tab_marks_the_day_plan_cell_above_the_sum_per_day(client_logged, panel):
     DayPlanFactory(month=1, price=5_000)

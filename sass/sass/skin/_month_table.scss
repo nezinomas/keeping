@@ -46,19 +46,22 @@
         color: $ink;
         border-left: 1px solid $hair;
     }
-}
 
-// a full month name in 12px caps runs into the next column's sort glyph below 1700px
-.month-table__month-full {
-    display: none;
-
-    @media only screen and (min-width: 1700px) {
-        display: inline;
+    .month-table__quarter {
+        font-size: 0.6875rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-align: center;
+        color: $ink-muted;
+        border-bottom: 1px solid $hair;
     }
-}
 
-.month-table__month-short {
-    @media only screen and (min-width: 1700px) {
-        display: none;
+    .month-table__quarter + .month-table__quarter {
+        border-left: 1px solid $hair;
+    }
+
+    // months 4, 7 and 10, after the title column
+    :is(tbody, tfoot) td:is(:nth-child(5), :nth-child(8), :nth-child(11)) {
+        border-left: 1px solid $hair-soft;
     }
 }
