@@ -43,9 +43,9 @@ def test_renders_a_row_with_its_title(table):
 def test_the_empty_row_spans_the_header_and_closes(table):
     actual = table([])
 
-    header = actual.split("<thead>")[1].split("</thead>")[0]
+    columns = actual.split("</thead>")[0].split("<tr>")[-1]
     body = actual.split("<tbody>")[1].split("</tbody>")[0]
-    assert len(re.findall(r"<th[ >]", header)) == 15
+    assert len(re.findall(r"<th[ >]", columns)) == 15
     assert re.findall(r"<td([^>]*)>(.*?)</td>", body) == [
         (' colspan="15"', "<b>2026</b> metais įrašų nėra.")
     ]
