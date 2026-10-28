@@ -4,6 +4,7 @@ from datetime import date
 from types import SimpleNamespace
 
 import pytest
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
@@ -21,6 +22,7 @@ from ...core.tests.utils import (
 from ...users.tests.factories import User
 from .. import forms, models, views
 from ..services.history import HistoryService
+from ..services.index_tab import ConversionRowViewModel, StdAvViewModel
 from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -414,7 +416,7 @@ def test_tab_titles_its_panels(client_logged, tab, titles):
             ["quantity", "consumption"],
             # the Converted table's rows exist only while the breakdown has data
             (
-                r'<td class="text-left">Alus, 0.5L</td>\s*<td class="main__figure">0,40</td>'
+                r'<tr>\s*<td class="text-left">Alus, 0.5L</td>\s*<td class="main__figure">0,40</td>'
                 r'(\s*<td class="main__figure">[^<]*</td>){3}\s*</tr>',
                 r'<tr class="main__total">\s*<td class="text-left">Std Av</td>',
             ),
@@ -434,6 +436,22 @@ def test_tab_renders_its_charts(client_logged, tab, charts, markup):
         assert isinstance(chart_data(page, chart), dict)
     for row in markup:
         assert re.search(row, page)
+
+
+def test_std_av_table_marks_the_total_row_by_its_state_not_its_title():
+    rows = [
+        ConversionRowViewModel("x Av", 1.0, 1.0, 1.0, 1.0, is_total=False),
+        ConversionRowViewModel("Std vnt", 2.0, 2.0, 2.0, 2.0, is_total=True),
+    ]
+
+    html = render_to_string(
+        "drinks/includes/tbl_std_av.html", {"ctx": StdAvViewModel(items=rows)}
+    )
+
+    assert re.search(r'<tr>\s*<td class="text-left">x Av</td>', html)
+    assert re.search(
+        r'<tr class="main__total">\s*<td class="text-left">Std vnt</td>', html
+    )
 
 
 @pytest.mark.parametrize(
