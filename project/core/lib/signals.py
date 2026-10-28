@@ -77,10 +77,13 @@ class SignalBase(ABC):
     def _create_year_grid(self, df: pl.LazyFrame) -> pl.LazyFrame:
         years_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
 
-        global_max_year = df.select(pl.col("year").max()).collect().item()
-        global_min_year = df.select(pl.col("year").min()).collect().item()
+        first_year, last_year = (
+            df.select(first=pl.col("year").min(), last=pl.col("year").max())
+            .collect()
+            .row(0)
+        )
 
-        years_df = pl.LazyFrame({"year": range(global_min_year, global_max_year + 2)})
+        years_df = pl.LazyFrame({"year": range(first_year, last_year + 2)})
 
         return (
             years_ranges.join(years_df, how="cross")
@@ -111,52 +114,31 @@ class Accounts(SignalBase):
         return (
             df.pipe(self._create_year_grid)
             .with_columns(
-                pl.col("latest_check")
+                pl.col("have", "latest_check")
                 .fill_null(strategy="forward")
                 .over("category_id"),
-                pl.col("have")
-                .fill_null(strategy="forward")
-                .over("category_id")
-                .alias("have_alt"),
             )
-            .drop("have")
-            .rename({"have_alt": "have"})
-            .with_columns(
-                balance=(
-                    (pl.col("incomes") - pl.col("expenses"))
-                    .cum_sum()
-                    .over("category_id")
-                ),
-                past=(
-                    (pl.col("incomes") - pl.col("expenses"))
-                    .cum_sum()
-                    .shift(1)
-                    .fill_null(0)
-                    .over("category_id")
-                ),
-            )
-            .with_columns(delta=pl.col("balance") - pl.col("have"))
             .with_columns([pl.col(col).fill_null(0) for col in numeric_columns])
         )
 
     def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return (
             df.pipe(self._fill_missing_past_future_rows)
-            .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
-            .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["category_id"]))
             .with_columns(
-                past=pl.col("tmp_balance").shift(n=1, fill_value=0).over("category_id")
+                past=(pl.col("incomes") - pl.col("expenses"))
+                .cum_sum()
+                .shift(n=1, fill_value=0)
+                .over("category_id")
             )
             .with_columns(
                 balance=(pl.col("past") + pl.col("incomes") - pl.col("expenses"))
             )
             .with_columns(delta=(pl.col("have") - pl.col("balance")))
-            .drop("tmp_balance")
             .sort(["category_id", "year"])
         )
 
     def _join_df(self, df: pl.LazyFrame, hv: pl.LazyFrame) -> pl.LazyFrame:
-        # how = "full" because if df is empty, but hv is not, return df will be empty
+        # a full join keeps a worth whose year has no incomes or expenses
         return df.join(
             hv,
             on=["category_id", "year"],
