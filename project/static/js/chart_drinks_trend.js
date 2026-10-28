@@ -90,7 +90,7 @@ function chartTrend(idData, idContainer) {
             type: "spline",
             name: chartData.text.r7,
             data: chartData.rolling_7,
-            color: "var(--skin-data-soft)",
+            color: "var(--skin-year-0)",
             legendIndex: 1,
             visible: false,
             lineWidth: 1.5,

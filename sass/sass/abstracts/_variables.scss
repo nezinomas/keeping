@@ -109,10 +109,8 @@ $hair-soft: #e1e6e8;
 // the one grey fill: a table's header band
 $band: #f9f9f9;
 
-// the one data hue, and the lighter step a shorter window of the same measure
-// takes (7-day against 30-day: one metric, two windows, so one hue)
+// the one data hue
 $data: #16699b;
-$data-soft: #7fa6bf;
 
 // the second measure, for the one chart that carries two: the Habits profile
 // reads a Drinking-day rate and an Intensity off the same categories
@@ -124,8 +122,8 @@ $second-ink: #8e57a5;
 // pair collapses into one colour in greyscale
 $harm: #7d2733;
 $harm-soft: #c47f86;
-// an alert's ground: $harm's own hue kept clean, since an alpha of the deep
-// maroon on white greys out; $harm text on it is 8.66:1
+// an alert's ground and a chart's over-limit band: $harm's hue kept clean, since an
+// alpha of the deep maroon on white greys out; $harm text on it is 8.66:1
 $harm-tint: #fdf2f3;
 
 // a receipt line still waiting for input: a highlighter stroke, not harm, good or data
