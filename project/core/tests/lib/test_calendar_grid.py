@@ -28,6 +28,7 @@ def test_build_month_metadata():
 
     jan = grid.months[0]
     assert jan.number == 1
+    assert jan.name == "Sausis"
     assert len(jan.days) == 31
     assert jan.leading_blanks == date(1999, 1, 1).weekday()
 
