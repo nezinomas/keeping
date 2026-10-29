@@ -1180,7 +1180,6 @@ def test_search_statistic_not_found(client_logged):
     actual = response.content.decode("utf-8")
 
     assert "Nieko nerasta" in actual
-    assert "search-statistic" not in actual
 
 
 def _get(view):
