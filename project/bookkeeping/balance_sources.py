@@ -2,7 +2,6 @@ from ..accounts.services.model_services import (
     AccountBalanceModelService,
     AccountModelService,
 )
-from ..core.lib.signals import Accounts, Savings
 from ..core.services.signals_service import sync
 from ..debts.models import Debt
 from ..debts.services.model_services import DebtModelService, DebtReturnModelService
@@ -24,6 +23,7 @@ from ..transactions.services.model_services import (
     TransactionModelService,
 )
 from ..users.models import User
+from .lib.balance_rows import Accounts, Savings
 from .services.model_services import (
     AccountWorthModelService,
     PensionWorthModelService,
