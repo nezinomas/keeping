@@ -842,13 +842,33 @@ def test_tab_index_renders_each_explanation_part_as_its_own_paragraph(
 
 
 # TabData View
-def test_tab_data_empty_current_year(client_logged):
-    DrinkFactory(date=date(2020, 1, 2))
+@pytest.mark.parametrize(
+    "url_name, drink_dates, message",
+    [
+        pytest.param(
+            "drinks:tab_data",
+            [date(2020, 1, 2)],
+            "<b>1999</b> metais įrašų nėra.",
+            id="data",
+        ),
+        # History runs every year from the first Drink to today, so any Drink fills it
+        pytest.param(
+            "drinks:tab_history",
+            [],
+            _("Data are missing. At least two years of data is required."),
+            id="history",
+        ),
+    ],
+)
+def test_an_empty_tab_draws_the_paper_notice(
+    client_logged, url_name, drink_dates, message
+):
+    for drink_date in drink_dates:
+        DrinkFactory(date=drink_date)
 
-    url = reverse("drinks:tab_data")
-    response = client_logged.get(url)
+    content = client_logged.get(reverse(url_name)).content.decode("utf-8")
 
-    assert "<b>1999</b> metais įrašų nėra." in response.content.decode("utf-8")
+    assert re.search(rf'<div class="alert">\s*{re.escape(message)}\s*</div>', content)
 
 
 def test_tab_data(client_logged):
