@@ -70,8 +70,6 @@ $table-thead-text: $black-muted;
 $table-current-day: color.adjust($secondary, $lightness: 43%, $space: hsl);
 $table-current-day-border-color: $secondary;
 
-$table-currently-reading: color.adjust($primary, $lightness: 71%, $space: hsl);
-
 $table-weekend: color.adjust($primary, $lightness: 71%, $space: hsl);
 $table-weekend-color: $black-muted;
 
@@ -107,7 +105,7 @@ $ink-faint: #8b979f;
 $hair: #cfd6da;
 $hair-soft: #e1e6e8;
 // the one grey fill: a table's header band
-$band: #f9f9f9;
+$band: $table-header-bg;
 
 // the one data hue
 $data: #16699b;
