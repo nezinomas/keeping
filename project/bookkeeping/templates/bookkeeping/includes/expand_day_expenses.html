@@ -1,4 +1,14 @@
 <tr hidden><td colspan="120"></td></tr>
 <tr class="expand-expenses" x-show="open_row_{{day}}">
-    <td colspan="120">{% include 'expenses/expense_list.html' with legacy_day=True %}</td>
+    <td colspan="120">
+    {% if object_list %}
+    <div hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator:inherited="#indicator">
+        {% include 'expenses/expense_list.html' %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
+        {{ notice }}
+    </div>
+    {% endif %}
+    </td>
 </tr>

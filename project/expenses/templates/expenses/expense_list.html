@@ -1,20 +1,12 @@
 {% load static %}
 {% load i18n %}
 {% load humanize %}
-{% load colorize %}
 {% load math %}
 {% load cell_format %}
 {% load fast_rendering %}
 
 {% if object_list %}
 
-{% if legacy_day %}
-<div
-    hx-trigger="reload from:body"
-    hx-get="{{request.get_full_path}}"
-    hx-target="#data"
-    hx-indicator:inherited="#indicator">
-{% endif %}
     <table class="main expenses-table striped hover sticky-table">
         {% if sum_price %}
         <caption>{% translate "Average unit price" %}: {{average|price|floatformat:"2g"}}</caption>
@@ -39,7 +31,7 @@
 
             {% for object in object_list %}
 
-            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% if legacy_day %}{% firstof object.expense_type.pk|bg_color or object.expense_type__pk|bg_color %} {% endif %}{% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
                 <td class="text-left">{{ object.expense_type__title }}</td>
                 <td class="text-left">{{ object.expense_name__title }}</td>
@@ -74,9 +66,6 @@
         </tfoot>
         {% endif %}
     </table>
-{% if legacy_day %}
-</div>
-{% endif %}
 
 <c-paging :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#data"/>
 
@@ -89,11 +78,6 @@
 
 {% else %}
 
-{% if legacy_day %}
-<div class="alert alert-warning" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
-    {{ notice }}
-</div>
-{% else %}
 <div class="alert">
 {% if notice %}
     {{ notice }}
@@ -103,6 +87,5 @@
     {% blocktranslate with month=month.value %}There are no records for month {{ month }}.{% endblocktranslate %}
 {% endif %}
 </div>
-{% endif %}
 
 {% endif %}
