@@ -24,13 +24,13 @@ function initCalendar() {
 
         tooltip.innerHTML = html;
         tooltip.style.borderColor = getComputedStyle(cell).backgroundColor;
-        tooltip.style.display = 'block';
+        tooltip.hidden = false;
 
         positionTooltip(cell);
     }
 
     function hide() {
-        tooltip.style.display = 'none';
+        tooltip.hidden = true;
     }
 
     // one cell holds the tab stop: a click that only set `current` left a second
@@ -52,7 +52,7 @@ function initCalendar() {
 
     card.addEventListener('mousemove', function (e) {
         const cell = e.target.closest(HOVER);
-        if (cell && tooltip.style.display === 'block') {
+        if (cell && !tooltip.hidden) {
             positionTooltip(cell);
         }
     });

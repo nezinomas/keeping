@@ -135,3 +135,21 @@ class DrinksChartBarFigures(Browser):
         )
 
         assert fill == INK_MUTED
+
+
+@pytest.mark.webtest
+class DrinksCalendarTooltip(Browser):
+    def test_tooltip_shows_only_while_a_day_has_focus(self):
+        DrinkFactory()
+        self.browser.get(f"{self.live_server_url}/drinks/")
+        self.wait_until_idle()
+        tooltip = self.browser.find_element(By.ID, "heat-tooltip")
+        day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]")
+        seen = [tooltip.is_displayed()]
+
+        self.browser.execute_script("arguments[0].focus()", day)
+        seen.append(tooltip.is_displayed())
+        self.browser.execute_script("arguments[0].blur()", day)
+        seen.append(tooltip.is_displayed())
+
+        assert seen == [False, True, False]
