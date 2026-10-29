@@ -81,7 +81,11 @@ class TimeSeriesPivotBuilder:
             )
         )
 
-        padded_df = expected_dates_df.join(pivoted_df, on=DATE, how="left").fill_null(0)
+        padded_df = (
+            expected_dates_df.join(pivoted_df, on=DATE, how="left")
+            .fill_null(0)
+            .sort(DATE)
+        )
 
         return self.formatter.format(padded_df)
 
