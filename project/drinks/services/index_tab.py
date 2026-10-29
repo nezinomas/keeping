@@ -293,67 +293,58 @@ class IndexBuilder:
         if not self._drink_stats.yearly.total_quantity:
             return EmptyStatCard(title, _("No data"))
 
-        unit = self._converter.display_unit
-        decimals = self._converter.display_decimals
-
         avg = self._avg_daily(self._drink_stats)
-        figure_unit = self._converter.figure_unit
-        value = f"{avg:.{decimals}f}"
-
         comparison = self._against_last_year(avg, self._avg_daily(self._previous_stats))
-        baseline = self._last_year(f"{comparison.previous:.{decimals}f}")
+        figure = {
+            "value": self._per_day(avg),
+            "unit": self._converter.figure_unit,
+            "note": self._avg_per_day_note(avg, comparison),
+            "explanation": self._avg_per_day_explanation(comparison),
+        }
 
-        explanation = (f"{unit} {_('per calendar day')}",)
+        # the Drink Target colours the card; last year only points its arrow
+        if self._limit.is_set:
+            return LevelStatCard(
+                title,
+                state=stat_card.LOW if self._is_under_limit(avg) else stat_card.HIGH,
+                show_icon=comparison.has_past,
+                improving=comparison.improving,
+                **figure,
+            )
+
+        if comparison.has_past:
+            return ComparisonStatCard(title, improving=comparison.improving, **figure)
+
+        return StatCard(title=title, **figure)
+
+    def _avg_per_day_note(self, avg: float, comparison: YearOverYearReading) -> str:
+        if comparison.has_past:
+            return self._last_year(self._per_day(comparison.previous))
+
+        if not self._limit.is_set:
+            return _("No limit set")
+
+        diff = self._per_day(abs(self._limit.amount - avg))
+        if self._is_under_limit(avg):
+            return f"{diff} {_('under the limit')}"
+
+        return f"{diff} {_('over the limit')}"
+
+    def _avg_per_day_explanation(
+        self, comparison: YearOverYearReading
+    ) -> tuple[str, ...]:
+        explanation = (f"{self._converter.display_unit} {_('per calendar day')}",)
 
         if comparison.has_past:
             explanation += (self._arrow_note(),)
 
-        if not self._limit.is_set and not comparison.has_past:
-            return StatCard(
-                title=title,
-                value=value,
-                unit=figure_unit,
-                note=_("No limit set"),
-                explanation=explanation,
-            )
+        return explanation
 
-        if not self._limit.is_set:
-            return ComparisonStatCard(
-                title,
-                improving=comparison.improving,
-                value=value,
-                unit=figure_unit,
-                note=baseline,
-                explanation=explanation,
-            )
+    def _is_under_limit(self, avg: float) -> bool:
+        return avg <= self._limit.amount
 
-        under_limit = avg <= self._limit.amount
-        diff = f"{abs(self._limit.amount - avg):.{decimals}f}"
-        direction = _("under the limit") if under_limit else _("over the limit")
-        limit_note = f"{diff} {direction}"
-
-        state = stat_card.LOW if under_limit else stat_card.HIGH
-
-        if not comparison.has_past:
-            return LevelStatCard(
-                title,
-                state=state,
-                value=value,
-                unit=figure_unit,
-                note=limit_note,
-                explanation=explanation,
-            )
-
-        return LevelStatCard(
-            title,
-            state=state,
-            value=value,
-            unit=figure_unit,
-            note=baseline,
-            show_icon=True,
-            improving=comparison.improving,
-            explanation=explanation,
-        )
+    def _per_day(self, amount: float) -> str:
+        return f"{amount:.{self._converter.display_decimals}f}"
 
     def _avg_daily(self, stats: DrinkStats) -> float:
         if self._converter.is_canonical:
