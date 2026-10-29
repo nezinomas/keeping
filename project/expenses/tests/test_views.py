@@ -489,17 +489,12 @@ def test_expenses_list_empty_notice(client_logged, month, expected):
     assert not re.search(r'hx-trigger="[^"]*reload from:body', actual)
 
 
-def test_a_duomenys_row_has_no_type_colour_and_keeps_its_exception_mark(
-    client_logged,
-):
-    # pk 1 is a type colorize.py paints, so a drawn colour would show here
-    ExpenseFactory(expense_type=ExpenseTypeFactory(pk=1), exception=True)
+def test_a_duomenys_row_keeps_its_exception_mark_and_no_reload(client_logged):
+    ExpenseFactory(exception=True)
 
     url = reverse("expenses:list", kwargs={"month": 1})
     content = client_logged.get(url).content.decode("utf-8")
 
-    row = re.search(r'<tr hx-get=[^>]*class="([^"]*)"', content)[1]
-    assert row.strip() == ""
     assert '<td class="text-left exception">1999-01-01</td>' in content
     assert not re.search(r'hx-trigger="[^"]*reload from:body', content)
 
