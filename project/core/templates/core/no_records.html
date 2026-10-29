@@ -1,11 +1,5 @@
 {% load i18n %}
 
 <div class="alert alert-warning">
-{% if data_missing %}
-    {% translate 'Data missing.' %}
-{% elif two_years %}
     {% translate 'Data are missing. At least two years of data is required.' %}
-{% else %}
-    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
-{% endif %}
 </div>
