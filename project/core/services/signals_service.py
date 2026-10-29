@@ -1,13 +1,13 @@
 from django.db import models
 
 from ...users.models import User
+from ..lib.balance_rows import BalanceSources
 from ..lib.db_sync import BalanceSynchronizer
-from ..lib.signals import GetData
 
 
 def sync(user: User, conf: dict, table: type, balance_service: type) -> None:
-    data = table(GetData(user, conf))
-    BalanceSynchronizer(balance_service, user, data.df)
+    rows = table(BalanceSources(user, conf)).rows
+    BalanceSynchronizer(balance_service, user, rows)
 
 
 def journal_user(instance: models.Model) -> User:

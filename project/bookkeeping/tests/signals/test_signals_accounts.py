@@ -5,7 +5,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from ...lib.balance_rows import Accounts
+from ...lib.balance_rows import AccountBalanceRows
 from .strategies import HAVE, TYPES, rows, worth
 
 
@@ -72,8 +72,10 @@ def test_table(incomes, expenses, have, types):
             {"year": 1998, "incomes": 15, "category_id": 1},
         ]
     )
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
-    actual = Accounts(data).df.collect().to_dicts()
+    sources = SimpleNamespace(
+        incomes=incomes, expenses=expenses, have=have, types=types
+    )
+    actual = AccountBalanceRows(sources).rows.collect().to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1997
@@ -170,8 +172,8 @@ def test_copy_have_and_latest_from_previous_year(types):
         {"year": 1999, "incomes": 2, "category_id": 1},
         {"year": 1998, "incomes": 2, "category_id": 2},
     ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
-    actual = Accounts(data).df.collect().to_dicts()
+    sources = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
+    actual = AccountBalanceRows(sources).rows.collect().to_dicts()
 
     assert actual[0] == {
         "category_id": 1,
@@ -268,11 +270,11 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
         {"year": 1999, "incomes": 3, "category_id": 1},
         *extra_incomes,
     ]
-    data = SimpleNamespace(
+    sources = SimpleNamespace(
         incomes=incomes, expenses=[], have=[], types=[*types, *extra_types]
     )
     actual = {}
-    for row in Accounts(data).df.collect().to_dicts():
+    for row in AccountBalanceRows(sources).rows.collect().to_dicts():
         actual.setdefault(row["category_id"], []).append(
             (row["year"], row["incomes"], row["past"])
         )
@@ -361,14 +363,14 @@ def test_table_from_the_inputs_given(
     incomes, expenses, have, types, given_inputs, expected
 ):
     inputs = {"incomes": incomes, "expenses": expenses, "have": have}
-    data = SimpleNamespace(
+    sources = SimpleNamespace(
         types=types,
         **{
             name: given if name in given_inputs else []
             for name, given in inputs.items()
         },
     )
-    actual = Accounts(data).df.collect()
+    actual = AccountBalanceRows(sources).rows.collect()
 
     assert {column: actual[column].to_list() for column in expected} == expected
 
@@ -379,8 +381,10 @@ def test_table_from_the_inputs_given(
     HAVE,
 )
 def test_table_year_balance_follows_the_year_before(incomes, expenses, have):
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=TYPES)
-    actual = Accounts(data).df.collect().to_dicts()
+    sources = SimpleNamespace(
+        incomes=incomes, expenses=expenses, have=have, types=TYPES
+    )
+    actual = AccountBalanceRows(sources).rows.collect().to_dicts()
     previous = {}
 
     def total(source, column, row):
