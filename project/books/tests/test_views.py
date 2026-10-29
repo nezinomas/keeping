@@ -230,8 +230,7 @@ def test_data_tab_reads_search_then_table(client_logged):
     url = reverse("books:tab_data", kwargs={"scope": "year"})
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert '<input type="search" name="search"' in content
-    assert 'id="id_search"' in content
+    assert re.search(r'<input type="search" name="search"\s+id="id_search"', content)
     assert content.index('id="search-form"') < content.index('id="data"')
     assert 'id="chart-finished-container"' not in content
 
