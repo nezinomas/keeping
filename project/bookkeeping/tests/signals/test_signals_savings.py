@@ -5,7 +5,7 @@ import pytest
 from hypothesis import example, given
 from hypothesis import strategies as st
 
-from ...lib.balance_rows import Savings
+from ...lib.balance_rows import SavingBalanceRows
 from .strategies import HAVE, TYPES, rows, worth
 
 
@@ -72,10 +72,10 @@ def test_table(incomes, expenses, have, types):
             {"year": 1997, "incomes": 5, "fee": 1, "category_id": 1},
         ]
     )
-    data = SimpleNamespace(
+    sources = SimpleNamespace(
         moves=[], incomes=incomes, expenses=expenses, have=have, types=types
     )
-    actual = Savings(data).df.collect().to_dicts()
+    actual = SavingBalanceRows(sources).rows.collect().to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1997
@@ -212,10 +212,10 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         {"year": 1999, "incomes": 20, "fee": 2, "category_id": 1},
         {"year": 1998, "incomes": 50, "fee": 5, "category_id": 2},
     ]
-    data = SimpleNamespace(
+    sources = SimpleNamespace(
         moves=[], incomes=incomes, expenses=[], have=have, types=types
     )
-    actual = Savings(data).df.collect().to_dicts()
+    actual = SavingBalanceRows(sources).rows.collect().to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1998
@@ -335,7 +335,7 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
         {"year": 1999, "incomes": 30, "fee": 3, "category_id": 1},
         *extra_incomes,
     ]
-    data = SimpleNamespace(
+    sources = SimpleNamespace(
         moves=[], incomes=incomes, expenses=[], have=[], types=[*types, *extra_types]
     )
     columns = (
@@ -348,7 +348,7 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
         "per_year_fee",
     )
     actual = {}
-    for row in Savings(data).df.collect().to_dicts():
+    for row in SavingBalanceRows(sources).rows.collect().to_dicts():
         actual.setdefault(row["category_id"], []).append(
             tuple(row[column] for column in columns)
         )
@@ -462,7 +462,7 @@ def test_table_from_the_inputs_given(
     incomes, expenses, have, types, given_inputs, expected
 ):
     inputs = {"incomes": incomes[:4], "expenses": expenses[:4], "have": have[:2]}
-    data = SimpleNamespace(
+    sources = SimpleNamespace(
         moves=[],
         types=types,
         **{
@@ -470,7 +470,7 @@ def test_table_from_the_inputs_given(
             for name, given in inputs.items()
         },
     )
-    actual = Savings(data).df.collect()
+    actual = SavingBalanceRows(sources).rows.collect()
 
     assert {column: actual[column].to_list() for column in expected} == expected
 
@@ -522,10 +522,10 @@ def test_table_close_year(expenses, worth_in_close_year, expected):
             "latest_check": None,
         },
     ]
-    data = SimpleNamespace(
+    sources = SimpleNamespace(
         moves=[], incomes=incomes, expenses=expenses, have=have, types=types
     )
-    actual = Savings(data).df.collect()
+    actual = SavingBalanceRows(sources).rows.collect()
 
     assert {column: actual[column].to_list() for column in expected} == expected
 
@@ -552,10 +552,10 @@ ORDER_INPUT = (ORDER_INCOMES, ORDER_EXPENSES, ORDER_HAVE, ORDER_MOVES, TYPES)
 
 
 def savings_table(incomes, expenses, have, moves, types):
-    data = SimpleNamespace(
+    sources = SimpleNamespace(
         moves=moves, incomes=incomes, expenses=expenses, have=have, types=types
     )
-    return Savings(data).df.collect().to_dicts()
+    return SavingBalanceRows(sources).rows.collect().to_dicts()
 
 
 @pytest.fixture(name="order_table", scope="module")
@@ -579,10 +579,10 @@ def test_table_does_not_depend_on_the_input_row_order(
     HAVE,
 )
 def test_table_profit_is_worth_plus_sold_minus_incomes_and_fee(incomes, expenses, have):
-    data = SimpleNamespace(
+    sources = SimpleNamespace(
         moves=[], incomes=incomes, expenses=expenses, have=have, types=TYPES
     )
-    actual = Savings(data).df.collect().to_dicts()
+    actual = SavingBalanceRows(sources).rows.collect().to_dicts()
 
     def until(source, column, row):
         return sum(

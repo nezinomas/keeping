@@ -5,8 +5,7 @@ from ....bookkeeping.tests.factories import (
     PensionWorthFactory,
     SavingWorthFactory,
 )
-from ....core.services import signals_service
-from ....core.services.signals_service import journal_user, sync
+from ....core.services.signals_service import journal_user
 from ....debts.tests.factories import BorrowFactory, BorrowReturnFactory
 from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
@@ -49,20 +48,3 @@ def test_journal_user_is_the_first_user_of_the_journal(main_user):
 )
 def test_journal_user_of_every_synced_model_is_the_journals_user(main_user, factory):
     assert journal_user(factory()) == main_user
-
-
-def test_sync_hands_the_synchronizer_the_service_the_user_and_the_tables_df(
-    main_user, mocker, monkeypatch
-):
-    get_data = mocker.Mock()
-    synchronizer = mocker.Mock()
-    table = mocker.Mock()
-    monkeypatch.setattr(signals_service, "GetData", get_data)
-    monkeypatch.setattr(signals_service, "BalanceSynchronizer", synchronizer)
-    conf, service = {"incomes": ()}, mocker.Mock()
-
-    sync(main_user, conf, table, service)
-
-    get_data.assert_called_once_with(main_user, conf)
-    table.assert_called_once_with(get_data.return_value)
-    synchronizer.assert_called_once_with(service, main_user, table.return_value.df)
