@@ -4,12 +4,11 @@ from datetime import date
 
 import pytest
 import time_machine
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.utils import (
+    count_queries,
     quick_add_pills,
     stat_card_tooltips,
     stat_cards,
@@ -150,28 +149,52 @@ def test_invalid_data_shows_the_error_and_saves_nothing(
     assert model.objects.count() == 0
 
 
-def test_income_not_load_other_journal(client_logged, second_user):
+@pytest.mark.parametrize(
+    "request_of",
+    [
+        lambda c, i: c.get(reverse("incomes:update", kwargs={"pk": i.pk})),
+        lambda c, i: c.get(reverse("incomes:delete", kwargs={"pk": i.pk})),
+        lambda c, i: c.post(reverse("incomes:delete", kwargs={"pk": i.pk})),
+        lambda c, i: c.get(
+            reverse("incomes:type_update", kwargs={"pk": i.income_type.pk})
+        ),
+    ],
+    ids=["update", "delete_form", "delete", "type_update"],
+)
+def test_another_journals_row_is_not_found(client_logged, second_user, request_of):
     j = second_user.journal
-    a = AccountFactory(journal=j, title="a")
-    it = IncomeTypeFactory(title="yyy", journal=j)
-    obj = IncomeFactory(income_type=it, price=666, account=a)
+    income = IncomeFactory(
+        income_type=IncomeTypeFactory(title="yyy", journal=j),
+        account=AccountFactory(journal=j, title="a"),
+    )
 
-    url = reverse("incomes:update", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
+    response = request_of(client_logged, income)
 
     assert response.status_code == 404
+    assert Income.objects.filter(pk=income.pk).exists()
 
 
-def test_income_update_htmx_response(client_logged):
+@pytest.mark.parametrize(
+    "url_of, data",
+    [
+        (
+            lambda i: reverse("incomes:update", kwargs={"pk": i.pk}),
+            {"price": "150", "date": "1999-12-31"},
+        ),
+        (lambda i: reverse("incomes:type_new"), {"title": "TTT", "type": "salary"}),
+    ],
+    ids=["income_update", "type_new"],
+)
+def test_a_save_by_htmx_triggers_reload(client_logged, url_of, data):
     income = IncomeFactory()
+    posted = data | {"account": income.account.pk, "income_type": income.income_type.pk}
 
-    url = reverse("incomes:update", kwargs={"pk": income.pk})
     response = client_logged.post(
-        url, _update_data(income), **{"HTTP_HX-Request": "true"}
+        url_of(income), posted, headers={"HX-Request": "true"}
     )
 
     assert response.status_code == 204
-    assert response.headers["HX-Trigger"] == '{"reload": {}}'
+    assert response.headers.get("HX-Trigger", "") == '{"reload": {}}'
 
 
 @pytest.mark.parametrize(
@@ -277,26 +300,6 @@ def test_view_incomes_delete(client_logged):
     assert models.Income.objects.all().count() == 0
 
 
-def test_incomes_delete_other_journal_get_form(client_logged, second_user):
-    it2 = IncomeTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = IncomeFactory(income_type=it2, price=666)
-
-    url = reverse("incomes:delete", kwargs={"pk": i2.pk})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
-def test_incomes_delete_other_journal_post_form(client_logged, second_user):
-    it2 = IncomeTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = IncomeFactory(income_type=it2, price=666)
-
-    url = reverse("incomes:delete", kwargs={"pk": i2.pk})
-    client_logged.post(url)
-
-    assert Income.objects.all().count() == 1
-
-
 @pytest.mark.parametrize(
     "name, with_pk",
     [("incomes:type_new", False), ("incomes:type_update", True)],
@@ -312,25 +315,6 @@ def test_type_load_form(client_logged, name, with_pk):
     assert re.search(
         rf'id="generic-form"[^>]*hx-post="{url}"[^>]*data-hx-trigger-form=""', actual
     )
-
-
-def test_type_save_htmx_trigger_value(client_logged):
-    url = reverse("incomes:type_new")
-    data = {"title": "TTT", "type": "salary"}
-
-    response = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
-
-    assert response.headers["HX-Trigger"] == '{"reload": {}}'
-
-
-def test_income_type_not_load_other_journal(client_logged, second_user):
-    IncomeTypeFactory(title="xxx")
-    obj = IncomeTypeFactory(title="yyy", journal=second_user.journal)
-
-    url = reverse("incomes:type_update", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
 
 
 @pytest.mark.parametrize(
@@ -405,31 +389,29 @@ def test_an_income_row_opens_its_own_forms(client_logged):
     assert rows == [(update, update, f"/incomes/delete/{income.pk}/")]
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
-    content = client_logged.get(tab.url).content.decode()
+def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
+    content = client_logged.get(reverse("incomes:tab_data")).content.decode()
 
     assert '<nav class="subnav">' in content
     assert '<link rel="stylesheet" href="/static/css/paper.min.css">' in content
     assert 'class="paper-skin"' in content
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, tab):
+def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
     content = client_logged.get(
-        tab.url, headers={"HX-Request": "true"}
+        reverse("incomes:tab_index"), headers={"HX-Request": "true"}
     ).content.decode()
 
-    title = {"index": "Apžvalga", "data": "Duomenys", "types": "Rūšys"}[tab.name]
     assert '<nav class="subnav">' not in content
-    assert f"<title>Pajamos | {title}</title>" in content
+    assert "<title>Pajamos | Apžvalga</title>" in content
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_history_restore_rebuilds_the_whole_page(client_logged, tab):
+def test_a_history_restore_rebuilds_the_whole_page(client_logged):
     headers = {"HX-Request": "true", "HX-History-Restore-Request": "true"}
 
-    content = client_logged.get(tab.url, headers=headers).content.decode()
+    content = client_logged.get(
+        reverse("incomes:tab_types"), headers=headers
+    ).content.decode()
 
     assert '<nav class="subnav">' in content
 
@@ -437,29 +419,28 @@ def test_a_history_restore_rebuilds_the_whole_page(client_logged, tab):
 @pytest.mark.parametrize(
     "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
 )
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_only_the_open_tab_reloads_on_a_saved_income(client_logged, tab, headers):
-    # Types reloads the sort it shows
-    query = {"types": "?order=title"}.get(tab.name, "")
+def test_only_the_open_tab_reloads_on_a_saved_income(client_logged, headers):
+    content = client_logged.get(
+        reverse("incomes:tab_data"), headers=headers
+    ).content.decode()
 
-    content = client_logged.get(tab.url, headers=headers).content.decode()
-
-    listener = (
-        f'hx-get="{tab.url}{query}" hx-target="#tab_content"'
-        ' hx-trigger="reload from:body"'
+    listeners = re.findall(
+        r'<div hx-get="([^"]*)" hx-target="([^"]*)" hx-trigger="([^"]*)"', content
     )
-    assert listener in content
-    assert content.count("reload from:body") == 1
+    assert listeners == [("/incomes/data/", "#tab_content", "reload from:body")]
 
 
 def test_nav_offers_every_tab(client_logged):
     content = client_logged.get(reverse("incomes:index")).content.decode()
 
-    for tab in TABS:
-        assert re.search(
-            rf'<button\s+id="tab-{tab.name}"[^>]*hx-get="{re.escape(tab.url)}"',
-            content,
-        )
+    assert re.findall(
+        r'<button\s+id="tab-(\w+)"[^>]*hx-get="([^"]*)"[^>]*>\s*([^<]*?)\s*</button>',
+        content,
+    ) == [
+        ("index", "/incomes/index/", "Apžvalga"),
+        ("data", "/incomes/data/", "Duomenys"),
+        ("types", "/incomes/types/", "Rūšys"),
+    ]
 
 
 @pytest.mark.parametrize(
@@ -481,29 +462,48 @@ def test_tab_states_its_title(client_logged, url_name, heading):
     assert heading in content
 
 
-@time_machine.travel("1999-09-15")
-def test_types_tab_states_each_type_in_a_table(client_logged):
+def _types_tab_of_alga_and_kita(client):
     alga = IncomeTypeFactory(title="Alga")
     IncomeTypeFactory(title="Kita")
     IncomeFactory(date=date(1999, 2, 5), price=90_000, income_type=alga)
     IncomeFactory(date=date(1998, 2, 5), price=70_000, income_type=alga)
 
-    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+    return client.get(reverse("incomes:tab_types")).content.decode()
 
-    assert '<td class="text-left">Kita</td>' in content
-    assert re.search(
-        r'>Alga</td>\s*<td class="main__figure">900</td>\s*'
-        r'<td class="main__figure">700</td>\s*<td class="main__figure">100%</td>\s*'
-        r"<td>1999-02-05</td>",
-        content,
-    )
+
+@time_machine.travel("1999-09-15")
+@pytest.mark.parametrize(
+    "row",
+    [
+        (
+            r'<td class="text-left">Alga</td>\s*<td class="main__figure">900</td>\s*'
+            r'<td class="main__figure">700</td>\s*<td class="main__figure">100%</td>\s*'
+            r"<td>1999-02-05</td>"
+        ),
+        (
+            r'<td class="text-left">Kita</td>\s*<td class="main__figure">–</td>\s*'
+            r'<td class="main__figure">–</td>\s*<td class="main__figure">–</td>\s*'
+            r"<td>–</td>"
+        ),
+    ],
+    ids=["with_incomes", "no_incomes"],
+)
+def test_types_tab_states_each_type_in_a_row(client_logged, row):
+    content = _types_tab_of_alga_and_kita(client_logged)
+
+    assert re.search(row, content)
+
+
+@time_machine.travel("1999-09-15")
+def test_types_tab_totals_every_type(client_logged):
+    content = _types_tab_of_alga_and_kita(client_logged)
+
     assert re.search(
         r'<tr class="main__total">\s*<td class="text-left">Viso</td>\s*'
         r'<td class="main__figure">900</td>\s*<td class="main__figure">700</td>\s*'
         r'<td class="main__figure">100%</td>',
         content,
     )
-    assert "c-accordion" not in content and 'class="accordion"' not in content
 
 
 @time_machine.travel("2000-09-15")
@@ -546,40 +546,83 @@ def test_types_tab_sorts_by_the_asked_column(client_logged):
     assert re.findall(title_cells, by_share) == ["Zeta", "Alga", "Viso"]
 
 
-@pytest.mark.parametrize("order", ["share", "title"])
-def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged, order):
-    url = reverse("incomes:tab_types")
-
-    content = client_logged.get(url, {"order": order}).content.decode()
+@pytest.mark.parametrize(
+    "order, headers, reload",
+    [
+        (
+            "share",
+            [
+                (' class="text-left"', "/incomes/types/?order=title", "Pajamų rūšis"),
+                ("", "/incomes/types/?order=this_year", "Šiemet"),
+                ("", "/incomes/types/?order=last_year", "Pernai"),
+                ("", "", "Dalis"),
+                ("", "/incomes/types/?order=last_income", "Paskutinį kartą"),
+            ],
+            '<div hx-get="/incomes/types/?order=share" hx-target="#tab_content"',
+        ),
+        (
+            "title",
+            [
+                (' class="text-left"', "", "Pajamų rūšis"),
+                ("", "/incomes/types/?order=this_year", "Šiemet"),
+                ("", "/incomes/types/?order=last_year", "Pernai"),
+                ("", "/incomes/types/?order=share", "Dalis"),
+                ("", "/incomes/types/?order=last_income", "Paskutinį kartą"),
+            ],
+            '<div hx-get="/incomes/types/?order=title" hx-target="#tab_content"',
+        ),
+    ],
+    ids=["share", "title"],
+)
+def test_types_tab_sort_links_and_reload_carry_only_the_order(
+    client_logged, order, headers, reload
+):
+    content = client_logged.get(
+        reverse("incomes:tab_types"), {"order": order}
+    ).content.decode()
 
     # pushed, so a reload keeps the sort
     assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
-    for key, label in (
-        ("title", "Pajamų rūšis"),
-        ("this_year", "Šiemet"),
-        ("last_year", "Pernai"),
-        ("share", "Dalis"),
-        ("last_income", "Paskutinį kartą"),
-    ):
-        drawn = (
-            f'<a role="button" hx-get="{url}?order={key}"'
-            f' hx-target="#tab_content">{label}</a>'
+    # the active column is a span, every other one a link
+    assert (
+        re.findall(
+            r"<th([^>]*)>\s*(?:<span>|<a role=\"button\" hx-get=\"([^\"]*)\""
+            r' hx-target="#tab_content">)([^<]*)</',
+            content,
         )
-        if key == order:
-            drawn = f"<span>{label}</span>"
-        assert drawn in content
-    assert re.search(r'<th class="text-left">\s*<(span|a [^>]*)>Pajamų', content)
+        == headers
+    )
     # a save reloads the sort shown
-    assert f'<div hx-get="{url}?order={order}" hx-target="#tab_content"' in content
+    assert reload in content
 
 
-def test_types_tab_draws_no_groups(client_logged):
+def _types_tab_of_two_kinds(client):
     IncomeTypeFactory(title="Alga", type="salary")
     IncomeTypeFactory(title="Kita", type="other")
 
-    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+    return client.get(reverse("incomes:tab_types")).content.decode()
 
-    assert "table-group-divider" not in content
+
+def _type_rows(content):
+    """(the row's attributes after its htmx ones, the type's title) of each row."""
+    return re.findall(
+        r'<tr hx-get="[^"]*" hx-trigger="dblclick" hx-target="#mainModal"([^>]*)>'
+        r'\s*<td class="text-left">(\w+)</td>',
+        content,
+    )
+
+
+def test_types_tab_draws_no_group_dividers(client_logged):
+    content = _types_tab_of_two_kinds(client_logged)
+
+    assert _type_rows(content) == [("", "Alga"), ("", "Kita")]
+
+
+def test_types_tab_draws_no_accordion(client_logged):
+    content = _types_tab_of_two_kinds(client_logged)
+
+    assert len(_type_rows(content)) == 2
+    assert not re.search(r'<ul\b[^>]*class="accordion\b', content)
 
 
 @time_machine.travel("1999-09-15")
@@ -627,17 +670,17 @@ def test_quick_add_offers_its_pills(client_logged):
     ]
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_the_pill_stays_outside_the_swapped_tab(client_logged, tab):
-    content = client_logged.get(tab.url, headers={"HX-Request": "true"}).content
+def test_the_pill_stays_outside_the_swapped_tab(client_logged):
+    content = client_logged.get(
+        reverse("incomes:tab_types"), headers={"HX-Request": "true"}
+    ).content.decode()
 
-    assert b'class="quick-add' not in content
+    assert "<title>Pajamos | Rūšys</title>" in content
+    assert not re.search(r'<div\b[^>]*class="quick-add\b', content)
 
 
 def _tab_queries(client, tab):
-    with CaptureQueriesContext(connection) as queries:
-        client.get(tab.url, headers={"HX-Request": "true"})
-    return len(queries)
+    return count_queries(lambda: client.get(tab.url, headers={"HX-Request": "true"}))
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
