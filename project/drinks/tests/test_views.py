@@ -89,7 +89,7 @@ def test_index_takes_its_legend_position_from_the_paper_charts(client_logged):
     content = client_logged.get(reverse("drinks:index")).content.decode()
 
     assert re.search(r'<script[^>]* src="[^"]*js/chart_paper\.js"', content)
-    assert "js/chart_drinks_legend.js" not in content
+    assert not re.search(r'<script[^>]* src="[^"]*js/chart_drinks_legend\.js"', content)
 
 
 def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
@@ -155,16 +155,27 @@ def test_index_quick_add_carries(client_logged, pattern):
 
 
 @pytest.mark.parametrize(
-    "absent",
+    "absent, present",
     [
-        pytest.param("input.value.replace(/,/g, '.')", id="inline_separator_script"),
-        pytest.param("hx-swap-oob", id="switcher_swapped_out_of_band"),
+        # the quantity field's separator is a widget attribute, not an inline script
+        pytest.param(
+            r"<script(?![^>]* src=)[^>]*>(?:(?!</script>).)*input\.value\.replace",
+            r"<script(?![^>]* src=)[^>]*>",
+            id="inline_separator_script",
+        ),
+        # the page's own control is not an out-of-band copy of itself
+        pytest.param(
+            r'<div id="drink-type-control"[^>]*hx-swap-oob',
+            r'<div id="drink-type-control"[^>]*>',
+            id="switcher_swapped_out_of_band",
+        ),
     ],
 )
-def test_index_carries_no(client_logged, absent):
-    response = client_logged.get(reverse("drinks:index"))
+def test_index_carries_no(client_logged, absent, present):
+    content = client_logged.get(reverse("drinks:index")).content.decode()
 
-    assert absent not in response.content.decode()
+    assert re.search(present, content, re.S)
+    assert not re.search(absent, content, re.S)
 
 
 def test_the_nav_draws_every_tab_in_order(client_logged):
@@ -411,9 +422,16 @@ def test_tab_titles_its_panels(client_logged, tab, titles):
 @pytest.mark.parametrize(
     "tab, charts, markup",
     [
+        # One Drink: 1999-01-01 (a Friday), 1 Std Av of beer. A beer is 2.5 Std Av
+        # and 500 ml, so the Drink is 0.4 beer and 200 ml.
         pytest.param(
             "index",
-            ["quantity", "consumption"],
+            [
+                # 0.4 beer in January
+                ("quantity", lambda p: p["data"][:2], [0.4, 0.0]),
+                # 200 ml over January's 31 days
+                ("consumption", lambda p: p["data"][:2], [6.45161, 0.0]),
+            ],
             # the Converted table's rows exist only while the breakdown has data
             (
                 r'<tr>\s*<td class="text-left">Alus, 0.5L</td>\s*<td class="main__figure">0,40</td>'
@@ -422,9 +440,47 @@ def test_tab_titles_its_panels(client_logged, tab, titles):
             ),
             id="index",
         ),
-        pytest.param("habits", ["weekday"], (), id="habits"),
-        pytest.param("trends", ["trend"], (), id="trends"),
-        pytest.param("risk", ["weekly", "heavy"], (), id="risk"),
+        pytest.param(
+            "habits",
+            [
+                # Friday is the fifth weekday; 1999 has 53 of them, so 1 / 53 = 1.9 %
+                (
+                    "weekday",
+                    lambda p: p["layers"][0]["drinking_day_share"][:6],
+                    [0.0, 0.0, 0.0, 0.0, 1.9, 0.0],
+                ),
+                (
+                    "weekday",
+                    lambda p: p["layers"][0]["intensity"][:6],
+                    [0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+                ),
+            ],
+            (),
+            id="habits",
+        ),
+        pytest.param(
+            "trends",
+            [
+                ("trend", lambda p: p["daily"][:2], [200.0, 0.0]),
+                # 200 ml over a full window: 200 / 7 and 200 / 30, rounded to whole ml
+                ("trend", lambda p: p["rolling_7"][:1], [29.0]),
+                ("trend", lambda p: p["rolling_30"][:1], [7.0]),
+            ],
+            (),
+            id="trends",
+        ),
+        pytest.param(
+            "risk",
+            [
+                # the Friday sits in the week that starts on Monday 1998-12-28
+                ("weekly", lambda p: p["categories"][:2], ["1998-12-28", "1999-01-04"]),
+                ("weekly", lambda p: p["data"][:2], [1.0, 0.0]),
+                # 1 Std Av is no Heavy day
+                ("heavy", lambda p: p["data"][:2], [0, 0]),
+            ],
+            (),
+            id="risk",
+        ),
     ],
 )
 def test_tab_renders_its_charts(client_logged, tab, charts, markup):
@@ -432,8 +488,8 @@ def test_tab_renders_its_charts(client_logged, tab, charts, markup):
 
     page = client_logged.get(reverse(TABS[tab])).content.decode()
 
-    for chart in charts:
-        assert isinstance(chart_data(page, chart), dict)
+    for chart, series, expect in charts:
+        assert series(chart_data(page, chart)) == pytest.approx(expect, abs=1e-5)
     for row in markup:
         assert re.search(row, page)
 
@@ -469,8 +525,13 @@ def test_back_reloads_the_page_rather_than_restoring_a_snapshot(client_logged):
     # htmx 4 has no ajax history restore, so Back is a plain page load
     content = client_logged.get(reverse("drinks:index")).content.decode()
 
-    assert 'hx-history="false"' not in content
-    assert "refreshOnHistoryMiss" not in content
+    assert re.search(r'<div class="paper-skin"[^>]*x-data=', content)
+    assert not re.search(r'<div class="paper-skin"[^>]*hx-history="false"', content)
+    assert not re.search(
+        r"<script[^>]*>(?:(?!</script>).)*htmx\.config\.refreshOnHistoryMiss",
+        content,
+        re.S,
+    )
 
 
 # TabIndex View
@@ -517,12 +578,15 @@ def test_tab_index_figure_panels_keep_their_frame(client_logged, panel_id):
 def test_tab_query_count_does_not_grow_with_the_drinks(client_logged, url_name):
     url = reverse(url_name)
 
-    for i in range(2):
-        DrinkFactory(date=date(1999, 1, i + 1))
+    # the year read reaches back into last year, so both years grow
+    for year in (1999, 1998):
+        for i in range(2):
+            DrinkFactory(date=date(year, 1, i + 1))
     two = count_queries(lambda: client_logged.get(url))
 
-    for i in range(2, 6):
-        DrinkFactory(date=date(1999, 1, i + 1))
+    for year in (1999, 1998):
+        for i in range(2, 6):
+            DrinkFactory(date=date(year, 1, i + 1))
     six = count_queries(lambda: client_logged.get(url))
 
     assert six == two
@@ -830,7 +894,12 @@ def test_tab_history_renders_the_summary_chart_data(client_logged):
 
     page = client_logged.get(reverse("drinks:tab_history")).content.decode()
 
-    assert {"categories", "data_ml", "data_alcohol"} <= set(chart_data(page, "summary"))
+    payload = chart_data(page, "summary")
+
+    # the one Drink is in 1999: 200 ml over its 365 days, and 10 g of pure alcohol
+    assert payload["categories"][:2] == [1999, 2000]
+    assert payload["data_ml"][:2] == pytest.approx([0.54795, 0.0], abs=1e-5)
+    assert payload["data_alcohol"][:2] == pytest.approx([0.01, 0.0], abs=1e-5)
 
 
 def test_tab_history_titles_its_panels(client_logged):
@@ -1133,12 +1202,21 @@ def test_update_load_form_prefills_typed_quantity(converted, expect, client_logg
     assert f'name="stdav" value="{expect}"' in content
 
 
-def test_drinks_update_not_load_other_user(client_logged, second_user):
-    DrinkFactory()
-    obj = DrinkFactory(date=date(1111, 1, 1), stdav=0.666, user=second_user)
+@pytest.mark.parametrize(
+    "url_name, factory",
+    [
+        pytest.param("drinks:update", DrinkFactory, id="drink_update"),
+        pytest.param("drinks:delete", DrinkFactory, id="drink_delete"),
+        pytest.param("drinks:target_update", DrinkTargetFactory, id="target_update"),
+    ],
+)
+def test_another_users_object_is_not_found(
+    client_logged, second_user, url_name, factory
+):
+    factory()
+    obj = factory(user=second_user)
 
-    url = reverse("drinks:update", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
+    response = client_logged.get(reverse(url_name, kwargs={"pk": obj.pk}))
 
     assert response.status_code == 404
 
@@ -1165,15 +1243,6 @@ def test_view_drinks_delete(client_logged):
     client_logged.post(url)
 
     assert models.Drink.objects.all().count() == 0
-
-
-def test_drinks_delete_other_user_get_form(client_logged, second_user):
-    obj = DrinkFactory(user=second_user)
-
-    url = reverse("drinks:delete", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
 
 
 def test_drinks_delete_other_user_post_form(client_logged, second_user):
@@ -1233,16 +1302,6 @@ def test_target_update_load_form(client_logged):
     response = client_logged.get(url)
 
     assert form_posts_to(response.content.decode(), "generic-form", url)
-
-
-def test_target_update_not_load_other_user(client_logged, second_user):
-    DrinkTargetFactory()
-    obj = DrinkTargetFactory(quantity=666, user=second_user)
-
-    url = reverse("drinks:target_update", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
 
 
 # SelectDrink View
