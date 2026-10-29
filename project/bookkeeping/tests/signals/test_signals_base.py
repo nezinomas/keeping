@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ...lib.signals import Accounts, Savings
+from ...lib.balance_rows import Accounts, Savings
 
 
 @pytest.mark.parametrize("table", [Accounts, Savings])

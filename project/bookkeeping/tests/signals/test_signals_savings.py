@@ -5,7 +5,7 @@ import pytest
 from hypothesis import example, given
 from hypothesis import strategies as st
 
-from ...lib.signals import Savings
+from ...lib.balance_rows import Savings
 from .strategies import HAVE, TYPES, rows, worth
 
 
