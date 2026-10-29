@@ -3,15 +3,17 @@ function chartTrend(idData, idContainer) {
 
     const dailyColor = "var(--skin-hair)";
 
-    const plotLines = (chartData.target !== null) ? [
+    const limit = chartData.limit;
+
+    const plotLines = limit.is_set ? [
     {
         color: "var(--skin-harm)",
         width: 1.5,
         dashStyle: "Dash",
-        value: chartData.target,
+        value: limit.amount,
         zIndex: 10,
         label: paperRuleLabel(
-            `${chartData.text.limit}: ${chartData.target.toFixed(chartData.decimals)}`,
+            `${chartData.text.limit}: ${limit.amount.toFixed(chartData.decimals)}`,
             "harm"
         )
     }] : [];
@@ -39,7 +41,7 @@ function chartTrend(idData, idContainer) {
                 text: chartData.text.unit
             },
             min: 0,
-            softMax: (chartData.target !== null) ? chartData.target : undefined,
+            softMax: limit.is_set ? limit.amount : undefined,
             endOnTick: false,
             maxPadding: 0.02,
             tickPixelInterval: 35,
@@ -99,4 +101,4 @@ function chartTrend(idData, idContainer) {
             }
         }]
     });
-};
+}
