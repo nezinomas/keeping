@@ -1,9 +1,8 @@
-import random
 from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
-from hypothesis import given
+from hypothesis import example, given
 from hypothesis import strategies as st
 
 from ...lib.signals import Savings
@@ -531,39 +530,47 @@ def test_table_close_year(expenses, worth_in_close_year, expected):
     assert {column: actual[column].to_list() for column in expected} == expected
 
 
-def test_table_does_not_depend_on_the_input_row_order():
-    incomes = [
-        {"year": year, "incomes": 10 * year % 7 + 1, "fee": 1, "category_id": pk}
-        for pk in (1, 2, 3)
-        for year in (1996, 1997, 1999, 2002)
-    ]
-    expenses = [
-        {"year": 1999, "expenses": 3, "fee": 1, "category_id": 2},
-        {"year": 2002, "expenses": 4, "fee": 0, "category_id": 3},
-    ]
-    have = [
-        {"category_id": pk, "year": year, "have": pk * year % 50, "latest_check": dt}
-        for pk in (1, 2, 3)
-        for year, dt in ((1997, datetime(1997, 3, 1)), (2000, datetime(2000, 5, 1)))
-    ]
-    moves = [
-        {"category_id": 2, "date": datetime(1999, 6, 1).date(), "price": 3},
-        {"category_id": 3, "date": datetime(2002, 6, 1).date(), "price": 4},
-    ]
+ORDER_INCOMES = [
+    {"year": year, "incomes": 10 * year % 7 + 1, "fee": 1, "category_id": pk}
+    for pk in (1, 2, 3)
+    for year in (1996, 1997, 1999, 2002)
+]
+ORDER_EXPENSES = [
+    {"year": 1999, "expenses": 3, "fee": 1, "category_id": 2},
+    {"year": 2002, "expenses": 4, "fee": 0, "category_id": 3},
+]
+ORDER_HAVE = [
+    {"category_id": pk, "year": year, "have": pk * year % 50, "latest_check": dt}
+    for pk in (1, 2, 3)
+    for year, dt in ((1997, datetime(1997, 3, 1)), (2000, datetime(2000, 5, 1)))
+]
+ORDER_MOVES = [
+    {"category_id": 2, "date": datetime(1999, 6, 1).date(), "price": 3},
+    {"category_id": 3, "date": datetime(2002, 6, 1).date(), "price": 4},
+]
+ORDER_INPUT = (ORDER_INCOMES, ORDER_EXPENSES, ORDER_HAVE, ORDER_MOVES, TYPES)
 
-    def table(shuffle):
-        lists = [list(x) for x in (incomes, expenses, have, moves, TYPES)]
-        for x in lists:
-            shuffle(x)
-        inc, exp, hv, mv, tp = lists
-        data = SimpleNamespace(moves=mv, incomes=inc, expenses=exp, have=hv, types=tp)
-        return Savings(data).df.collect().to_dicts()
 
-    expected = table(lambda items: None)
-    rng = random.Random(1)
+def savings_table(incomes, expenses, have, moves, types):
+    data = SimpleNamespace(
+        moves=moves, incomes=incomes, expenses=expenses, have=have, types=types
+    )
+    return Savings(data).df.collect().to_dicts()
 
-    for _ in range(20):
-        assert table(rng.shuffle) == expected
+
+@pytest.fixture(name="order_table", scope="module")
+def fixture_order_table():
+    return savings_table(*ORDER_INPUT)
+
+
+@given(*(st.permutations(x) for x in ORDER_INPUT))
+@example(*(x[::-1] for x in ORDER_INPUT))
+def test_table_does_not_depend_on_the_input_row_order(
+    order_table, incomes, expenses, have, moves, types
+):
+    actual = savings_table(incomes, expenses, have, moves, types)
+
+    assert actual == order_table
 
 
 @given(
