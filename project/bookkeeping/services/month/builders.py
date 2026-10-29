@@ -27,7 +27,7 @@ class MonthTableBuilder:
 
         return expense_df.join(
             saving_df, on=DATE, how="full", coalesce=True, nulls_equal=True
-        )
+        ).sort(DATE)
 
     @cached_property
     def table(self) -> list[dict]:
