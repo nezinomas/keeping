@@ -85,7 +85,13 @@ _Avoid_: filter, period, span
 The maximum daily volume a user sets for one year. At most one per user per
 year. Stored in Std Av, so it is re-expressed in whichever Drink type is being
 viewed — the same target reads as 500 ml of beer or 234 ml of wine.
-_Avoid_: goal, limit, quota, budget
+_Avoid_: goal, limit (that is the Limit, how a chart draws it), quota, budget
+
+**Limit**:
+A Drink Target as a chart draws it: the dashed harm rule *Riba* at the target's
+daily amount. Either set, with its amount, or not set when the year has no Drink
+Target, and then no chart draws a rule or makes room for one.
+_Avoid_: target line, cap, threshold
 
 ### Risk
 
