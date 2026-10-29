@@ -120,4 +120,5 @@ class BalanceRows(ABC):
             .join(self._closed_years, on="category_id", how="inner")
             .filter(pl.col("closed").is_null() | (pl.col("year") <= pl.col("closed")))
             .select(df.collect_schema().names())
+            .sort(KEYS)
         )
