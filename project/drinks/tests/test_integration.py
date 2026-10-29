@@ -4,7 +4,7 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from ...core.tests.test_integration_browser import Browser
-from .factories import DrinkFactory
+from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -99,6 +99,28 @@ class DrinksChartRuleLabel(Browser):
             ["Mažos rizikos riba", INK_MUTED],
             ["Aukštos rizikos riba", HARM],
         ]
+
+
+@pytest.mark.webtest
+class DrinksTrendLimitRule(Browser):
+    def test_limit_rule_is_drawn_only_with_a_drink_target(self):
+        DrinkFactory()
+        for target, expected in ((False, []), (True, ["Riba: 100"])):
+            with self.subTest(target=target):
+                if target:
+                    DrinkTargetFactory()
+                self.browser.get(f"{self.live_server_url}/drinks/")
+                self.wait_until_idle()
+                self.browser.find_element(By.ID, "tab-trends").click()
+                self.wait_until_idle()
+
+                labels = self.browser.execute_script(
+                    "return [...document.querySelectorAll("
+                    "  '#chart-trend-container .highcharts-plot-line-label span')]"
+                    "  .map(s => s.textContent);"
+                )
+
+                assert labels == expected
 
 
 @pytest.mark.webtest
