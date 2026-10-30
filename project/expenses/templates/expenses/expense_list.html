@@ -67,7 +67,11 @@
         {% endif %}
     </table>
 
-<c-paging :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#data"/>
+{% if paginator_object %}
+<div hx-push-url:inherited="true">
+    <c-paging :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#tab_content"/>
+</div>
+{% endif %}
 
 
 <!-- modal image -->
