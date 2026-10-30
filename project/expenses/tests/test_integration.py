@@ -218,6 +218,62 @@ class Expenses(Browser):
 
         assert [expense["remark"] for expense in self.listed_rows(COLUMNS)] == ["xxxx"]
 
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_search_results_stay_after_a_save_and_a_reload(self):
+        ExpenseFactory(remark="xxxx")
+        ExpenseFactory(remark="yyyy")
+
+        self._search("xxxx")
+        pushed = self.browser.current_url
+
+        self._save_the_first_row()
+        after_save = [expense["remark"] for expense in self.listed_rows(COLUMNS)]
+
+        self.browser.refresh()
+        self.wait_until_idle()
+
+        assert pushed.endswith("/expenses/data/1/?search=xxxx")
+        assert after_save == ["xxxx"]
+        assert [expense["remark"] for expense in self.listed_rows(COLUMNS)] == ["xxxx"]
+        search = self.browser.find_element(By.ID, "id_search")
+        assert search.get_attribute("value") == "xxxx"
+
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_a_save_on_a_later_search_page_stays_on_it(self):
+        for cents in range(100, 155):
+            ExpenseFactory(remark="xxxx", price=cents)
+
+        self._search("xxxx")
+        page_link = self.browser.find_element(
+            By.CSS_SELECTOR, ".pagination a[hx-get*='page=2']"
+        )
+        # the quick-add bar is fixed over the page's foot, where the pager sits
+        self.browser.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'})", page_link
+        )
+        page_link.click()
+        self.wait_until_idle()
+        page_two = [expense["price"] for expense in self.listed_rows(COLUMNS)]
+
+        self._save_the_first_row()
+
+        active = self.browser.find_element(By.CSS_SELECTOR, ".pagination .active").text
+        assert active == "2"
+        assert [expense["price"] for expense in self.listed_rows(COLUMNS)] == page_two
+
+    def _search(self, text):
+        self.browser.get(self.data_url())
+        self.wait_until_idle()
+        search = self.browser.find_element(By.ID, "id_search")
+        search.send_keys(text)
+        search.send_keys(Keys.RETURN)
+        self.wait_until_idle()
+
+    def _save_the_first_row(self):
+        self.browser.find_element(By.CSS_SELECTOR, "a.edit").click()
+        self.wait_until_idle()
+        self._submit_and_close_update_form()
+
     def _modal_container(self):
         return self.browser.find_element(By.ID, "mainModalContainer")
 

@@ -1,5 +1,7 @@
-<c-search-form url="{% url 'expenses:search' %}" reset_url="{% url 'expenses:list' month.value %}" target="#data" />
+<div hx-push-url:inherited="true">
+    <c-search-form url="{{ month.url }}" reset_url="{{ month.url }}" target="#tab_content" :search="search" />
+</div>
 
 <c-filter-line :items="items" target="#tab_content" />
 
-<div id="data" class="table-responsive" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' month.value %}"></div>
+<div id="data" class="table-responsive" hx-trigger="load" hx-indicator="#indicator" hx-get="{{ data_url }}"></div>

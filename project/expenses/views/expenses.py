@@ -1,8 +1,10 @@
 from datetime import date
 from functools import cached_property, partial
 from typing import cast
+from urllib.parse import urlencode
 
 from django.http import HttpResponse
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import PriceToFloatViewMixin
@@ -69,11 +71,25 @@ class TabData(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         month = month_filter(self.kwargs)
+        search = self.request.GET.get("search", "")
+        params = {"search": search}
+        if page := self.request.GET.get("page"):
+            params["page"] = page
+
+        data_url = reverse("expenses:list", args=[month.value])
+        tab_url = month.url()
+        if search:
+            query = urlencode(params)
+            data_url = f"{reverse('expenses:search')}?{query}"
+            tab_url = f"{tab_url}?{query}"
+
         return super().get_context_data(**kwargs) | {
             "month": month,
             "items": month.items(),
-            # a save reloads the tab at the month it shows
-            "tab_url": month.url(),
+            "search": search,
+            "data_url": data_url,
+            # a save reloads the tab at the month and search it shows
+            "tab_url": tab_url,
         }
 
 
@@ -131,6 +147,10 @@ class Search(SearchViewMixin):
     search_method = staticmethod(search.search_expenses)
     search_totals = staticmethod(search.search_totals)
     search_rows = staticmethod(partial(add_fast_urls, app_name=App_name))
+
+    def get_context_data(self, **kwargs):
+        # a page link of only a query lands on the Duomenys url the search was pushed to
+        return super().get_context_data(**kwargs) | {"url": ""}
 
 
 class LoadExpenseName(ListViewMixin):

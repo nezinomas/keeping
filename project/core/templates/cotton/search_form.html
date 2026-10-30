@@ -1,4 +1,5 @@
 {% load i18n %}
+<c-vars search="" />
 
 <form novalidate
     method="post"
@@ -7,7 +8,7 @@
     hx-target="{{ target }}"
     hx-swap:inherited="innerHTML"
     hx-indicator:inherited="#indicator"
-    x-data="{ search_str: '' }">
+    x-data="{ search_str: '{{ search|escapejs }}' }">
 
         <input type="search" name="search"
             id="id_search"
@@ -17,7 +18,7 @@
             x-model="search_str"
             {% if hightlight_tab %}@keyup.enter="openTab = '13'"{% endif %}>
 
-        <button type="submit" class="button-secondary" name="search" x-model="search_str">{% translate 'Search' %}</button>
+        <button type="submit" class="button-secondary">{% translate 'Search' %}</button>
         <button type="button"
             class="button-secondary"
             hx-get="{{ reset_url }}"

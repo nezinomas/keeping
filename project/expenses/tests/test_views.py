@@ -44,10 +44,10 @@ def _active_tab(name):
 
 def _open_month(month):
     # each pattern names the element that carries the url: the filter line lists
-    # every month, the Reset button and #data share one url
+    # every month, and the Reset button and the tab's reload share the tab's url
     return [
         rf'id="data"[^>]*hx-get="/expenses/list/{month}/"',
-        rf'class="button-secondary"\s+hx-get="/expenses/list/{month}/"',
+        rf'class="button-secondary"\s+hx-get="/expenses/data/{month}/"',
         rf'aria-current="true" hx-get="/expenses/data/{month}/" hx-push-url="true"',
         rf'<div hx-get="/expenses/data/{month}/" hx-target="#tab_content"',
     ]
@@ -800,9 +800,39 @@ def test_expenses_data_search_form(client_logged):
     url = reverse("expenses:tab_data", kwargs={"month": "1"})
     response = client_logged.get(url).content.decode("utf-8")
 
-    search = reverse("expenses:search")
     assert '<input type="search" name="search"' in response
-    assert re.search(rf'id="search-form"\s+hx-get="{search}"', response)
+    assert re.search(
+        rf'id="search-form"\s+hx-get="{url}"\s+hx-target="#tab_content"', response
+    )
+
+
+@pytest.mark.parametrize(
+    "query, data_url, tab_url",
+    [
+        pytest.param("", "/expenses/list/all/", "/expenses/data/all/", id="month"),
+        pytest.param(
+            "?search=zzz",
+            "/expenses/search/?search=zzz",
+            "/expenses/data/all/?search=zzz",
+            id="search",
+        ),
+        pytest.param(
+            "?search=zzz&page=2",
+            "/expenses/search/?search=zzz&amp;page=2",
+            "/expenses/data/all/?search=zzz&amp;page=2",
+            id="search_page",
+        ),
+    ],
+)
+def test_duomenys_search_lives_in_its_url(client_logged, query, data_url, tab_url):
+    url = reverse("expenses:tab_data", kwargs={"month": "all"})
+    content = client_logged.get(f"{url}{query}", headers={"HX-Request": "true"})
+    content = content.content.decode("utf-8")
+
+    assert re.search(rf'id="data"[^>]*hx-get="{re.escape(data_url)}"', content)
+    assert re.search(
+        rf'hx-get="{re.escape(tab_url)}" hx-target="#tab_content"', content
+    )
 
 
 @pytest.mark.parametrize(
@@ -1136,12 +1166,10 @@ def test_search_pagination(client_logged, query, expected):
     content = client_logged.get(url, query).content.decode()
 
     assert content.count("<tr hx-get=") == expected
-    # a page of the search swaps into #data like the first one
-    links = re.findall(
-        r'<a role="button"[^>]*hx-get="/expenses/search/\?page=[^>]*>', content
-    )
+    # a page of the search reloads the tab at the url its search was pushed to
+    links = re.findall(r'<a role="button"[^>]*hx-get="\?page=[^>]*>', content)
     assert links
-    assert all('hx-target="#data"' in link for link in links)
+    assert all('hx-target="#tab_content"' in link for link in links)
 
 
 def test_search_totals_row_sums_the_quantity_and_price_under_their_columns(
