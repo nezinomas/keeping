@@ -382,7 +382,7 @@ def test_a_book_row_marks_a_book_still_being_read(client_logged, ended, row_clas
 @pytest.mark.parametrize(
     ("scope", "notice"),
     [
-        ("year", "<b>1999</b> metais įrašų nėra."),
+        ("year", "1999 metais įrašų nėra."),
         ("all", "Įrašų nėra"),
     ],
     ids=["this_year_names_the_year", "all_books_names_no_year"],

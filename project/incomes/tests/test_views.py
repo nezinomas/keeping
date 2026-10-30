@@ -249,9 +249,7 @@ def test_incomes_list_shows_the_price_with_the_subnav_only_on_the_tab(
 def test_list_empty_state_names_the_selected_year(client_logged):
     actual = client_logged.get(reverse("incomes:list")).content.decode("utf-8")
 
-    assert re.search(
-        r'<div class="alert[^"]*">\s*<b>1999</b> metais įrašų nėra\.', actual
-    )
+    assert re.search(r'<div class="alert[^"]*">\s*1999 metais įrašų nėra\.', actual)
 
 
 @pytest.mark.parametrize(

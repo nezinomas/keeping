@@ -711,7 +711,7 @@ def test_data_no_records(client_logged):
     response = client_logged.get(url, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert "<b>1999</b> metais įrašų nėra." in actual
+    assert "1999 metais įrašų nėra." in actual
 
 
 def test_data_of_a_counter_with_no_records_at_all_names_no_year(client_logged):

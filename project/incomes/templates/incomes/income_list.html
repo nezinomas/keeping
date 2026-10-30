@@ -42,7 +42,7 @@
 {% if notice %}
     {{ notice }}
 {% else %}
-    {% blocktranslate with year=request.user.selected_year %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+    {% blocktranslate with year=request.user.selected_year %}No records in {{ year }}.{% endblocktranslate %}
 {% endif %}
 </div>
 

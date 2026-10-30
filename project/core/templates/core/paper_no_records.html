@@ -4,6 +4,6 @@
 {% if two_years %}
     {% translate 'Data are missing. At least two years of data is required.' %}
 {% else %}
-    {% blocktranslate with year=request.user.selected_year %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+    {% blocktranslate with year=request.user.selected_year %}No records in {{ year }}.{% endblocktranslate %}
 {% endif %}
 </div>

@@ -219,7 +219,7 @@ def test_view_detailed_tab_without_rows_shows_the_alert(client_logged, url_name)
 
     content = client_logged.get(reverse(url_name)).content.decode("utf-8")
 
-    assert re.search(r'<div class="alert">\s*<b>1999</b> metais įrašų nėra\.', content)
+    assert re.search(r'<div class="alert">\s*1999 metais įrašų nėra\.', content)
     assert "<table" not in content
     assert '<section class="panel' not in content
 
