@@ -3,7 +3,7 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.day_stats import Stats
-from ...core.lib.translation import month_names
+from ...core.lib.translation import MONTH_ABBREVIATIONS
 from ..lib.rhythm import GapBin
 from .counter_life import CounterLife
 from .model_services import CountModelService
@@ -22,7 +22,7 @@ class IndexService:
     def chart_months(self) -> dict:
         return {
             "data": self._stats.months_stats(),
-            "categories": list(month_names().values()),
+            "categories": [str(label) for _order, label in MONTH_ABBREVIATIONS],
         }
 
     def chart_histogram(self, bins: list[GapBin]) -> dict:

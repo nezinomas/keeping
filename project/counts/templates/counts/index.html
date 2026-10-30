@@ -40,9 +40,10 @@
 <script nonce="{{ csp_nonce }}">
     function initCountsCharts() {
         if (document.getElementById('chart-months-container')) {
-            chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
-            chartPeriodicity('chart-months-data', 'chart-months-container');
-            chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
+            {# the three share a row: one margin keeps their x axes on one line however their labels tilt #}
+            chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container', 60);
+            chartPeriodicity('chart-months-data', 'chart-months-container', 60);
+            chartPeriodicity('chart-histogram-data', 'chart-histogram-container', 60);
         }
         if (document.getElementById('chart-years-container')) {
             chartPeriodicity('chart-years-data', 'chart-years-container');
