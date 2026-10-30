@@ -18,8 +18,31 @@ from ...receipts.layout import TextLayout
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "receipts"
 
 
+def _plain_page(pdf, doc) -> None:
+    pass
+
+
+def watermark(*, size: int, angle: int, x: int, y: int):
+    def draw(pdf, doc) -> None:
+        pdf.saveState()
+        pdf.setFillColorRGB(0.75, 0.75, 0.75)
+        pdf.setFont("Helvetica-Bold", size)
+        pdf.translate(x, y)
+        pdf.rotate(angle)
+        pdf.drawString(0, 0, "N-20")
+        pdf.restoreState()
+
+    return draw
+
+
 def table_pdf(
-    path: Path, *, text_above: str, header: tuple[str, ...], rows, more_tables=()
+    path: Path,
+    *,
+    text_above: str,
+    header: tuple[str, ...],
+    rows,
+    more_tables=(),
+    on_page=_plain_page,
 ) -> Path:
     doc = SimpleDocTemplate(
         str(path),
@@ -37,7 +60,7 @@ def table_pdf(
         table.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.black)]))
         story += [table, Spacer(1, 12)]
 
-    doc.build(story)
+    doc.build(story, onFirstPage=on_page)
     return path
 
 

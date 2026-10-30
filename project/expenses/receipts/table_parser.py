@@ -10,6 +10,16 @@ from .receipt import Receipt, ReceiptLine
 
 Row = list[str]
 
+# receipt text tops out at 22pt; a watermark's letters are far larger or drawn askew
+_WATERMARK_SIZE = 50
+
+
+def _is_print(obj: dict) -> bool:
+    if obj["object_type"] != "char":
+        return True
+    _, b, c, *_ = obj["matrix"]
+    return b == 0 and c == 0 and obj["size"] < _WATERMARK_SIZE
+
 
 @dataclass(frozen=True)
 class ColumnIndexes:
@@ -43,7 +53,7 @@ class TableReceiptParser:
 
     def _tables(self, document: pdfplumber.PDF) -> Iterator[list[Row]]:
         for page in document.pages:
-            for table in page.extract_tables():
+            for table in page.filter(_is_print).extract_tables():
                 if table:
                     yield [[converters.cell(value) for value in row] for row in table]
 
