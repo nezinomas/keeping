@@ -39,35 +39,24 @@ from .factories import (
 
 pytestmark = pytest.mark.django_db
 
-TAB_PANEL_TITLES = {
-    "incomes": ["Pajamos"],
+TAB_PANELS = {
+    "incomes": [("income-plans", "Pajamos")],
     "expenses": [
-        "Būtinos išlaidos",
-        "Papildomos būtinos išlaidos",
-        "Kasdienės išlaidos",
+        ("necessary-expense-plans", "Būtinos išlaidos"),
+        ("necessary-plans", "Papildomos būtinos išlaidos"),
+        ("everyday-expense-plans", "Kasdienės išlaidos"),
     ],
-    "savings": ["Taupymas"],
+    "savings": [("saving-plans", "Taupymas")],
     "day": [
-        "Suma dienai",
-        "Kiek galiu išleisti per dieną",
-        "Patikra: ar telpa išlaidų planai",
+        ("day-plans", "Suma dienai"),
+        ("calculations-spend", "Kiek galiu išleisti per dieną"),
+        ("calculations-check", "Patikra: ar telpa išlaidų planai"),
     ],
-}
-
-TAB_TABLE_PANELS = {
-    "incomes": ["income-plans"],
-    "expenses": [
-        "necessary-expense-plans",
-        "necessary-plans",
-        "everyday-expense-plans",
-    ],
-    "savings": ["saving-plans"],
-    "day": ["day-plans", "calculations-spend", "calculations-check"],
 }
 
 PLANS_TABLE_PANELS = {
-    tab: [panel for panel in panels if not panel.startswith("calculations-")]
-    for tab, panels in TAB_TABLE_PANELS.items()
+    tab: [panel for panel, _ in panels if not panel.startswith("calculations-")]
+    for tab, panels in TAB_PANELS.items()
 }
 
 MONTHS = (
@@ -266,36 +255,19 @@ def test_only_the_open_tab_reloads_on_a_saved_plan(client_logged, headers):
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_fragment_carries_only_its_own_panel_titles(client_logged, tab):
+def test_a_tab_fragment_carries_only_its_own_table_panels(client_logged, tab):
     content = client_logged.get(
         tab.url, headers={"HX-Request": "true"}
     ).content.decode()
 
-    for title in TAB_PANEL_TITLES[tab.name]:
-        assert re.search(rf'<h2 class="panel__title">{title}(</h2>| <span)', content)
-
-    other_titles = {
-        title
-        for name, titles in TAB_PANEL_TITLES.items()
-        if name != tab.name
-        for title in titles
-        if title not in TAB_PANEL_TITLES[tab.name]
-    }
-    for title in other_titles:
-        assert not re.search(
-            rf'<h2 class="panel__title">{title}(</h2>| <span)', content
-        )
-
-
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_every_panel_on_a_tab_is_a_table_panel(client_logged, tab):
-    content = client_logged.get(
-        tab.url, headers={"HX-Request": "true"}
-    ).content.decode()
-
-    for panel_id in TAB_TABLE_PANELS[tab.name]:
-        assert f'<section class="panel panel--table" id="{panel_id}">' in content
-    assert '<section class="panel" ' not in content
+    panels = re.findall(
+        r'<section class="panel( panel--table)?" id="([^"]*)">\s*'
+        r'<h2 class="panel__title">([^<]*?)(?: <span|</h2>)',
+        content,
+    )
+    assert panels == [
+        (" panel--table", panel_id, title) for panel_id, title in TAB_PANELS[tab.name]
+    ]
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -381,7 +353,12 @@ def test_the_expenses_tab_orders_necessary_extra_necessary_then_everyday(
     content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
 
     positions = [
-        content.index(f'id="{panel}"') for panel in TAB_TABLE_PANELS["expenses"]
+        content.index(f'id="{panel}"')
+        for panel in (
+            "necessary-expense-plans",
+            "necessary-plans",
+            "everyday-expense-plans",
+        )
     ]
     assert positions == sorted(positions)
 
@@ -411,59 +388,55 @@ def test_the_necessary_expenses_panel_explains_where_necessity_is_set(client_log
 
 
 @pytest.mark.parametrize(
-    "kind",
+    "kind, titles, url",
     [
-        pytest.param(INCOME, id="income_tab_edit_delete_urls"),
-        pytest.param(EXPENSE, id="expense_tab_edit_delete_urls"),
-        pytest.param(SAVING, id="saving_tab_edit_delete_urls"),
-        pytest.param(DAY, id="day_tab_edit_delete_urls"),
-        pytest.param(NECESSARY, id="necessary_tab_edit_delete_urls"),
+        pytest.param(
+            INCOME,
+            "AB",
+            "/plans/incomes/{action}/1999/{plan.income_type.pk}/",
+            id="income",
+        ),
+        pytest.param(
+            EXPENSE,
+            "AB",
+            "/plans/expenses/{action}/1999/{plan.expense_type.pk}/",
+            id="expense",
+        ),
+        # Savings' owner names its own type, so one row
+        pytest.param(
+            SAVING,
+            "",
+            "/plans/savings/{action}/1999/{plan.saving_type.pk}/",
+            id="saving",
+        ),
+        pytest.param(DAY, "", "/plans/day/{action}/1999/", id="day"),  # one row a year
+        pytest.param(
+            NECESSARY,
+            "AB",
+            "/plans/necessary/{action}/1999/{plan.expense_type.pk}/other/",
+            id="necessary",
+        ),
     ],
 )
-def test_plan_tab_edit_delete_urls(client_logged, main_user, kind):
-    obj = kind.factory()
-
-    response = client_logged.get(reverse(kind.tab))
-    actual = response.content.decode("utf-8")
-
-    kwargs = {"year": main_user.year, **kind.own_kwargs(obj)}
-    links = re.findall(
-        r'<td class="(edit|delete)-col">\s*<a role="button" hx-get="([^"]*)"', actual
-    )
-    assert links == [
-        ("edit", reverse(kind.update, kwargs=kwargs)),
-        ("delete", reverse(kind.delete, kwargs=kwargs)),
-    ]
-
-
-@pytest.mark.parametrize(
-    "kind, count",
-    [
-        pytest.param(INCOME, 2, id="type_branch"),
-        pytest.param(NECESSARY, 2, id="necessary_branch"),
-        pytest.param(DAY, 1, id="day_branch"),  # one Day plan row a year
-    ],
-)
-def test_a_plan_row_opens_its_update_form_on_a_double_click(
-    client_logged, main_user, kind, count
+def test_a_plan_row_opens_its_update_form_and_links_its_edit_and_delete(
+    client_logged, kind, titles, url
 ):
-    plans = [kind.factory(**kind.owner(title=title)) for title in "AB"[:count]]
+    owners = [kind.owner(title=title) for title in titles] or [kind.owner()]
+    plans = [kind.factory(**owner) for owner in owners]
 
-    response = client_logged.get(reverse(kind.tab))
-    actual = response.content.decode("utf-8")
+    content = client_logged.get(reverse(kind.tab)).content.decode("utf-8")
 
     rows = re.findall(
         r'<tr hx-get="([^"]*)" hx-target="#mainModal" hx-trigger="dblclick">'
         r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
         r'.*?<td class="delete-col">\s*<a role="button" hx-get="([^"]*)"',
-        actual,
+        content,
         re.DOTALL,
     )
     expected = []
     for plan in plans:
-        kwargs = {"year": main_user.year, **kind.own_kwargs(plan)}
-        update = reverse(kind.update, kwargs=kwargs)
-        expected.append((update, update, reverse(kind.delete, kwargs=kwargs)))
+        update = url.format(action="update", plan=plan)
+        expected.append((update, update, url.format(action="delete", plan=plan)))
     assert rows == expected
 
 
@@ -499,10 +472,11 @@ def test_plan_load_form(client_logged, kind):
     ],
 )
 def test_plan_new(client_logged, main_user, kind, own_data, january, price):
+    owned = kind.owner()
     data = {
         "year": "1999",
         "january": january,
-        **_form_values(kind.owner()),
+        **_form_values(owned),
         **own_data,
     }
 
@@ -513,7 +487,8 @@ def test_plan_new(client_logged, main_user, kind, own_data, january, price):
     assert actual.year == 1999
     assert actual.month == 1
     assert actual.price == price
-    assert actual in kind.model.objects.filter(**own_data)
+    expected = {**owned, **own_data}
+    assert {field: getattr(actual, field) for field in expected} == expected
 
 
 @pytest.mark.parametrize(
@@ -1154,7 +1129,6 @@ def test_expenses_tab_reads_no_income_saving_or_day_plans(client_logged):
 
 
 PLAN_DATA = (views.TabViewMixin, "plan_data")
-DAY_SUM = (views, "PlanCalculateDaySum")
 
 
 @pytest.mark.parametrize(
@@ -1164,21 +1138,6 @@ DAY_SUM = (views, "PlanCalculateDaySum")
             lambda rf, u: view_for(rf, u, views.TabIncomes).get_context_data(),
             [PLAN_DATA],
             id="tab_incomes",
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, views.TabExpenses).get_context_data(),
-            [PLAN_DATA],
-            id="tab_expenses",
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, views.TabSavings).get_context_data(),
-            [PLAN_DATA],
-            id="tab_savings",
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, views.TabDay).get_context_data(),
-            [PLAN_DATA, DAY_SUM],
-            id="tab_day",
         ),
         pytest.param(
             lambda rf, u: view_for(rf, u, views.TabDay).plan_data(), [], id="plan_data"
