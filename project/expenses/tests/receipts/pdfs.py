@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -22,7 +23,7 @@ def _plain_page(pdf, doc) -> None:
     pass
 
 
-def watermark(*, size: int, angle: int, x: int, y: int):
+def watermark(*, size: int, angle: int, x: int, y: int) -> Callable[..., None]:
     def draw(pdf, doc) -> None:
         pdf.saveState()
         pdf.setFillColorRGB(0.75, 0.75, 0.75)
