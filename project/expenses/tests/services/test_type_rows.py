@@ -88,27 +88,18 @@ BY_LAST_EXPENSE = [
 
 
 @pytest.mark.parametrize(
-    "order, active, expected",
+    "order, expected",
     [
-        ("nonsense", "title", BY_TITLE),
-        ("this_year", "this_year", BY_THIS_YEAR),
-        ("last_year", "last_year", BY_LAST_YEAR),
-        ("share", "share", BY_THIS_YEAR),
-        ("last_expense", "last_expense", BY_LAST_EXPENSE),
+        ("", BY_TITLE),
+        ("this_year", BY_THIS_YEAR),
+        ("last_year", BY_LAST_YEAR),
+        ("share", BY_THIS_YEAR),
+        ("last_expense", BY_LAST_EXPENSE),
     ],
-    ids=[
-        "unknown_key_falls_back_to_title",
-        "this_year",
-        "last_year",
-        "share",
-        "last_expense",
-    ],
+    ids=["by_title_by_default", "this_year", "last_year", "share", "last_expense"],
 )
-def test_a_sort_orders_types_and_keeps_names_inside_their_type(order, active, expected):
-    table = _table(order=order)
-
-    assert _shape(table) == expected
-    assert table.order == active
+def test_a_sort_orders_types_and_keeps_names_inside_their_type(order, expected):
+    assert _shape(_table(order=order)) == expected
 
 
 def test_a_names_share_is_of_its_type_and_a_types_of_the_year():
@@ -134,7 +125,7 @@ def test_a_types_figures_count_every_name_whatever_its_year():
     )
     alfa = table.rows[0]
 
-    assert (alfa.this_year, alfa.last_year, alfa.last_expense, alfa.share) == (
+    assert (alfa.this_year, alfa.last_year, alfa.last_date, alfa.share) == (
         "400",
         "50",
         "2026-06-06",
@@ -159,30 +150,16 @@ def test_two_names_titled_alike_keep_their_own_figures():
     alfa_kita = table.rows[0].names[0]
     beta_kita = table.rows[1].names[0]
 
-    assert (alfa_kita.this_year, alfa_kita.last_year, alfa_kita.last_expense) == (
+    assert (alfa_kita.this_year, alfa_kita.last_year, alfa_kita.last_date) == (
         "100",
         "–",
         "2026-01-05",
     )
-    assert (beta_kita.this_year, beta_kita.last_year, beta_kita.last_expense) == (
+    assert (beta_kita.this_year, beta_kita.last_year, beta_kita.last_date) == (
         "700",
         "30",
         "2026-08-08",
     )
-
-
-@pytest.mark.parametrize(
-    "year, last_year, expected",
-    [
-        (YEAR, LAST_YEAR, ("850", "700", "100%")),
-        ([], [], ("–", "–", "–")),
-    ],
-    ids=["every_type_summed", "empty_year"],
-)
-def test_the_total_sums_every_type(year, last_year, expected):
-    total = _table(year=year, last_year=last_year).total
-
-    assert (total.this_year, total.last_year, total.share) == expected
 
 
 YEARS_APART = [

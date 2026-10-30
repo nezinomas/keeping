@@ -1,13 +1,9 @@
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import date
-from functools import cached_property
-from typing import Any
 
 from ...core.lib.collation import lt_title
-from ...core.lib.money_cells import NOTHING, amount, day, share
-from ...core.lib.table_order import Column, TableOrder
+from ...core.lib.type_table import Cells, Figures, Total, TypeOrder, figures_by_pk
 from ...core.lib.year_boundary import YearBoundary
 from ...users.models import User
 from .model_services import (
@@ -16,66 +12,7 @@ from .model_services import (
     ExpenseTypeModelService,
 )
 
-ORDER = TableOrder(
-    columns=(
-        Column("title"),
-        Column("this_year", descending=True),
-        Column("last_year", descending=True),
-        Column("share", descending=True),
-        Column("last_expense", descending=True),
-    ),
-    default="title",
-)
-
-
-@dataclass(frozen=True)
-class Figures:
-    this_year: int
-    last_year: int
-    dates: list[date]
-
-
-@dataclass(frozen=True)
-class Cells:
-    pk: int
-    title: str
-    title_key: tuple
-    figures: Figures
-    share_of: int
-
-    @property
-    def this_year(self) -> str:
-        return amount(self.figures.this_year)
-
-    @property
-    def last_year(self) -> str:
-        return amount(self.figures.last_year)
-
-    @property
-    def share(self) -> str:
-        return share(self.figures.this_year, self.share_of)
-
-    @property
-    def last_expense(self) -> str:
-        if not self.figures.dates:
-            return NOTHING
-        return day(max(self.figures.dates))
-
-    @cached_property
-    def sort_values(self) -> Mapping[str, Any]:
-        # share runs with this year's sum; a figure the row has not got sorts last
-        sums = {
-            "this_year": self.figures.this_year,
-            "last_year": self.figures.last_year,
-            "share": self.figures.this_year,
-        }
-        values = {
-            "title": self.title_key,
-            **{k: cents for k, cents in sums.items() if cents},
-        }
-        if self.figures.dates:
-            values["last_expense"] = max(self.figures.dates)
-        return values
+ORDER = TypeOrder(last_key="last_expense")
 
 
 @dataclass(frozen=True)
@@ -87,13 +24,6 @@ class NameRow(Cells):
 class TypeRow(Cells):
     names: list[NameRow]
     necessary: bool
-
-
-@dataclass(frozen=True)
-class Total:
-    this_year: str
-    last_year: str
-    share: str
 
 
 @dataclass(frozen=True)
@@ -134,43 +64,16 @@ class GroupedTypesTable:
         last_dates: Sequence[dict],
         order: str,
     ) -> "GroupedTypesTable":
-        figures = _name_figures(names, year, last_year, last_dates)
-        grand = _summed(list(figures.values()))
+        figures = figures_by_pk([n["id"] for n in names], year, last_year, last_dates)
+        grand = Figures.summed(list(figures.values()))
         by_type = _names_by_type(names)
         rows = [
             _type_row(type_, by_type[type_["id"]], figures, grand.this_year, order)
             for type_ in sorted(types, key=lambda t: lt_title(t["title"]))
         ]
 
-        ordered = ORDER.sort(order, rows, lambda row: row.sort_values)
-        return cls(rows=ordered.rows, total=_total(grand), order=ordered.active)
-
-
-def _name_figures(
-    names: Sequence[dict],
-    year: Sequence[dict],
-    last_year: Sequence[dict],
-    last_dates: Sequence[dict],
-) -> dict[int, Figures]:
-    sums = {row["pk"]: row["sum"] for row in year}
-    last_sums = {row["pk"]: row["sum"] for row in last_year}
-    dates = {row["pk"]: row["date"] for row in last_dates}
-    return {
-        name["id"]: Figures(
-            this_year=sums.get(name["id"], 0),
-            last_year=last_sums.get(name["id"], 0),
-            dates=[dates[name["id"]]] if name["id"] in dates else [],
-        )
-        for name in names
-    }
-
-
-def _summed(figures: Sequence[Figures]) -> Figures:
-    return Figures(
-        this_year=sum(f.this_year for f in figures),
-        last_year=sum(f.last_year for f in figures),
-        dates=[d for f in figures for d in f.dates],
-    )
+        ordered = ORDER.sort(order, rows)
+        return cls(rows=ordered.rows, total=Total.of(grand), order=ordered.active)
 
 
 def _names_by_type(names: Sequence[dict]) -> dict[int, list[dict]]:
@@ -184,7 +87,7 @@ def _names_by_type(names: Sequence[dict]) -> dict[int, list[dict]]:
 def _type_row(
     type_: dict, group: list[dict], figures: dict[int, Figures], grand: int, order: str
 ) -> TypeRow:
-    type_figures = _summed([figures[n["id"]] for n in group])
+    type_figures = Figures.summed([figures[n["id"]] for n in group])
     return TypeRow(
         pk=type_["id"],
         title=type_["title"],
@@ -200,15 +103,7 @@ def _name_rows(
     group: list[dict], figures: dict[int, Figures], type_total: int, order: str
 ) -> list[NameRow]:
     listed = [_name_row(n, figures[n["id"]], type_total) for n in group]
-    return ORDER.sort(order, listed, lambda row: row.sort_values).rows
-
-
-def _total(grand: Figures) -> Total:
-    return Total(
-        this_year=amount(grand.this_year),
-        last_year=amount(grand.last_year),
-        share=share(grand.this_year, grand.this_year),
-    )
+    return ORDER.sort(order, listed).rows
 
 
 def _limit(name: dict) -> str:
