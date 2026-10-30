@@ -1,8 +1,4 @@
 {% load i18n %}
-{% load math %}
-{% load cache %}
-{% load get_item %}
-{% load cell_format %}
 {% load months %}
 
 {% if data %}
@@ -28,16 +24,7 @@
         {% for row in data %}
         <tr>
             <td class="text-left">{{ row.title }}</td>
-
-            {% for num in months %}
-                {% with cell_value=row|get_item:num %}
-                    <td class="main__figure" data-cell="{{cell_value|cell_state}}">
-                        {{ cell_value|price|cellformat:"0,00" }}
-                    </td>
-                {% endwith %}
-            {% endfor %}
-
-            <td class="main__figure month-table__total">{{ row.total_col|price|cellformat:"0,00" }}</td>
+            {% include 'bookkeeping/detailed/figure_cells.html' with row=row months=months %}
         </tr>
         {% endfor %}
     </tbody>
@@ -45,16 +32,7 @@
     <tfoot>
         <tr class="main__total">
             <td class="text-left">{% translate 'Total' %}</td>
-
-            {% for num in months %}
-                {% with cell_value=total|get_item:num %}
-                    <td class="main__figure" data-cell="{{cell_value|cell_state}}">
-                        {{ cell_value|price|cellformat:"0,00" }}
-                    </td>
-                {% endwith %}
-            {% endfor %}
-
-            <td class="main__figure month-table__total">{{ total.total_col|price|cellformat:"0,00" }}</td>
+            {% include 'bookkeeping/detailed/figure_cells.html' with row=total months=months %}
         </tr>
     </tfoot>
 </table>
