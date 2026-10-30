@@ -56,7 +56,7 @@ class TableReceiptParser:
         for later in tables[header_index + 1 :]:
             if len(later[0]) == width:
                 rows.extend(later)
-        return rows
+        return [row for row in rows if not self._carries_columns(row)]
 
     def _receipt_lines(self, body: list[Row], at: ColumnIndexes) -> list[ReceiptLine]:
         lines: list[ReceiptLine] = []
