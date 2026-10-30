@@ -82,9 +82,17 @@ def test_table_receipt_parser_satisfies_shop_parser_protocol():
     assert not parser.recognises("Receipt from OTHER SHOP")
 
 
-def test_table_receipt_parser_reads_a_continuation_table(tmp_path):
+@pytest.mark.parametrize(
+    "second_header",
+    [
+        pytest.param((), id="rows_only"),
+        pytest.param((HEADER,), id="repeated_header"),
+    ],
+)
+def test_table_receipt_parser_reads_a_continuation_table(tmp_path, second_header):
     rows = [("1", "Apple", "2 vnt.", "€1,20")]
     second_table = [
+        *second_header,
         ("2", "Pear", "1 vnt.", "€0,80"),
         ("", "Grand total", "", "€2,00"),
     ]
