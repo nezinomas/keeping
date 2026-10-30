@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 
-{% load i18n %}
+{% load i18n static %}
 
 
 {% block head %}
     {% include 'highcharts.html' %}
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_index_balance.js' %}" defer></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_index_expenses.js' %}" defer></script>
 {% endblock head %}
 
 
@@ -71,11 +73,11 @@
 </script>
 
 
-<div id="chart-balance-data" hidden>
+<div id="chart-balance-source" hidden>
     <c-chart-balance-data :data=chart_balance />
 </div>
 
-<div id="chart-expenses-data" hidden>
+<div id="chart-expenses-source" hidden>
     <c-chart-expenses-data :data=chart_expenses />
 </div>
 

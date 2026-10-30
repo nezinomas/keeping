@@ -61,6 +61,7 @@ def row_cells(content, title):
 
 def script_json(content, script_id):
     found = re.search(rf'<script id="{script_id}"[^>]*>(.*?)</script>', content, re.S)
+    assert found, f"no <script id={script_id}>"
     return json.loads(found.group(1))
 
 

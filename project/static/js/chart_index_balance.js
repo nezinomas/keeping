@@ -1,7 +1,16 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', drawIndexBalance);
+
+// an out-of-band swap settles on its target, the data's wrapper
+htmx.on('htmx:after:settle', (event) => {
+    if (event.target.id === 'chart-balance-source') {
+        drawIndexBalance();
+    }
+});
+
+function drawIndexBalance() {
     const chartData = JSON.parse(document.getElementById("chart-balance-data").textContent);
     // convert data
-    for(i = 0; i < 12; i++) {
+    for(let i = 0; i < 12; i++) {
         chartData.incomes[i] /= 100
         chartData.expenses[i] /= 100
     }
@@ -61,4 +70,4 @@ document.addEventListener('DOMContentLoaded', () => {
             color: "var(--chart-negative-dark)"
         }]
     });
-});
+}
