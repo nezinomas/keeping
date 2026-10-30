@@ -6,7 +6,7 @@ from hypothesis import example, given
 from hypothesis import strategies as st
 
 from ...lib.balance_rows import SavingBalanceRows
-from .strategies import HAVE, TYPES, rows, worth
+from .strategies import HAVE, TYPES, owner, rows, worth
 
 
 def savings_table(incomes, expenses, have, types, moves=()):
@@ -14,6 +14,10 @@ def savings_table(incomes, expenses, have, types, moves=()):
         moves=moves, incomes=incomes, expenses=expenses, have=have, types=types
     )
     return SavingBalanceRows(sources).rows.collect().to_dicts()
+
+
+def of_owner_1(rows):
+    return [row for row in rows if row["category_id"] == 1]
 
 
 @pytest.fixture(name="incomes")
@@ -72,252 +76,13 @@ def fixture_have():
     ]
 
 
-def test_table(incomes, expenses, have, types):
-    incomes.extend(
-        [
-            {"year": 1998, "incomes": 15, "fee": 1, "category_id": 1},
-            {"year": 1997, "incomes": 5, "fee": 1, "category_id": 1},
-        ]
-    )
-    actual = savings_table(incomes, expenses, have, types)
-
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["year"] == 1997
-    assert actual[0]["past_amount"] == 0
-    assert actual[0]["past_fee"] == 0
-    assert actual[0]["fee"] == 1
-    assert actual[0]["per_year_incomes"] == 5
-    assert actual[0]["per_year_fee"] == 1
-    assert actual[0]["sold"] == 0
-    assert actual[0]["sold_fee"] == 0
-    assert actual[0]["incomes"] == 5
-    assert actual[0]["market_value"] == 0
-    assert actual[0]["profit_sum"] == -6
-    assert round(actual[0]["profit_proc"], 2) == 0
-    assert not actual[0]["latest_check"]
-
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["year"] == 1998
-    assert actual[1]["past_amount"] == 5
-    assert actual[1]["past_fee"] == 1
-    assert actual[1]["fee"] == 2
-    assert actual[1]["per_year_incomes"] == 15
-    assert actual[1]["per_year_fee"] == 1
-    assert actual[1]["sold"] == 0
-    assert actual[1]["sold_fee"] == 0
-    assert actual[1]["incomes"] == 20
-    assert actual[1]["market_value"] == 0
-    assert actual[1]["profit_sum"] == -22
-    assert round(actual[1]["profit_proc"], 2) == 0
-    assert not actual[1]["latest_check"]
-
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["year"] == 1999
-    assert actual[2]["past_amount"] == 20
-    assert actual[2]["past_fee"] == 2
-    assert actual[2]["fee"] == 4
-    assert actual[2]["per_year_incomes"] == 100
-    assert actual[2]["per_year_fee"] == 2
-    assert actual[2]["sold"] == 50
-    assert actual[2]["sold_fee"] == 6
-    assert actual[2]["incomes"] == 120
-    assert actual[2]["market_value"] == 75
-    assert actual[2]["profit_sum"] == 1
-    assert round(actual[2]["profit_proc"], 2) == 0.83
-    assert actual[2]["latest_check"] == datetime(1999, 1, 1)
-
-    assert actual[3]["category_id"] == 1
-    assert actual[3]["year"] == 2000
-    assert actual[3]["past_amount"] == 120
-    assert actual[3]["past_fee"] == 4
-    assert actual[3]["fee"] == 8
-    assert actual[3]["per_year_incomes"] == 200
-    assert actual[3]["per_year_fee"] == 4
-    assert actual[3]["sold"] == 150
-    assert actual[3]["sold_fee"] == 10
-    assert actual[3]["incomes"] == 320
-    assert actual[3]["market_value"] == 300
-    assert actual[3]["profit_sum"] == 122
-    assert round(actual[3]["profit_proc"], 2) == 38.12
-    assert actual[3]["latest_check"] == datetime(2000, 1, 2)
-
-    assert actual[4]["category_id"] == 1
-    assert actual[4]["year"] == 2001
-    assert actual[4]["past_amount"] == 320
-    assert actual[4]["past_fee"] == 8
-    assert actual[4]["fee"] == 8
-    assert actual[4]["per_year_incomes"] == 0
-    assert actual[4]["per_year_fee"] == 0
-    assert actual[4]["sold"] == 150
-    assert actual[4]["sold_fee"] == 10
-    assert actual[4]["incomes"] == 320
-    assert actual[4]["market_value"] == 300
-    assert actual[4]["profit_sum"] == 122
-    assert round(actual[4]["profit_proc"], 2) == 38.12
-    assert actual[4]["latest_check"] == datetime(2000, 1, 2)
-
-    assert actual[5]["category_id"] == 2
-    assert actual[5]["year"] == 1999
-    assert actual[5]["past_amount"] == 0
-    assert actual[5]["past_fee"] == 0
-    assert actual[5]["fee"] == 6
-    assert actual[5]["per_year_incomes"] == 110
-    assert actual[5]["per_year_fee"] == 6
-    assert actual[5]["sold"] == 0
-    assert actual[5]["sold_fee"] == 0
-    assert actual[5]["incomes"] == 110
-    assert actual[5]["market_value"] == 100
-    assert actual[5]["profit_sum"] == -16
-    assert round(actual[5]["profit_proc"], 2) == -14.55
-    assert actual[5]["latest_check"] == datetime(1999, 1, 3)
-
-    assert actual[6]["category_id"] == 2
-    assert actual[6]["year"] == 2000
-    assert actual[6]["past_amount"] == 110
-    assert actual[6]["past_fee"] == 6
-    assert actual[6]["fee"] == 14
-    assert actual[6]["per_year_incomes"] == 220
-    assert actual[6]["per_year_fee"] == 8
-    assert actual[6]["sold"] == 110
-    assert actual[6]["sold_fee"] == 2
-    assert actual[6]["incomes"] == 330
-    assert actual[6]["market_value"] == 250
-    assert actual[6]["profit_sum"] == 16
-    assert round(actual[6]["profit_proc"], 2) == 4.85
-    assert actual[6]["latest_check"] == datetime(2000, 1, 4)
-
-    assert actual[7]["category_id"] == 2
-    assert actual[7]["year"] == 2001
-    assert actual[7]["past_amount"] == 330
-    assert actual[7]["past_fee"] == 14
-    assert actual[7]["fee"] == 14
-    assert actual[7]["per_year_incomes"] == 0
-    assert actual[7]["per_year_fee"] == 0
-    assert actual[7]["sold"] == 110
-    assert actual[7]["sold_fee"] == 2
-    assert actual[7]["incomes"] == 330
-    assert actual[7]["market_value"] == 250
-    assert actual[7]["profit_sum"] == 16
-    assert round(actual[7]["profit_proc"], 2) == 4.85
-    assert actual[7]["latest_check"] == datetime(2000, 1, 4)
-
-
-def test_copy_market_value_and_latest_from_previous_year(types):
-    have = [
-        {
-            "category_id": 1,
-            "year": 1998,
-            "have": 33,
-            "latest_check": datetime(1998, 1, 1),
-        },
-    ]
-    incomes = [
-        {"year": 1998, "incomes": 10, "fee": 1, "category_id": 1},
-        {"year": 1999, "incomes": 20, "fee": 2, "category_id": 1},
-        {"year": 1998, "incomes": 50, "fee": 5, "category_id": 2},
-    ]
-    actual = savings_table(incomes, [], have, types)
-
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["year"] == 1998
-    assert actual[0]["incomes"] == 10
-    assert actual[0]["fee"] == 1
-    assert actual[0]["sold"] == 0
-    assert actual[0]["sold_fee"] == 0
-    assert actual[0]["market_value"] == 33
-    assert actual[0]["latest_check"] == datetime(1998, 1, 1, 0, 0)
-    assert actual[0]["past_amount"] == 0
-    assert actual[0]["past_fee"] == 0
-    assert actual[0]["per_year_incomes"] == 10
-    assert actual[0]["per_year_fee"] == 1
-    assert actual[0]["profit_sum"] == 22
-    assert round(actual[0]["profit_proc"], 2) == 220
-
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["year"] == 1999
-    assert actual[1]["incomes"] == 30
-    assert actual[1]["fee"] == 3
-    assert actual[1]["sold"] == 0
-    assert actual[1]["sold_fee"] == 0
-    assert actual[1]["market_value"] == 33
-    assert actual[1]["latest_check"] == datetime(1998, 1, 1, 0, 0)
-    assert actual[1]["past_amount"] == 10
-    assert actual[1]["past_fee"] == 1
-    assert actual[1]["per_year_incomes"] == 20
-    assert actual[1]["per_year_fee"] == 2
-    assert actual[1]["profit_sum"] == 0
-    assert round(actual[1]["profit_proc"], 2) == 0
-
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["year"] == 2000
-    assert actual[2]["incomes"] == 30
-    assert actual[2]["fee"] == 3
-    assert actual[2]["sold"] == 0
-    assert actual[2]["sold_fee"] == 0
-    assert actual[2]["market_value"] == 33
-    assert actual[2]["latest_check"] == datetime(1998, 1, 1, 0, 0)
-    assert actual[2]["past_amount"] == 30
-    assert actual[2]["past_fee"] == 3
-    assert actual[2]["per_year_incomes"] == 0
-    assert actual[2]["per_year_fee"] == 0
-    assert actual[2]["profit_sum"] == 0
-    assert round(actual[2]["profit_proc"], 2) == 0
-
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["year"] == 1998
-    assert actual[3]["incomes"] == 50
-    assert actual[3]["fee"] == 5
-    assert actual[3]["sold"] == 0
-    assert actual[3]["sold_fee"] == 0
-    assert actual[3]["market_value"] == 0
-    assert actual[3]["latest_check"] is None
-    assert actual[3]["past_amount"] == 0
-    assert actual[3]["past_fee"] == 0
-    assert actual[3]["per_year_incomes"] == 50
-    assert actual[3]["per_year_fee"] == 5
-    assert actual[3]["profit_sum"] == -55
-    assert round(actual[3]["profit_proc"], 0) == 0
-
-    assert actual[4]["category_id"] == 2
-    assert actual[4]["year"] == 1999
-    assert actual[4]["incomes"] == 50
-    assert actual[4]["fee"] == 5
-    assert actual[4]["sold"] == 0
-    assert actual[4]["sold_fee"] == 0
-    assert actual[4]["market_value"] == 0
-    assert actual[4]["latest_check"] is None
-    assert actual[4]["past_amount"] == 50
-    assert actual[4]["past_fee"] == 5
-    assert actual[4]["per_year_incomes"] == 0
-    assert actual[4]["per_year_fee"] == 0
-    assert actual[4]["profit_sum"] == -55
-    assert round(actual[4]["profit_proc"], 0) == 0
-
-    assert actual[5]["category_id"] == 2
-    assert actual[5]["year"] == 2000
-    assert actual[5]["incomes"] == 50
-    assert actual[5]["fee"] == 5
-    assert actual[5]["sold"] == 0
-    assert actual[5]["sold_fee"] == 0
-    assert actual[5]["market_value"] == 0
-    assert actual[5]["latest_check"] is None
-    assert actual[5]["past_amount"] == 50
-    assert actual[5]["past_fee"] == 5
-    assert actual[5]["per_year_incomes"] == 0
-    assert actual[5]["per_year_fee"] == 0
-    assert actual[5]["profit_sum"] == -55
-    assert round(actual[5]["profit_proc"], 0) == 0
-
-
 @pytest.mark.parametrize(
     "extra_types, extra_incomes, extra_rows",
     [
         pytest.param([], [], {}, id="types"),
+        pytest.param([owner(666)], [], {}, id="type_without_records"),
         pytest.param(
-            [SimpleNamespace(pk=666, closed=None)], [], {}, id="type_without_records"
-        ),
-        pytest.param(
-            [SimpleNamespace(pk=666, closed=1999)],
+            [owner(666, closed=1999)],
             [{"year": 1974, "incomes": 10, "fee": 1, "category_id": 666}],
             {
                 666: [
@@ -329,7 +94,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         ),
     ],
 )
-def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
+def test_table_rows_of_each_type(extra_types, extra_incomes, extra_rows):
     incomes = [
         {"year": 1998, "incomes": 10, "fee": 1, "category_id": 1},
         {"year": 1998, "incomes": 20, "fee": 2, "category_id": 2},
@@ -346,7 +111,7 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
         "per_year_fee",
     )
     actual = {}
-    for row in savings_table(incomes, [], [], [*types, *extra_types]):
+    for row in savings_table(incomes, [], [], [*TYPES, *extra_types]):
         actual.setdefault(row["category_id"], []).append(
             tuple(row[column] for column in columns)
         )
@@ -370,7 +135,7 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
     "given_inputs, expected",
     [
         pytest.param(
-            ("incomes", "expenses"),
+            ("incomes", "expenses", "have"),
             {
                 "category_id": [1, 1, 1],
                 "year": [1999, 2000, 2001],
@@ -382,12 +147,16 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
                 "sold": [50, 150, 150],
                 "sold_fee": [6, 10, 10],
                 "incomes": [100, 300, 300],
-                "market_value": [0, 0, 0],
-                "profit_sum": [-52, -156, -156],
-                "profit_proc": [-52, -52, -52],
-                "latest_check": [None] * 3,
+                "market_value": [75, 300, 300],
+                "profit_sum": [23, 144, 144],
+                "profit_proc": [23, 48, 48],
+                "latest_check": [
+                    datetime(1999, 1, 1),
+                    datetime(2000, 1, 2),
+                    datetime(2000, 1, 2),
+                ],
             },
-            id="incomes_and_expenses",
+            id="incomes_expenses_and_have",
         ),
         pytest.param(
             ("expenses",),
@@ -456,14 +225,12 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
         pytest.param((), {"category_id": [], "year": []}, id="nothing"),
     ],
 )
-def test_table_from_the_inputs_given(
-    incomes, expenses, have, types, given_inputs, expected
-):
-    inputs = {"incomes": incomes[:4], "expenses": expenses[:4], "have": have[:2]}
+def test_table_from_the_inputs_given(incomes, expenses, have, given_inputs, expected):
+    inputs = {"incomes": incomes, "expenses": expenses, "have": have}
     actual = savings_table(
-        types=types,
+        types=TYPES,
         **{
-            name: given if name in given_inputs else []
+            name: of_owner_1(given) if name in given_inputs else []
             for name, given in inputs.items()
         },
     )
@@ -475,19 +242,34 @@ def test_table_from_the_inputs_given(
     "expenses, worth_in_close_year, expected",
     [
         pytest.param(
-            [{"year": 2000, "expenses": 600, "fee": 20, "category_id": 1}],
+            [{"year": 2000, "expenses": 1, "fee": 20, "category_id": 1}],
             500,
             {
                 "year": [1999, 2000],
                 "market_value": [1200, 0],
-                "sold": [0, 600],
+                "sold": [0, 1],
                 "sold_fee": [0, 20],
                 "incomes": [1000, 1000],
                 "fee": [10, 10],
-                "profit_sum": [190, -410],
-                "profit_proc": [19, -41],
+                "profit_sum": [190, -1009],
+                "profit_proc": [19, -100.9],
             },
             id="a_sell_reads_no_worth",
+        ),
+        pytest.param(
+            [{"year": 1999, "expenses": 600, "fee": 20, "category_id": 1}],
+            500,
+            {
+                "year": [1999, 2000],
+                "market_value": [1200, 0],
+                "sold": [600, 600],
+                "sold_fee": [20, 20],
+                "incomes": [1000, 1000],
+                "fee": [10, 10],
+                "profit_sum": [790, -410],
+                "profit_proc": [79, -41],
+            },
+            id="a_sell_the_year_before_reads_no_worth",
         ),
         pytest.param(
             [],
@@ -507,7 +289,6 @@ def test_table_from_the_inputs_given(
     ],
 )
 def test_table_close_year(expenses, worth_in_close_year, expected):
-    types = [SimpleNamespace(pk=1, closed=2000)]
     incomes = [{"year": 1999, "incomes": 1000, "fee": 10, "category_id": 1}]
     have = [
         {"category_id": 1, "year": 1999, "have": 1200, "latest_check": None},
@@ -518,7 +299,7 @@ def test_table_close_year(expenses, worth_in_close_year, expected):
             "latest_check": None,
         },
     ]
-    actual = savings_table(incomes, expenses, have, types)
+    actual = savings_table(incomes, expenses, have, [owner(1, closed=2000)])
 
     assert {column: [row[column] for row in actual] for column in expected} == expected
 

@@ -6,7 +6,13 @@ from hypothesis import strategies as st
 CATEGORY = st.integers(1, 3)
 YEAR = st.integers(1995, 1999)
 AMOUNT = st.integers(0, 10**6)
-TYPES = tuple(SimpleNamespace(pk=pk, closed=None) for pk in (1, 2, 3))
+
+
+def owner(pk, closed=None):
+    return SimpleNamespace(pk=pk, closed=closed)
+
+
+TYPES = tuple(owner(pk) for pk in (1, 2, 3))
 
 
 def rows(column, **extra):
