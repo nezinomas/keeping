@@ -9,16 +9,15 @@ KEYS = ["category_id", "year"]
 
 class BalanceSources:
     def __init__(self, user: User, conf: dict):
-        self.incomes = list(self._get_data(user, conf.get("incomes", ())))
-        self.expenses = list(self._get_data(user, conf.get("expenses", ())))
-        self.moves = list(self._get_data(user, conf.get("moves", ())))
-        self.have = list(self._get_data(user, conf.get("have", ())))
-        self.types = list(self._get_data(user, conf.get("types", ())))
+        self.incomes = self._read(user, conf, "incomes")
+        self.expenses = self._read(user, conf, "expenses")
+        self.moves = self._read(user, conf, "moves")
+        self.have = self._read(user, conf, "have")
+        self.types = self._read(user, conf, "types")
 
     @staticmethod
-    def _get_data(user: User, sources: tuple):
-        for source_callable in sources:
-            yield from source_callable(user)
+    def _read(user: User, conf: dict, key: str) -> list:
+        return [row for source in conf.get(key, ()) for row in source(user)]
 
 
 class BalanceRows(ABC):
@@ -102,23 +101,33 @@ class BalanceRows(ABC):
         )
 
     def _create_year_grid(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        years_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
+        return (
+            self._owner_years(df)
+            .join(df, on=KEYS, how="left")
+            .pipe(self._drop_closed_years)
+            .select(df.collect_schema().names())
+            .sort(KEYS)
+        )
 
+    def _owner_years(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        return (
+            df.group_by("category_id")
+            .agg(min_year=pl.col("year").min())
+            .join(self._journal_years(df), how="cross")
+            .filter(pl.col("year") >= pl.col("min_year"))
+            .select(KEYS)
+        )
+
+    @staticmethod
+    def _journal_years(df: pl.LazyFrame) -> pl.LazyFrame:
         first_year, last_year = (
             df.select(first=pl.col("year").min(), last=pl.col("year").max())
             .collect()
             .row(0)
         )
+        return pl.LazyFrame({"year": range(first_year, last_year + 2)})
 
-        years_df = pl.LazyFrame({"year": range(first_year, last_year + 2)})
-
-        return (
-            years_ranges.join(years_df, how="cross")
-            .filter(pl.col("year") >= pl.col("min_year"))
-            .select(KEYS)
-            .join(df, on=KEYS, how="left")
-            .join(self._closed_years, on="category_id", how="inner")
-            .filter(pl.col("closed").is_null() | (pl.col("year") <= pl.col("closed")))
-            .select(df.collect_schema().names())
-            .sort(KEYS)
+    def _drop_closed_years(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        return df.join(self._closed_years, on="category_id", how="inner").filter(
+            pl.col("closed").is_null() | (pl.col("year") <= pl.col("closed"))
         )
