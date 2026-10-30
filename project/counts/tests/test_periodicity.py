@@ -104,28 +104,22 @@ def test_periodicity_weekdays_are_monday_first_and_lithuanian(client_logged):
     assert len(set(categories)) == 7
 
 
-def test_periodicity_months_are_twelve(client_logged):
-    CountFactory()
-
-    assert len(_context(client_logged)["chart_months"]["categories"]) == 12
-
-
-def test_periodicity_months_are_the_full_month_names(client_logged):
+def test_periodicity_months_are_the_month_tables_abbreviations(client_logged):
     CountFactory()
 
     assert _context(client_logged)["chart_months"]["categories"] == [
-        "Sausis",
-        "Vasaris",
-        "Kovas",
-        "Balandis",
-        "Gegužė",
-        "Birželis",
-        "Liepa",
-        "Rugpjūtis",
-        "Rugsėjis",
-        "Spalis",
-        "Lapkritis",
-        "Gruodis",
+        "Saus.",
+        "Vas.",
+        "Kov.",
+        "Bal.",
+        "Geg.",
+        "Birž.",
+        "Liep.",
+        "Rugp.",
+        "Rugs.",
+        "Spal.",
+        "Lapkr.",
+        "Gruod.",
     ]
 
 

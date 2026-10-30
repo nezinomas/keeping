@@ -1,5 +1,5 @@
 // `chart_paper.js` supplies the ground, the faces, the axes and the gridlines.
-function chartPeriodicity(idData, idContainer) {
+function chartPeriodicity(idData, idContainer, marginBottom) {
     const chartData = JSON.parse(
         document.getElementById(idData).textContent
     );
@@ -12,6 +12,7 @@ function chartPeriodicity(idData, idContainer) {
     Highcharts.chart(idContainer, {
         chart: {
             type: "column",
+            marginBottom: marginBottom,
         },
         legend: {
             enabled: false,
