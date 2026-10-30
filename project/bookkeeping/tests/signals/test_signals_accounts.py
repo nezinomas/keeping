@@ -6,7 +6,14 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from ...lib.balance_rows import AccountBalanceRows
-from .strategies import HAVE, TYPES, rows, worth
+from .strategies import HAVE, TYPES, owner, rows, worth
+
+
+def accounts_table(incomes, expenses, have, types):
+    sources = SimpleNamespace(
+        incomes=incomes, expenses=expenses, have=have, types=types
+    )
+    return AccountBalanceRows(sources).rows.collect().to_dicts()
 
 
 @pytest.fixture(name="incomes")
@@ -65,216 +72,28 @@ def fixture_have():
     ]
 
 
-def test_table(incomes, expenses, have, types):
-    incomes.extend(
-        [
-            {"year": 1997, "incomes": 5, "category_id": 1},
-            {"year": 1998, "incomes": 15, "category_id": 1},
-        ]
-    )
-    sources = SimpleNamespace(
-        incomes=incomes, expenses=expenses, have=have, types=types
-    )
-    actual = AccountBalanceRows(sources).rows.collect().to_dicts()
-
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["year"] == 1997
-    assert actual[0]["past"] == 0
-    assert actual[0]["incomes"] == 5
-    assert actual[0]["expenses"] == 0
-    assert actual[0]["balance"] == 5
-    assert actual[0]["have"] == 0
-    assert actual[0]["delta"] == -5
-    assert not actual[0]["latest_check"]
-
-    assert actual[1]["category_id"] == 1
-    assert actual[1]["year"] == 1998
-    assert actual[1]["past"] == 5
-    assert actual[1]["incomes"] == 15
-    assert actual[1]["expenses"] == 0
-    assert actual[1]["balance"] == 20
-    assert actual[1]["have"] == 0
-    assert actual[1]["delta"] == -20
-    assert not actual[1]["latest_check"]
-
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["year"] == 1999
-    assert actual[2]["past"] == 20
-    assert actual[2]["incomes"] == 100
-    assert actual[2]["expenses"] == 50
-    assert actual[2]["balance"] == 70
-    assert actual[2]["have"] == 10
-    assert actual[2]["delta"] == -60
-    assert actual[2]["latest_check"] == datetime(1999, 1, 1, 3, 2, 1)
-
-    assert actual[3]["category_id"] == 1
-    assert actual[3]["year"] == 2000
-    assert actual[3]["past"] == 70
-    assert actual[3]["incomes"] == 200
-    assert actual[3]["expenses"] == 100
-    assert actual[3]["balance"] == 170
-    assert actual[3]["have"] == 15
-    assert actual[3]["delta"] == -155
-    assert actual[3]["latest_check"] == datetime(2000, 1, 4, 3, 2, 1)
-
-    assert actual[4]["category_id"] == 1
-    assert actual[4]["year"] == 2001
-    assert actual[4]["past"] == 170
-    assert actual[4]["incomes"] == 0
-    assert actual[4]["expenses"] == 0
-    assert actual[4]["balance"] == 170
-    assert actual[4]["have"] == 15
-    assert actual[4]["delta"] == -155
-    assert actual[4]["latest_check"] == datetime(2000, 1, 4, 3, 2, 1)
-
-    assert actual[5]["category_id"] == 2
-    assert actual[5]["year"] == 1999
-    assert actual[5]["past"] == 0
-    assert actual[5]["incomes"] == 110
-    assert actual[5]["expenses"] == 0
-    assert actual[5]["balance"] == 110
-    assert actual[5]["have"] == 20
-    assert actual[5]["delta"] == -90
-    assert actual[5]["latest_check"] == datetime(1999, 1, 2, 3, 2, 1)
-
-    assert actual[6]["category_id"] == 2
-    assert actual[6]["year"] == 2000
-    assert actual[6]["past"] == 110
-    assert actual[6]["incomes"] == 220
-    assert actual[6]["expenses"] == 110
-    assert actual[6]["balance"] == 220
-    assert actual[6]["have"] == 25
-    assert actual[6]["delta"] == -195
-    assert actual[6]["latest_check"] == datetime(2000, 1, 6, 3, 2, 1)
-
-    assert actual[7]["category_id"] == 2
-    assert actual[7]["year"] == 2001
-    assert actual[7]["past"] == 220
-    assert actual[7]["incomes"] == 0
-    assert actual[7]["expenses"] == 0
-    assert actual[7]["balance"] == 220
-    assert actual[7]["have"] == 25
-    assert actual[7]["delta"] == -195
-    assert actual[7]["latest_check"] == datetime(2000, 1, 6, 3, 2, 1)
-
-
-def test_copy_have_and_latest_from_previous_year(types):
-    have = [
-        {
-            "category_id": 1,
-            "year": 1998,
-            "have": 10,
-            "latest_check": datetime(1998, 1, 1, 3, 2, 1),
-        },
-    ]
-    incomes = [
-        {"year": 1998, "incomes": 1, "category_id": 1},
-        {"year": 1999, "incomes": 2, "category_id": 1},
-        {"year": 1998, "incomes": 2, "category_id": 2},
-    ]
-    sources = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
-    actual = AccountBalanceRows(sources).rows.collect().to_dicts()
-
-    assert actual[0] == {
-        "category_id": 1,
-        "year": 1998,
-        "incomes": 1,
-        "expenses": 0,
-        "have": 10,
-        "latest_check": datetime(1998, 1, 1, 3, 2, 1),
-        "balance": 1,
-        "past": 0,
-        "delta": 9,
-    }
-
-    assert actual[1] == {
-        "category_id": 1,
-        "year": 1999,
-        "incomes": 2,
-        "expenses": 0,
-        "have": 10,
-        "latest_check": datetime(1998, 1, 1, 3, 2, 1),
-        "balance": 3,
-        "past": 1,
-        "delta": 7,
-    }
-
-    assert actual[2] == {
-        "category_id": 1,
-        "year": 2000,
-        "incomes": 0,
-        "expenses": 0,
-        "have": 10,
-        "latest_check": datetime(1998, 1, 1, 3, 2, 1),
-        "balance": 3,
-        "past": 3,
-        "delta": 7,
-    }
-
-    assert actual[3] == {
-        "category_id": 2,
-        "year": 1998,
-        "incomes": 2,
-        "expenses": 0,
-        "have": 0,
-        "latest_check": None,
-        "balance": 2,
-        "past": 0,
-        "delta": -2,
-    }
-
-    assert actual[4] == {
-        "category_id": 2,
-        "year": 1999,
-        "incomes": 0,
-        "expenses": 0,
-        "have": 0,
-        "latest_check": None,
-        "balance": 2,
-        "past": 2,
-        "delta": -2,
-    }
-
-    assert actual[5] == {
-        "category_id": 2,
-        "year": 2000,
-        "incomes": 0,
-        "expenses": 0,
-        "have": 0,
-        "latest_check": None,
-        "balance": 2,
-        "past": 2,
-        "delta": -2,
-    }
-
-
 @pytest.mark.parametrize(
     "extra_types, extra_incomes, extra_rows",
     [
         pytest.param([], [], {}, id="types"),
+        pytest.param([owner(666)], [], {}, id="type_without_records"),
         pytest.param(
-            [SimpleNamespace(pk=666, closed=None)], [], {}, id="type_without_records"
-        ),
-        pytest.param(
-            [SimpleNamespace(pk=666, closed=None)],
+            [owner(666)],
             [{"year": 1974, "incomes": 1, "category_id": 666}],
             {666: [(1974, 1, 0), *[(year, 0, 1) for year in range(1975, 2001)]]},
             id="old_type",
         ),
     ],
 )
-def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
+def test_table_rows_of_each_type(extra_types, extra_incomes, extra_rows):
     incomes = [
         {"year": 1998, "incomes": 1, "category_id": 1},
         {"year": 1998, "incomes": 2, "category_id": 2},
         {"year": 1999, "incomes": 3, "category_id": 1},
         *extra_incomes,
     ]
-    sources = SimpleNamespace(
-        incomes=incomes, expenses=[], have=[], types=[*types, *extra_types]
-    )
     actual = {}
-    for row in AccountBalanceRows(sources).rows.collect().to_dicts():
+    for row in accounts_table(incomes, [], [], [*TYPES, *extra_types]):
         actual.setdefault(row["category_id"], []).append(
             (row["year"], row["incomes"], row["past"])
         )
@@ -290,7 +109,7 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
     "given_inputs, expected",
     [
         pytest.param(
-            ("incomes", "expenses"),
+            ("incomes", "expenses", "have"),
             {
                 "category_id": [1, 1, 1, 2, 2, 2],
                 "year": [1999, 2000, 2001, 1999, 2000, 2001],
@@ -298,11 +117,18 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
                 "incomes": [100, 200, 0, 110, 220, 0],
                 "expenses": [50, 100, 0, 0, 110, 0],
                 "balance": [50, 150, 150, 110, 220, 220],
-                "have": [0, 0, 0, 0, 0, 0],
-                "delta": [-50, -150, -150, -110, -220, -220],
-                "latest_check": [None] * 6,
+                "have": [10, 15, 15, 20, 25, 25],
+                "delta": [-40, -135, -135, -90, -195, -195],
+                "latest_check": [
+                    datetime(1999, 1, 1, 3, 2, 1),
+                    datetime(2000, 1, 4, 3, 2, 1),
+                    datetime(2000, 1, 4, 3, 2, 1),
+                    datetime(1999, 1, 2, 3, 2, 1),
+                    datetime(2000, 1, 6, 3, 2, 1),
+                    datetime(2000, 1, 6, 3, 2, 1),
+                ],
             },
-            id="incomes_and_expenses",
+            id="incomes_expenses_and_have",
         ),
         pytest.param(
             ("expenses",),
@@ -359,20 +185,17 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
         pytest.param((), {"category_id": [], "year": []}, id="nothing"),
     ],
 )
-def test_table_from_the_inputs_given(
-    incomes, expenses, have, types, given_inputs, expected
-):
+def test_table_from_the_inputs_given(incomes, expenses, have, given_inputs, expected):
     inputs = {"incomes": incomes, "expenses": expenses, "have": have}
-    sources = SimpleNamespace(
-        types=types,
+    actual = accounts_table(
+        types=TYPES,
         **{
             name: given if name in given_inputs else []
             for name, given in inputs.items()
         },
     )
-    actual = AccountBalanceRows(sources).rows.collect()
 
-    assert {column: actual[column].to_list() for column in expected} == expected
+    assert {column: [row[column] for row in actual] for column in expected} == expected
 
 
 @given(
@@ -381,10 +204,7 @@ def test_table_from_the_inputs_given(
     HAVE,
 )
 def test_table_year_balance_follows_the_year_before(incomes, expenses, have):
-    sources = SimpleNamespace(
-        incomes=incomes, expenses=expenses, have=have, types=TYPES
-    )
-    actual = AccountBalanceRows(sources).rows.collect().to_dicts()
+    actual = accounts_table(incomes, expenses, have, TYPES)
     previous = {}
 
     def total(source, column, row):
