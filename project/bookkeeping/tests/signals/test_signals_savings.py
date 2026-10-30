@@ -9,6 +9,13 @@ from ...lib.balance_rows import SavingBalanceRows
 from .strategies import HAVE, TYPES, rows, worth
 
 
+def savings_table(incomes, expenses, have, types, moves=()):
+    sources = SimpleNamespace(
+        moves=moves, incomes=incomes, expenses=expenses, have=have, types=types
+    )
+    return SavingBalanceRows(sources).rows.collect().to_dicts()
+
+
 @pytest.fixture(name="incomes")
 def fixture_incomes():
     return [
@@ -72,10 +79,7 @@ def test_table(incomes, expenses, have, types):
             {"year": 1997, "incomes": 5, "fee": 1, "category_id": 1},
         ]
     )
-    sources = SimpleNamespace(
-        moves=[], incomes=incomes, expenses=expenses, have=have, types=types
-    )
-    actual = SavingBalanceRows(sources).rows.collect().to_dicts()
+    actual = savings_table(incomes, expenses, have, types)
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1997
@@ -212,10 +216,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         {"year": 1999, "incomes": 20, "fee": 2, "category_id": 1},
         {"year": 1998, "incomes": 50, "fee": 5, "category_id": 2},
     ]
-    sources = SimpleNamespace(
-        moves=[], incomes=incomes, expenses=[], have=have, types=types
-    )
-    actual = SavingBalanceRows(sources).rows.collect().to_dicts()
+    actual = savings_table(incomes, [], have, types)
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1998
@@ -335,9 +336,6 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
         {"year": 1999, "incomes": 30, "fee": 3, "category_id": 1},
         *extra_incomes,
     ]
-    sources = SimpleNamespace(
-        moves=[], incomes=incomes, expenses=[], have=[], types=[*types, *extra_types]
-    )
     columns = (
         "year",
         "incomes",
@@ -348,7 +346,7 @@ def test_table_rows_of_each_type(types, extra_types, extra_incomes, extra_rows):
         "per_year_fee",
     )
     actual = {}
-    for row in SavingBalanceRows(sources).rows.collect().to_dicts():
+    for row in savings_table(incomes, [], [], [*types, *extra_types]):
         actual.setdefault(row["category_id"], []).append(
             tuple(row[column] for column in columns)
         )
@@ -462,17 +460,15 @@ def test_table_from_the_inputs_given(
     incomes, expenses, have, types, given_inputs, expected
 ):
     inputs = {"incomes": incomes[:4], "expenses": expenses[:4], "have": have[:2]}
-    sources = SimpleNamespace(
-        moves=[],
+    actual = savings_table(
         types=types,
         **{
             name: given if name in given_inputs else []
             for name, given in inputs.items()
         },
     )
-    actual = SavingBalanceRows(sources).rows.collect()
 
-    assert {column: actual[column].to_list() for column in expected} == expected
+    assert {column: [row[column] for row in actual] for column in expected} == expected
 
 
 @pytest.mark.parametrize(
@@ -522,12 +518,9 @@ def test_table_close_year(expenses, worth_in_close_year, expected):
             "latest_check": None,
         },
     ]
-    sources = SimpleNamespace(
-        moves=[], incomes=incomes, expenses=expenses, have=have, types=types
-    )
-    actual = SavingBalanceRows(sources).rows.collect()
+    actual = savings_table(incomes, expenses, have, types)
 
-    assert {column: actual[column].to_list() for column in expected} == expected
+    assert {column: [row[column] for row in actual] for column in expected} == expected
 
 
 ORDER_INCOMES = [
@@ -548,14 +541,7 @@ ORDER_MOVES = [
     {"category_id": 2, "date": datetime(1999, 6, 1).date(), "price": 3},
     {"category_id": 3, "date": datetime(2002, 6, 1).date(), "price": 4},
 ]
-ORDER_INPUT = (ORDER_INCOMES, ORDER_EXPENSES, ORDER_HAVE, ORDER_MOVES, TYPES)
-
-
-def savings_table(incomes, expenses, have, moves, types):
-    sources = SimpleNamespace(
-        moves=moves, incomes=incomes, expenses=expenses, have=have, types=types
-    )
-    return SavingBalanceRows(sources).rows.collect().to_dicts()
+ORDER_INPUT = (ORDER_INCOMES, ORDER_EXPENSES, ORDER_HAVE, TYPES, ORDER_MOVES)
 
 
 @pytest.fixture(name="order_table", scope="module")
@@ -566,9 +552,9 @@ def fixture_order_table():
 @given(*(st.permutations(x) for x in ORDER_INPUT))
 @example(*(x[::-1] for x in ORDER_INPUT))
 def test_table_does_not_depend_on_the_input_row_order(
-    order_table, incomes, expenses, have, moves, types
+    order_table, incomes, expenses, have, types, moves
 ):
-    actual = savings_table(incomes, expenses, have, moves, types)
+    actual = savings_table(incomes, expenses, have, types, moves)
 
     assert actual == order_table
 
@@ -579,10 +565,7 @@ def test_table_does_not_depend_on_the_input_row_order(
     HAVE,
 )
 def test_table_profit_is_worth_plus_sold_minus_incomes_and_fee(incomes, expenses, have):
-    sources = SimpleNamespace(
-        moves=[], incomes=incomes, expenses=expenses, have=have, types=TYPES
-    )
-    actual = SavingBalanceRows(sources).rows.collect().to_dicts()
+    actual = savings_table(incomes, expenses, have, TYPES)
 
     def until(source, column, row):
         return sum(
