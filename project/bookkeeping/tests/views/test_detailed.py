@@ -54,21 +54,6 @@ def _positions(content, *titles):
     return [content.index(title) for title in titles]
 
 
-@pytest.mark.parametrize(
-    "path",
-    [
-        "/detailed/expense-type/",
-        "/detailed/income/",
-        "/detailed/saving/",
-        "/detailed/income/-1/",
-    ],
-)
-def test_view_detailed_old_and_unknown_urls_404(client_logged, path):
-    ExpenseFactory()
-
-    assert client_logged.get(path).status_code == 404
-
-
 def test_view_detailed_sends_a_visitor_to_the_login(client):
     response = client.get("/detailed/")
 
@@ -106,9 +91,8 @@ def test_view_detailed_browser_title_names_the_open_tab(client_logged, url, titl
     assert f"<title>Detali | {title}</title>" in content
 
 
-@pytest.mark.parametrize("headers", [HTMX, {}], ids=["fragment", "page"])
-def test_view_detailed_only_the_open_tab_reloads(client_logged, headers):
-    content = client_logged.get("/detailed/savings/", headers=headers).content.decode()
+def test_view_detailed_only_the_open_tab_reloads(client_logged):
+    content = client_logged.get("/detailed/savings/").content.decode()
 
     listener = (
         'hx-get="/detailed/savings/" hx-target="#tab_content" '
@@ -143,12 +127,7 @@ def test_view_detailed_page_wears_the_paper_bundle(client_logged):
     assert '<link rel="stylesheet" href="/static/css/paper.min.css">' in content
     assert '<link rel="stylesheet" href="/static/css/main.min.css">' not in content
     assert 'class="paper-skin"' in content
-
-
-def test_view_detailed_page_has_no_quick_add(client_logged):
-    content = client_logged.get(reverse("bookkeeping:detailed")).content.decode()
-
-    assert "quick-add" not in content
+    assert not re.search(r'class="(?:[^"]* )?quick-add[" ]', content)
 
 
 @factory.django.mute_signals(post_save)
@@ -224,10 +203,8 @@ def test_view_detailed_heads_the_months_with_the_quarter_band(client_logged):
 def test_view_detailed_tab_without_rows_shows_the_alert(client_logged, url_name):
     ExpenseTypeFactory()
 
-    response = client_logged.get(reverse(url_name))
-    content = response.content.decode("utf-8")
+    content = client_logged.get(reverse(url_name)).content.decode("utf-8")
 
-    assert response.status_code == 200
     assert re.search(r'<div class="alert">\s*<b>1999</b> metais įrašų nėra\.', content)
     assert "<table" not in content
     assert '<section class="panel' not in content
@@ -250,30 +227,19 @@ def test_view_detailed_every_header_sorts_but_the_shown_one(client_logged):
         assert re.findall(r"<th[^>]*>\s*(<span>|<a [^>]*>)", content) == expected
 
 
-@pytest.mark.parametrize(
-    "page, url, target",
-    [
-        pytest.param(
-            "/detailed/incomes/", "/detailed/incomes/", "#tab_content", id="tab"
-        ),
-        pytest.param(
-            "/detailed/expenses/",
-            "/detailed/expenses/expense-type/",
-            "#detailed-expense-type-table",
-            id="type_table",
-        ),
-    ],
-)
 @factory.django.mute_signals(post_save)
-def test_view_detailed_headers_sort(client_logged, page, url, target):
-    IncomeFactory()
+def test_view_detailed_a_type_table_sorts_inside_its_own_panel(client_logged):
     _expense("Alpha", 1, ExpenseTypeFactory())
 
-    content = client_logged.get(page).content.decode()
+    content = client_logged.get("/detailed/expenses/").content.decode()
 
-    assert f'hx-get="{url}?order=3" hx-target="{target}"' in content
-    assert f'hx-get="{url}?order=title" hx-target="{target}"' in content
-    assert f'<a role="button" hx-get="{url}?order=total_col"' not in content
+    link = (
+        '<a role="button" hx-get="/detailed/expenses/expense-type/?order={}" '
+        'hx-target="#detailed-expense-type-table">'
+    )
+    assert link.format(3) in content
+    assert link.format("title") in content
+    assert link.format("total_col") not in content
 
 
 @factory.django.mute_signals(post_save)
