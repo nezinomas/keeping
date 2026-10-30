@@ -59,3 +59,13 @@ def test_barbora_two_pages_continues_the_product_table_onto_the_second_page():
     assert line.title == "Konservuoti kukurūzai WELL DONE, 150 g"
     assert line.amount == 3
     assert line.price == 207
+
+
+def test_barbora_watermark_stays_out_of_the_titles():
+    receipt = ReceiptReader.read(FIXTURES / "barbora_watermark.pdf")
+
+    titles = [line.title for line in receipt.lines]
+
+    assert "Saldainiai PERGALĖ RAUDONOJI AGUONA, 1 kg" in titles
+    assert "Tunai SUN&SEA savo sultyse, 240 g" in titles
+    assert "Žaliosios cukinijos, 1 kg" in titles
