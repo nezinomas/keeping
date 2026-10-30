@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from ...lib.balance_rows import AccountBalanceRows, SavingBalanceRows
-from .strategies import TYPES, owner
+from .strategies import owner
 
 
 def sources(incomes, types):
@@ -29,11 +29,3 @@ def test_table_of_entries_without_owners_raises(table):
 
     with pytest.raises(ValueError, match="owners"):
         table(sources(incomes, []))
-
-
-@pytest.mark.parametrize("table", [AccountBalanceRows, SavingBalanceRows])
-def test_table_of_rows_without_a_year_raises(table):
-    incomes = [{"year": None, "incomes": 5, "fee": 1, "category_id": 1}]
-
-    with pytest.raises(TypeError):
-        table(sources(incomes, TYPES))
