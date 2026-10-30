@@ -160,6 +160,20 @@ def test_view_detailed_table_has_a_title_column_and_a_total_column_and_row(
 
 
 @factory.django.mute_signals(post_save)
+def test_view_detailed_total_row_sums_its_rows(client_logged):
+    IncomeFactory(price=110, income_type=IncomeTypeFactory(title="Aaa"))
+    IncomeFactory(price=225, income_type=IncomeTypeFactory(title="Bbb"))
+
+    content = client_logged.get("/detailed/incomes/").content.decode()
+
+    total_row = re.search(r"<tfoot>(.*?)</tfoot>", content, re.S).group(1)
+    figures = re.findall(
+        r'<td class="main__figure[^"]*"[^>]*>\s*(\S+)\s*</td>', total_row
+    )
+    assert (figures[0], figures[-1]) == ("3,35", "3,35")
+
+
+@factory.django.mute_signals(post_save)
 def test_view_detailed_one_income_leaves_its_other_months_empty(client_logged):
     IncomeFactory()
 
