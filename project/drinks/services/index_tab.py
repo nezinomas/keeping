@@ -5,11 +5,12 @@ from django.template.defaultfilters import floatformat
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from ...core.lib import stat_card
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays
 from ...core.lib.day_stats import NoPastRecord, PastRecord
 from ...core.lib.stat_card import (
+    HIGH,
+    LOW,
     Card,
     ComparisonStatCard,
     EmptyStatCard,
@@ -19,6 +20,7 @@ from ...core.lib.stat_card import (
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
 from ..lib.chart_view_model import ChartViewModel
+from ..lib.daily_limit import DailyLimit, NoDailyLimit
 from ..lib.drink_types import DrinkType
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DrinkConverter
@@ -38,20 +40,6 @@ class QuantityChartViewModel(ChartViewModel):
     categories: list[str]
     data: list[float]
     text: dict[str, str]
-
-
-@dataclass(frozen=True)
-class DailyLimit:
-    amount: float
-    is_set: bool = True
-
-
-@dataclass(frozen=True)
-class NoDailyLimit:
-    """No Drink Target: the chart draws no limit line and no harm zone."""
-
-    amount: float = 0.0
-    is_set: bool = False
 
 
 @dataclass(frozen=True)
@@ -96,11 +84,6 @@ class IndexTab:
     @classmethod
     def build(cls, user, year: int, today: dt_date) -> dict:
         records = ConsumptionYear(user, year, today)
-        target = records.target
-        limit = NoDailyLimit()
-        if target.qty:
-            limit = DailyLimit(target.qty)
-
         boundary = YearBoundary(year, today)
 
         builder = IndexBuilder(
@@ -120,8 +103,8 @@ class IndexTab:
                 year=year,
                 today=boundary.today,
             ),
-            limit=limit,
-            target_id=target.target_id,
+            limit=records.limit,
+            target_id=records.target.target_id,
             latest=records.latest,
             today=boundary.today,
         )
@@ -306,7 +289,7 @@ class IndexBuilder:
         if self._limit.is_set:
             return LevelStatCard(
                 title,
-                state=stat_card.LOW if self._is_under_limit(avg) else stat_card.HIGH,
+                state=LOW if self._is_under_limit(avg) else HIGH,
                 show_icon=comparison.has_past,
                 improving=comparison.improving,
                 **figure,

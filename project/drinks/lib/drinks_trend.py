@@ -5,6 +5,7 @@ from functools import cached_property
 
 from ...core.lib.date import ydays
 from ...core.lib.year_boundary import YearBoundary
+from .daily_limit import DailyLimit, NoDailyLimit
 from .drinks_options import DrinkConverter
 from .drinks_stats import DataRow
 
@@ -74,13 +75,13 @@ class TrendStats:
         converter: DrinkConverter,
         current_daily: Sequence[DataRow] = (),
         past_daily: Sequence[DataRow] = (),
-        target: float = 0.0,
+        limit: DailyLimit | NoDailyLimit = NoDailyLimit(),
         *,
         year: int,
         today: date,
     ):
         self._converter = converter
-        self._target = target
+        self.limit = limit
 
         self._current_year_records = list(current_daily)
         self._past_year_records = list(past_daily)
@@ -158,12 +159,12 @@ class TrendStats:
     @cached_property
     def cumulative_target(self) -> list[float]:
         days = ydays(self.current_year)
-        if not self._target:
+        if not self.limit.is_set:
             return [0.0] * days
 
         # the target is already a daily amount in the shown unit, so the pace is
         # just that amount accumulated — only the total scale still applies
-        pace = self._converter.display_to_total(self._target)
+        pace = self._converter.display_to_total(self.limit.amount)
         return [pace * i for i in range(1, days + 1)]
 
     def calculate_rolling_average(self, window: int) -> list[float]:
@@ -236,10 +237,10 @@ class TrendStats:
 
         projected = self._converter.display_to_total(pace * days)
 
-        if not self._target:
+        if not self.limit.is_set:
             return EmptyYearEndProjection(round(projected, 1))
 
-        allowed = self._converter.display_to_total(self._target * days)
+        allowed = self._converter.display_to_total(self.limit.amount * days)
         pct = 0.0
         if allowed:
             pct = round((projected - allowed) / allowed * 100, 1)

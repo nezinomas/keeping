@@ -2,6 +2,7 @@ from datetime import date
 from functools import cached_property
 
 from ...core.lib.day_stats import NoPastRecord, PastRecord
+from ..lib.daily_limit import DailyLimit, NoDailyLimit
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DataRow
 from .model_services import DrinkModelService, DrinkTargetDTO, DrinkTargetModelService
@@ -35,6 +36,13 @@ class ConsumptionYear:
     @cached_property
     def target(self) -> DrinkTargetDTO:
         return DrinkTargetModelService(self.user).get_target(self.year)
+
+    @cached_property
+    def limit(self) -> DailyLimit | NoDailyLimit:
+        """The Drink Target as a chart draws it."""
+        if not self.target.qty:
+            return NoDailyLimit()
+        return DailyLimit(self.target.qty)
 
     @cached_property
     def earlier(self) -> PastRecord | NoPastRecord:
