@@ -10,6 +10,7 @@ from .pdfs import FIXTURES
         pytest.param("barbora_promotion", 38, 10111, id="promotion_38_lines"),
         pytest.param("barbora_substitute", 38, 10215, id="substitute_38_lines"),
         pytest.param("barbora_two_pages", 47, 11789, id="two_pages_47_lines"),
+        pytest.param("barbora_watermark", 40, 10293, id="watermark_40_lines"),
     ],
 )
 def test_barbora_shape_reads_its_lines_and_they_agree(name, count, total):
@@ -58,3 +59,13 @@ def test_barbora_two_pages_continues_the_product_table_onto_the_second_page():
     assert line.title == "Konservuoti kukurūzai WELL DONE, 150 g"
     assert line.amount == 3
     assert line.price == 207
+
+
+def test_barbora_watermark_stays_out_of_the_titles():
+    receipt = ReceiptReader.read(FIXTURES / "barbora_watermark.pdf")
+
+    titles = [line.title for line in receipt.lines]
+
+    assert "Saldainiai PERGALĖ RAUDONOJI AGUONA, 1 kg" in titles
+    assert "Tunai SUN&SEA savo sultyse, 240 g" in titles
+    assert "Žaliosios cukinijos, 1 kg" in titles

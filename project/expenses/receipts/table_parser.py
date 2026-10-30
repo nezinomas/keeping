@@ -10,6 +10,16 @@ from .receipt import Receipt, ReceiptLine
 
 Row = list[str]
 
+# a watermark's letters are drawn askew or far larger than a receipt's print
+_WATERMARK_SIZE = 50
+
+
+def _is_not_watermark(obj: dict) -> bool:
+    if obj["object_type"] != "char":
+        return True
+    _, b, c, *_ = obj["matrix"]
+    return b == 0 and c == 0 and obj["size"] < _WATERMARK_SIZE
+
 
 @dataclass(frozen=True)
 class ColumnIndexes:
@@ -43,7 +53,7 @@ class TableReceiptParser:
 
     def _tables(self, document: pdfplumber.PDF) -> Iterator[list[Row]]:
         for page in document.pages:
-            for table in page.extract_tables():
+            for table in page.filter(_is_not_watermark).extract_tables():
                 if table:
                     yield [[converters.cell(value) for value in row] for row in table]
 
@@ -56,7 +66,7 @@ class TableReceiptParser:
         for later in tables[header_index + 1 :]:
             if len(later[0]) == width:
                 rows.extend(later)
-        return rows
+        return [row for row in rows if not self._carries_columns(row)]
 
     def _receipt_lines(self, body: list[Row], at: ColumnIndexes) -> list[ReceiptLine]:
         lines: list[ReceiptLine] = []
