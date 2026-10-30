@@ -1,11 +1,12 @@
 from datetime import date
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import polars as pl
 import pytest
 
 from ...lib.day_spending import DaySpending
-from ...lib.make_dataframe import MakeDataFrame, MonthDays
+from ...lib.make_dataframe import MakeDataFrame, MonthDays, TimeSeriesPivotBuilder
 
 TODAY = date(1999, 1, 2)
 
@@ -175,6 +176,20 @@ def test_spending_reads_the_month_named_by_caller():
     assert (first["day"], first["real"], first["full"]) == (-90, 85, -90)
     assert (second["day"], second["real"], second["full"]) == (-80, -20, -170)
     assert obj.avg_per_day == 110
+
+
+def test_spending_builds_each_pivot_once():
+    rows = [{"date": date(1999, 1, 1), "title": "O", "sum": 125, "exception_sum": 10}]
+    frame = MakeDataFrame.for_month(1999, 1, rows, columns=["O"])
+    build = TimeSeriesPivotBuilder.build
+
+    with patch.object(
+        TimeSeriesPivotBuilder, "build", autospec=True, side_effect=build
+    ) as spy:
+        DaySpending(expense=frame, necessary=[], per_day=25, free=200, today=TODAY)
+
+    built = [call.kwargs["value_column"] for call in spy.call_args_list]
+    assert built == ["sum", "exception_sum"]
 
 
 def test_spending_refuses_a_year_frame():
