@@ -176,6 +176,55 @@ class DrinksCalendarTooltip(Browser):
 
         assert seen == [False, True, False]
 
+    def test_tooltip_reads_its_day_and_hides_off_every_day(self):
+        DrinkFactory()
+        self.browser.get(f"{self.live_server_url}/drinks/")
+        self.wait_until_idle()
+        day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]:not(.l0)")
+
+        seen = self.browser.execute_script(
+            """
+            const day = arguments[0];
+            const tooltip = document.getElementById('heat-tooltip');
+            const read = () => [
+                tooltip.hidden,
+                [...tooltip.children].map(line => line.textContent),
+            ];
+            // a handler that throws reports to window, not to dispatchEvent
+            const errors = [];
+            window.addEventListener('error', e => errors.push(e.message));
+            day.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
+            const over = read();
+            const label = document.querySelector('.heat-card .mlabel');
+            label.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
+            label.dispatchEvent(new MouseEvent('mousemove', {bubbles: true}));
+            return [day.dataset.label.split('\\n'), over, tooltip.hidden, errors];
+            """,
+            day,
+        )
+
+        lines, (hidden, shown), hidden_after, errors = seen
+        assert len(lines) == 3
+        assert (hidden, shown, hidden_after, errors) == (False, lines, True, [])
+
+    def test_tooltip_wears_the_calendars_face(self):
+        DrinkFactory()
+        self.browser.get(f"{self.live_server_url}/drinks/")
+        self.wait_until_idle()
+        day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]")
+
+        shown, face, calendar_face = self.browser.execute_script(
+            """
+            const tooltip = document.getElementById('heat-tooltip');
+            const face = el => getComputedStyle(el).fontFamily;
+            arguments[0].dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
+            return [!tooltip.hidden, face(tooltip), face(document.querySelector('.mlabel'))];
+            """,
+            day,
+        )
+
+        assert (shown, face) == (True, calendar_face)
+
     def test_tooltip_follows_its_day_when_the_calendar_scrolls_under_the_mouse(self):
         DrinkFactory()
         # a phone width, so the heat body scrolls sideways; the events are
