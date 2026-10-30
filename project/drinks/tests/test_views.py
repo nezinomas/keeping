@@ -848,7 +848,7 @@ def test_tab_index_renders_each_explanation_part_as_its_own_paragraph(
         pytest.param(
             "drinks:tab_data",
             [date(2020, 1, 2)],
-            "<b>1999</b> metais įrašų nėra.",
+            "1999 metais įrašų nėra.",
             id="data",
         ),
         # History runs every year from the first Drink to today, so any Drink fills it

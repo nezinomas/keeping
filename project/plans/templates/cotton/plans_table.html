@@ -30,7 +30,7 @@
         </tr>
         {% empty %}
         <tr>
-            <td colspan="15">{% blocktranslate with year=year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}</td>
+            <td colspan="15">{% blocktranslate with year=year|title %}No records in {{ year }}.{% endblocktranslate %}</td>
         </tr>
         {% endfor %}
     </tbody>

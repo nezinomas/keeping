@@ -47,7 +47,7 @@ def test_the_empty_row_spans_the_header_and_closes(table):
     body = actual.split("<tbody>")[1].split("</tbody>")[0]
     assert len(re.findall(r"<th[ >]", columns)) == 15
     assert re.findall(r"<td([^>]*)>(.*?)</td>", body) == [
-        (' colspan="15"', "<b>2026</b> metais įrašų nėra.")
+        (' colspan="15"', "2026 metais įrašų nėra.")
     ]
 
 

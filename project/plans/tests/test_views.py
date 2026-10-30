@@ -277,9 +277,7 @@ def test_an_empty_plans_table_names_the_plan_year(client_logged, main_user, tab)
     ).content.decode()
 
     for panel_id in PLANS_TABLE_PANELS[tab.name]:
-        assert f"<b>{main_user.year}</b> metais įrašų nėra." in _panel(
-            content, panel_id
-        )
+        assert f"{main_user.year} metais įrašų nėra." in _panel(content, panel_id)
 
 
 def test_nav_offers_every_tab(client_logged):
