@@ -41,6 +41,32 @@ class BookkeepingIndex(TestCase, Browser):
             "return arguments[0].matches(':focus-within')", menu
         )
 
+    def test_reload_redraws_both_index_charts(self):
+        roots = (
+            "#chart-balance-container .highcharts-root,"
+            " #chart-expenses-container .highcharts-root"
+        )
+        # the reload settles the tables too: each chart draws on its own data's swap only
+        drawn_on_load = self.browser.execute_script(
+            f"const drawn = document.querySelectorAll('{roots}');"
+            " drawn.forEach(root => root.dataset.drawnOnLoad = '');"
+            " window.draws = 0;"
+            " Highcharts.addEvent(Highcharts.Chart, 'load', () => window.draws++);"
+            " htmx.trigger(document.body, 'reload');"
+            " return drawn.length;"
+        )
+        self.wait_until_idle()
+
+        reload = self.browser.execute_script(
+            f"return {{roots: [...document.querySelectorAll('{roots}')]"
+            ".map(root => 'drawnOnLoad' in root.dataset ? 'stale' : 'redrawn'),"
+            " draws: window.draws};"
+        )
+        assert (drawn_on_load, reload) == (
+            2,
+            {"roots": ["redrawn", "redrawn"], "draws": 2},
+        )
+
     def test_insert_clears_each_worth_row(self):
         AccountFactory(title="Account 0")
         AccountFactory(title="Account 1")

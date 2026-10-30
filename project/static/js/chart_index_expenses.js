@@ -1,4 +1,13 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', drawIndexExpenses);
+
+// an out-of-band swap settles on its target, the data's wrapper
+htmx.on('htmx:after:settle', (event) => {
+    if (event.target.id === 'chart-expenses-source') {
+        drawIndexExpenses();
+    }
+});
+
+function drawIndexExpenses() {
     const chartData = JSON.parse(document.getElementById("chart-expenses-data").textContent);
     // convert data
     for (var key in chartData) {
@@ -73,4 +82,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }]
     });
-});
+}
