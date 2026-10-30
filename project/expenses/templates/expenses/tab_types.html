@@ -20,7 +20,7 @@
             <td class="main__figure">{{ row.this_year }}</td>
             <td class="main__figure">{{ row.last_year }}</td>
             <td class="main__figure">{{ row.share }}</td>
-            <td>{{ row.last_expense }}</td>
+            <td>{{ row.last_date }}</td>
             <c-td-edit :url="url_update" />
         </tr>
         {% for name in row.names %}
@@ -30,7 +30,7 @@
             <td class="main__figure">{{ name.this_year }}</td>
             <td class="main__figure">{{ name.last_year }}</td>
             <td class="main__figure main__share">{{ name.share }}</td>
-            <td>{{ name.last_expense }}</td>
+            <td>{{ name.last_date }}</td>
             <c-td-edit :url="name_update" />
         </tr>
         {% endfor %}

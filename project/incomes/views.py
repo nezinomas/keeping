@@ -72,15 +72,9 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        boundary = YearBoundary(user.selected_year(), date.today())
-        service = IncomeModelService(user)
-        types = IncomeTypeModelService(user).items().values("id", "title")
-
-        table = TypesTable.build(
-            list(types),
-            list(service.sum_by_between("income_type", *boundary.span)),
-            list(service.sum_by_between("income_type", *boundary.previous_span)),
-            list(service.last_date_by("income_type", boundary.end_date)),
+        table = TypesTable.read(
+            user,
+            YearBoundary(user.selected_year(), date.today()),
             self.request.GET.get("order", ""),
         )
 
