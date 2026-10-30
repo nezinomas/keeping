@@ -7,15 +7,14 @@ from django.utils.translation import gettext as _
 
 from ....core.lib import stat_card
 from ....core.lib.day_stats import NoPastRecord, PastRecord
+from ...lib.daily_limit import DailyLimit, NoDailyLimit
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter, stdav_to_alcohol
 from ...lib.drinks_stats import DataRow
 from ...services.index_tab import (
-    DailyLimit,
     DryDaysViewModel,
     IndexBuilder,
     IndexTab,
-    NoDailyLimit,
     NoDryDaysViewModel,
 )
 from ..factories import DrinkFactory, DrinkTargetFactory

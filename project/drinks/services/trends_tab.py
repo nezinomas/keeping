@@ -13,13 +13,13 @@ from ...core.lib.stat_card import (
     StatCard,
 )
 from ..lib.chart_view_model import ChartViewModel
+from ..lib.daily_limit import DailyLimit, NoDailyLimit
 from ..lib.drinks_trend import (
     EmptyRecentPeriodComparison,
     RecentPeriodComparison,
     TrendStats,
 )
 from .consumption_year import ConsumptionYear
-from .index_tab import DailyLimit, NoDailyLimit
 
 
 @dataclass(frozen=True)
@@ -46,22 +46,17 @@ class TrendsTab:
     @classmethod
     def build(cls, user, year: int, today: date) -> dict:
         records = ConsumptionYear(user, year, today)
-        target = records.target.qty
 
         stats = TrendStats(
             records.converter,
             current_daily=records.daily,
             past_daily=records.previous.daily,
-            target=target,
+            limit=records.limit,
             year=year,
             today=today,
         )
 
-        limit = NoDailyLimit()
-        if target:
-            limit = DailyLimit(target)
-
-        builder = TrendsBuilder(drink_stats=stats, limit=limit)
+        builder = TrendsBuilder(drink_stats=stats)
 
         return {
             "chart_trend": builder.chart_trend(),
@@ -71,13 +66,8 @@ class TrendsTab:
 
 
 class TrendsBuilder:
-    def __init__(
-        self,
-        drink_stats: TrendStats,
-        limit: DailyLimit | NoDailyLimit = NoDailyLimit(),
-    ):
+    def __init__(self, drink_stats: TrendStats):
         self._stats = drink_stats
-        self._limit = limit
 
     def _rounded(self, values: list[float]) -> list[float]:
         """Round to the precision the selected unit is read at."""
@@ -89,7 +79,7 @@ class TrendsBuilder:
             daily=self._rounded(self._stats.daily_volume),
             rolling_7=self._rounded(self._stats.calculate_rolling_average(7)),
             rolling_30=self._rounded(self._stats.calculate_rolling_average(30)),
-            limit=self._limit,
+            limit=self._stats.limit,
             decimals=self._stats.decimals,
             text={
                 # the dropdown decides the unit, so the axes and the tooltip
