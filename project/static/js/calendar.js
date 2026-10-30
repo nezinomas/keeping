@@ -17,10 +17,9 @@ function initCalendar() {
         const label = cell.getAttribute('data-label');
         if (!label) return;
 
-        const lines = label.split('\n');
-        let html = `<div class="heat-tooltip__date">${lines[0] || ''}</div>`;
-        if (lines[1]) html += `<div class="heat-tooltip__row">${lines[1]}</div>`;
-        if (lines[2]) html += `<div class="heat-tooltip__row">${lines[2]}</div>`;
+        const [date, ...rows] = label.split('\n');
+        let html = `<div class="heat-tooltip__date">${date}</div>`;
+        for (const row of rows) html += `<div class="heat-tooltip__row">${row}</div>`;
 
         tooltip.innerHTML = html;
         tooltip.style.borderColor = getComputedStyle(cell).backgroundColor;
@@ -47,14 +46,17 @@ function initCalendar() {
 
     card.addEventListener('mouseover', function (e) {
         const cell = e.target.closest(HOVER);
-        cell ? show(cell) : hide();
+        if (!cell) {
+            hide();
+            return;
+        }
+        show(cell);
     });
 
     card.addEventListener('mousemove', function (e) {
         const cell = e.target.closest(HOVER);
-        if (cell && !tooltip.hidden) {
-            positionTooltip(cell);
-        }
+        if (!cell || tooltip.hidden) return;
+        positionTooltip(cell);
     });
 
     card.addEventListener('mouseleave', hide);

@@ -25,20 +25,16 @@
         @media only screen and (min-width: 992px) {
             --cols: 6;
             --card-gap: 1.25rem;
-        }
-    }
 
-    // never more columns than Cards, as an empty track pushes the set off centre;
-    // they weigh the same, so the smallest set comes last
-    .stat-cards:not(:has(.trend-card:nth-child(6))) {
-        @media only screen and (min-width: 992px) {
-            --cols: 5;
-        }
-    }
+            // never more columns than Cards, as an empty track pushes the set off
+            // centre; they weigh the same, so the smallest set comes last
+            &:not(:has(.trend-card:nth-child(6))) {
+                --cols: 5;
+            }
 
-    .stat-cards:not(:has(.trend-card:nth-child(5))) {
-        @media only screen and (min-width: 992px) {
-            --cols: 4;
+            &:not(:has(.trend-card:nth-child(5))) {
+                --cols: 4;
+            }
         }
     }
 
