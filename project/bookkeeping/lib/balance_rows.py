@@ -22,7 +22,6 @@ class AccountBalanceRows(BalanceRows):
                 balance=(pl.col("past") + pl.col("incomes") - pl.col("expenses"))
             )
             .with_columns(delta=(pl.col("have") - pl.col("balance")))
-            .sort(KEYS)
         )
 
 
@@ -58,7 +57,6 @@ class SavingBalanceRows(BalanceRows):
             .pipe(self._zero_worth_in_close_year_after_a_sell)
             .pipe(self._add_running_totals)
             .pipe(self._add_profit)
-            .sort(KEYS)
         )
 
     @staticmethod
