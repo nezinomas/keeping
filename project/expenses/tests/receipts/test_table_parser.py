@@ -9,7 +9,7 @@ from ...receipts.layout import (
 )
 from ...receipts.shop_parser import ShopParser
 from ...receipts.table_parser import TableReceiptParser
-from .pdfs import table_pdf
+from .pdfs import table_pdf, watermark
 
 LAYOUT = TableLayout(
     marker="ACME SHOP",
@@ -108,6 +108,33 @@ def test_table_receipt_parser_reads_a_continuation_table(tmp_path, second_header
 
     assert [line.title for line in receipt.lines] == ["Apple", "Pear"]
     assert receipt.total == 200
+
+
+@pytest.mark.parametrize(
+    "stamp",
+    [
+        pytest.param(watermark(size=10, angle=45, x=260, y=700), id="rotated_small"),
+        pytest.param(watermark(size=80, angle=0, x=250, y=670), id="straight_large"),
+    ],
+)
+def test_table_receipt_parser_reads_through_a_watermark(tmp_path, stamp):
+    path = table_pdf(
+        tmp_path / "watermark.pdf",
+        text_above="ACME SHOP",
+        header=HEADER,
+        rows=[
+            ("1", "Apple", "2 vnt.", "€1,20"),
+            ("2", "Pear", "1 vnt.", "€0,80"),
+            ("", "Grand total", "", "€2,00"),
+        ],
+        on_page=stamp,
+    )
+    with pdfplumber.open(path) as document:
+        receipt = TableReceiptParser(LAYOUT).parse(document)
+
+    assert [line.title for line in receipt.lines] == ["Apple", "Pear"]
+    assert [line.price for line in receipt.lines] == [120, 80]
+    assert receipt.lines[0].amount == 2
 
 
 def test_table_receipt_parser_ignores_a_narrower_table(tmp_path):
