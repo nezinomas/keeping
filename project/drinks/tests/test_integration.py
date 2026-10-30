@@ -175,3 +175,37 @@ class DrinksCalendarTooltip(Browser):
         seen.append(tooltip.is_displayed())
 
         assert seen == [False, True, False]
+
+    def test_tooltip_follows_its_day_when_the_calendar_scrolls_under_the_mouse(self):
+        DrinkFactory()
+        # a phone width, so the heat body scrolls sideways; the events are
+        # dispatched, since a minimized window takes no Selenium hover
+        self.open_at("/drinks/", 360)
+        day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]")
+
+        placed = self.browser.execute_script(
+            """
+            const day = arguments[0];
+            const body = document.querySelector('.heat-body');
+            const tooltip = document.getElementById('heat-tooltip');
+            const centre = el => {
+                const rect = el.getBoundingClientRect();
+                return rect.left + rect.width / 2;
+            };
+            day.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
+            body.scrollLeft = 60;
+            day.dispatchEvent(new MouseEvent('mousemove', {bubbles: true}));
+            return {
+                scrolled: body.scrollLeft,
+                off_centre: Math.round(centre(tooltip) - centre(day)),
+                gap_above: Math.round(
+                    day.getBoundingClientRect().top
+                    - tooltip.getBoundingClientRect().bottom
+                ),
+            };
+            """,
+            day,
+        )
+
+        # the skin lifts the tooltip 8px off its day
+        assert placed == {"scrolled": 60, "off_centre": 0, "gap_above": 8}
