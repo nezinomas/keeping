@@ -49,39 +49,30 @@ class ChartBuilder:
 
     def build_targets(self) -> dict:
         data = self._sort_chart_data(self.totals)
-
-        categories, data_target, data_fact, name_lengths = [], [], [], []
-
-        for entry in data:
-            name = entry["name"]
-            target = self.targets.get(name, 0)
-
-            name = self._translate_saving_title(name)
-
-            categories.append(name.upper())
-            data_target.append(target)
-            data_fact.append({"y": entry["y"], "target": target})
-
-            name_lengths.append(len(name))
+        categories = [self._upper_title(entry["name"]) for entry in data]
+        targets = [self.targets.get(entry["name"], 0) for entry in data]
 
         return {
             "categories": categories,
-            "target": data_target,
+            "target": targets,
             "targetTitle": _("Plan"),
-            "fact": data_fact,
+            "fact": [
+                {"y": entry["y"], "target": target}
+                for entry, target in zip(data, targets, strict=True)
+            ],
             "factTitle": _("Fact"),
-            "max_category_len": max(name_lengths, default=0),
+            "max_category_len": max(map(len, categories), default=0),
         }
 
-    def _translate_saving_title(self, name):
-        return _("Savings") if name == SAVINGS else name
+    @staticmethod
+    def _upper_title(name: str) -> str:
+        return (_("Savings") if name == SAVINGS else name).upper()
 
     def build_expenses(self) -> list[dict]:
-        data = self._sort_chart_data(self.totals)
-        for entry in data:
-            name = self._translate_saving_title(entry["name"])
-            entry["name"] = name.upper()
-        return data
+        return [
+            {"name": self._upper_title(entry["name"]), "y": entry["y"]}
+            for entry in self._sort_chart_data(self.totals)
+        ]
 
     def _sort_chart_data(self, data: dict) -> list[dict]:
         return sorted(

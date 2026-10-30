@@ -51,12 +51,6 @@ def fixture_month_dto():
         ),
         pytest.param(
             {},
-            {"T1": 25, "T2": 50},
-            [{"name": "T2", "y": 50}, {"name": "T1", "y": 25}],
-            id="sorted_two",
-        ),
-        pytest.param(
-            {},
             {"T1": 2, "T2": 5, "T3": 1},
             [
                 {"name": "T2", "y": 5},
@@ -64,6 +58,12 @@ def fixture_month_dto():
                 {"name": "T3", "y": 1},
             ],
             id="sorted_three",
+        ),
+        pytest.param(
+            {},
+            {"savings": 5, "ab": 1},
+            [{"name": "TAUPYMAS", "y": 5}, {"name": "AB", "y": 1}],
+            id="translated_savings_name",
         ),
         pytest.param({}, {}, [], id="no_data"),
     ],
@@ -125,6 +125,15 @@ def test_build_targets_without_data():
             [{"y": 5, "target": 0}, {"y": 1, "target": 0}],
             8,
             id="translated_savings_name",
+        ),
+        pytest.param(
+            {},
+            {"gießen": 3},
+            ["GIESSEN"],
+            [0],
+            [{"y": 3, "target": 0}],
+            7,
+            id="length_of_the_drawn_title",
         ),
     ],
 )
