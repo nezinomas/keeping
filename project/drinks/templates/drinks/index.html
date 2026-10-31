@@ -1,16 +1,10 @@
-{% extends 'base.html' %}
+{% extends 'core/paper_page.html' %}
 
 {% load static %}
 {% load i18n %}
 
 
-{% block title %}{{ page_title }}{% endblock title %}
-
-
-{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
-
-
-{% block head %}
+{% block head_scripts %}
     {% include 'highcharts.html' %}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_overview.js' %}"></script>
@@ -23,36 +17,27 @@
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_summary.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/calendar.js' %}"></script>
-{% endblock head %}
+{% endblock head_scripts %}
 
 
-{% block content %}
+{% block page_name %}{% translate 'Drinks' %}{% endblock page_name %}
 
 
-<!-- outside #tab_content: a tab swap must not replace the chart tokens, the
-     nav or `tab`, the open tab that both the nav and the sheet read -->
-<div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
+{% block panel_class %}{% endblock panel_class %}
 
-<h1 class="visually-hidden">{% translate 'Drinks' %}</h1>
 
-<c-subnav :tabs=tabs :active=tab />
-
-<!-- what the nav and the sheet send as `tab`, read by htmx at click time -->
-<input type="hidden" id="current-tab" name="tab" :value="tab">
-
-<div id="tab_content" role="tabpanel" :aria-labelledby="'tab-' + tab">
-    {% include 'core/includes/tab_reload.html' %}
-    {{content}}
-</div>
-
+{% block quick_add %}
 {% include 'drinks/includes/quick_add.html' %}
 
-</div>
+{# what the nav and the sheet send as `tab`; after the bar, whose neighbour the skin gives the foot space #}
+<input type="hidden" id="current-tab" name="tab" :value="tab">
+{% endblock quick_add %}
 
+
+{% block tab_listeners %}
 <script nonce="{{ csp_nonce }}">
-    // htmx 4 core has no ajax-based history restore (that moved to the opt-in
-    // hx-history-cache extension, which isn't loaded), so Back always falls
-    // through to a plain browser navigation - nothing here runs init scripts twice.
+    // htmx 4 core has no ajax history restore (hx-history-cache isn't loaded),
+    // so Back is a plain navigation and nothing runs its init twice
     function initDrinksCharts() {
         if (document.getElementById('chart-consumption-data')) {
             chartOverview('chart-consumption-data', 'chart-quantity-data', 'chart-overview-container');
@@ -94,5 +79,4 @@
         }
     });
 </script>
-
-{% endblock content %}
+{% endblock tab_listeners %}

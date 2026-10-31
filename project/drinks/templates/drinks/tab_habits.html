@@ -3,7 +3,7 @@
 
 {% include 'drinks/includes/drink_type.html' with oob=True %}
 
-<main class="habits-grid">
+<div class="habits-grid">
     <div id="habits-summary" class="stat-cards">
         <c-stat-cards :cards=cards />
     </div>
@@ -34,6 +34,6 @@
             <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year' %}" hx-target="#chart-typical-year-container">{% translate 'Clear' %}</button>
         </div>
     </c-panel>
-</main>
+</div>
 
 {{chart_weekday.as_dict|json_script:"chart-weekday-data"}}
