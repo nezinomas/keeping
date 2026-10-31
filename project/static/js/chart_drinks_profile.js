@@ -81,7 +81,7 @@ function chartDrinksProfile(idData, idContainer) {
             layerLabel: layer.label,
             dotColor: intensityColor,
             // the bullet is a mark and keeps the hue; the value is text
-            valueColor: "var(--skin-second-ink)",
+            valueClass: "chart-tip--second",
         });
     });
 
@@ -178,8 +178,12 @@ function chartDrinksProfile(idData, idContainer) {
                     }
                     group.points.forEach(function (point) {
                         const options = point.series.userOptions;
+                        let value = `style="color: ${options.valueColor}"`;
+                        if (options.valueClass) {
+                            value = `class="${options.valueClass}"`;
+                        }
                         out += `<br/><span style="color: ${options.dotColor}">●</span> `
-                            + `${options.metric}: <span style="color: ${options.valueColor}">`
+                            + `${options.metric}: <span ${value}>`
                             + `<b>${point.y} ${options.unit}</b></span>`;
                     });
                 });
