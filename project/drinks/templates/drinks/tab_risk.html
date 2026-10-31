@@ -3,7 +3,7 @@
 
 {% include 'drinks/includes/drink_type.html' with oob=True %}
 
-<main class="risk-grid">
+<div class="risk-grid">
     <div id="risk-summary" class="stat-cards">
         <c-stat-cards :cards=cards />
     </div>
@@ -15,7 +15,7 @@
     <c-panel id="panel-heavy" title="{% translate 'Heavy days per month' %}">
         <div id="chart-heavy-container"></div>
     </c-panel>
-</main>
+</div>
 
 {{chart_weekly.as_dict|json_script:"chart-weekly-data"}}
 {{chart_heavy.as_dict|json_script:"chart-heavy-data"}}

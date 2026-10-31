@@ -348,7 +348,7 @@ def test_tab_url_serves_the_whole_page_unless_htmx_swaps_it(
     content = client_logged.get(reverse("drinks:tab_risk"), **headers).content.decode()
 
     assert ('<div class="tabs" role="tablist"' in content) is whole
-    assert ('<div id="tab_content" role="tabpanel"' in content) is whole
+    assert ('<main id="tab_content"' in content) is whole
     assert ('<div class="quick-add" id="quick-add"' in content) is whole
 
 

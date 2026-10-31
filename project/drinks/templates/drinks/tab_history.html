@@ -4,7 +4,7 @@
 
 {% if records %}
 
-<main class="history-grid">
+<div class="history-grid">
     <c-panel title="{% translate 'Drinks' %}">
         <div id="chart-summary-container"></div>
     </c-panel>
@@ -22,7 +22,7 @@
             {% include 'drinks/includes/compare_form.html' %}
         </div>
     </c-panel>
-</main>
+</div>
 
 {{chart|json_script:"chart-summary-data"}}
 
