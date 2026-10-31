@@ -1,24 +1,13 @@
 function initializeLitepicker(input) {
-
-    const config = {
+    return new Litepicker({
         element: input,
         format: 'YYYY-MM-DD',
-    };
-
-    // Apply translations if available
-    if (typeof datePickerTrans !== 'undefined') {
-        config.lang = datePickerTrans.lang;
-        config.months = datePickerTrans.months;
-        config.weekdays = datePickerTrans.weekdays;
-        config.weekdaysShort = datePickerTrans.weekdaysShort;
-        config.tooltipText = datePickerTrans.tooltipText;
-    }
-    try {
-        new Litepicker(config);
-    } catch (error) {
-        console.error('Failed to initialize Litepicker:', error);
-    }
-};
+        lang: datePickerTrans.lang,
+        tooltipText: datePickerTrans.tooltipText,
+    });
+}
 
 
-document.querySelectorAll('.date-picker').forEach(initializeLitepicker);
+// a swapped-out form's picker stays on <body> until destroyed
+(window.datePickers ?? []).forEach((picker) => picker.destroy());
+window.datePickers = [...document.querySelectorAll('.date-picker')].map(initializeLitepicker);

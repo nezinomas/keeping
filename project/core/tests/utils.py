@@ -1,14 +1,72 @@
-import functools
-import time
-from statistics import stdev
+import re
 
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
-from django.urls import reverse
+
+PICKER_SCRIPT = r'<script[^>]*src="[^"]*/js/([a-z]+-picker\.js)"'
 
 
 def clean_content(rendered):
     return str(rendered).replace("\n", "").replace("\t", "").replace("  ", "")
+
+
+def form_posts_to(content, form_id, url):
+    form = rf'<form method="POST" id="{form_id}"[^>]* hx-post="{re.escape(url)}"'
+    return bool(re.search(form, content))
+
+
+def nav_tabs(content):
+    """(name, url) of each tab the subnav offers."""
+    return re.findall(r'<button\s+id="tab-(\w+)"[^>]*hx-get="([^"]*)"', content)
+
+
+def quick_add_pills(content):
+    """(tag, the tab it waits for or "", its url attribute, label) of each pill."""
+    return re.findall(
+        r"<(a|button)(?:[^>]*x-show=\"tab === '(\w+)'\" x-cloak)?[^>]*"
+        r' class="quick-add__pill" ((?:href|hx-get)="[^"]*")[^>]*>([^<]*)</\1>',
+        content,
+    )
+
+
+# an empty Card's figure is its bare dash; stop at the next label, never pair Cards
+IN_CARD = r"(?:(?!trend-card__label).)*?"
+CARD = re.compile(
+    rf'<div class="trend-card__label">([^<]*)</div>{IN_CARD}'
+    r'(?:<span class="trend-card__figure"[^>]*>|trend-card__value--empty">)'
+    rf"([^<]*){IN_CARD}"
+    r'<div class="trend-card__note">([^<]*)</div>',
+    re.S,
+)
+TOOLTIP = re.compile(r'<span class="trend-card__explanation" role="tooltip"><p>([^<]*)')
+EDIT_BUTTON = re.compile(
+    r'<button type="button" class="trend-card__edit" hx-get="([^"]*)"'
+    r'[^>]*hx-target="#mainModal"[^>]*><i class="bi bi-pencil"'
+)
+CARD_VALUE = re.compile(
+    r'<div class="trend-card__label">([^<]*)</div>\s*'
+    r'(<div class="trend-card__value[^>]*>.*?</div>)',
+    re.S,
+)
+
+
+def stat_cards(content):
+    """(label, figure, note) of each Card."""
+    return CARD.findall(content)
+
+
+def stat_card_edit_urls(content):
+    """The url each Card's pencil opens in the modal."""
+    return EDIT_BUTTON.findall(content)
+
+
+def stat_card_values(content):
+    """Each Card's value element (arrow, figure, meta stack), by its label."""
+    return dict(CARD_VALUE.findall(content))
+
+
+def stat_card_tooltips(content):
+    return TOOLTIP.findall(content)
 
 
 def count_queries(run):
@@ -17,22 +75,8 @@ def count_queries(run):
     return len(queries)
 
 
-def change_profile_year(client, year=1):
-    url = reverse("bookkeeping:index")
-    response = client.get(url)
-
-    u = response.wsgi_request.user
-    u.year = year
-    u.save()
-
-
 def setup_view(view, request, *args, **kwargs):
-    """
-    Mimic ``as_view()``, but returns view instance.
-    Use this function to get view instances on which you can run unit tests,
-    by testing specific methods.
-    """
-
+    """`as_view()` without dispatch: the view instance, to test its methods."""
     view.request = request
     view.args = args
     view.kwargs = kwargs
@@ -43,40 +87,3 @@ def view_for(rf, user, view_class, path="/", **kwargs):
     request = rf.get(path)
     request.user = user
     return setup_view(view_class(), request, **kwargs)
-
-
-def timer(*a, **kw):
-    def timer_inner(func):
-        @functools.wraps(func)
-        def wrap_func(*args, **kwargs):
-            items = []
-            iterations = a[0] if a else 1
-            for _ in range(iterations):
-                start = time.perf_counter()
-                return_value = func(*args, **kwargs)
-                end = time.perf_counter()
-                items.append(end - start)
-            func_name = f"Finished function: < {func.__name__} >"
-            stats = f"Runs: {iterations}, Full time: {sum(items):.3f}s, Average time: {(sum(items) / len(items)):.3f}s, Standard deviation: {stdev(items):.3f}"  # noqa: E501
-            raw = f"Raw data: {items}"
-            print(f"\n\n{func_name}\n{stats}\n{raw}")
-            return return_value
-
-        return wrap_func
-
-    return timer_inner
-
-
-class Timer:
-    def __init__(self, original_func):
-        self.original_func = original_func
-
-    def __call__(self, *args, **kwargs):
-        start = time.perf_counter()
-        r_val = self.original_func(*args, **kwargs)
-        end = time.perf_counter()
-        total = end - start
-        print(
-            f"Finished function form class: {self.original_func.__name__} in {total:.5f} sec"  # noqa: E501
-        )
-        return r_val

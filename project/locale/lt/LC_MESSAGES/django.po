@@ -614,6 +614,10 @@ msgstr "Perskaitytos knygos"
 msgid "Add book"
 msgstr "Pridėti knygą"
 
+#: .\project\books\templates\books\book_list.html:10
+msgid "No."
+msgstr "Nr."
+
 #: .\project\books\views.py:79 .\project\counts\services\cards.py:18
 #: .\project\counts\services\cards.py:42 .\project\counts\services\cards.py:58
 #: .\project\counts\services\cards.py:89 .\project\counts\services\cards.py:110
@@ -1017,6 +1021,11 @@ msgstr "nuo %(year)s"
 
 #: .\project\counts\services\cards.py:39
 msgctxt "counts card"
+msgid "This year"
+msgstr "Šiais metais"
+
+#: .\project\core\lib\overview_cards.py:39
+msgctxt "overview card"
 msgid "This year"
 msgstr "Šiais metais"
 
@@ -1868,6 +1877,16 @@ msgstr "Išlaidų rūšį"
 msgid "There are no records for month <b>%(month)s</b>."
 msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 
+#: .\project\expenses\templates\expenses\expense_list.html
+#, python-format
+msgid "There are no records for month %(month)s."
+msgstr "Mėnesį %(month)s įrašų nėra."
+
+#: .\project\expenses\templates\expenses\expense_list.html
+#, python-format
+msgid "No records in %(year)s."
+msgstr "%(year)s metais įrašų nėra."
+
 #: .\project\expenses\views\expenses.py:93
 msgid "Delete expense"
 msgstr "Trinti išlaidas"
@@ -2483,8 +2502,8 @@ msgid "The year's total divided by the months it has reached"
 msgstr "Metų suma, padalinta iš prabėgusių mėnesių"
 
 #, python-format
-msgid "%(share)s%% of the year's total"
-msgstr "%(share)s%% metų sumos"
+msgid "%(share)s of the year's total"
+msgstr "%(share)s metų sumos"
 
 #, python-format
 msgid "Last year %(amount)s"
@@ -2743,3 +2762,92 @@ msgstr "Pasirinktos vienodos pensijos."
 
 msgid "The name must be unique."
 msgstr "Vardas turi būti unikalus."
+
+msgid "Expenses by month"
+msgstr "Išlaidos per mėnesį"
+
+msgid "The expense type with the biggest share of this year"
+msgstr "Didžiausią šių metų dalį sudaranti išlaidų rūšis"
+
+msgid "Add expense"
+msgstr "Pridėti išlaidas"
+
+msgid "Last expense"
+msgstr "Paskutinį kartą"
+
+msgid "Type / name"
+msgstr "Rūšis / pavadinimas"
+
+msgid "Add expense type"
+msgstr "Pridėti išlaidų rūšį"
+
+msgid "Add expense name"
+msgstr "Pridėti išlaidų pavadinimą"
+
+msgctxt "expense type caption"
+msgid "necessary"
+msgstr "būtinos"
+
+msgctxt "month abbreviation"
+msgid "Jan."
+msgstr "Saus."
+
+msgctxt "month abbreviation"
+msgid "Feb."
+msgstr "Vas."
+
+msgctxt "month abbreviation"
+msgid "Mar."
+msgstr "Kov."
+
+msgctxt "month abbreviation"
+msgid "Apr."
+msgstr "Bal."
+
+msgctxt "month abbreviation"
+msgid "May"
+msgstr "Geg."
+
+msgctxt "month abbreviation"
+msgid "Jun."
+msgstr "Birž."
+
+msgctxt "month abbreviation"
+msgid "Jul."
+msgstr "Liep."
+
+msgctxt "month abbreviation"
+msgid "Aug."
+msgstr "Rugp."
+
+msgctxt "month abbreviation"
+msgid "Sep."
+msgstr "Rugs."
+
+msgctxt "month abbreviation"
+msgid "Oct."
+msgstr "Spal."
+
+msgctxt "month abbreviation"
+msgid "Nov."
+msgstr "Lapkr."
+
+msgctxt "month abbreviation"
+msgid "Dec."
+msgstr "Gruod."
+
+msgctxt "quarter"
+msgid "Q1"
+msgstr "I ketv."
+
+msgctxt "quarter"
+msgid "Q2"
+msgstr "II ketv."
+
+msgctxt "quarter"
+msgid "Q3"
+msgstr "III ketv."
+
+msgctxt "quarter"
+msgid "Q4"
+msgstr "IV ketv."

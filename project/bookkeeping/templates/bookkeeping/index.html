@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 
-{% load i18n %}
+{% load i18n static %}
 
 
 {% block head %}
     {% include 'highcharts.html' %}
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_index_balance.js' %}" defer></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_index_expenses.js' %}" defer></script>
 {% endblock head %}
 
 
@@ -31,7 +33,6 @@
     </div>
 
     <div id="accounts-info">
-        <!-- Accounts stats -->
         <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body, afterTransaction from:body, reload from:body">{{accounts}}</div>
 
         <div id="balance-short-and-no-incomes">
@@ -65,21 +66,18 @@
         }
     }
 
-    /* check on page load */
     document.addEventListener('DOMContentLoaded', compareValues);
-
-    /* check on ajax reload */
     htmx.on("htmx:after:swap", (e) => {
         compareValues();
     });
 </script>
 
 
-<div id="chart-balance-data" style="display: none;">
+<div id="chart-balance-source" hidden>
     <c-chart-balance-data :data=chart_balance />
 </div>
 
-<div id="chart-expenses-data" style="display: none;">
+<div id="chart-expenses-source" hidden>
     <c-chart-expenses-data :data=chart_expenses />
 </div>
 

@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from datetime import date
 
 from django.db.models import (
@@ -21,6 +22,7 @@ from django.db.models.functions import (
 from ...core.lib.date import last_months_window
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService, DatedModelService
+from ...core.services.span_sums import SpanReadsMixin
 from .. import models
 
 
@@ -67,7 +69,7 @@ class ExpenseKeywordModelService(DatedModelService):
         return self.objects
 
 
-class ExpenseModelService(SumMixin, DatedModelService):
+class ExpenseModelService(SpanReadsMixin, SumMixin, DatedModelService):
     def get_queryset(self):
         return models.Expense.objects.select_related(
             "expense_type", "expense_name", "account"
@@ -136,7 +138,7 @@ class ExpenseModelService(SumMixin, DatedModelService):
     def sum_by_year(self):
         return self.year_sum(self.objects)
 
-    def sum_by_year_type(self, expense_type: list | None = None):
+    def sum_by_year_type(self, expense_type: Sequence[str] = ()):
         objects = (
             self.objects.filter(expense_type__in=expense_type)
             if expense_type
@@ -151,7 +153,7 @@ class ExpenseModelService(SumMixin, DatedModelService):
             .values("year", "sum", "title")
         )
 
-    def sum_by_year_name(self, expense_name: list | None = None):
+    def sum_by_year_name(self, expense_name: Sequence[str] = ()):
         objects = (
             self.objects.filter(expense_name__in=expense_name)
             if expense_name
@@ -180,12 +182,9 @@ class ExpenseModelService(SumMixin, DatedModelService):
         )
 
     def expenses_list(self, qs):
-        """
-        Accepts ANY filtered queryset (by year, month, or search)
-        and applies the high-performance formatting, annotations, and .values().
-        """
+        """The expense list's rows from any filtered queryset: year, month or search."""
 
-        # Map user's 2-letter lang code to MariaDB's required locale format
+        # MariaDB's FORMAT takes a full locale, not the journal's two-letter code
         locale_map = {
             "lt": "lt_LT",
             "en": "en_US",
@@ -194,7 +193,6 @@ class ExpenseModelService(SumMixin, DatedModelService):
 
         return (
             qs.annotate(
-                # Database-level Price Formatting (MariaDB/MySQL)
                 price_str=Func(
                     F("price") / Value(100.0),
                     Value(2),
@@ -202,13 +200,11 @@ class ExpenseModelService(SumMixin, DatedModelService):
                     function="FORMAT",
                     output_field=CharField(),
                 ),
-                # PDF detection
                 is_pdf=Case(
                     When(attachment__endswith=".pdf", then=Value(True)),
                     default=Value(False),
                     output_field=BooleanField(),
                 ),
-                # Grouping for "If Month Changed" logic
                 month_group=TruncMonth("date"),
             )
             .order_by("-date", "expense_type__title", F("expense_name__title").asc())
@@ -230,10 +226,6 @@ class ExpenseModelService(SumMixin, DatedModelService):
         )
 
     def expenses(self):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
         return (
             self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")

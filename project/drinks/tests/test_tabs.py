@@ -1,43 +1,32 @@
+import json
+
 import pytest
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ..lib.drink_type_control import (
     DrinkTypeSelector,
     FixedDrinkTypeSelector,
     NoDrinkTypeSelector,
 )
-from ..tabs import TABS, DrinkTab, tab_reload_response
+from ..tabs import TABS, tab_reload_response
 
 NAMES = tuple(tab.name for tab in TABS)
 
-# -------------------------------------------------------------------------------------
-#                                                                          resolve
-# -------------------------------------------------------------------------------------
 
-
-@pytest.mark.parametrize("name", NAMES)
-def test_resolve_keeps_a_known_tab(name):
-    assert DrinkTab.resolve(name).name == name
-
-
-@pytest.mark.parametrize("raw", ["xxx", "", None, "Index", "target", "Habits"])
-def test_resolve_falls_back_for_an_unknown_tab(raw):
-    # the default is Overview, and adding a tab must not quietly become the
-    # place an unrecognised value lands
-    assert DrinkTab.resolve(raw).name == "index"
-
-
-@pytest.mark.parametrize("raw", ["xxx", None])
-def test_resolve_honours_an_explicit_default(raw):
-    assert DrinkTab.resolve(raw, default="data").name == "data"
-
-
-def test_an_explicit_default_does_not_override_a_known_tab():
-    assert DrinkTab.resolve("risk", default="data").name == "risk"
-
-
-# -------------------------------------------------------------------------------------
-#                                                                   reload_trigger
-# -------------------------------------------------------------------------------------
+@given(
+    raw=st.text().filter(lambda raw: raw not in NAMES),
+    default=st.sampled_from(NAMES),
+)
+@example(raw="xxx", default="index")
+@example(raw="", default="index")
+@example(raw="Index", default="index")
+@example(raw="target", default="index")
+@example(raw="Habits", default="index")
+@example(raw="xxx", default="data")
+@example(raw="", default="data")
+def test_resolve_falls_back_to_the_default_for_an_unknown_tab(raw, default):
+    assert TABS.resolve(raw, default).name == default
 
 
 @pytest.mark.parametrize(
@@ -52,18 +41,13 @@ def test_an_explicit_default_does_not_override_a_known_tab():
     ],
 )
 def test_reload_trigger(name, expect):
-    assert DrinkTab.resolve(name).reload_trigger == expect
+    assert TABS[name].reload_trigger == expect
 
 
 def test_every_tab_has_a_distinct_trigger():
     triggers = [tab.reload_trigger for tab in TABS]
 
     assert len(set(triggers)) == len(TABS)
-
-
-# -------------------------------------------------------------------------------------
-#                                                                             urls
-# -------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize(
@@ -78,27 +62,18 @@ def test_every_tab_has_a_distinct_trigger():
     ],
 )
 def test_url_resolves_for_every_tab(name, expect):
-    assert DrinkTab.resolve(name).url == expect
+    assert TABS[name].url == expect
 
 
-@pytest.mark.parametrize("url_name", ["drinks:new", "drinks:target_new"])
-def test_form_url_carries_the_tab(url_name):
-    actual = DrinkTab.resolve("risk").form_url(url_name)
-
-    assert str(actual).endswith("/risk/new/") or str(actual).endswith(
-        "/risk/target/new/"
-    )
-
-
-def test_form_url_normalises_an_unknown_tab():
-    actual = DrinkTab.resolve("xxx").form_url("drinks:new")
-
-    assert str(actual) == "/drinks/index/new/"
-
-
-# -------------------------------------------------------------------------------------
-#                                                                            title
-# -------------------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "url_name, expect",
+    [
+        ("drinks:new", "/drinks/risk/new/"),
+        ("drinks:target_new", "/drinks/risk/target/new/"),
+    ],
+)
+def test_form_url_carries_the_tab(url_name, expect):
+    assert str(TABS["risk"].form_url(url_name)) == expect
 
 
 @pytest.mark.parametrize(
@@ -113,22 +88,16 @@ def test_form_url_normalises_an_unknown_tab():
     ],
 )
 def test_title_is_translated(name, expect):
-    assert str(DrinkTab.resolve(name).title) == expect
-
-
-# -------------------------------------------------------------------------------------
-#                                                                    the tab table
-# -------------------------------------------------------------------------------------
+    assert str(TABS[name].title) == expect
 
 
 def test_the_tabs_are_declared_in_the_order_the_nav_draws_them():
-    # the row is a tablist now, so this is also the order arrow keys walk
     assert NAMES == ("index", "trends", "habits", "risk", "history", "data")
 
 
 @pytest.mark.parametrize("name", ["index", "trends", "history"])
 def test_a_tab_reading_the_selected_type_offers_the_choice(name):
-    control = DrinkTab.resolve(name).control("wine")
+    control = TABS[name].control("wine")
 
     assert isinstance(control, DrinkTypeSelector)
     assert control.state == "choice"
@@ -137,7 +106,7 @@ def test_a_tab_reading_the_selected_type_offers_the_choice(name):
 
 @pytest.mark.parametrize("name", ["habits", "risk"])
 def test_a_tab_reading_a_harm_metric_names_std_av(name):
-    control = DrinkTab.resolve(name).control("wine")
+    control = TABS[name].control("wine")
 
     assert isinstance(control, FixedDrinkTypeSelector)
     assert control.state == "fixed"
@@ -145,15 +114,10 @@ def test_a_tab_reading_a_harm_metric_names_std_av(name):
 
 def test_a_tab_reading_no_single_amount_draws_no_switcher():
     """The Data tab lists what was typed, each row in its own drink type."""
-    control = DrinkTab.resolve("data").control("wine")
+    control = TABS["data"].control("wine")
 
     assert isinstance(control, NoDrinkTypeSelector)
     assert control.state == "absent"
-
-
-# -------------------------------------------------------------------------------------
-#                                                            tab_reload_response
-# -------------------------------------------------------------------------------------
 
 
 def test_a_reload_response_carries_no_body():
@@ -163,14 +127,10 @@ def test_a_reload_response_carries_no_body():
     assert not response.content
 
 
-@pytest.mark.parametrize("name", NAMES)
-def test_a_reload_response_fires_the_tabs_own_trigger(name):
-    response = tab_reload_response(name)
+@pytest.mark.parametrize(
+    "raw, expect", [("trends", "reloadTrends"), ("nonsense", "reloadIndex")]
+)
+def test_a_reload_response_fires_the_resolved_tabs_trigger(raw, expect):
+    response = tab_reload_response(raw)
 
-    assert DrinkTab.resolve(name).reload_trigger in response.headers["HX-Trigger"]
-
-
-def test_a_reload_response_falls_back_to_the_named_default():
-    response = tab_reload_response("nonsense", default="data")
-
-    assert "reloadData" in response.headers["HX-Trigger"]
+    assert json.loads(response.headers["HX-Trigger"]) == {expect: {}}

@@ -1,0 +1,35 @@
+@use "../abstracts/variables" as *;
+
+// Duomenys' list. Keyed under `.paper-skin` so Bookkeeping's legacy day, which
+// renders the same template, never meets it.
+
+.paper-skin .expenses-table {
+    // a shadow, not a border, so the date keeps its column's alignment
+    td.exception {
+        box-shadow: inset 3px 0 0 $ink-faint;
+    }
+
+    td:first-child {
+        white-space: nowrap;
+    }
+
+    td > .button-xs {
+        display: inline;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        font: inherit;
+        color: $ink;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
+
+        &:hover,
+        &:focus {
+            background: transparent;
+            color: $ink;
+            box-shadow: none;
+        }
+    }
+}

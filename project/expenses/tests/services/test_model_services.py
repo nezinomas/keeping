@@ -1,41 +1,14 @@
 from datetime import date
 
 import pytest
-from django.contrib.auth.models import AnonymousUser
 
 from ... import models
 from ...services.model_services import (
     ExpenseKeywordModelService,
     ExpenseModelService,
-    ExpenseNameModelService,
     ExpenseTypeModelService,
 )
 from .. import factories
-
-SERVICES = [
-    pytest.param(ExpenseModelService, id="expense"),
-    pytest.param(ExpenseTypeModelService, id="expense_type"),
-    pytest.param(ExpenseNameModelService, id="expense_name"),
-    pytest.param(ExpenseKeywordModelService, id="expense_keyword"),
-]
-
-
-@pytest.mark.parametrize("service", SERVICES)
-def test_service_init_raises_if_no_user(service):
-    with pytest.raises(ValueError, match="User required"):
-        service(user=None)
-
-
-@pytest.mark.parametrize("service", SERVICES)
-def test_service_init_raises_if_anonymous_user(service):
-    with pytest.raises(ValueError, match="Authenticated user required"):
-        service(user=AnonymousUser())
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize("service", SERVICES)
-def test_service_init_succeeds_with_real_user(main_user, service):
-    assert service(user=main_user).user == main_user
 
 
 @pytest.mark.django_db
@@ -108,16 +81,6 @@ class TestExpenseService:
 
 
 @pytest.mark.django_db
-def test_expense_keyword_items(main_user):
-    factories.ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
-    factories.ExpenseKeywordFactory(journal=main_user.journal, keyword="banan")
-
-    actual = ExpenseKeywordModelService(main_user).items()
-
-    assert actual.count() == 2
-
-
-@pytest.mark.django_db
 def test_expense_keyword_items_other_journal(main_user, second_user):
     other_name = factories.ExpenseNameFactory(
         parent=factories.ExpenseTypeFactory(
@@ -125,35 +88,14 @@ def test_expense_keyword_items_other_journal(main_user, second_user):
         )
     )
     factories.ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
+    factories.ExpenseKeywordFactory(journal=main_user.journal, keyword="kefyr")
     factories.ExpenseKeywordFactory(
         journal=second_user.journal, keyword="banan", expense_name=other_name
     )
 
     actual = ExpenseKeywordModelService(main_user).items()
 
-    assert [a.keyword for a in actual] == ["jogurt"]
-
-
-@pytest.mark.django_db
-def test_expense_keyword_year(main_user):
-    name_2024 = factories.ExpenseNameFactory(
-        title="N2024",
-        parent=factories.ExpenseTypeFactory(journal=main_user.journal),
-        valid_for=2024,
-    )
-    name_2026 = factories.ExpenseNameFactory(
-        title="N2026", parent=factories.ExpenseTypeFactory(journal=main_user.journal)
-    )
-    factories.ExpenseKeywordFactory(
-        journal=main_user.journal, keyword="old", expense_name=name_2024
-    )
-    factories.ExpenseKeywordFactory(
-        journal=main_user.journal, keyword="new", expense_name=name_2026
-    )
-
-    actual = ExpenseKeywordModelService(main_user).year(2026)
-
-    assert [a.keyword for a in actual] == ["new"]
+    assert sorted(a.keyword for a in actual) == ["jogurt", "kefyr"]
 
 
 @pytest.mark.django_db

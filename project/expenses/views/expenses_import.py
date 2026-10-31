@@ -1,7 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
-from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views import View
 from django_htmx.http import HttpResponseClientRedirect
@@ -11,6 +10,7 @@ from ..forms_import import ReceiptUploadForm, ReviewFormSet, ReviewReceiptForm
 from ..receipts.errors import UnreadableReceiptTextError, UnrecognisedReceiptError
 from ..receipts.reader import ReceiptReader
 from ..services.model_services import ExpenseKeywordModelService
+from ..services.month_filter import MonthFilter
 from ..services.receipt_import import ReceiptImport
 
 UPLOAD_TEMPLATE = "expenses/includes/import_upload.html"
@@ -135,8 +135,5 @@ class ImportSave(View):
             journal=request.user.journal,
         )
         return HttpResponseClientRedirect(
-            reverse(
-                "expenses:index",
-                kwargs={"month": receipt_form.cleaned_data["date"].month},
-            )
+            MonthFilter.at(receipt_form.cleaned_data["date"]).url()
         )

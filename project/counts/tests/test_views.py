@@ -339,6 +339,22 @@ def test_index_names_the_open_tab_and_the_counter_in_the_browser_title(
     assert f"<title>Xxx | {title}</title>" in content
 
 
+@pytest.mark.parametrize(
+    "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
+)
+def test_only_the_open_tab_reloads_on_its_trigger(client_logged, headers):
+    CountTypeFactory(title="Xxx")
+
+    content = client_logged.get("/counts/c/xxx/data/", headers=headers).content.decode()
+
+    listener = (
+        'hx-get="/counts/c/xxx/data/" hx-target="#tab_content" '
+        'hx-trigger="reloadData from:body"'
+    )
+    assert listener in content
+    assert content.count(" from:body") == 1
+
+
 def test_index_add_record_pill_opens_the_form_for_whichever_tab_is_open(client_logged):
     CountTypeFactory()
 
@@ -394,7 +410,7 @@ def test_index_counter_menu_puts_the_three_counter_acts_under_a_divider(client_l
         reverse("counts:type_delete", kwargs={"pk": obj.pk}),
         reverse("counts:type_new"),
     ):
-        assert bar.index(f'hx-get="{url}"') > divider
+        assert bar.index(f'<button type="button" hx-get="{url}"') > divider
         assert 'hx-target="#mainModal"' in bar
 
 
@@ -673,7 +689,7 @@ def test_data_context(client_logged):
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
     response = client_logged.get(url)
 
-    assert response.context["slug"] == "count-type"
+    assert response.context["object"].slug == "count-type"
 
 
 def test_data(client_logged):
@@ -683,7 +699,7 @@ def test_data(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert "66" in actual
+    assert '<td class="text-left main__figure">66,0</td>' in actual
     assert f'<a role="button" hx-get="/counts/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/counts/delete/{p.pk}/"' in actual
 
@@ -695,7 +711,7 @@ def test_data_no_records(client_logged):
     response = client_logged.get(url, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert "<b>1999</b> metais įrašų nėra." in actual
+    assert "1999 metais įrašų nėra." in actual
 
 
 def test_data_of_a_counter_with_no_records_at_all_names_no_year(client_logged):
@@ -741,7 +757,7 @@ def test_history_context(client_logged):
 
     assert "chart_weekdays" not in response.context
     assert "chart_histogram" not in response.context
-    assert response.context["slug"] == obj.slug
+    assert response.context["object"].slug == obj.slug
 
 
 def test_history_context_carries_the_cards_and_keeps_records(client_logged):

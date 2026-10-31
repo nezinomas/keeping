@@ -5,7 +5,6 @@ from django.db.models import Count, F, Max, Q
 from django.db.models.functions import ExtractYear
 
 from ...core.services.model_services import BaseModelService
-from ...users.models import User
 from .. import models
 
 
@@ -23,9 +22,10 @@ class CommonMethodsMixin:
             )
         ]
 
-        # items = [ <Q AND( ('date': datetime), ('field_id': int) )>, ... ]
         fld = f"{field}_id"
         items = [Q(date=x["latest_date"]) & Q(**{fld: x[fld]}) for x in qs]
+        if not items:
+            return []
 
         return (
             self.objects.filter(reduce(or_, items))
@@ -38,15 +38,10 @@ class CommonMethodsMixin:
                 category_id=F(f"{field}__id"),
                 have=F("price"),
             )
-            if items
-            else None
         )
 
 
 class AccountWorthModelService(CommonMethodsMixin, BaseModelService):
-    def __init__(self, user: User):
-        super().__init__(user)
-
     def get_queryset(self):
         return models.AccountWorth.objects.select_related("account").filter(
             account__journal=self.user.journal
@@ -57,9 +52,6 @@ class AccountWorthModelService(CommonMethodsMixin, BaseModelService):
 
 
 class SavingWorthModelService(CommonMethodsMixin, BaseModelService):
-    def __init__(self, user: User):
-        super().__init__(user)
-
     def get_queryset(self):
         return models.SavingWorth.objects.select_related("saving_type").filter(
             saving_type__journal=self.user.journal
@@ -70,9 +62,6 @@ class SavingWorthModelService(CommonMethodsMixin, BaseModelService):
 
 
 class PensionWorthModelService(CommonMethodsMixin, BaseModelService):
-    def __init__(self, user: User):
-        super().__init__(user)
-
     def get_queryset(self):
         return models.PensionWorth.objects.select_related("pension_type").filter(
             pension_type__journal=self.user.journal

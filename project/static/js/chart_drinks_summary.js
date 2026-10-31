@@ -34,7 +34,6 @@ function chart_drinks_summary(idData, idContainer) {
                     y: -8,
                     crop: false,
                     overflow: "allow",
-                    style: paper.readingDataLabelStyle,
                     formatter: function () {
                         return this.y > 0
                             ? Highcharts.numberFormat(this.y, chartData.decimals)
@@ -63,7 +62,7 @@ function chart_drinks_summary(idData, idContainer) {
                 states: { hover: { color: "transparent" } },
                 dataLabels: { enabled: false },
                 tooltip: {
-                    pointFormat: `${chartData.text.forecast}: <span style="color: ${blue}"><b>{point.y:.1f} L</b></span><br>`,
+                    pointFormat: `${chartData.text.forecast}: <span style="color: {series.options.borderColor}"><b>{point.y:.1f} L</b></span><br>`,
                 },
             }),
         ],

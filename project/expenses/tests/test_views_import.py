@@ -538,7 +538,7 @@ def test_import_save_valid_creates_expenses_and_redirects(
     response = client_logged.post(url, data=data)
 
     assert response.status_code == 200
-    assert response["HX-Redirect"] == reverse("expenses:index", kwargs={"month": 3})
+    assert response["HX-Redirect"] == "/expenses/data/3/"
     assert [(e.expense_name, e.price) for e in Expense.objects.order_by("pk")] == [
         (n1, 500),
         (n2, 300),
@@ -777,16 +777,6 @@ def test_import_save_valid_query_count_equal_for_2_and_6_lines(
     assert counts[2] == counts[6]
 
 
-def test_index_shows_import_link(main_user, client_logged):
-    url = reverse("expenses:index")
-    response = client_logged.get(url)
-
-    text = response.content.decode()
-    assert "Importuoti čekį" in text
-    assert reverse("expenses:import") in text
-    assert 'class="button-outline-success import-receipt"' in text
-
-
 def test_import_upload_file_control_speaks_the_app_language(main_user, client_logged):
     url = reverse("expenses:import")
 
@@ -905,6 +895,7 @@ def test_import_review_tfoot_cells_collapsed_without_shop_money(
     for row in rows:
         cells = re.findall(r"<td[^>]*>", row)
         assert len(cells) == 3
+        assert cells[1] == '<td class="main__figure">'
         assert 'colspan="3"' in cells[-1]
     assert "<td></td>" not in _section(text, "tfoot")
 
@@ -926,6 +917,7 @@ def test_import_review_tfoot_cells_collapsed_with_shop_money(main_user, client_l
     for row in rows:
         cells = re.findall(r"<td[^>]*>", row)
         assert len(cells) == 3
+        assert cells[1] == '<td class="main__figure">'
         assert 'colspan="4"' in cells[-1]
     assert "<td></td>" not in _section(text, "tfoot")
 

@@ -23,10 +23,6 @@ class CommonMethodsMixin:
         return self.objects.all()
 
     def incomes(self):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
         return (
             self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "to_account__title")
@@ -39,28 +35,13 @@ class CommonMethodsMixin:
         """One row per move out of a fund, with the money `expenses` counts as sold."""
         return self.objects.values("date", "price", category_id=F("from_account__pk"))
 
-    def base_expenses(self, fee=False):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
-        values = ["year", "expenses"]
-
-        if fee:
-            values.append("fee")
-
-        # Annotate the total price for each year and account
-        objects = (
+    def base_expenses(self):
+        return (
             self.objects.annotate(year=ExtractYear(F("date")))
-            .values("year", "from_account__title")
+            .values("year", "from_account")
             .annotate(expenses=Sum("price"))
-        )
-
-        # Annotate the total fee for each year and account if fee is True
-        objects = objects.annotate(fee=Sum("fee")) if fee else objects
-
-        return objects.values(*values, category_id=F("from_account__pk")).order_by(
-            "year", "category_id"
+            .values("year", "expenses", category_id=F("from_account__pk"))
+            .order_by("year", "category_id")
         )
 
 
@@ -74,10 +55,6 @@ class TransactionModelService(CommonMethodsMixin, DatedModelService):
         )
 
     def expenses(self):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
         return self.base_expenses()
 
 
@@ -96,11 +73,7 @@ class SavingCloseModelService(SumMixin, CommonMethodsMixin, DatedModelService):
         )
 
     def expenses(self):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
-        return self.base_expenses(fee=True)
+        return self.base_expenses().annotate(fee=Sum("fee"))
 
 
 class Purchase(NamedTuple):
@@ -119,11 +92,7 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
         )
 
     def expenses(self):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
-        return self.base_expenses(fee=True)
+        return self.base_expenses().annotate(fee=Sum("fee"))
 
     def switched_within(
         self, year: int, types: list[str], hidden: frozenset[int] = frozenset()

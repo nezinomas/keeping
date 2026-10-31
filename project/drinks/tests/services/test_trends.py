@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import date
 
@@ -5,7 +6,8 @@ import pytest
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from ....core.lib.stat_card import Card
+from ....core.lib.stat_card import HIGH, LOW, Card
+from ...lib.daily_limit import DailyLimit, NoDailyLimit
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow
 from ...lib.drinks_trend import (
@@ -35,9 +37,10 @@ def test_chart_trend_view_model(converter):
         converter,
         current_daily=[_row(date(2026, 1, 1), 5)],
         year=2026,
+        limit=DailyLimit(250),
         today=date(2026, 1, 5),
     )
-    builder = TrendsBuilder(stats, target=250)
+    builder = TrendsBuilder(stats)
 
     actual = builder.chart_trend()
 
@@ -47,7 +50,7 @@ def test_chart_trend_view_model(converter):
     assert len(actual.rolling_7) == 5
     assert len(actual.rolling_30) == 5
     assert actual.rolling_7[0] == round(1000 / 7)  # full-window mean, rounded
-    assert actual.target == 250
+    assert actual.limit == DailyLimit(250)
     assert set(actual.text) == {"daily", "r7", "r30", "limit", "unit"}
     assert actual.text["unit"] == "ml"
 
@@ -57,10 +60,11 @@ def test_chart_trend_carries_unaveraged_daily_volume(converter):
         converter,
         current_daily=[_row(date(2026, 1, 1), 5)],
         year=2026,
+        limit=DailyLimit(250),
         today=date(2026, 1, 5),
     )
 
-    actual = TrendsBuilder(stats, target=250).chart_trend()
+    actual = TrendsBuilder(stats).chart_trend()
 
     # raw ml/day, one point per category: 5 std av * 200 ml beer on Jan 1 only
     assert len(actual.daily) == len(actual.categories)
@@ -102,9 +106,10 @@ def test_chart_trend_payload_matches_the_keys_its_script_reads(converter):
         converter,
         current_daily=[_row(date(2026, 1, 1), 5)],
         year=2026,
+        limit=DailyLimit(250),
         today=date(2026, 1, 5),
     )
-    payload = TrendsBuilder(stats, target=250).chart_trend().as_dict
+    payload = TrendsBuilder(stats).chart_trend().as_dict
 
     source = (settings.SITE_ROOT / "static" / "js" / "chart_drinks_trend.js").read_text(
         encoding="utf-8"
@@ -112,19 +117,7 @@ def test_chart_trend_payload_matches_the_keys_its_script_reads(converter):
 
     assert set(re.findall(r"chartData\.(\w+)", source)) == set(payload)
     assert set(re.findall(r"chartData\.text\.(\w+)", source)) == set(payload["text"])
-
-
-def test_chart_trend_target_is_zero(converter):
-    stats = TrendStats(
-        converter,
-        current_daily=[_row(date(2026, 1, 1), 5)],
-        year=2026,
-        today=date(2026, 1, 5),
-    )
-
-    actual = TrendsBuilder(stats, target=0.0).chart_trend()
-
-    assert actual.target == 0.0
+    assert set(re.findall(r"\blimit\.(\w+)", source)) == set(payload["limit"])
 
 
 def test_chart_cumulative_view_model(converter):
@@ -132,11 +125,11 @@ def test_chart_cumulative_view_model(converter):
         converter,
         current_daily=[_row(date(2026, 1, 1), 5)],
         past_daily=[_row(date(2025, 1, 1), 2)],
-        target=1000,
+        limit=DailyLimit(1000),
         year=2026,
         today=date(2026, 1, 5),
     )
-    builder = TrendsBuilder(stats, target=1000)
+    builder = TrendsBuilder(stats)
 
     actual = builder.chart_cumulative()
 
@@ -160,12 +153,12 @@ def test_chart_cumulative_counts_std_av_instead_of_bottling_it():
         DrinkConverter("stdav"),
         current_daily=[_row(date(2026, 1, 1), 5)],
         past_daily=[_row(date(2025, 1, 1), 2)],
-        target=1.5,
+        limit=DailyLimit(1.5),
         year=2026,
         today=date(2026, 1, 5),
     )
 
-    actual = TrendsBuilder(stats, target=1.5).chart_cumulative()
+    actual = TrendsBuilder(stats).chart_cumulative()
 
     assert actual.text["unit"] == "Std Av"
     assert actual.this_year[0] == 5.0  # 5 Std Av, not 0.05 L
@@ -178,14 +171,15 @@ def test_chart_trend_as_dict_is_json_serializable(converter):
         converter,
         current_daily=[_row(date(2026, 1, 1), 5)],
         year=2026,
+        limit=DailyLimit(250),
         today=date(2026, 1, 5),
     )
 
-    actual = TrendsBuilder(stats, target=250).chart_trend().as_dict
+    payload = TrendsBuilder(stats).chart_trend().as_dict
 
-    assert actual["categories"][0] == "2026-01-01"
-    assert actual["rolling_30"][0] == round(1000 / 30)
-    assert actual["target"] == 250
+    actual = json.loads(json.dumps(payload))
+
+    assert actual["limit"] == {"amount": 250, "is_set": True}
 
 
 def test_builder_get_cards(converter):
@@ -267,12 +261,12 @@ def test_card_notes_join_their_values_with_a_slash(converter):
     stats = TrendStats(
         converter,
         current_daily=[_row(date(2026, 1, 10), 10)],
-        target=250,
+        limit=DailyLimit(250),
         year=2026,
         today=date(2026, 3, 1),
     )
 
-    notes = [c.note for c in TrendsBuilder(stats, target=250).get_cards()]
+    notes = [c.note for c in TrendsBuilder(stats).get_cards()]
 
     assert not [n for n in notes if "·" in n]
 
@@ -281,14 +275,30 @@ def test_forecast_card_note_separates_the_limit_from_the_difference(converter):
     stats = TrendStats(
         converter,
         current_daily=[_row(date(2026, 1, 10), 10)],
-        target=250,
+        limit=DailyLimit(250),
         year=2026,
         today=date(2026, 3, 1),
     )
 
-    card = TrendsBuilder(stats, target=250).get_cards()[4]
+    card = TrendsBuilder(stats).get_cards()[4]
 
     assert re.fullmatch(rf"{_('Limit')}: [\d.]+ \S+ / -?[\d.]+%", card.note)
+
+
+@pytest.mark.parametrize("target, state", [(100, HIGH), (300, LOW)])
+def test_forecast_card_level_reads_the_pace_against_the_limit(converter, target, state):
+    # 10 Std Av of beer over 10 days: 2000 ml, a 200 ml/day pace
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 1), 10)],
+        limit=DailyLimit(target),
+        year=2026,
+        today=date(2026, 1, 10),
+    )
+
+    card = TrendsBuilder(stats).get_cards()[4]
+
+    assert card.state == state
 
 
 def test_ytd_card_note_separates_its_unit_from_the_missing_year(converter):
@@ -397,12 +407,21 @@ def test_trends_tab_build_returns_charts_and_cards(main_user):
     assert len(result["cards"]) == 5
 
 
-def test_trends_tab_build_reads_target(main_user):
-    DrinkTargetFactory(user=main_user, year=2026, quantity=100)
+@pytest.mark.parametrize(
+    "quantity, expected, first_day",
+    # 100 ml a day paces 0.1 l a day on the cumulative chart
+    [(100, DailyLimit(100.0), 0.1), (0, NoDailyLimit(), 0.0)],
+)
+def test_trends_tab_build_hands_both_charts_its_limit(
+    main_user, quantity, expected, first_day
+):
+    if quantity:
+        DrinkTargetFactory(user=main_user, year=2026, quantity=quantity)
 
     result = TrendsTab.build(main_user, 2026, date(2026, 3, 1))
 
-    assert result["chart_trend"].target == 100.0
+    assert result["chart_trend"].limit == expected
+    assert result["chart_cumulative"].target[:2] == [first_day, 2 * first_day]
 
 
 def test_trends_tab_build_plots_the_selected_year_when_it_is_empty(main_user):

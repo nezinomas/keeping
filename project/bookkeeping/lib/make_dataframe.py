@@ -2,6 +2,7 @@ import calendar
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
+from functools import cached_property
 
 import polars as pl
 
@@ -33,7 +34,7 @@ class MonthDays:
 class DataFrameSchemaFormatter:
     """Handles enforcing required columns and sorting them alphabetically."""
 
-    def __init__(self, required_columns: Sequence[str] = ()):
+    def __init__(self, required_columns: Sequence[str]):
         self.required_columns = tuple(required_columns)
 
     def format(self, df: pl.DataFrame) -> pl.DataFrame:
@@ -53,22 +54,19 @@ class DataFrameSchemaFormatter:
 class TimeSeriesPivotBuilder:
     """Transforms raw dictionary data into a padded, clean Polars pivot table."""
 
-    def __init__(self, date_range: YearMonths | MonthDays, columns: Sequence[str] = ()):
+    def __init__(self, date_range: YearMonths | MonthDays, columns: Sequence[str]):
         self.date_range = date_range
         self.formatter = DataFrameSchemaFormatter(columns)
 
     def build(self, raw_data: list[dict], value_column: str) -> pl.DataFrame:
+        return self.formatter.format(self._padded(raw_data, value_column))
+
+    def _padded(self, raw_data: list[dict], value_column: str) -> pl.DataFrame:
         expected_dates_df = self.date_range.dates()
-
-        if not raw_data:
-            return self.formatter.format(expected_dates_df)
-
         df = pl.DataFrame(raw_data)
 
-        # If the requested value column (like 'exception_sum') doesn't exist
-        # return empty schema
         if value_column not in df.columns:
-            return self.formatter.format(expected_dates_df)
+            return expected_dates_df
 
         pivoted_df = (
             df.group_by([DATE, "title"])
@@ -81,9 +79,11 @@ class TimeSeriesPivotBuilder:
             )
         )
 
-        padded_df = expected_dates_df.join(pivoted_df, on=DATE, how="left").fill_null(0)
-
-        return self.formatter.format(padded_df)
+        return (
+            expected_dates_df.join(pivoted_df, on=DATE, how="left")
+            .fill_null(0)
+            .sort(DATE)
+        )
 
 
 class MakeDataFrame:
@@ -91,7 +91,7 @@ class MakeDataFrame:
         self,
         date_range: YearMonths | MonthDays,
         data: list[dict],
-        columns: Sequence[str] = (),
+        columns: Sequence[str],
     ):
         self.date_range = date_range
         self._data = data
@@ -110,11 +110,11 @@ class MakeDataFrame:
     ) -> "MakeDataFrame":
         return cls(MonthDays(year, month), data, columns)
 
-    @property
+    @cached_property
     def data(self) -> pl.DataFrame:
         return self._builder.build(self._data, value_column="sum")
 
-    @property
+    @cached_property
     def exceptions(self) -> pl.DataFrame:
         df = self._builder.build(self._data, value_column="exception_sum")
 

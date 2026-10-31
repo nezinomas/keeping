@@ -23,15 +23,6 @@ def fixture_month_data():
     ]
 
 
-@pytest.fixture(name="day_data")
-def fixture_day_data():
-    return [
-        {"date": date(1999, 1, 1), "title": "T1", "sum": 5, "exception_sum": 4},
-        {"date": date(1999, 1, 1), "title": "T2", "sum": 2, "exception_sum": 0},
-        {"date": date(1999, 1, 30), "title": "T1", "sum": 3, "exception_sum": 0},
-    ]
-
-
 @pytest.fixture(name="columns")
 def fixture_columns():
     return ["T1", "T2", "T0"]
@@ -49,10 +40,10 @@ def test_year_months():
 @pytest.mark.parametrize(
     "year, month, expected_days, expected_last_date",
     [
-        (1999, 1, 31, date(1999, 1, 31)),  # Standard 31-day month
-        (1999, 4, 30, date(1999, 4, 30)),  # Standard 30-day month
-        (1999, 2, 28, date(1999, 2, 28)),  # Non-leap year February
-        (2000, 2, 29, date(2000, 2, 29)),  # Leap year February
+        pytest.param(1999, 1, 31, date(1999, 1, 31), id="31_days"),
+        pytest.param(1999, 4, 30, date(1999, 4, 30), id="30_days"),
+        pytest.param(1999, 2, 28, date(1999, 2, 28), id="february"),
+        pytest.param(2000, 2, 29, date(2000, 2, 29), id="leap_february"),
     ],
 )
 def test_month_days_variations(year, month, expected_days, expected_last_date):
@@ -76,7 +67,7 @@ def test_schema_formatter_adds_missing_columns():
 
 def test_schema_formatter_sorts_alphabetically_with_date_first():
     df = pl.DataFrame({"Z": [1], "date": [date(1999, 1, 1)], "A": [2], "M": [3]})
-    formatter = DataFrameSchemaFormatter()  # No required columns
+    formatter = DataFrameSchemaFormatter(required_columns=())
 
     actual = formatter.format(df)
     assert actual.columns == ["date", "A", "M", "Z"]
@@ -96,7 +87,7 @@ def test_pivot_builder_standard_data(month_data, columns):
     actual = builder.build(month_data, value_column="sum")
 
     assert actual.shape == (12, 4)
-    assert actual[0, "T1"] == 7  # 4 + 3 (grouped and summed)
+    assert actual[0, "T1"] == 7
     assert actual[0, "T2"] == 2
     assert actual[11, "T1"] == 4
     assert actual[11, "T2"] == 5
@@ -121,13 +112,6 @@ def test_pivot_builder_missing_value_column_returns_zeroed_spine():
     assert sum(actual["T1"].to_list()) == 0
 
 
-def test_facade_month_expenses(month_data, columns):
-    actual = MakeDataFrame.for_year(year=1999, data=month_data, columns=columns).data
-    assert actual.shape == (12, 4)
-    assert actual.columns == ["date", "T0", "T1", "T2"]
-    assert actual[0, "T1"] == 7
-
-
 def test_facade_month_expenses_partial_data():
     data = [{"date": date(1999, 2, 1), "title": "X", "sum": 5}]
     actual = MakeDataFrame.for_year(year=1999, data=data).data
@@ -135,73 +119,47 @@ def test_facade_month_expenses_partial_data():
     assert actual.columns == ["date", "X"]
 
 
-def test_facade_month_no_data_expenses(columns):
-    actual = MakeDataFrame.for_year(year=1999, data=[], columns=columns).data
-    assert actual.select(pl.sum_horizontal(pl.exclude("date")).sum()).item() == 0
-
-
-def test_facade_month_no_data_and_no_columns_expenses():
-    actual = MakeDataFrame.for_year(year=1999, data=[], columns=[]).data
-    assert actual.shape == (12, 1)
+@pytest.mark.parametrize(
+    "facade, rows",
+    [
+        pytest.param(lambda: MakeDataFrame.for_year(1999, []), 12, id="year"),
+        pytest.param(lambda: MakeDataFrame.for_month(1999, 2, []), 28, id="month"),
+    ],
+)
+def test_facade_without_columns_is_dates_alone(facade, rows):
+    actual = facade().data
+    assert actual.shape == (rows, 1)
     assert actual.columns == ["date"]
 
 
-def test_facade_month_exceptions(month_data, columns):
-    actual = MakeDataFrame.for_year(
-        year=1999, data=month_data, columns=columns
-    ).exceptions
-    assert actual.shape == (12, 2)
+@pytest.mark.parametrize(
+    "data, columns, first_month",
+    [
+        pytest.param(
+            [
+                {"date": date(1999, 1, 1), "title": "T1", "sum": 4, "exception_sum": 3},
+                {"date": date(1999, 1, 1), "title": "T2", "sum": 2, "exception_sum": 2},
+                {
+                    "date": date(1999, 12, 1),
+                    "title": "T1",
+                    "sum": 4,
+                    "exception_sum": 0,
+                },
+            ],
+            ["T1", "T2", "T0"],
+            5,
+            id="with_data",
+        ),
+        pytest.param(
+            [{"date": date(1999, 1, 1), "title": "T1", "sum": 4, "exception_sum": 3}],
+            [],
+            3,
+            id="one_title",
+        ),
+        pytest.param([], [], 0, id="no_data"),
+    ],
+)
+def test_facade_exceptions(data, columns, first_month):
+    actual = MakeDataFrame.for_year(year=1999, data=data, columns=columns).exceptions
     assert actual.columns == ["date", "sum"]
-    assert actual[0, "sum"] == 3
-
-
-def test_facade_month_no_data_exceptions(columns):
-    actual = MakeDataFrame.for_year(year=1999, data=[], columns=columns).exceptions
-    assert actual.shape == (12, 2)
-    assert actual.columns == ["date", "sum"]
-    assert actual.select(pl.col("sum").sum()).item() == 0
-
-
-def test_facade_day_expenses(day_data, columns):
-    actual = MakeDataFrame.for_month(
-        year=1999, month=1, data=day_data, columns=columns
-    ).data
-    assert actual.shape == (31, 4)
-    assert actual[0, "T1"] == 5
-    assert actual[29, "T1"] == 3
-
-
-def test_facade_day_no_data_exceptions(columns):
-    actual = MakeDataFrame.for_month(
-        year=1999, month=1, data=[], columns=columns
-    ).exceptions
-    assert actual.shape == (31, 2)
-    assert actual.columns == ["date", "sum"]
-    assert actual.select(pl.col("sum").sum()).item() == 0
-
-
-def test_facade_expenses_and_exceptions_same_size(month_data, columns):
-    actual = MakeDataFrame.for_month(
-        year=1999, month=1, data=month_data, columns=columns
-    )
-    assert actual.exceptions.shape[0] == actual.data.shape[0]
-
-
-def test_facade_preserves_public_attributes():
-    actual = MakeDataFrame.for_month(year=1999, month=5, data=[], columns=["T1"])
-    assert actual.date_range.year == 1999
-    assert actual.date_range.month == 5
-
-
-def test_schema_formatter_default_is_no_required_columns():
-    assert DataFrameSchemaFormatter().required_columns == ()
-
-
-def test_pivot_builder_columns_default_is_no_required_columns():
-    actual = TimeSeriesPivotBuilder(YearMonths(1999)).build([], value_column="sum")
-    assert actual.columns == ["date"]
-
-
-def test_facade_month_columns_default_is_no_required_columns():
-    actual = MakeDataFrame.for_month(year=1999, month=2, data=[]).data
-    assert actual.shape == (28, 1)
+    assert actual["sum"].to_list() == [first_month] + [0] * 11

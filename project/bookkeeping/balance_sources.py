@@ -2,7 +2,6 @@ from ..accounts.services.model_services import (
     AccountBalanceModelService,
     AccountModelService,
 )
-from ..core.lib.signals import Accounts, Savings
 from ..core.services.signals_service import sync
 from ..debts.models import Debt
 from ..debts.services.model_services import DebtModelService, DebtReturnModelService
@@ -24,6 +23,7 @@ from ..transactions.services.model_services import (
     TransactionModelService,
 )
 from ..users.models import User
+from .lib.balance_rows import AccountBalanceRows, SavingBalanceRows
 from .services.model_services import (
     AccountWorthModelService,
     PensionWorthModelService,
@@ -76,12 +76,12 @@ PENSIONS = {
 
 
 def sync_accounts(user: User) -> None:
-    sync(user, ACCOUNTS, Accounts, AccountBalanceModelService)
+    sync(user, ACCOUNTS, AccountBalanceRows, AccountBalanceModelService)
 
 
 def sync_savings(user: User) -> None:
-    sync(user, SAVINGS, Savings, SavingBalanceModelService)
+    sync(user, SAVINGS, SavingBalanceRows, SavingBalanceModelService)
 
 
 def sync_pensions(user: User) -> None:
-    sync(user, PENSIONS, Savings, PensionBalanceModelService)
+    sync(user, PENSIONS, SavingBalanceRows, PensionBalanceModelService)

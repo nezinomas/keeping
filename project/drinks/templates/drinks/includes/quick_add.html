@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<div id="quick-add" class="quick-add"
+<c-quick-add id="quick-add"
      x-data="{
          open: false,
          option: '{{ drink_types.selected|default:'beer' }}',
@@ -22,13 +22,14 @@
      }"
      @keydown.window.escape="open = false">
 
+    <c-slot name="sheet">
     <div class="quick-add__sheet" x-show="open" x-cloak x-transition
          @click.outside="open = false">
         <form hx-post="{% url 'drinks:quick_add' %}"
               hx-swap="none"
               hx-on::after:request="if (event.detail.ctx.response.raw.ok) { Alpine.$data(this).open = false; Alpine.$data(this).updateQuantity(); }">
             {% csrf_token %}
-            <!-- the open tab, from the page's Alpine scope: a submit reloads it -->
+            {# the open tab, from the page's Alpine scope: a submit reloads it #}
             <input type="hidden" name="tab" id="quick-add-tab" :value="tab">
 
             <div class="select-wrapper quick-add__day">
@@ -50,7 +51,7 @@
             </div>
 
             <div class="quick-add__qty-field">
-                <!-- keyup, not input: x-model binds on input and overwrites the rewrite -->
+                {# keyup, not input: x-model binds on input and overwrites the rewrite #}
                 <input type="text" name="quantity" class="form-control quick-add__qty"
                        inputmode="decimal" autocomplete="off" required
                        placeholder="{% translate 'Quantity' %}"
@@ -58,8 +59,7 @@
                        @keyup="quantity = quantity.replace(',', '.').replace(/[^0-9.]/g, '').replace(/^(\d*\.?\d*).*/, '$1')"
                        @keydown.up.prevent="step(1)"
                        @keydown.down.prevent="step(-1)">
-                <!-- aria-hidden and unfocusable, as a native spin button is:
-                     the arrow keys above are the accessible path -->
+                {# hidden and unfocusable, as a native spin button is: the arrow keys are the accessible path #}
                 <span class="quick-add__spin" aria-hidden="true">
                     <button type="button" class="quick-add__spin-up" tabindex="-1"
                             @click="step(1)"></button>
@@ -70,17 +70,17 @@
 
             <button type="submit" class="button-secondary">{% translate 'Add' %}</button>
             <button type="button" class="button-secondary"
-                    @click.prevent="htmx.ajax('GET', '/drinks/' + document.getElementById('quick-add-tab').value + '/new/', '#mainModal')">
+                    data-url="{% url 'drinks:new' 'TAB' %}"
+                    @click.prevent="htmx.ajax('GET', $el.dataset.url.replace('TAB', tab), '#mainModal')">
                 {% translate 'More' %}...
             </button>
         </form>
     </div>
+    </c-slot>
 
-    <div class="quick-add__bar">
-        {% include 'drinks/includes/drink_type.html' %}
+    {% include 'drinks/includes/drink_type.html' %}
 
-        <button type="button" class="quick-add__pill" @click="open = !open">
-            {% translate 'Log a drink' %}
-        </button>
-    </div>
-</div>
+    <button type="button" class="quick-add__pill" @click="open = !open">
+        {% translate 'Log a drink' %}
+    </button>
+</c-quick-add>

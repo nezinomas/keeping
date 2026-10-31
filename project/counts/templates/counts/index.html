@@ -1,51 +1,31 @@
-{% extends 'base.html' %}
+{% extends 'core/paper_page.html' %}
 
 {% load static %}
-{% load i18n %}
 
 
-{% block title %}{{ page_title }}{% endblock title %}
-
-
-{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
-
-
-{% block head %}
+{% block head_scripts %}
     {% include 'highcharts.html' %}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_counts_periodicity.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/calendar.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
-{% endblock head %}
+{% endblock head_scripts %}
 
 
-{% block content %}
-
-<div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
-
-<h1 class="visually-hidden">{{ object.title }}</h1>
-
-<c-subnav :tabs=tabs :active=tab />
-
-{% for count_tab, url in tabs %}
-<div hx-get="{{ url }}" hx-target="#tab_content" hx-trigger="{{ count_tab.reload_trigger }} from:body"></div>
-{% endfor %}
-
-<main id="tab_content" class="grid-one-col" role="tabpanel" :aria-labelledby="'tab-' + tab">
-    {{content}}
-</main>
-
-{% include 'counts/includes/quick_add.html' %}
-
-</div>
+{% block page_name %}{{ object.title }}{% endblock page_name %}
 
 
+{% block quick_add %}{% include 'counts/includes/quick_add.html' %}{% endblock quick_add %}
+
+
+{% block tab_listeners %}
 <script nonce="{{ csp_nonce }}">
     function initCountsCharts() {
         if (document.getElementById('chart-months-container')) {
-            chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
-            chartPeriodicity('chart-months-data', 'chart-months-container');
-            chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
+            {# the three share a row: one margin keeps their x axes on one line however their labels tilt #}
+            chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container', 60);
+            chartPeriodicity('chart-months-data', 'chart-months-container', 60);
+            chartPeriodicity('chart-histogram-data', 'chart-histogram-container', 60);
         }
         if (document.getElementById('chart-years-container')) {
             chartPeriodicity('chart-years-data', 'chart-years-container');
@@ -62,5 +42,4 @@
         }
     });
 </script>
-
-{% endblock content %}
+{% endblock tab_listeners %}

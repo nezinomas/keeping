@@ -1,7 +1,6 @@
 from datetime import date
 
 from django.urls import reverse_lazy
-from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.utils import http_htmx_response
@@ -25,21 +24,20 @@ from .services.model_services import (
     NecessaryPlanModelService,
     SavingPlanModelService,
 )
-from .tabs import DEFAULT_TAB, TABS, PlanTab
+from .tabs import TABS
 
 
 class TabViewMixin(CoreTabViewMixin):
-    tab = DEFAULT_TAB
-    fragment_template = "plans/tab_fragment.html"
+    tabs = TABS
+    # the outcome the other three tabs feed, so it opens first
+    default_tab = TABS["day"]
+    app_title = _("Plans")
     page_template = "plans/index.html"
 
     def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "tab_url": self.tab.url}
-
-    def page_context(self) -> dict:
         return {
-            "page_title": format_lazy("{} | {}", _("Plans"), self.tab.title),
-            "tabs": [(tab, tab.url) for tab in TABS],
+            **super().get_context_data(**kwargs),
+            "plan_year": self.request.user.selected_year(),
         }
 
     def plan_data(self) -> DataDto:
@@ -48,15 +46,14 @@ class TabViewMixin(CoreTabViewMixin):
 
 
 class TabIncomes(TabViewMixin, TemplateViewMixin):
-    tab = PlanTab.resolve("incomes")
+    tab = TABS["incomes"]
 
     def get_context_data(self, **kwargs):
         user = self.request.user
+        year = user.selected_year()
         return {
             **super().get_context_data(**kwargs),
-            "income_plans": IncomePlanModelService(user).pivot_table(
-                user.selected_year()
-            ),
+            "income_plans": IncomePlanModelService(user).rows(year),
             "cards": IncomeCards.build(self.plan_data()),
         }
 
@@ -87,15 +84,15 @@ class IncomesDelete(PlanDeleteMixin, DeleteViewMixin):
 
 
 class TabExpenses(TabViewMixin, TemplateViewMixin):
-    tab = PlanTab.resolve("expenses")
+    tab = TABS["expenses"]
 
     def get_context_data(self, **kwargs):
         user = self.request.user
         year = user.selected_year()
         return {
             **super().get_context_data(**kwargs),
-            "expense_plans": ExpensePlanModelService(user).pivot_tables(year),
-            "necessary_plans": NecessaryPlanModelService(user).pivot_table(year),
+            "expense_plans": ExpensePlanModelService(user).row_tables(year),
+            "necessary_plans": NecessaryPlanModelService(user).rows(year),
             "cards": ExpenseCards.build(self.plan_data()),
         }
 
@@ -126,15 +123,14 @@ class ExpensesDelete(PlanDeleteMixin, DeleteViewMixin):
 
 
 class TabSavings(TabViewMixin, TemplateViewMixin):
-    tab = PlanTab.resolve("savings")
+    tab = TABS["savings"]
 
     def get_context_data(self, **kwargs):
         user = self.request.user
+        year = user.selected_year()
         return {
             **super().get_context_data(**kwargs),
-            "saving_plans": SavingPlanModelService(user).pivot_table(
-                user.selected_year()
-            ),
+            "saving_plans": SavingPlanModelService(user).rows(year),
             "cards": SavingCards.build(self.plan_data()),
         }
 
@@ -165,10 +161,9 @@ class SavingsDelete(PlanDeleteMixin, DeleteViewMixin):
 
 
 class TabDay(TabViewMixin, TemplateViewMixin):
-    tab = PlanTab.resolve("day")
-
     def get_context_data(self, **kwargs):
         user = self.request.user
+        year = user.selected_year()
         data = self.plan_data()
         calc = PlanCalculateDaySum(data)
         # this month = today's month number, in whichever Plan year is selected
@@ -176,10 +171,9 @@ class TabDay(TabViewMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            "day_plans": DayPlanModelService(user).pivot_table(user.selected_year()),
+            "day_plans": DayPlanModelService(user).rows(year, calc.day_plan_states()),
             "calculations": Calculations.build(calc),
-            "cards": DayCards.build(data, month),
-            "day_states": calc.day_plan_states(),
+            "cards": DayCards.build(calc, month),
         }
 
 

@@ -18,7 +18,7 @@
         {{ chart_balance|json_script:"chart-balance-data" }}
     </div>
     {% else %}
-    {% include 'core/no_records.html' with two_years=True %}
+    {% include 'core/no_records.html' %}
     {% endif %}
 
 
@@ -28,7 +28,7 @@
         {{ chart_incomes|json_script:"chart-incomes-data" }}
     </div>
     {% else %}
-    {% include 'core/no_records.html' with two_years=True %}
+    {% include 'core/no_records.html' %}
     {% endif %}
 
 

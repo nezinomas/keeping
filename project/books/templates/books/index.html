@@ -1,62 +1,32 @@
-{% extends 'base.html' %}
+{% extends 'core/paper_page.html' %}
 
 {% load static %}
 {% load i18n %}
 
 
-{% block title %}{{ page_title }}{% endblock title %}
-
-
-{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
-
-
-{% block head %}
+{% block head_scripts %}
     {% include 'highcharts.html' with bullet="True" %}
-    <!-- the paper skin's half of the charts, after the shared theme it overrides
-         and before the chart it dresses -->
+    {# after the shared chart theme it overrides, before the chart it dresses #}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_books_finished.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
-{% endblock head %}
+{% endblock head_scripts %}
 
 
-{% block content %}
+{% block page_name %}{% translate 'Books' %}{% endblock page_name %}
 
-<div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
 
-<h1 class="visually-hidden">{% translate 'Books' %}</h1>
+{% block quick_add %}
+<c-quick-add>
+    <c-quick-add.pill url="{% url 'books:new' %}">{% translate 'Add book' %}</c-quick-add.pill>
+</c-quick-add>
+{% endblock quick_add %}
 
-<c-subnav :tabs=tabs :active=tab />
 
-<main id="tab_content" class="grid-one-col" role="tabpanel" :aria-labelledby="'tab-' + tab">
-    {% include 'books/includes/tab_reload.html' %}
-    {{ content }}
-</main>
-
-<!-- the page's only way into the book form. It borrows the quick-add pill's
-     chrome and none of its behaviour — this opens the modal -->
-<div class="quick-add">
-    <button type="button" class="quick-add__pill" hx-get="{% url 'books:new' %}" hx-target="#mainModal">
-        {% translate 'Add book' %}
-    </button>
-</div>
-
-</div>
-
+{% block tab_listeners %}
 <script nonce="{{ csp_nonce }}">
-    function initBooksChart() {
-        if (document.getElementById('chart-finished-data')) {
-            chartFinished('chart-finished-data', 'chart-finished-container');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', initBooksChart);
-
-    htmx.on('htmx:after:swap', function (event) {
-        if (event.detail.ctx.target.id === 'tab_content') {
-            initBooksChart();
-        }
+    onTabContent('chart-finished-data', function () {
+        chartFinished('chart-finished-data', 'chart-finished-container');
     });
 </script>
-
-{% endblock content %}
+{% endblock tab_listeners %}

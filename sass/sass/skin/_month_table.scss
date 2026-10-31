@@ -1,4 +1,5 @@
 @use "../abstracts/variables" as *;
+@use "tokens";
 
 .month-table {
     overflow-x: auto;
@@ -11,12 +12,20 @@
     border-collapse: separate;
     border-spacing: 0;
 
+    @media only screen and (min-width: 768px) {
+        min-width: 72rem;
+    }
+
     th.title-col,
     :is(tbody, tfoot) td:first-child {
         width: 8rem;
         position: sticky;
         left: 0;
         z-index: 1;
+
+        @media only screen and (min-width: 768px) {
+            width: 12rem;
+        }
     }
 
     // opaque: it covers the cells that scroll under it
@@ -25,41 +34,44 @@
     }
 
     &.striped tbody tr:nth-child(even) > td:first-child {
-        background-color: $paper;
-        background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+        @include tokens.opaque-stripe;
     }
 
     &.hover tbody tr:hover > td:first-child {
-        background-color: $hair-soft;
-        background-image: none;
+        @include tokens.opaque-hover;
     }
 
     .month-table__total {
         font-weight: 600;
         color: $ink;
+    }
+
+    .month-table__quarter {
+        @include tokens.caps(0.6875rem);
+
+        text-align: center;
+        border-bottom: 1px solid $hair;
+    }
+
+    .month-table__quarter + .month-table__quarter {
         border-left: 1px solid $hair;
     }
-}
 
-.month-table__month-full {
-    display: none;
-}
+    // months 4, 7 and 10, after the title column
+    $quarter-starts: ":is(:nth-child(5), :nth-child(8), :nth-child(11))";
 
-@media only screen and (min-width: 768px) {
-    .paper-skin .month-table .main {
-        min-width: 72rem;
-
-        th.title-col,
-        :is(tbody, tfoot) td:first-child {
-            width: 12rem;
-        }
+    thead tr:last-child > #{$quarter-starts} {
+        border-left: 1px solid $hair;
     }
 
-    .month-table__month-full {
-        display: inline;
+    :is(tbody, tfoot) td#{$quarter-starts} {
+        border-left: 1px solid $hair-soft;
     }
 
-    .month-table__month-short {
-        display: none;
+    // the first column after December, from the band down
+    .month-table__quarter + :not(.month-table__quarter),
+    thead tr:last-child > :nth-child(14),
+    :is(tbody, tfoot) td:nth-child(14) {
+        border-left: 1px solid $hair;
     }
 }

@@ -1,30 +1,20 @@
-from dataclasses import dataclass
-
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from ..core.tabs import Tab, Tabs
 
-@dataclass(frozen=True)
-class BookTab:
-    name: str
-    title: str
+YEAR = "year"
+ALL_RECORDS = "all"
 
-    @classmethod
-    def resolve(cls, name: str) -> "BookTab":
-        return BY_NAME[name]
 
+class BookTab(Tab):
+    app = "books"
+
+
+class BookDataTab(BookTab):
     @property
     def url(self) -> str:
-        return reverse(f"books:tab_{self.name}")
-
-    @property
-    def template_name(self) -> str:
-        return f"books/tab_{self.name}.html"
+        return reverse("books:tab_data", kwargs={"scope": YEAR})
 
 
-TABS = (
-    BookTab("index", _("Overview")),
-    BookTab("data", _("Data")),
-)
-BY_NAME = {tab.name: tab for tab in TABS}
-DEFAULT_TAB = BY_NAME["index"]
+TABS = Tabs(BookTab("index", _("Overview")), BookDataTab("data", _("Data")))

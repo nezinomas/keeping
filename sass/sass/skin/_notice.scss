@@ -1,22 +1,26 @@
 @use "../abstracts/variables" as *;
 
-// A notice: the table has nothing in it. Uncoloured, warning or not — an empty
-// table is a baseline, not an error, and field errors are drawn by
-// `.invalid-feedback`. Top-level, because #mainModal sits outside `.paper-skin`.
-.alert {
-    padding: calc($gap * 1.2) 0;
-    border: 0;
+// A notice that the table is empty: uncoloured, as empty is a baseline, not an error.
+// Top-level, because #mainModal sits outside `.paper-skin`.
+.alert:not(.alert-danger) {
+    $room: $gap * 1.2;
+
+    padding: $room 0;
     border-top: 1px solid $hair;
     border-bottom: 1px solid $hair;
-    border-radius: 0;
-    background: none;
-    font-family: $mono;
-    font-size: 0.68rem;
-    letter-spacing: 0.06em;
+    font-family: $display;
+    font-size: 0.875rem;
     color: $ink-muted;
     text-align: center;
 
-    // in a mono face bold shouts; the figure only wants to be the subject
+    // the face keeps descender room under its baseline: trimmed to the caps, the room
+    // above the figure equals the room below the line, and the box keeps its height
+    @supports (text-box: trim-both cap alphabetic) {
+        padding-block: calc($room + (1lh - 1cap) / 2);
+        text-box: trim-both cap alphabetic;
+    }
+
+    // a muted notice: the figure stands out by ink, not by a louder weight
     b,
     strong {
         font-weight: 400;
@@ -24,22 +28,18 @@
     }
 }
 
-// An alert: a sentence in the body face, since mono is for labels.
+// An alert: a sentence, so the body face.
 .alert.alert-danger {
     padding: calc($gap * 0.8) $gap;
-    border: 0;
     border-left: 3px solid $harm;
     background: $harm-tint;
     font-family: $body;
     font-size: 0.875rem;
-    letter-spacing: normal;
     color: $harm;
     text-align: left;
 
-    // the notice inks its <strong>; an alert's message is that <strong>
     b,
     strong {
         font-weight: 500;
-        color: inherit;
     }
 }

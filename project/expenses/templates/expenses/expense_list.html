@@ -1,28 +1,16 @@
 {% load static %}
 {% load i18n %}
 {% load humanize %}
-{% load colorize %}
 {% load math %}
 {% load cell_format %}
 {% load fast_rendering %}
 
 {% if object_list %}
 
-{% if sum_price %}
-<div class="search-statistic alert alert-warning">
-    <div><strong>{% translate 'How many' %}</strong>: {{sum_quantity|floatformat:"0g"}}</div>
-    <div><strong>{% translate 'Price' %}</strong>: {{sum_price|price|cellformat}}</div>
-    <div><strong>{% translate "Average unit price" %}</strong>: {{average|price|floatformat:"2g"}}</div>
-</div>
-{% endif %}
-
-
-<div
-    hx-trigger="reload from:body, afterType from:body, afterName from:body"
-    hx-get="{{request.get_full_path}}"
-    hx-target="#data"
-    hx-indicator:inherited="#indicator">
     <table class="main expenses-table striped hover sticky-table">
+        {% if sum_price %}
+        <caption>{% translate "Average unit price" %}: {{average|price|floatformat:"2g"}}</caption>
+        {% endif %}
         <thead>
             <tr>
                 <th class="text-left">{% translate 'Date' %}</th>
@@ -43,12 +31,12 @@
 
             {% for object in object_list %}
 
-            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% firstof object.expense_type.pk|bg_color or object.expense_type__pk|bg_color %} {% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
                 <td class="text-left">{{ object.expense_type__title }}</td>
                 <td class="text-left">{{ object.expense_name__title }}</td>
-                <td>{{ object.quantity }}</td>
-                <td>{{ object.price_str }}</td>
+                <td class="main__figure">{{ object.quantity }}</td>
+                <td class="main__figure">{{ object.price_str }}</td>
                 <td class="text-left cell-padding remark">{{ object.remark }}</td>
                 <td>
                     {% if object.attachment %}
@@ -65,27 +53,42 @@
             </tr>
             {% endfor %}
         </tbody>
+        {% if sum_price %}
+        <tfoot>
+            <tr class="main__total">
+                <td class="text-left">{% translate 'Total' %}</td>
+                <td></td>
+                <td></td>
+                <td class="main__figure">{{sum_quantity|floatformat:"0g"}}</td>
+                <td class="main__figure">{{sum_price|price|cellformat}}</td>
+                <td colspan="5"></td>
+            </tr>
+        </tfoot>
+        {% endif %}
     </table>
-</div>
 
-<c-paging :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#data"/>
+{% if paginator_object %}
+<div hx-push-url:inherited="true">
+    <c-paging :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#tab_content"/>
+</div>
+{% endif %}
 
 
 <!-- modal image -->
-<div id="imgModalContainer" class="modal">
+<div id="imgModalContainer" class="modal" hidden>
     <div id="imgModal" class="modal-dialog"></div>
 </div>
 
 
 {% else %}
 
-<div class="alert alert-warning" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
+<div class="alert">
 {% if notice %}
     {{ notice }}
-{% elif notice_month %}
-    {% blocktranslate with month=notice_month %}There are no records for month <b>{{ month }}</b>.{% endblocktranslate %}
+{% elif all_months %}
+    {% blocktranslate with year=year %}No records in {{ year }}.{% endblocktranslate %}
 {% else %}
-    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+    {% blocktranslate with month=month.value %}There are no records for month {{ month }}.{% endblocktranslate %}
 {% endif %}
 </div>
 

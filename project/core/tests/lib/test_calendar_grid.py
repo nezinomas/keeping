@@ -2,7 +2,6 @@ from datetime import date
 
 import pytest
 from django.utils import translation
-from django.utils.translation import gettext as _
 
 from ...lib.calendar_grid import CalendarGrid
 from ...lib.day_stats import NoPastRecord, PastRecord
@@ -19,8 +18,7 @@ def test_build_empty_returns_full_year():
     assert len(grid.months) == 12
     assert all(d.level == 0 for m in grid.months for d in m.days)
     assert all(d.label == "" for m in grid.months for d in m.days if d.is_future)
-    gap_str = _("Gap")
-    assert grid.months[5].days[14].label == f"1999-06-15\n{gap_str}: 0d."
+    assert grid.months[5].days[14].label == "1999-06-15\nTarpas: 0d."
 
 
 def test_build_month_metadata():
@@ -28,67 +26,96 @@ def test_build_month_metadata():
 
     jan = grid.months[0]
     assert jan.number == 1
+    assert jan.name == "Sausis"
     assert len(jan.days) == 31
-    assert jan.leading_blanks == date(1999, 1, 1).weekday()
+    assert jan.leading_blanks == 4  # 1999-01-01 is a Friday
 
     feb = grid.months[1]
     assert feb.number == 2
     assert len(feb.days) == 28
-    assert feb.leading_blanks == date(1999, 2, 1).weekday()
+    assert feb.leading_blanks == 0  # 1999-02-01 is a Monday
 
 
-def test_build_all_levels_and_labels():
-    daily = [
-        {"date": date(1999, 1, 1), "stdav": 1.0, "qty": 0.4},
-        {"date": date(1999, 1, 2), "stdav": 2.0, "qty": 0.8},
-        {"date": date(1999, 1, 3), "stdav": 4.0, "qty": 1.6},
-        {"date": date(1999, 1, 4), "stdav": 6.0, "qty": 2.4},
-        {"date": date(1999, 1, 5), "stdav": 0.0, "qty": 0.0},
-    ]
-
+@pytest.mark.parametrize(
+    "daily, kwargs, levels",
+    [
+        pytest.param(
+            [
+                {"date": date(1999, 1, 1), "stdav": 1.0, "qty": 0.4},
+                {"date": date(1999, 1, 2), "stdav": 2.0, "qty": 0.8},
+                {"date": date(1999, 1, 3), "stdav": 4.0, "qty": 1.6},
+                {"date": date(1999, 1, 4), "stdav": 6.0, "qty": 2.4},
+                {"date": date(1999, 1, 5), "stdav": 0.0, "qty": 0.0},
+            ],
+            {"thresholds": THRESHOLDS, "value_key": "stdav"},
+            [1, 2, 3, 4, 0],
+            id="every_threshold_on_the_value_key",
+        ),
+        pytest.param(
+            [
+                {"date": date(1999, 1, 1), "qty": 0.1},
+                {"date": date(1999, 1, 2), "qty": 99.0},
+                {"date": date(1999, 1, 3), "qty": 0.0},
+            ],
+            {},
+            [1, 1, 0],
+            id="without_thresholds_a_value_is_one_level",
+        ),
+    ],
+)
+def test_a_days_level_counts_the_thresholds_its_value_reaches(daily, kwargs, levels):
     days = (
         CalendarGrid.build(
-            YearBoundary(1999, date(1999, 12, 31)),
-            daily_data=daily,
-            thresholds=THRESHOLDS,
-            value_key="stdav",
-            empty_title=_("No drink"),
+            YearBoundary(1999, date(1999, 12, 31)), daily_data=daily, **kwargs
         )
         .months[0]
         .days
     )
 
-    qty_str = _("Quantity")
-    gap_str = _("Gap")
-    assert [d.level for d in days[:5]] == [1, 2, 3, 4, 0]
-    assert days[0].label == f"1999-01-01\n{qty_str}: 0.4\n{gap_str}: 0d."
-    assert days[3].label == f"1999-01-04\n{qty_str}: 2.4\n{gap_str}: 1d."
-    assert days[4].label == f"1999-01-05\n{_('No drink')}"
-    assert days[0].gap == 0
-    assert days[3].gap == 1
+    assert [d.level for d in days[: len(levels)]] == levels
 
 
-def test_build_gaps_with_an_earlier_record():
+@pytest.mark.parametrize(
+    "earlier, day, gap, label",
+    [
+        pytest.param(
+            NoPastRecord(), 0, 0, "1999-01-01\nKiekis: 0.4\nTarpas: 0d.", id="first"
+        ),
+        pytest.param(
+            NoPastRecord(),
+            3,
+            3,
+            "1999-01-04\nKiekis: 0.8\nTarpas: 3d.",
+            id="the_record_before",
+        ),
+        pytest.param(
+            PastRecord(date(1998, 12, 27)),
+            0,
+            5,
+            "1999-01-01\nKiekis: 0.4\nTarpas: 5d.",
+            id="an_earlier_record",
+        ),
+    ],
+)
+def test_a_recorded_day_shows_its_quantity_and_the_gap_since_the_record_before(
+    earlier, day, gap, label
+):
     daily = [
-        {"date": date(1999, 1, 10), "stdav": 1.0, "qty": 0.5},
-        {"date": date(1999, 1, 15), "stdav": 2.0, "qty": 1.0},
+        {"date": date(1999, 1, 1), "stdav": 1.0, "qty": 0.4},
+        {"date": date(1999, 1, 4), "stdav": 2.0, "qty": 0.8},
     ]
-    grid = CalendarGrid.build(
-        YearBoundary(1999, date(1999, 12, 31)),
-        daily_data=daily,
-        earlier=PastRecord(date(1999, 1, 5)),
+    days = (
+        CalendarGrid.build(
+            YearBoundary(1999, date(1999, 12, 31)),
+            daily_data=daily,
+            earlier=earlier,
+            value_key="stdav",
+        )
+        .months[0]
+        .days
     )
 
-    jan_days = grid.months[0].days
-    day_10 = jan_days[9]
-    day_15 = jan_days[14]
-
-    qty_str = _("Quantity")
-    gap_str = _("Gap")
-    assert day_10.gap == 5
-    assert day_10.label == f"1999-01-10\n{qty_str}: 0.5\n{gap_str}: 5d."
-    assert day_15.gap == 5
-    assert day_15.label == f"1999-01-15\n{qty_str}: 1.0\n{gap_str}: 5d."
+    assert (days[day].gap, days[day].label) == (gap, label)
 
 
 def test_build_future_flags():
@@ -101,27 +128,36 @@ def test_build_future_flags():
 
 
 @pytest.mark.parametrize(
-    "today, daily, earlier, gap",
+    "today, daily, earlier, month, day, gap, label",
     [
         pytest.param(
             date(1999, 6, 15),
             [{"date": date(1999, 6, 5), "stdav": 1.0, "qty": 0.5}],
             NoPastRecord(),
+            5,
+            14,
             10,
+            "1999-06-15\nTarpas: 10d.",
             id="without_record",
         ),
         pytest.param(
             date(1999, 1, 10),
             [],
             PastRecord(date(1998, 12, 1)),
+            0,
+            9,
             40,
+            "1999-01-10\nTarpas: 40d.",
             id="earlier_record",
         ),
         pytest.param(
             date(1999, 1, 10),
             [{"date": date(1999, 3, 1), "stdav": 1.0, "qty": 0.5}],
             PastRecord(date(1998, 12, 1)),
+            0,
+            9,
             40,
+            "1999-01-10\nTarpas: 40d.",
             id="only_future_records",
         ),
         pytest.param(
@@ -129,22 +165,25 @@ def test_build_future_flags():
             [],
             NoPastRecord(),
             0,
+            9,
+            0,
+            "1999-01-10\nTarpas: 0d.",
             id="no_record_anywhere",
         ),
     ],
 )
 def test_build_today_shows_its_date_and_the_gap_since_the_last_record(
-    today, daily, earlier, gap
+    today, daily, earlier, month, day, gap, label
 ):
     grid = CalendarGrid.build(
         YearBoundary(1999, today), daily_data=daily, earlier=earlier
     )
 
-    today_day = grid.months[today.month - 1].days[today.day - 1]
+    today_day = grid.months[month].days[day]
     assert today_day.is_today is True
     assert today_day.level == 0
     assert today_day.gap == gap
-    assert today_day.label == f"{today.isoformat()}\n{_('Gap')}: {gap}d."
+    assert today_day.label == label
 
 
 @pytest.mark.parametrize(
@@ -166,11 +205,7 @@ def test_a_days_speech_is_its_label_on_one_line():
     daily = [{"date": date(1999, 1, 1), "stdav": 1.0, "qty": 0.4}]
     grid = CalendarGrid.build(YearBoundary(1999, date(1999, 12, 31)), daily_data=daily)
 
-    qty_str = _("Quantity")
-    gap_str = _("Gap")
-    assert grid.months[0].days[0].speech == (
-        f"1999-01-01, {qty_str}: 0.4, {gap_str}: 0d."
-    )
+    assert grid.months[0].days[0].speech == "1999-01-01, Kiekis: 0.4, Tarpas: 0d."
 
 
 @pytest.mark.parametrize(
@@ -205,17 +240,6 @@ def test_legend_carries_what_it_is_handed(kwargs):
     )
 
     assert {name: getattr(grid.legend, name) for name in kwargs} == kwargs
-
-
-def test_without_thresholds_every_day_with_a_value_is_one_level():
-    daily = [
-        {"date": date(1999, 1, 1), "qty": 0.1},
-        {"date": date(1999, 1, 2), "qty": 99.0},
-        {"date": date(1999, 1, 3), "qty": 0.0},
-    ]
-    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 12, 31)), daily_data=daily)
-
-    assert [d.level for d in grid.months[0].days[:3]] == [1, 1, 0]
 
 
 @pytest.mark.parametrize(

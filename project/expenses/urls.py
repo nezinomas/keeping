@@ -7,12 +7,14 @@ app_name = App_name
 
 
 urlpatterns = [
-    path("", expenses.Index.as_view(), name="index"),
-    path("<int:month>/", expenses.Index.as_view(), name="index"),
+    # the navbar opens the app root, so Overview has two urls
+    path("", expenses.TabIndex.as_view(), name="index"),
+    path("index/", expenses.TabIndex.as_view(), name="tab_index"),
+    path("data/<str:month>/", expenses.TabData.as_view(), name="tab_data"),
+    path("types/", expenses_type.TabTypes.as_view(), name="tab_types"),
     path("import/", expenses_import.Import.as_view(), name="import"),
     path("import/save/", expenses_import.ImportSave.as_view(), name="import_save"),
-    path("list/", expenses.Lists.as_view(), name="list"),
-    path("list/<int:month>/", expenses.Lists.as_view(), name="list"),
+    path("list/<str:month>/", expenses.Lists.as_view(), name="list"),
     path("new/", expenses.New.as_view(), name="new"),
     path("update/<int:pk>/", expenses.Update.as_view(), name="update"),
     path("delete/<int:pk>/", expenses.Delete.as_view(), name="delete"),
@@ -23,7 +25,6 @@ urlpatterns = [
     ),
     path("search/", expenses.Search.as_view(), name="search"),
     path("type/new/", expenses_type.New.as_view(), name="type_new"),
-    path("type/", expenses_type.Lists.as_view(), name="type_list"),
     path("type/update/<int:pk>/", expenses_type.Update.as_view(), name="type_update"),
     path("name/new/", expenses_name.New.as_view(), name="name_new"),
     path("name/update/<int:pk>/", expenses_name.Update.as_view(), name="name_update"),

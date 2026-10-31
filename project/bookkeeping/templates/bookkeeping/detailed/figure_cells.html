@@ -1,0 +1,13 @@
+{% load get_item %}
+{% load math %}
+{% load cell_format %}
+
+{% for num in months %}
+    {% with cell_value=row|get_item:num %}
+        <td class="main__figure" data-cell="{{cell_value|cell_state}}">
+            {{ cell_value|price|cellformat:"0,00" }}
+        </td>
+    {% endwith %}
+{% endfor %}
+
+<td class="main__figure month-table__total">{{ row.total_col|price|cellformat:"0,00" }}</td>

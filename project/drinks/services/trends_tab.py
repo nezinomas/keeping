@@ -3,8 +3,9 @@ from datetime import date
 
 from django.utils.translation import gettext as _
 
-from ...core.lib import stat_card
 from ...core.lib.stat_card import (
+    HIGH,
+    LOW,
     Card,
     ComparisonStatCard,
     EmptyStatCard,
@@ -12,6 +13,7 @@ from ...core.lib.stat_card import (
     StatCard,
 )
 from ..lib.chart_view_model import ChartViewModel
+from ..lib.daily_limit import DailyLimit, NoDailyLimit
 from ..lib.drinks_trend import (
     EmptyRecentPeriodComparison,
     RecentPeriodComparison,
@@ -26,7 +28,7 @@ class TrendChartViewModel(ChartViewModel):
     daily: list[float]
     rolling_7: list[float]
     rolling_30: list[float]
-    target: float
+    limit: DailyLimit | NoDailyLimit
     decimals: int
     text: dict[str, str]
 
@@ -44,18 +46,17 @@ class TrendsTab:
     @classmethod
     def build(cls, user, year: int, today: date) -> dict:
         records = ConsumptionYear(user, year, today)
-        target = records.target.qty
 
         stats = TrendStats(
             records.converter,
             current_daily=records.daily,
             past_daily=records.previous.daily,
-            target=target,
+            limit=records.limit,
             year=year,
             today=today,
         )
 
-        builder = TrendsBuilder(drink_stats=stats, target=target)
+        builder = TrendsBuilder(drink_stats=stats)
 
         return {
             "chart_trend": builder.chart_trend(),
@@ -65,9 +66,8 @@ class TrendsTab:
 
 
 class TrendsBuilder:
-    def __init__(self, drink_stats: TrendStats, target: float = 0.0):
+    def __init__(self, drink_stats: TrendStats):
         self._stats = drink_stats
-        self._target = target
 
     def _rounded(self, values: list[float]) -> list[float]:
         """Round to the precision the selected unit is read at."""
@@ -79,7 +79,7 @@ class TrendsBuilder:
             daily=self._rounded(self._stats.daily_volume),
             rolling_7=self._rounded(self._stats.calculate_rolling_average(7)),
             rolling_30=self._rounded(self._stats.calculate_rolling_average(30)),
-            target=self._target,
+            limit=self._stats.limit,
             decimals=self._stats.decimals,
             text={
                 # the dropdown decides the unit, so the axes and the tooltip
@@ -196,7 +196,7 @@ class TrendsBuilder:
         # like-for-like comparison against a past period
         return LevelStatCard(
             title,
-            state=stat_card.HIGH if stats.over else stat_card.LOW,
+            state=HIGH if stats.over else LOW,
             value=f"{stats.projected_total:.1f}",
             unit=unit,
             note=(

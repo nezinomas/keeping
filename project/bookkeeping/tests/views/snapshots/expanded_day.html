@@ -1,0 +1,159 @@
+<tr hidden><td colspan="120"></td></tr>
+<tr class="expand-expenses" x-show="open_row_1">
+    <td colspan="120">
+
+
+
+
+
+
+
+
+
+
+
+
+<div
+    hx-trigger="reload from:body"
+    hx-get="/month/1999-01-01/"
+    hx-target="#data"
+    hx-indicator:inherited="#indicator">
+    <table class="main expenses-table striped hover sticky-table">
+        <thead>
+            <tr>
+                <th class="text-left">Data</th>
+                <th class="text-left">Išlaidų rūšis</th>
+                <th class="text-left">Išlaidų pavadinimas</th>
+                <th class="qty-col">Kiek</th>
+                <th class="price-col">Kaina</th>
+                <th class="remark-col text-left">Pastaba</th>
+                <th class="file-col">Failas</th>
+                <th>Sąskaita</th>
+                <th class="edit-col"></th>
+                <th class="delete-col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            
+
+            
+
+            <tr hx-get="/expenses/update/3/" hx-trigger="dblclick" hx-target="#mainModal" class="">
+                <td class="text-left expense-ordinary">1999-01-01</td>
+                <td class="text-left">Drinks</td>
+                <td class="text-left">Beer</td>
+                <td class="main__figure">13</td>
+                <td class="main__figure">1,12</td>
+                <td class="text-left cell-padding remark">Remark</td>
+                <td>
+                    
+                    
+                    <a role="button" class="button-outline-primary transparent button-xs" href="/media/1/2/1999.01_beer.pdf" target="_blank" rel="noopener noreferrer">Pdf failas</a>
+                    
+                    
+                </td>
+                <td>Account1</td>
+                
+
+<td class="edit-col">
+    
+    <a role="button" hx-get="/expenses/update/3/" hx-target="#mainModal" class="edit" title="Redaguoti"><i class="bi bi-pencil-fill"></i></a>
+    
+</td>
+
+                
+
+<td class="delete-col">
+    
+    <a role="button" hx-get="/expenses/delete/3/" hx-target="#mainModal" title="Trinti"><i class="bi bi-trash-fill"></i></a>
+    
+</td>
+
+            </tr>
+            
+
+            <tr hx-get="/expenses/update/1/" hx-trigger="dblclick" hx-target="#mainModal" class="">
+                <td class="text-left exception">1999-01-01</td>
+                <td class="text-left">Food</td>
+                <td class="text-left">Bread</td>
+                <td class="main__figure">13</td>
+                <td class="main__figure">1,12</td>
+                <td class="text-left cell-padding remark">Remark</td>
+                <td>
+                    
+                </td>
+                <td>Account1</td>
+                
+
+<td class="edit-col">
+    
+    <a role="button" hx-get="/expenses/update/1/" hx-target="#mainModal" class="edit" title="Redaguoti"><i class="bi bi-pencil-fill"></i></a>
+    
+</td>
+
+                
+
+<td class="delete-col">
+    
+    <a role="button" hx-get="/expenses/delete/1/" hx-target="#mainModal" title="Trinti"><i class="bi bi-trash-fill"></i></a>
+    
+</td>
+
+            </tr>
+            
+
+            <tr hx-get="/expenses/update/2/" hx-trigger="dblclick" hx-target="#mainModal" class="">
+                <td class="text-left expense-ordinary">1999-01-01</td>
+                <td class="text-left">Food</td>
+                <td class="text-left">Milk</td>
+                <td class="main__figure">13</td>
+                <td class="main__figure">1,12</td>
+                <td class="text-left cell-padding remark">Remark</td>
+                <td>
+                    
+                    
+                    <button type="button" class="button-secondary transparent button-xs" hx-get="/modal/image/" hx-trigger="click" hx-target="#imgModal" data-url="/media/1/1/1999.01_milk.jpg">Paveikslėlis</button>
+                    
+                    
+                </td>
+                <td>Account1</td>
+                
+
+<td class="edit-col">
+    
+    <a role="button" hx-get="/expenses/update/2/" hx-target="#mainModal" class="edit" title="Redaguoti"><i class="bi bi-pencil-fill"></i></a>
+    
+</td>
+
+                
+
+<td class="delete-col">
+    
+    <a role="button" hx-get="/expenses/delete/2/" hx-target="#mainModal" title="Trinti"><i class="bi bi-trash-fill"></i></a>
+    
+</td>
+
+            </tr>
+            
+        </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+<!-- modal image -->
+<div id="imgModalContainer" class="modal" hidden>
+    <div id="imgModal" class="modal-dialog"></div>
+</div>
+</div>
+
+
+
+</td>
+</tr>
