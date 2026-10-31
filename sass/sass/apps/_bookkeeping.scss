@@ -1,29 +1,6 @@
 @use "sass:map";
 @use "../abstracts/variables" as *;
 
-// Bookkeeping App - Search statistics
-.search-statistic {
-    display: flex;
-    margin: 1rem 0;
-    gap: 2rem;
-
-    > *:nth-child(1) {
-        flex-grow: 1;
-        text-align: right;
-    }
-
-    > *:nth-child(2) {
-        flex-grow: 0;
-        text-align: center;
-    }
-
-    > *:nth-child(3) {
-        flex-grow: 1;
-        text-align: left;
-    }
-}
-
-// Bookkeeping App - Month table
 .month-table {
     table-layout: auto;
 
@@ -75,7 +52,6 @@
         }
     }
 
-    // Expand month table row to see expenses
     &:has(.expand-expenses) {
 
         // override expenses table layout, which is fixed
@@ -112,4 +88,8 @@
             font-weight: 650;
         }
     }
+}
+
+.year-expenses .no-categories {
+    width: 90%;
 }

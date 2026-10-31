@@ -3,10 +3,9 @@ from datetime import date
 
 import pytest
 
-from project.bookkeeping.lib.make_dataframe import MakeDataFrame
-
 from ....expenses.tests.factories import ExpenseTypeFactory
 from ....plans.lib.calc_day_sum import CalcRow, DataDto, InputRow
+from ...lib.make_dataframe import MakeDataFrame
 from ...services.month.builders import ChartBuilder, InfoBuilder, MonthTableBuilder
 from ...services.month.dtos import InfoState, MonthDataDTO
 from ...services.month.presenters import MonthContextPresenter, load_service
@@ -52,12 +51,6 @@ def fixture_month_dto():
         ),
         pytest.param(
             {},
-            {"T1": 25, "T2": 50},
-            [{"name": "T2", "y": 50}, {"name": "T1", "y": 25}],
-            id="sorted_two",
-        ),
-        pytest.param(
-            {},
             {"T1": 2, "T2": 5, "T3": 1},
             [
                 {"name": "T2", "y": 5},
@@ -65,6 +58,12 @@ def fixture_month_dto():
                 {"name": "T3", "y": 1},
             ],
             id="sorted_three",
+        ),
+        pytest.param(
+            {},
+            {"savings": 5, "ab": 1},
+            [{"name": "TAUPYMAS", "y": 5}, {"name": "AB", "y": 1}],
+            id="translated_savings_name",
         ),
         pytest.param({}, {}, [], id="no_data"),
     ],
@@ -126,6 +125,15 @@ def test_build_targets_without_data():
             [{"y": 5, "target": 0}, {"y": 1, "target": 0}],
             8,
             id="translated_savings_name",
+        ),
+        pytest.param(
+            {},
+            {"gießen": 3},
+            ["GIESSEN"],
+            [0],
+            [{"y": 3, "target": 0}],
+            7,
+            id="length_of_the_drawn_title",
         ),
     ],
 )
@@ -225,8 +233,8 @@ def test_info_builder_delta():
 def test_plans_property(month_dto):
     plans = MonthContextPresenter(2026, 4, month_dto, TODAY).plans
 
-    assert plans.row(InputRow.DAY_PLAN) == 40
-    assert plans.row(CalcRow.EXPENSES_FREE) == 2700
+    assert plans.cell(InputRow.DAY_PLAN, 4) == 40
+    assert plans.cell(CalcRow.EXPENSES_FREE, 4) == 2700
 
 
 def test_info_context_plan_state(month_dto):
@@ -243,7 +251,7 @@ def test_info_context_plan_state(month_dto):
         "saving": 70,
         "expense": 2930,
         "per_day": 40,
-        "balance": 2630 - 40 * 30,
+        "balance": 1430,
     }
 
 
@@ -260,61 +268,37 @@ def test_spending_property(month_dto):
     }
 
 
-def test_totals_property(mocker, month_dto):
-    presenter = MonthContextPresenter(2026, 4, month_dto, TODAY)
-
-    mock_month_table = mocker.Mock()
-    mock_month_table.total_row = {"total": 400, "savings": 50}
-
-    mock_spending = mocker.Mock(avg_per_day=12)
-
-    mocker.patch.object(
-        MonthContextPresenter,
-        "month_table",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_month_table,
-    )
-    mocker.patch.object(
-        MonthContextPresenter,
-        "spending",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_spending,
-    )
-
-    actual = presenter.totals
+def test_totals_property(month_dto):
+    actual = MonthContextPresenter(2026, 4, month_dto, TODAY).totals
 
     assert actual == {
         "income": 1000,
-        "expense": 400,
+        "expense": 510,
         "saving": 50,
-        "avg_per_day": 12,
+        "avg_per_day": 5,
     }
 
 
-def test_tables_property(mocker, month_dto):
-    presenter = MonthContextPresenter(2026, 4, month_dto, TODAY)
+def test_tables_property(month_dto):
+    actual = MonthContextPresenter(2026, 4, month_dto, TODAY).tables
 
-    mock_month_table = mocker.Mock(table=["main_data"], total_row={"total": 10})
-    mock_spending = mocker.Mock(spending=["spending_data"])
-
-    mocker.patch.object(
-        MonthContextPresenter,
-        "month_table",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_month_table,
-    )
-    mocker.patch.object(
-        MonthContextPresenter,
-        "spending",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_spending,
-    )
-
-    assert presenter.tables == {
-        "main_table": ["main_data"],
-        "spending_table": ["spending_data"],
-        "total_row": {"total": 10},
+    assert len(actual["main_table"]) == 30
+    assert actual["main_table"][0] == {
+        "date": date(2026, 4, 1),
+        "Food": 10,
+        "Rent": 500,
+        "total": 510,
+        "savings": 50,
     }
+    assert actual["spending_table"][1] == {
+        "date": date(2026, 4, 2),
+        "total": 0,
+        "day": 40,
+        "teoretical": 2620,
+        "real": 2690,
+        "full": 70,
+    }
+    assert actual["total_row"] == {"Food": 10, "Rent": 500, "total": 510, "savings": 50}
 
 
 def test_charts_property(month_dto):

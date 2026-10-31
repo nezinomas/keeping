@@ -6,7 +6,6 @@
 .paper-skin {
     // the grid the Cards' subgrid rows resolve against — without it they stack
     .stat-cards {
-        // both set per screen width below
         --cols: 2;
         --card-gap: 1rem;
 
@@ -16,22 +15,32 @@
         grid-template-rows: auto auto auto;
         gap: 2rem var(--card-gap);
         padding: calc($gap * 1.2) calc($gap * 0.9) calc($gap * 1.1);
+
+        @media only screen and (min-width: 768px) {
+            --cols: 3;
+            --card-gap: 2rem;
+        }
+
+        // six is the widest set any tab builds, and the tight gap fits it at 992px
+        @media only screen and (min-width: 992px) {
+            --cols: 6;
+            --card-gap: 1.25rem;
+
+            // never more columns than Cards, as an empty track pushes the set off
+            // centre; they weigh the same, so the smallest set comes last
+            &:not(:has(.trend-card:nth-child(6))) {
+                --cols: 5;
+            }
+
+            &:not(:has(.trend-card:nth-child(5))) {
+                --cols: 4;
+            }
+        }
     }
 
-    // Never more columns than Cards — an empty track pushes the set off centre.
-    // Smallest last: they weigh the same, so source order decides. Three fit a
-    // phone upright, so a set that small keeps its row at every width.
+    // three fit a phone upright, so a set that small keeps its row at every width
     .stat-cards:not(:has(.trend-card:nth-child(4))) {
         --cols: 3;
-    }
-
-    // three Cards keep one row even on a phone, so there their figures shrink
-    // with the screen; a value still too long ends in an ellipsis
-    @media only screen and (max-width: 767px) {
-        .stat-cards:has(.trend-card:nth-child(3)):not(:has(.trend-card:nth-child(4)))
-            .trend-card__value {
-            font-size: clamp(1.6rem, 8vw, 3.1rem);
-        }
     }
 
     .stat-cards:not(:has(.trend-card:nth-child(3))) {
@@ -49,10 +58,8 @@
         justify-content: center;
     }
 
-    // ---- a short last row ------------------------------------------------
-    // `justify-content` centres the tracks, not one row of items, so the
-    // leftovers are translated across half the room their row leaves empty.
-    // Bounded above too: the shift is measured in the columns of one breakpoint.
+    // `justify-content` centres the tracks, not a short last row, so its Cards move
+    // across half the room it leaves, counted in one breakpoint's columns
     @media only screen and (max-width: 767px) {
         // two columns, one Card over: half a column across
         .stat-cards:has(.trend-card:nth-child(4)) {
@@ -77,51 +84,6 @@
         }
     }
 
-    // ---- how many fit a row ----------------------------------------------
-    // Two on a phone, three on a tablet, the whole set on a desktop. Six is the
-    // widest set any tab builds, and the tight gap is what fits it at 992px.
-    @media only screen and (min-width: 768px) {
-        .stat-cards {
-            --cols: 3;
-            --card-gap: 2rem;
-        }
-
-        .stat-cards:not(:has(.trend-card:nth-child(3))) {
-            --cols: 2;
-        }
-
-        .stat-cards:not(:has(.trend-card:nth-child(2))) {
-            --cols: 1;
-        }
-    }
-
-    @media only screen and (min-width: 992px) {
-        .stat-cards {
-            --cols: 6;
-            --card-gap: 1.25rem;
-        }
-
-        .stat-cards:not(:has(.trend-card:nth-child(6))) {
-            --cols: 5;
-        }
-
-        .stat-cards:not(:has(.trend-card:nth-child(5))) {
-            --cols: 4;
-        }
-
-        .stat-cards:not(:has(.trend-card:nth-child(4))) {
-            --cols: 3;
-        }
-
-        .stat-cards:not(:has(.trend-card:nth-child(3))) {
-            --cols: 2;
-        }
-
-        .stat-cards:not(:has(.trend-card:nth-child(2))) {
-            --cols: 1;
-        }
-    }
-
     .trend-card {
         position: relative;
         min-width: 0;
@@ -132,15 +94,11 @@
         text-align: center;
 
         &__label {
-            @include tokens.label;
+            @include tokens.caps;
 
-            letter-spacing: 0.22em;
-
-            // a label tracked at 0.22em is wider than a phone's Card, and it
-            // overflows into the label of the Card beside it rather than wrapping
+            // a long word is wider than a phone's Card, and it overflows into the
+            // label of the Card beside it rather than wrapping
             @media only screen and (max-width: 767px) {
-                font-size: 0.58rem;
-                letter-spacing: 0.1em;
                 overflow-wrap: anywhere;
             }
         }
@@ -157,6 +115,16 @@
             font-variant-numeric: tabular-nums;
             color: $ink;
             min-width: 0;
+
+            // three Cards keep one row on a phone; 4% under Bahnschrift's fit, as
+            // Barlow off Windows is that much wider, else the figure ellipsises
+            @media only screen and (max-width: 767px) {
+                &:is(
+                    .stat-cards:has(.trend-card:nth-child(3)):not(:has(.trend-card:nth-child(4))) *
+                ) {
+                    font-size: clamp(1.55rem, 7.7vw, 3.1rem);
+                }
+            }
 
             // only a crossed threshold takes a colour; improving, low, neutral
             // and empty stay on $ink, because staying inside a limit is baseline
@@ -213,7 +181,6 @@
             margin-top: 0.1rem;
             margin-inline: auto;
             padding-top: 0.5rem;
-            // 13rem where the Card has room for it, inset where it does not
             max-width: min(85%, 13rem);
             border-top: 1px solid $hair-soft;
             font-size: 0.72rem;
@@ -234,7 +201,7 @@
 
             &:hover,
             &:focus-visible {
-                color: $data;
+                color: $ink;
                 outline: none;
             }
         }
@@ -251,10 +218,8 @@
             cursor: pointer;
         }
 
-        // the trigger sits inside the figure and the tooltip is the Card's own
-        // child, so the reveal crosses between them instead of running down.
-        // Spelled out rather than `&__info`: inside :has() that `&` expands to
-        // the whole parent selector, and demands a .paper-skin within the Card.
+        // the tooltip is the Card's child, not the trigger's; `&__info` would expand
+        // inside :has() to the whole parent selector, a .paper-skin within the Card
         &:has(.trend-card__info:hover),
         &:has(.trend-card__info:focus-visible) {
             .trend-card__explanation {
@@ -269,9 +234,7 @@
             left: 50%;
             z-index: 20;
             width: max-content;
-            // never wider than its Card, so it cannot leave the grid — and the
-            // grid never leaves the page. This is what keeps it on screen at
-            // every width instead of running off the right edge of an end Card.
+            // never wider than its Card, so an end Card's tooltip stays on the page
             max-width: min(15rem, 100%);
             padding: 0.55rem 0.75rem;
             background: $ink;

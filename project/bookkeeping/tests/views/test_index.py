@@ -82,12 +82,29 @@ def test_view_index_renders_its_tables_and_panels(index_content, marker):
     assert marker in index_content
 
 
-def test_view_index_renders_its_chart_data(index_content):
-    balance = script_json(index_content, "chart-balance-data")
-    expenses = script_json(index_content, "chart-expenses-data")
+@pytest.mark.parametrize("url_name", ["bookkeeping:index", "bookkeeping:reload_index"])
+def test_view_index_renders_its_chart_data(client_logged, url_name):
+    ExpenseFactory(date=date(1999, 1, 1), price=100)
+
+    content = client_logged.get(reverse(url_name)).content.decode()
+    balance = script_json(content, "chart-balance-data")
+    expenses = script_json(content, "chart-expenses-data")
 
     assert balance["expenses"][0] == 100
     assert [point["y"] for point in expenses] == [100]
+
+
+def test_view_index_names_each_chart_data_element_once(index_content):
+    ids = [
+        "chart-balance-data",
+        "chart-expenses-data",
+        "chart-balance-source",
+        "chart-expenses-source",
+    ]
+
+    counts = [index_content.count(f'id="{element_id}"') for element_id in ids]
+
+    assert counts == [1, 1, 1, 1]
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
@@ -145,8 +162,8 @@ def test_view_index_regenerate_buttons(client_logged):
         [
             'hx-swap-oob="innerHTML:#table-balance"',
             'hx-swap-oob="innerHTML:#table-expenses"',
-            'hx-swap-oob="innerHTML:#chart-balance-data"',
-            'hx-swap-oob="innerHTML:#chart-expenses-data"',
+            'hx-swap-oob="innerHTML:#chart-balance-source"',
+            'hx-swap-oob="innerHTML:#chart-expenses-source"',
         ],
         ["<th>1999</th>"],
     ],

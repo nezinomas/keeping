@@ -1,85 +1,34 @@
-{% extends 'base.html' %}
+{% extends 'core/paper_page.html' %}
 
-{% load i18n %}
 {% load static %}
-
-{% block head %}
-<script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
-
-{% endblock head %}
+{% load i18n %}
 
 
-{% block content %}
+{% block head_scripts %}
+    {% include 'highcharts.html' %}
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_months.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
+{% endblock head_scripts %}
 
 
-<main class="grid-70-30">
-    <div
-        x-data="{
-            openTab: '{{view.get_month}}',
-            activeClass: 'button-active',
-            inactiveClass: 'button-secondary',
-        }">
-        <!-- search form -->
-        <div class="button-row">
-            <c-search-form url="{% url 'expenses:search' %}" reset_url=" {% url 'expenses:list'%}" target="#data" :hightlight_tab=current_month />
+{% block page_name %}{% translate 'Expenses' %}{% endblock page_name %}
 
-            {% if request.GET.month %}
-                {% firstof request.GET.month as month_number %}
-            {% else %}
-                {% firstof now 'n' as month_number %}
-            {% endif %}
 
-            <c-new-button url="{% url 'expenses:new' %}" title="{% translate 'Expenses' context 'expenses button' %}" css_class="flex-right" />
-            <c-import-button />
-        </div>
+{% block quick_add %}
+<c-quick-add>
+    <c-quick-add.link url="{% url 'expenses:import' %}">{% translate 'Import receipt' %}</c-quick-add.link>
+    <c-quick-add.pill url="{% url 'expenses:new' %}">{% translate 'Add expense' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'expenses:type_new' %}" tab="types">{% translate 'Add expense type' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'expenses:name_new' %}" tab="types">{% translate 'Add expense name' %}</c-quick-add.pill>
+</c-quick-add>
+{% endblock quick_add %}
 
-        <!-- month buttons -->
-        <div class="button-row equal-width">
-            {% for month in context_months %}
-            {% with month|date:'n' as month_number %}
-            <button type="button"
-                hx-get="{% url 'expenses:list' month_number %}"
-                hx-target="#data"
-                hx-swap="innerHTML"
-                hx-indicator="#indicator"
-                :class="openTab === '{{month_number}}' ? activeClass : inactiveClass"
-                @click="openTab = '{{month_number}}'">
-                {{month|date:'F'|title}}
-            </button>
-            {% endwith %}
-            {% endfor %}
 
-            <button type="button"
-                hx-get="{% url 'expenses:list' 13 %}"
-                hx-target="#data"
-                hx-swap="innerHTML"
-                hx-indicator="#indicator"
-                :class="openTab === '13' ? activeClass : inactiveClass"
-                @click="openTab = '13'">
-                {% translate 'All records' %}
-            </button>
-        </div><!-- /month buttons -->
-
-        <!-- data -->
-        <div id="data" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' month %}"></div>
-    </div>
-
-    <div>
-        <!-- type and name buttons -->
-        <div class="button-row row-reverse">
-            <c-new-button url="{% url 'expenses:name_new' %}" title="{% translate 'Expenses name' context 'expenses name button' %}" />
-            <c-new-button url="{% url 'expenses:type_new' %}" title="{% translate 'Expenses type' context 'expenses type button' %}" />
-        </div>
-
-        <div class="button-row"></div>
-
-        <!-- type and name list -->
-        <div
-            hx-trigger="load, afterType from:body, afterName from:body"
-            hx-get="{% url 'expenses:type_list' %}"
-            hx-target="this">
-        </div>
-    </div>
-</main>
-
-{% endblock content %}
+{% block tab_listeners %}
+<script nonce="{{ csp_nonce }}">
+    onTabContent('chart-months-data', function () {
+        chartMonths('chart-months-data', 'chart-months-container');
+    });
+</script>
+{% endblock tab_listeners %}

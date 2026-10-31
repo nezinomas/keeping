@@ -1,9 +1,8 @@
 @use "sass:list";
 @use "../abstracts/variables" as *;
 
-// The paper skin's three mixins and the token block every paper chart reads.
-// On `:root`, not `.paper-skin`: Highcharts draws a tooltip outside the wrapper,
-// and a token it cannot resolve there comes out black.
+// The paper skin's mixins, and the tokens every chart reads, on `:root`: Highcharts
+// draws a tooltip outside `.paper-skin`, and an unresolved token comes out black.
 
 @mixin panel {
     position: relative;
@@ -13,18 +12,35 @@
     border-radius: 0;
 }
 
-@mixin label {
-    font-family: $mono;
-    // 12px is the floor for uppercase mono, whose letterforms are already tight
-    font-size: 0.75rem;
+// A Panel's or a table's title.
+@mixin title {
+    font-family: $display;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: $ink;
+}
+
+// A small label a level above what it names; 12px is the floor for capitals in the
+// narrow face, the quarter band's 11px aside.
+@mixin caps($size: 0.75rem) {
+    font-family: $display;
+    font-size: $size;
     font-weight: 400;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: $ink-muted;
 }
 
-// Every button on a paper page: the body face and no tracking, because mono caps
-// are chrome and an action is a word. `$hover: false` when there is nothing to press.
+// The body face and no tracking: an action is a word, not a label.
+@mixin face {
+    font-family: $body;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+// Every button on a paper page. `$hover: false` when there is nothing to press.
 @mixin button($hover: true) {
     display: inline-flex;
     align-items: center;
@@ -33,11 +49,7 @@
     border-radius: 0;
     background: $paper;
     box-shadow: none;
-    font-family: $body;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: normal;
-    text-transform: none;
+    @include face;
     color: $ink-muted;
 
     @if $hover {
@@ -50,6 +62,17 @@
     }
 }
 
+// A striped row on a cell that others scroll under: the stripe as an image over
+// an opaque colour, so nothing shows through.
+@mixin opaque-stripe {
+    background-color: $paper;
+    background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+}
+
+@mixin opaque-hover {
+    background-color: $hair-soft;
+    background-image: none;
+}
 
 :root {
     --skin-paper: #{$paper};
@@ -60,7 +83,6 @@
     --skin-hair-soft: #{$hair-soft};
 
     --skin-data: #{$data};
-    --skin-data-soft: #{$data-soft};
     --skin-data-wash: #{rgba($data, 0.12)};
     --skin-data-tint: #{rgba($data, 0.22)};
     --skin-data-faint: #{rgba($data, 0.09)};
@@ -71,7 +93,7 @@
 
     --skin-harm: #{$harm};
     --skin-harm-soft: #{$harm-soft};
-    --skin-harm-wash: #{rgba($harm, 0.11)};
+    --skin-harm-tint: #{$harm-tint};
 
     --skin-attention: #{$attention};
     --skin-attention-wash: #{rgba($attention, 0.3)};
@@ -82,5 +104,4 @@
 
     --skin-display: #{$display};
     --skin-body: #{$body};
-    --skin-mono: #{$mono};
 }

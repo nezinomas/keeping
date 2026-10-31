@@ -2,7 +2,7 @@
 
 {% include 'drinks/includes/drink_type.html' with oob=True %}
 
-<main class="drinks-grid">
+<div class="drinks-grid">
     <!-- the id places the row in the tab's grid, the class draws the cards in it -->
     <div id="index-summary" class="stat-cards">
         <c-stat-cards :cards=cards />
@@ -29,7 +29,7 @@
             </div>
         </details>
     </c-panel>
-</main>
+</div>
 
 {{chart_quantity.as_dict|json_script:"chart-quantity-data"}}
 {{chart_consumption.as_dict|json_script:"chart-consumption-data"}}

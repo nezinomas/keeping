@@ -1,24 +1,15 @@
 @use "../abstracts/variables" as *;
 
 // Both bundles import this, so the nav never forked: one design on every page.
-// Top-bar-only rules are scoped to #main-nav, clear of the drinks tab row.
 
 .dropdown {
     &:active,
-    &:focus,
     &:focus-within {
         .dropdown__menu {
             opacity: 1;
             transform: rotateX(0) translateX(0);
             visibility: visible;
             pointer-events: auto;
-        }
-    }
-
-    &.left {
-        .dropdown__menu {
-            right: 0;
-            left: auto;
         }
     }
 }
@@ -52,7 +43,8 @@
         color: $ink-muted;
     }
 
-    > *:hover {
+    > *:hover,
+    > *:focus {
         background: $hair-soft;
         color: $ink;
         transition: $transition;
@@ -68,6 +60,7 @@
 .dropdown__btn {
     border: 0;
     background: transparent;
+    color: $ink;
     cursor: pointer;
     touch-action: manipulation;
 
@@ -78,11 +71,14 @@
     }
 }
 
-// ---- shared structure -----------------------------------------------------
-[id*=-nav] {
+nav#main-nav {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0 1rem;
+    margin-bottom: $gap;
+    background: $paper;
+    border-bottom: 1px solid $hair;
 
     a {
         text-decoration: none;
@@ -93,13 +89,6 @@
         color: $ink;
     }
 
-    a:hover,
-    a:focus,
-    .dropdown__btn:hover {
-        transition: $transition;
-        color: $data;
-    }
-
     > div {
         display: flex;
         align-items: center;
@@ -108,15 +97,6 @@
     :has(.dropdown) {
         position: relative;
     }
-}
-
-// ---- the top bar ----------------------------------------------------------
-nav#main-nav {
-    margin-bottom: $gap;
-    background: $paper;
-    border-bottom: 1px solid $hair;
-
-    flex-wrap: wrap;
 
     > *:first-child {
         padding-left: 0.5rem;
@@ -130,7 +110,7 @@ nav#main-nav {
         border-bottom: 2px solid transparent;
 
         &:hover,
-        &:focus {
+        &:focus-within {
             transition: $transition;
             border-bottom-color: $hair;
         }
@@ -142,17 +122,43 @@ nav#main-nav {
 
         &:hover {
             border-bottom-color: transparent;
-            color: $ink-muted;
         }
     }
 
     > :last-child {
         margin-left: auto;
+
+        // at the screen's right edge, so its menu opens leftward to stay on screen
+        .dropdown__menu {
+            right: 0;
+            left: auto;
+        }
     }
 
     > .active {
         border-bottom: 2px solid $ink;
     }
+
+    // an act opens a form, not a page: a button, drawn as the links beside it
+    .dropdown__menu > button {
+        width: 100%;
+        border: 0;
+        background: none;
+        font: inherit;
+        text-align: left;
+        color: $ink;
+        cursor: pointer;
+
+        &:hover,
+        &:focus {
+            background: $hair-soft;
+        }
+    }
+}
+
+// a quick-add bar that draws the count takes it from the top bar
+body:has(.quick-add .day-of-year) nav#main-nav .day-of-year {
+    display: none;
 }
 
 // mobile devices — no hover to open a menu with, so a press opens it

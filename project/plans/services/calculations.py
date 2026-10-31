@@ -2,13 +2,8 @@ from dataclasses import dataclass
 
 from django.utils.translation import gettext as _
 
-from ..lib.calc_day_sum import (
-    MONTH_NUMS,
-    WITHIN,
-    CalcRow,
-    InputRow,
-    PlanCalculateDaySum,
-)
+from ..lib.calc_day_sum import CalcRow, InputRow, PlanCalculateDaySum
+from ..lib.month_states import MONTH_NUMS, WITHIN
 
 
 def _values(row: dict) -> list:
@@ -47,7 +42,7 @@ class Calculations:
         return [self._spend_block(), self._check_block()]
 
     def _row(self, label, words, row, part=False, states=()):
-        row_states = [WITHIN] * 12
+        row_states = [WITHIN] * len(MONTH_NUMS)
         if states:
             row_states = list(states)
 

@@ -21,35 +21,35 @@ class MonthContextPresenter:
         self.today = today
 
     @cached_property
-    def month_table(self) -> MonthTableBuilder:
-        expense_df_object = MakeDataFrame.for_month(
+    def expense_frame(self) -> MakeDataFrame:
+        return MakeDataFrame.for_month(
             year=self.year,
             month=self.month,
             data=self.dto.expenses,
             columns=self.dto.expense_types,
         )
+
+    @cached_property
+    def month_table(self) -> MonthTableBuilder:
         saving_df_object = MakeDataFrame.for_month(
             year=self.year, month=self.month, data=self.dto.savings
         )
-        return MonthTableBuilder(expense_df_object.data, saving_df_object.data)
+        return MonthTableBuilder(self.expense_frame.data, saving_df_object.data)
 
     @cached_property
     def plans(self) -> PlanCalculateDaySum:
-        return PlanCalculateDaySum(data=self.dto.plans_data, month=self.month)
+        return PlanCalculateDaySum(self.dto.plans_data)
+
+    def _planned(self, name: CalcRow | InputRow) -> float:
+        return self.plans.cell(name, self.month)
 
     @cached_property
     def spending(self) -> DaySpending:
-        expense_df_object = MakeDataFrame.for_month(
-            year=self.year,
-            month=self.month,
-            data=self.dto.expenses,
-            columns=self.dto.expense_types,
-        )
         return DaySpending(
-            expense=expense_df_object,
+            expense=self.expense_frame,
             necessary=self.dto.necessary_expense_types,
-            per_day=self.plans.row(InputRow.DAY_PLAN),
-            free=self.plans.row(CalcRow.EXPENSES_FREE),
+            per_day=self._planned(InputRow.DAY_PLAN),
+            free=self._planned(CalcRow.EXPENSES_FREE),
             today=self.today,
         )
 
@@ -92,17 +92,17 @@ class MonthContextPresenter:
             ),
         )
 
-        savings = self.plans.row(InputRow.SAVINGS)
+        savings = self._planned(InputRow.SAVINGS)
         plan_state = InfoState(
-            income=self.plans.row(InputRow.INCOMES),
+            income=self._planned(InputRow.INCOMES),
             expense=(
-                self.plans.row(CalcRow.EXPENSES_NECESSARY)
-                + self.plans.row(CalcRow.EXPENSES_FREE)
+                self._planned(CalcRow.EXPENSES_NECESSARY)
+                + self._planned(CalcRow.EXPENSES_FREE)
                 - savings
             ),
             saving=savings,
-            per_day=self.plans.row(InputRow.DAY_PLAN),
-            balance=self.plans.row(CalcRow.REMAINS),
+            per_day=self._planned(InputRow.DAY_PLAN),
+            balance=self._planned(CalcRow.REMAINS),
         )
 
         return InfoBuilder.build(fact=fact_state, plan=plan_state)

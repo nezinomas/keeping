@@ -102,18 +102,18 @@
         <tfoot>
             <tr class="main__total">
                 <td colspan="3">{% translate 'Lines total' %}</td>
-                <td><span x-text="(linesTotal / 100).toFixed(2).replace('.', ',')">{{ lines_total|price|floatformat:2 }}</span></td>
+                <td class="main__figure"><span x-text="(linesTotal / 100).toFixed(2).replace('.', ',')">{{ lines_total|price|floatformat:2 }}</span></td>
                 <td colspan="{% if shop_money > 0 %}4{% else %}3{% endif %}"></td>
             </tr>
             <tr class="main__total">
                 <td colspan="3">{% translate 'Receipt total' %}</td>
-                <td>{{ receipt_total|price|floatformat:2 }}</td>
+                <td class="main__figure">{{ receipt_total|price|floatformat:2 }}</td>
                 <td colspan="{% if shop_money > 0 %}4{% else %}3{% endif %}"></td>
             </tr>
             {% if shop_money > 0 %}
                 <tr class="main__total">
                     <td colspan="3">{% translate 'Shop money' %}</td>
-                    <td>{{ shop_money|price|floatformat:2 }}</td>
+                    <td class="main__figure">{{ shop_money|price|floatformat:2 }}</td>
                     <td colspan="4"></td>
                 </tr>
             {% endif %}

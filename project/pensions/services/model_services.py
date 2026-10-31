@@ -29,10 +29,6 @@ class PensionModelService(SumMixin, DatedModelService):
         return self.objects.all()
 
     def incomes(self):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
         return (
             self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "pension_type__title")

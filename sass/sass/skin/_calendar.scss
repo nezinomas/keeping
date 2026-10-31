@@ -1,11 +1,10 @@
 @use "sass:list";
 @use "../abstracts/variables" as *;
 
-// Nested in .paper-skin, so every selector keeps the specificity it had while
-// this lived in apps/_drinks.
-
 .paper-skin {
     .heat-card {
+        // calendar.js places the tooltip from the card's own corner
+        position: relative;
         min-width: 0;
 
         .l0 { background: $empty; }
@@ -40,7 +39,8 @@
         grid-template-rows: repeat(7, 16px);
         gap: 3px;
         margin-right: 4px;
-        font-size: 0.62rem;
+        font-family: $display;
+        font-size: 0.75rem;
         color: $ink-muted;
 
         span {
@@ -88,6 +88,7 @@
 
         .mlabel {
             text-align: center;
+            font-family: $display;
             font-size: 0.75rem;
             color: $ink-muted;
         }
@@ -99,7 +100,8 @@
         align-items: flex-start;
         gap: 0.35rem 0.5rem;
         margin-top: 0.7rem;
-        font-size: 0.72rem;
+        font-family: $display;
+        font-size: 0.8125rem;
         color: $ink-muted;
 
         i {
@@ -141,15 +143,13 @@
 
         &__bounds {
             margin-top: 2px;
-            font-size: 0.62rem;
+            font-size: 0.75rem;
             text-align: center;
-            color: $ink-muted;
         }
 
         &__unit {
-            font-size: 0.62rem;
+            font-size: 0.75rem;
             text-align: center;
-            color: $ink-muted;
         }
 
         &__spacer {
@@ -168,6 +168,7 @@
         border: 1px solid $ink;
         background: $paper;
         color: $ink;
+        font-family: $display;
         font-size: 0.72rem;
         line-height: 1.35;
         white-space: nowrap;

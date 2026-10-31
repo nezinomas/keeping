@@ -9,9 +9,7 @@
 }
 
 
-// A toolbar of controls under a chart, shared by the two tabs that draw one.
-// The error is absolute, so it cannot shove the inputs around; margin-bottom
-// reserves the room it needs.
+// the error is absolute, so it cannot shove the inputs; margin-bottom reserves its room
 @mixin chart-controls {
     display: flex;
     flex-wrap: wrap;
@@ -21,7 +19,7 @@
     margin-top: $gap;
     margin-bottom: 1.5rem;
 
-    // stretch: a button carries mono type two steps smaller than the field
+    // stretch: a button carries type two steps smaller than the field
     // beside it, so only the row can say how tall both are
     form {
         display: flex;
@@ -52,7 +50,6 @@
 }
 
 
-// Main grid
 .bookkeeping-grid {
     @include grid-template;
 
@@ -128,7 +125,6 @@
 }
 
 
-//Drinks grid
 .drinks-grid {
     @include grid-template;
 
@@ -159,7 +155,6 @@
 }
 
 
-// History grid
 .history-grid {
     @include grid-template;
 
@@ -174,7 +169,6 @@
 }
 
 
-// Trends grid
 .trends-grid {
     @include grid-template;
 
@@ -193,7 +187,6 @@
 }
 
 
-// Habits grid
 .habits-grid {
     @include grid-template;
 
@@ -227,7 +220,6 @@
 }
 
 
-// Risk grid
 .risk-grid {
     @include grid-template;
 
@@ -251,7 +243,6 @@
 }
 
 
-// Debts grid
 .debts-grid {
     @include grid-template;
 
@@ -280,7 +271,6 @@
 }
 
 
-// Summary expenses grid
 .summary-expenses-grid {
     display: grid;
     grid-template-columns: 15% minmax(80%, 1fr);
@@ -288,7 +278,6 @@
 }
 
 
-// Settings grid
 .settings-grid {
     display: grid;
     grid-template-columns: 1fr 3fr 1fr;
@@ -314,7 +303,6 @@
 }
 
 
-// User grid
 .user-grid {
     display: grid;
     grid-template-columns: 1fr 3fr 1fr;
@@ -373,7 +361,6 @@
 }
 
 
-// Month grid
 .month-grid {
     @include grid-template;
 
@@ -383,6 +370,14 @@
         "month-chart-and-info-table"
         "month-add-buttons"
     ;
+
+    @media only screen and (min-width: 992px) {
+        grid-template-columns: 2fr 33%;
+        grid-template-areas:
+            "month-content      month-chart-and-info-table"
+            "month-buttons      month-add-buttons"
+        ;
+    }
 
     #month-chart-and-info-table {
         display: flex;
@@ -398,6 +393,7 @@
 
     #month-buttons {
         grid-area: month-buttons;
+        overflow-x: auto;
     }
 
     #month-add-buttons {
@@ -407,27 +403,22 @@
 }
 
 
-// One column
 .grid-one-col {
     @include grid-template;
 }
 
-// Two equal columns
 .grid-two-col {
     @include grid-template;
 }
 
-// Three equal columns
 .grid-three-col {
     @include grid-template;
 }
 
-// Two columns: two thirds and one third
 .grid-70-30 {
     @include grid-template;
 }
 
-// Media queries for screens larger than 992px
 @media only screen and (min-width: 992px) {
     .bookkeeping-grid {
         grid-template-columns: 42% 1fr;
@@ -446,14 +437,6 @@
                 "accounts   balance-short-and-no-incomes   wealth-avg-debts"
             ;
         }
-    }
-
-    .month-grid {
-        grid-template-columns: 2fr 33%;
-        grid-template-areas:
-            "month-content      month-chart-and-info-table"
-            "month-buttons      month-add-buttons"
-        ;
     }
 
     .debts-grid {

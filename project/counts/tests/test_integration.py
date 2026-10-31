@@ -5,7 +5,7 @@ from django.test import override_settings
 from selenium.webdriver.common.by import By
 
 from ...core.tests.test_integration_browser import Browser
-from .factories import CountTypeFactory
+from .factories import CountFactory, CountTypeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -42,7 +42,7 @@ class CountsIntegrationTests(Browser):
 
         self.browser.find_element(
             By.XPATH,
-            "//div[@class='quick-add__bar']//a[contains(@hx-get,'/counts/type/new/')]",
+            "//div[@class='quick-add__bar']//button[contains(@hx-get,'/counts/type/new/')]",
         ).click()
         self.wait_until_idle()
 
@@ -57,7 +57,7 @@ class CountsIntegrationTests(Browser):
 
         self.browser.find_element(
             By.XPATH,
-            "//div[@class='quick-add__bar']//a[contains(@hx-get,'/counts/type/delete/')]",
+            "//div[@class='quick-add__bar']//button[contains(@hx-get,'/counts/type/delete/')]",
         ).click()
         self.wait_until_idle()
 
@@ -69,3 +69,34 @@ class CountsIntegrationTests(Browser):
         page = self.browser.page_source
         assert "-AAA-" in page
         assert "-XXX-" not in page
+
+
+@pytest.mark.webtest
+class CountsPeriodicityCharts(Browser):
+    def test_periodicity_x_axes_share_one_line(self):
+        CountFactory()
+        self.open_at("/counts/c/count-type/periodicity/", 1280)
+
+        tops = self.browser.execute_script(
+            "return arguments[0].map(id => document.querySelector("
+            "  `#${id} .highcharts-xaxis .highcharts-axis-line`)"
+            "  .getBoundingClientRect().top);",
+            [
+                "chart-weekdays-container",
+                "chart-months-container",
+                "chart-histogram-container",
+            ],
+        )
+
+        assert len(set(tops)) == 1, tops
+
+    def test_history_years_chart_keeps_highcharts_own_bottom_margin(self):
+        CountFactory()
+        self.open_at("/counts/c/count-type/history/", 1280)
+
+        margins = self.browser.execute_script(
+            "return Highcharts.charts.filter(c => c)"
+            "  .map(c => [c.renderTo.id, c.options.chart.marginBottom ?? 'auto']);"
+        )
+
+        assert margins == [["chart-years-container", "auto"]]

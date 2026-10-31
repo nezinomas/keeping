@@ -1,9 +1,9 @@
-<c-vars key="" active="" url="" target="" class="" />
+<c-vars key="" active="" url="" target="" align="" column="" />
 
-<th{% if class %} class="{{ class }}"{% endif %}>
+<th{% if column == "title" %} class="text-left title-col"{% elif column == "total" %} class="month-table__total"{% elif align == "left" %} class="text-left"{% endif %}>
     {% if key == active %}
     <span>{{ slot }}</span>
     {% else %}
-    <a role="button" hx-get="{{ url }}?order={{ key }}" hx-target="{{ target }}">{{ slot }}</a>
+    <a role="button" hx-get="{{ url }}{% if '?' in url %}&amp;{% else %}?{% endif %}order={{ key }}" hx-target="{{ target }}">{{ slot }}</a>
     {% endif %}
 </th>

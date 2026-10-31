@@ -1,8 +1,7 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// `.main` is what a table is called everywhere in this app. The paper bundle
-// does not import components/_table, so this is its only definition here.
+// The paper bundle does not import components/_table: `.main`'s only definition.
 
 .paper-skin {
     .main {
@@ -11,31 +10,23 @@
         font-variant-numeric: tabular-nums;
 
         caption {
-            @include tokens.label;
+            @include tokens.title;
 
             padding: 0 0 0.7rem;
-            font-size: 0.68rem;
-            letter-spacing: 0.15em;
             text-align: left;
-            color: $ink;
-            background: transparent;
-            border-bottom: 0;
         }
 
-        // a caption may carry a sentence as well as its label — read as prose,
-        // not as another mono label
+        // a caption may carry a sentence as well as its title, read as prose
         caption .main__note {
             display: block;
             margin-top: 0.25rem;
             font-family: $body;
             font-size: 0.72rem;
-            letter-spacing: normal;
-            text-transform: none;
+            font-weight: 400;
             color: $ink-muted;
         }
 
-        // figures right, the row's name left. Zero specificity, so the markup's
-        // own .text-left / .text-center still place a cell where it asks to be
+        // zero specificity, so the markup's .text-left / .text-center still win
         :where(th, td) {
             padding: 0.35rem $gap;
             text-align: right;
@@ -47,10 +38,14 @@
         }
 
         thead th {
-            @include tokens.label;
+            font-family: $display;
+            font-size: 0.8125rem;
+            font-weight: 400;
+            color: $ink;
+            background: $band;
+        }
 
-            font-size: 0.58rem;
-            background: $table-header-bg;
+        thead tr:last-child th {
             border-bottom: 1px solid $ink;
         }
 
@@ -58,25 +53,52 @@
             border-bottom: 1px solid $hair-soft;
         }
 
-        // where one group of rows ends and the next begins. 2px on the cells, not
-        // 1px on the row: border-collapse breaks a tie by width, so 1px would lose
-        // to the border-bottom the previous row's td already carries
+        .main__figure {
+            font-family: $figures;
+            font-size: 0.86rem;
+        }
+
+        tbody tr.main__group td {
+            padding-top: 1.5 * $gap;
+            padding-bottom: 0.5rem;
+            font-weight: 600;
+
+            @media only screen and (max-width: 767px) {
+                padding-top: $gap;
+            }
+        }
+
+        td.main__child {
+            padding-left: 2 * $gap;
+
+            @media only screen and (max-width: 767px) {
+                padding-left: 1.5 * $gap;
+            }
+        }
+
+        .main__year,
+        .main__mark {
+            font-family: $display;
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: $ink-muted;
+        }
+
+        // muted: a name's share is of its type, the type's share of the year
+        td.main__share {
+            color: $ink-muted;
+        }
+
+        // 2px, not 1px: border-collapse breaks a tie by width, and 1px would lose to
+        // the border-bottom the previous row's cells already carry
         tbody tr.table-group-divider > td {
             border-top: 2px solid $hair;
         }
 
-        // a summary row, its name set as a label; the ink rule above it is the
-        // upper row's (below)
         :is(tbody, tfoot) tr.main__total td {
             border-bottom: 0;
             font-weight: 600;
             color: $ink;
-
-            &:first-child {
-                font-family: $mono;
-                font-size: 0.7rem;
-                letter-spacing: 0.1em;
-            }
         }
 
         // drawn from the row above: border-collapse gives a 1px tie to the upper
@@ -86,7 +108,6 @@
             border-bottom-color: $ink;
         }
 
-        // action columns (shared <c-td-edit> / <c-td-delete> markup)
         .edit-col,
         .delete-col {
             width: 2.25rem;
@@ -99,13 +120,13 @@
             color: $ink-muted;
         }
 
-        // an empty or zero cell (the `cell_state` filter): present, not read
-        [data-cell="empty"] {
-            color: $ink-faint;
-        }
-
         .delete-col a {
             color: $harm;
+        }
+
+        // a zero is present, not read (the `cell_state` filter's "empty")
+        [data-cell="empty"] {
+            color: $ink-faint;
         }
 
         // the stripe is fainter than the hover, so the cursor still reads on an
@@ -119,8 +140,6 @@
         }
     }
 
-    // a sortable header (<c-sort-th>): the active column is a span, every other one
-    // a link; the glyph is the hint, inked darker on the column in use
     .sortable-header-row th {
         > span,
         > a {
@@ -155,16 +174,28 @@
     }
 
     .main.sticky-table {
-        border: 1px solid $hair;
+        // a sticky header on a collapsed table loses its borders and fill
+        border-collapse: separate;
+        border-spacing: 0;
 
         thead th {
             padding-top: 0.6rem;
-            background: $table-header-bg;
         }
 
-        :where(td, th) {
-            padding-left: $gap;
-            padding-right: $gap;
+        // opaque: the rows scroll under the pinned header
+        &.striped tbody tr:nth-child(even) > td {
+            @include tokens.opaque-stripe;
+        }
+
+        &.hover tbody tr:hover > td {
+            @include tokens.opaque-hover;
+        }
+
+        // separate borders do not merge: drop the hairline above a divider, in its
+        // own tbody or the one before
+        tbody tr:has(+ tr.table-group-divider) > td,
+        tbody:has(+ tbody > tr.table-group-divider:first-child) > tr:last-child > td {
+            border-bottom-width: 0;
         }
     }
 }

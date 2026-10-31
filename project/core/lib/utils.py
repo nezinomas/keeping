@@ -96,6 +96,11 @@ def rendered_content(request, view_class, **kwargs):
     return view_class.as_view()(request, **kwargs).rendered_content
 
 
+def wants_fragment(request) -> bool:
+    htmx = request.htmx
+    return bool(htmx) and not htmx.history_restore_request
+
+
 def http_htmx_response(hx_trigger_name=""):
     headers = {}
     if hx_trigger_name:

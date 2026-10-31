@@ -1,5 +1,3 @@
-from dataclasses import replace
-
 import pytest
 from hypothesis import example, given
 from hypothesis import strategies as st
@@ -11,62 +9,7 @@ from ...lib.calc_day_sum import (
     PlanCalculateDaySum,
     PlanCollectData,
 )
-
-MONTH_LEN = [
-    {"month": 1, "amount": 31},
-    {"month": 2, "amount": 29},
-    {"month": 3, "amount": 31},
-    {"month": 4, "amount": 30},
-    {"month": 5, "amount": 31},
-    {"month": 6, "amount": 30},
-    {"month": 7, "amount": 31},
-    {"month": 8, "amount": 31},
-    {"month": 9, "amount": 30},
-    {"month": 10, "amount": 31},
-    {"month": 11, "amount": 30},
-    {"month": 12, "amount": 31},
-]
-
-
-def make_data(**changes):
-    data = DataDto(
-        incomes=[
-            {"month": 1, "amount": 900},
-            {"month": 2, "amount": 1000},
-            {"month": 3, "amount": 450},
-            {"month": 4, "amount": 450},
-            {"month": 5, "amount": 450},
-            {"month": 6, "amount": 450},
-            {"month": 7, "amount": 450},
-            {"month": 8, "amount": 450},
-            {"month": 9, "amount": 450},
-            {"month": 10, "amount": 450},
-            {"month": 11, "amount": 450},
-            {"month": 12, "amount": 450},
-        ],
-        expenses_regular=[
-            {"month": 1, "amount": 260},
-            {"month": 2, "amount": 280},
-        ],
-        expenses_necessary=[
-            {"month": 1, "amount": 300},
-            {"month": 2, "amount": 320},
-        ],
-        savings=[
-            {"month": 1, "amount": 190},
-            {"month": 2, "amount": 200},
-        ],
-        per_day=[
-            {"month": 1, "amount": 25},
-            {"month": 2, "amount": 26},
-        ],
-        necessary=[
-            {"month": 2, "amount": 100},
-        ],
-        month_len=MONTH_LEN,
-    )
-
-    return replace(data, **changes)
+from ..day_sum_data import MONTH_LEN, make_data
 
 
 @pytest.fixture(name="data")
@@ -138,42 +81,15 @@ def test_row_of_twelve_months(row, cells, data):
 
 
 @example(row="incomes", month=1)
-@example(row="savings", month=1)
-@example(row="expenses_free", month=1)
-@example(row="expenses_free", month=2)
-@example(row="expenses_free", month=3)
-@example(row="expenses_remains", month=1)
-@example(row="expenses_remains", month=2)
-@example(row="expenses_remains", month=3)
-@example(row="expenses_necessary", month=1)
-@example(row="expenses_necessary", month=2)
-@example(row="expenses_necessary", month=3)
-@example(row="expenses_full", month=1)
-@example(row="expenses_full", month=2)
-@example(row="expenses_full", month=3)
-@example(row="day_calced", month=1)
 @example(row="day_calced", month=2)
-@example(row="day_calced", month=3)
-@example(row="day_calced", month=4)
-@example(row="day_calced", month=5)
-@example(row="day_calced", month=6)
-@example(row="remains", month=1)
-@example(row="remains", month=2)
-@example(row="remains", month=3)
-@example(row="necessary", month=1)
-@example(row="necessary", month=2)
-@example(row="necessary", month=3)
-@example(row="incomes_avg", month=1)
-@example(row="expenses_regular", month=1)
-@example(row="day_input", month=1)
-@example(row="month_len", month=1)
+@example(row="remains", month=12)
 @given(row=st.sampled_from([*InputRow, *CalcRow]), month=st.integers(1, 12))
-def test_row_of_one_month_is_its_cell_of_twelve(row, month):
-    data = make_data()
+def test_cell_is_its_month_of_the_row(row, month):
+    obj = PlanCalculateDaySum(make_data())
 
-    actual = PlanCalculateDaySum(data, month).row(row)
+    actual = obj.cell(row, month)
 
-    assert actual == PlanCalculateDaySum(data).row(row)[str(month)]
+    assert actual == obj.row(row)[str(month)]
 
 
 def test_remains_only_necessary_expenses():

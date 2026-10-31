@@ -50,25 +50,23 @@ def test_quick_add_post_omits_option_uses_user_drink_type(client_logged, main_us
 
 
 @pytest.mark.parametrize(
-    "tab, trigger",
+    "fields, trigger",
     [
-        ("index", "reloadIndex"),
-        ("data", "reloadData"),
-        ("history", "reloadHistory"),
-        ("trends", "reloadTrends"),
-        ("risk", "reloadRisk"),
-        ("habits", "reloadHabits"),
-        # an unrecognised tab lands on Overview
-        ("unknown", "reloadIndex"),
+        ({"tab": "index"}, "reloadIndex"),
+        ({"tab": "data"}, "reloadData"),
+        ({"tab": "history"}, "reloadHistory"),
+        ({"tab": "trends"}, "reloadTrends"),
+        ({"tab": "risk"}, "reloadRisk"),
+        ({"tab": "habits"}, "reloadHabits"),
+        # an unrecognised or missing tab lands on Overview
+        ({"tab": "unknown"}, "reloadIndex"),
+        ({}, "reloadIndex"),
     ],
 )
-def test_quick_add_post_reloads_the_tab_it_was_fired_from(tab, trigger, client_logged):
-    data = {
-        "quantity": 2.5,
-        "option": "beer",
-        "date": "1999-01-01",
-        "tab": tab,
-    }
+def test_quick_add_post_reloads_the_tab_it_was_fired_from(
+    fields, trigger, client_logged
+):
+    data = {"quantity": 2.5, "option": "beer", "date": "1999-01-01", **fields}
     url = reverse("drinks:quick_add")
     response = client_logged.post(url, data)
 

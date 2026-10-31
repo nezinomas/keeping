@@ -1,5 +1,6 @@
 {% load static %}
 {% load i18n %}
+{% load form_tags %}
 
 
 <form method="POST" id="generic-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers:inherited='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
@@ -42,17 +43,11 @@
 
 
 {% block from_scripts %}
-    {% if 'date' in form.fields or 'started' in form.fields or 'ended' in form.fields %}
-        {% get_current_language as LANG %}
-        <!-- litepicker.js itself is already loaded once in base.html's <head>;
-             reloading it here redeclares its globals when htmx re-executes
-             swapped <script src> tags without dedup -->
-        <script nonce="{{ csp_nonce }}" defef src="{% static 'litepicker/translations/'|add:LANG|add:'.js' %}"></script>
+    {% if form|has_date_picker %}
         <script nonce="{{ csp_nonce }}" defer src="{% static 'js/date-picker.js' %}"></script>
     {% endif %}
 
-    {% if 'year' in form.fields or 'closed' in form.fields or 'valid_for' in form.fields or 'year_from' in form.fields or 'year_to' in form.fields %}
-        <!-- year_picker.min.js is already loaded once in base.html's <head>, same reason -->
+    {% if form|has_year_picker %}
         <script nonce="{{ csp_nonce }}" src="{% static 'js/year-picker.js' %}"></script>
     {% endif %}
 

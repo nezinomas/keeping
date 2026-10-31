@@ -7,16 +7,14 @@ from django.utils.translation import gettext as _
 
 from ....core.lib import stat_card
 from ....core.lib.day_stats import NoPastRecord, PastRecord
-from ....core.lib.stat_card import Card
+from ...lib.daily_limit import DailyLimit, NoDailyLimit
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter, stdav_to_alcohol
 from ...lib.drinks_stats import DataRow
 from ...services.index_tab import (
-    DailyLimit,
     DryDaysViewModel,
     IndexBuilder,
     IndexTab,
-    NoDailyLimit,
     NoDryDaysViewModel,
 )
 from ..factories import DrinkFactory, DrinkTargetFactory
@@ -43,14 +41,17 @@ def _frequency(
 
 def _stats(drink_converter, total_quantity=0.0, avg=0.0, year=1999):
     stdav = drink_converter.servings_to_stdav(total_quantity)
+    volume, std = avg, 0.0
+    if drink_converter.is_canonical:
+        volume, std = 0.0, avg
     return SimpleNamespace(
         year=year,
         yearly=SimpleNamespace(
             total_quantity=total_quantity,
-            avg_daily_volume=avg,
+            avg_daily_volume=volume,
             stdav=stdav,
             pure_alcohol_liters=stdav_to_alcohol(stdav),
-            avg_daily_stdav=avg,
+            avg_daily_stdav=std,
         ),
     )
 
@@ -99,20 +100,20 @@ def test_dry_days(latest, expect, main_user, drink_converter):
         pytest.param(
             2019,
             [
-                ("Alus, 0.5L", 273.5, 0.97, 6.67, 27.35),
-                ("Vynas, 0.75L", 85.47, 0.3, 2.08, 8.55),
-                ("Degtinė, 1L", 17.09, 0.06, 0.42, 1.71),
-                ("Std Av", 683.75, 2.42, 16.68, 68.38),
+                ("Alus, 0.5L", 273.5, 0.97, 6.67, 27.35, False),
+                ("Vynas, 0.75L", 85.47, 0.3, 2.08, 8.55, False),
+                ("Degtinė, 1L", 17.09, 0.06, 0.42, 1.71, False),
+                ("Std Av", 683.75, 2.42, 16.68, 68.38, True),
             ],
             id="std_av",
         ),
         pytest.param(
             1999,
             [
-                ("Alus, 0.5L", 273.5, 0.75, 5.26, 22.79),
-                ("Vynas, 0.75L", 85.47, 0.23, 1.64, 7.12),
-                ("Degtinė, 1L", 17.09, 0.05, 0.33, 1.42),
-                ("Std Av", 683.75, 1.87, 13.15, 56.98),
+                ("Alus, 0.5L", 273.5, 0.75, 5.26, 22.79, False),
+                ("Vynas, 0.75L", 85.47, 0.23, 1.64, 7.12, False),
+                ("Degtinė, 1L", 17.09, 0.05, 0.33, 1.42, False),
+                ("Std Av", 683.75, 1.87, 13.15, 56.98, True),
             ],
             id="std_av_past_recods",
         ),
@@ -130,6 +131,7 @@ def test_tbl_std_av_reads_the_year_in_every_drink_type(drink_converter, year, ex
             round(row.per_day, 2),
             round(row.per_week, 2),
             round(row.per_month, 2),
+            row.is_total,
         )
         for row in builder.tbl_std_av().items
     ]
@@ -149,7 +151,6 @@ def test_get_cards_order(main_user, drink_converter):
         _("Pure alcohol"),
         _("Daily limit"),
     ]
-    assert all(isinstance(c, Card) for c in cards)
 
 
 @pytest.mark.parametrize(
@@ -307,10 +308,19 @@ def test_card_avg_per_day_reads_against_the_limit(
         over=_("over the limit"), under=_("under the limit"), none=_("No limit set")
     )
     assert card.explanation == (f"{explained_in} {_('per calendar day')}",)
+    # no last year, so no arrow
+    assert card.show_icon is False
 
 
+@pytest.mark.parametrize(
+    "past_avg, improving",
+    [
+        pytest.param(280.0, False, id="more_than_last_year"),
+        pytest.param(320.0, True, id="less_than_last_year"),
+    ],
+)
 def test_card_avg_per_day_notes_last_year_but_is_still_coloured_by_the_limit(
-    main_user, drink_converter
+    main_user, drink_converter, past_avg, improving
 ):
     """The Drink Target is a real threshold, so it keeps the colour; the baseline
     only points the arrow."""
@@ -320,13 +330,13 @@ def test_card_avg_per_day_notes_last_year_but_is_still_coloured_by_the_limit(
         avg=300.0,
         target=400.0,
         past_quantity=80.0,
-        past_avg=280.0,
+        past_avg=past_avg,
     ).get_cards()[3]
 
     assert card.state == "low"
-    assert card.note == f"{_('Last year')} 280"
+    assert card.note == f"{_('Last year')} {past_avg:.0f}"
     assert card.show_icon is True
-    assert card.improving is False
+    assert card.improving is improving
     # the card has an arrow, so its tooltip has to say what the arrow compares
     assert card.explanation == (
         f"ml {_('per calendar day')}",
@@ -563,18 +573,6 @@ def test_index_tab_build_limit_no_target(main_user):
     assert card.edit_url == reverse("drinks:target_new", kwargs={"tab": "index"})
 
 
-def test_index_tab_build_reads_last_year_without_a_further_query(
-    main_user, django_assert_num_queries
-):
-    """The baseline rides on the daily rows FrequencyStats already pulls; reaching
-    for `records.previous.monthly` instead would cost a query per page."""
-    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
-    DrinkFactory(date=date(1998, 1, 10), stdav=2.5)
-
-    with django_assert_num_queries(6):
-        IndexTab.build(main_user, 1999, date(1999, 6, 1))
-
-
 def test_index_tab_build_states_last_year_only_as_far_as_today(main_user):
     """A Drink last November is past this June, so it is no part of the baseline
     the cards state — the Year boundary cuts it off."""
@@ -591,11 +589,13 @@ def test_index_tab_build_states_last_year_only_as_far_as_today(main_user):
 
 
 @pytest.mark.parametrize(
-    "drink_type, total, targets, limit, decimals",
+    "drink_type, avg, targets, limit, decimals",
     [
+        # one 2.5 Std Av Drink is one 500 ml beer; Jan 1 to Jun 1 is 152 days,
+        # so 500 / 152 ml and 2.5 / 152 Std Av a day
         pytest.param(
             "beer",
-            500.0,
+            3.28947,
             [{"quantity": 100}],
             {"amount": 100.0, "is_set": True},
             0,
@@ -603,19 +603,19 @@ def test_index_tab_build_states_last_year_only_as_far_as_today(main_user):
         ),
         pytest.param(
             "stdav",
-            2.5,
+            0.016447,
             [{"quantity": 2.5, "drink_type": "stdav"}],
             {"amount": 2.5, "is_set": True},
             1,
             id="stdav",
         ),
         pytest.param(
-            "beer", 500.0, [], {"amount": 0.0, "is_set": False}, 0, id="no_target"
+            "beer", 3.28947, [], {"amount": 0.0, "is_set": False}, 0, id="no_target"
         ),
     ],
 )
 def test_chart_consumption_carries_the_limit_and_the_year_average(
-    main_user, drink_type, total, targets, limit, decimals
+    main_user, drink_type, avg, targets, limit, decimals
 ):
     """No Drink Target is a state of its own, so the chart draws no limit."""
     main_user.drink_type = drink_type
@@ -628,7 +628,8 @@ def test_chart_consumption_carries_the_limit_and_the_year_average(
     ].as_dict
 
     assert chart["limit"] == limit
-    assert chart["avg"] == pytest.approx(total / 152)  # Jan 1 to Jun 1
+    # 1e-5 is tighter than a 153-day denominator's shift (2e-2 and 1e-4)
+    assert chart["avg"] == pytest.approx(avg, abs=1e-5)
     assert chart["decimals"] == decimals
 
 

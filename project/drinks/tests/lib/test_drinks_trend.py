@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 
+from ...lib.daily_limit import DailyLimit
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow
 from ...lib.drinks_trend import TrendStats
@@ -96,29 +97,26 @@ def test_rolling_average_seeds_from_previous_december(converter):
     assert stats.calculate_rolling_average(7)[0] == pytest.approx(2000 / 7)
 
 
-def test_period_improving_when_recent_is_lower(converter):
-    # last 14 days (Jan 18 - Feb 1): 3; prior 14 days (Jan 4 - Jan 18): 9
-    rows = [_row(date(2026, 1, 25), 3), _row(date(2026, 1, 10), 9)]
+@pytest.mark.parametrize(
+    "recent, prior, change, improving",
+    [
+        pytest.param(3, 9, 66.7, True, id="lower"),  # abs(3 - 9) / 9 * 100
+        pytest.param(10, 2, 400.0, False, id="higher"),  # abs(10 - 2) / 2 * 100
+    ],
+)
+def test_period_compares_the_recent_window_with_the_one_before(
+    converter, recent, prior, change, improving
+):
+    # last 14 days (Jan 18 - Feb 1), prior 14 days (Jan 4 - Jan 18)
+    rows = [_row(date(2026, 1, 25), recent), _row(date(2026, 1, 10), prior)]
     stats = TrendStats(converter, current_daily=rows, year=2026, today=date(2026, 2, 1))
 
     p = stats.compare_recent_period(14)
 
-    assert p.current_period_average == 3
-    assert p.previous_period_average == 9
-    assert p.percentage_change == 66.7  # abs(3 - 9) / 9 * 100
-    assert p.improving is True
+    assert (p.current_period_average, p.previous_period_average) == (recent, prior)
+    assert p.percentage_change == change
+    assert p.improving is improving
     assert p.has_data is True
-
-
-def test_period_worsening_when_recent_is_higher(converter):
-    rows = [_row(date(2026, 1, 25), 10), _row(date(2026, 1, 10), 2)]
-    stats = TrendStats(converter, current_daily=rows, year=2026, today=date(2026, 2, 1))
-
-    p = stats.compare_recent_period(14)
-
-    assert p.current_period_average == 10
-    assert p.previous_period_average == 2
-    assert p.improving is False
 
 
 def test_period_without_prior_baseline(converter):
@@ -206,7 +204,7 @@ def test_projection_over_target(converter):
     stats = TrendStats(
         converter,
         current_daily=[_row(date(2026, 1, 1), 10)],
-        target=100,
+        limit=DailyLimit(100),
         year=2026,
         today=date(2026, 1, 10),
     )
@@ -230,7 +228,7 @@ def test_projection_counts_std_av_instead_of_bottling_it():
     stats = TrendStats(
         DrinkConverter("stdav"),
         current_daily=[_row(date(2026, 1, 1), 10)],
-        target=0.5,
+        limit=DailyLimit(0.5),
         year=2026,
         today=date(2026, 1, 10),
     )

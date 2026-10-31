@@ -31,10 +31,10 @@
         display: flex;
         margin-top: 3px;
 
-        // a month name is a word, not chrome: body face, no caps, no tracking
         span {
+            font-family: $display;
+            font-size: 0.75rem;
             color: $ink-muted;
-            font-size: 0.6875rem;
             overflow: hidden;
             text-align: center;
 

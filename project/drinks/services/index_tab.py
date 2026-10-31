@@ -5,11 +5,12 @@ from django.template.defaultfilters import floatformat
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from ...core.lib import stat_card
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays
 from ...core.lib.day_stats import NoPastRecord, PastRecord
 from ...core.lib.stat_card import (
+    HIGH,
+    LOW,
     Card,
     ComparisonStatCard,
     EmptyStatCard,
@@ -19,6 +20,7 @@ from ...core.lib.stat_card import (
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
 from ..lib.chart_view_model import ChartViewModel
+from ..lib.daily_limit import DailyLimit, NoDailyLimit
 from ..lib.drink_types import DrinkType
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DrinkConverter
@@ -29,7 +31,7 @@ from ..lib.drinks_stats import (
     YearOverYear,
     YearOverYearReading,
 )
-from ..tabs import DrinkTab
+from ..tabs import TABS
 from .consumption_year import ConsumptionYear
 
 
@@ -38,20 +40,6 @@ class QuantityChartViewModel(ChartViewModel):
     categories: list[str]
     data: list[float]
     text: dict[str, str]
-
-
-@dataclass(frozen=True)
-class DailyLimit:
-    amount: float
-    is_set: bool = True
-
-
-@dataclass(frozen=True)
-class NoDailyLimit:
-    """No Drink Target: the chart draws no limit line and no harm zone."""
-
-    amount: float = 0.0
-    is_set: bool = False
 
 
 @dataclass(frozen=True)
@@ -84,6 +72,7 @@ class ConversionRowViewModel:
     per_day: float
     per_week: float
     per_month: float
+    is_total: bool
 
 
 @dataclass(frozen=True)
@@ -95,11 +84,6 @@ class IndexTab:
     @classmethod
     def build(cls, user, year: int, today: dt_date) -> dict:
         records = ConsumptionYear(user, year, today)
-        target = records.target
-        limit = NoDailyLimit()
-        if target.qty:
-            limit = DailyLimit(target.qty)
-
         boundary = YearBoundary(year, today)
 
         builder = IndexBuilder(
@@ -119,8 +103,8 @@ class IndexTab:
                 year=year,
                 today=boundary.today,
             ),
-            limit=limit,
-            target_id=target.target_id,
+            limit=records.limit,
+            target_id=records.target.target_id,
             latest=records.latest,
             today=boundary.today,
         )
@@ -292,67 +276,58 @@ class IndexBuilder:
         if not self._drink_stats.yearly.total_quantity:
             return EmptyStatCard(title, _("No data"))
 
-        unit = self._converter.display_unit
-        decimals = self._converter.display_decimals
-
         avg = self._avg_daily(self._drink_stats)
-        figure_unit = self._converter.figure_unit
-        value = f"{avg:.{decimals}f}"
-
         comparison = self._against_last_year(avg, self._avg_daily(self._previous_stats))
-        baseline = self._last_year(f"{comparison.previous:.{decimals}f}")
+        figure = {
+            "value": self._per_day(avg),
+            "unit": self._converter.figure_unit,
+            "note": self._avg_per_day_note(avg, comparison),
+            "explanation": self._avg_per_day_explanation(comparison),
+        }
 
-        explanation = (f"{unit} {_('per calendar day')}",)
+        # the Drink Target colours the card; last year only points its arrow
+        if self._limit.is_set:
+            return LevelStatCard(
+                title,
+                state=LOW if self._is_under_limit(avg) else HIGH,
+                show_icon=comparison.has_past,
+                improving=comparison.improving,
+                **figure,
+            )
+
+        if comparison.has_past:
+            return ComparisonStatCard(title, improving=comparison.improving, **figure)
+
+        return StatCard(title=title, **figure)
+
+    def _avg_per_day_note(self, avg: float, comparison: YearOverYearReading) -> str:
+        if comparison.has_past:
+            return self._last_year(self._per_day(comparison.previous))
+
+        if not self._limit.is_set:
+            return _("No limit set")
+
+        diff = self._per_day(abs(self._limit.amount - avg))
+        if self._is_under_limit(avg):
+            return f"{diff} {_('under the limit')}"
+
+        return f"{diff} {_('over the limit')}"
+
+    def _avg_per_day_explanation(
+        self, comparison: YearOverYearReading
+    ) -> tuple[str, ...]:
+        explanation = (f"{self._converter.display_unit} {_('per calendar day')}",)
 
         if comparison.has_past:
             explanation += (self._arrow_note(),)
 
-        if not self._limit.is_set and not comparison.has_past:
-            return StatCard(
-                title=title,
-                value=value,
-                unit=figure_unit,
-                note=_("No limit set"),
-                explanation=explanation,
-            )
+        return explanation
 
-        if not self._limit.is_set:
-            return ComparisonStatCard(
-                title,
-                improving=comparison.improving,
-                value=value,
-                unit=figure_unit,
-                note=baseline,
-                explanation=explanation,
-            )
+    def _is_under_limit(self, avg: float) -> bool:
+        return avg <= self._limit.amount
 
-        under_limit = avg <= self._limit.amount
-        diff = f"{abs(self._limit.amount - avg):.{decimals}f}"
-        direction = _("under the limit") if under_limit else _("over the limit")
-        limit_note = f"{diff} {direction}"
-
-        state = stat_card.LOW if under_limit else stat_card.HIGH
-
-        if not comparison.has_past:
-            return LevelStatCard(
-                title,
-                state=state,
-                value=value,
-                unit=figure_unit,
-                note=limit_note,
-                explanation=explanation,
-            )
-
-        return LevelStatCard(
-            title,
-            state=state,
-            value=value,
-            unit=figure_unit,
-            note=baseline,
-            show_icon=True,
-            improving=comparison.improving,
-            explanation=explanation,
-        )
+    def _per_day(self, amount: float) -> str:
+        return f"{amount:.{self._converter.display_decimals}f}"
 
     def _avg_daily(self, stats: DrinkStats) -> float:
         if self._converter.is_canonical:
@@ -392,7 +367,7 @@ class IndexBuilder:
             return EmptyStatCard(
                 title=title,
                 note=_("No limit set"),
-                edit_url=DrinkTab.resolve("index").form_url("drinks:target_new"),
+                edit_url=TABS["index"].form_url("drinks:target_new"),
                 edit_label=label,
             )
 
@@ -453,6 +428,7 @@ class IndexBuilder:
             per_day=per_day,
             per_week=per_week,
             per_month=per_month,
+            is_total=converter.is_canonical,
         )
 
     def _get_period_counts(self, year: int) -> tuple[int, int, int]:

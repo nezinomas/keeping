@@ -6,6 +6,12 @@
 <table class="main striped hover">
     <thead>
         <tr>
+            <th class="title-col"></th>
+            <c-quarter-band />
+            <th class="edit-col"></th>
+            <th class="delete-col"></th>
+        </tr>
+        <tr>
             <th class="text-left title-col">{% translate 'Title' %}</th>
             <c-month-headers />
             <th class="edit-col"></th>
@@ -13,55 +19,18 @@
         </tr>
     </thead>
     <tbody>
-        {% for object, months in object_list.items %}
-
-        <tr {% if url_update %}hx-get="{{url_update}}" hx-target="#mainModal" hx-trigger="dblclick"{% endif %}>
-            <td class="text-left">
-
-                {% if kind == "necessary" %}
-
-                    {{ object.1 }} ({{ object.0.title}})
-
-                    {% if update %}{% url update year object.0.id object.1 as url_update %}{% endif %}
-                    {% if delete %}{% url delete year object.0.id object.1 as url_delete %}{% endif %}
-
-                {% elif kind == "day" %}
-
-                    {{ object }}
-
-                    {% if update %}{% url update year as url_update %}{% endif %}
-                    {% if delete %}{% url delete year as url_delete %}{% endif %}
-
-                {% else %}
-
-                    {{ object }}
-
-                    {% if update %}{% url update year object.id as url_update %}{% endif %}
-                    {% if delete %}{% url delete year object.id as url_delete %}{% endif %}
-
-                {% endif %}
-
-            </td>
-            <td class="{% if states.1 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.1|cell_state}}">{{months.1|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.2 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.2|cell_state}}">{{months.2|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.3 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.3|cell_state}}">{{months.3|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.4 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.4|cell_state}}">{{months.4|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.5 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.5|cell_state}}">{{months.5|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.6 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.6|cell_state}}">{{months.6|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.7 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.7|cell_state}}">{{months.7|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.8 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.8|cell_state}}">{{months.8|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.9 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.9|cell_state}}">{{months.9|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.10 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.10|cell_state}}">{{months.10|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.11 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.11|cell_state}}">{{months.11|price|cellformat:"0,00"}}</td>
-            <td class="{% if states.12 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.12|cell_state}}">{{months.12|price|cellformat:"0,00"}}</td>
-            <c-td-edit :url=url_update />
-            <c-td-delete :url=url_delete />
+        {% for row in rows %}
+        <tr hx-get="{{ row.update_url }}" hx-target="#mainModal" hx-trigger="dblclick">
+            <td class="text-left">{{ row.title }}</td>
+            {% for value, state in row.cells %}
+            <td class="main__figure{% if state == 'over' %} plans-table__over{% endif %}" data-cell="{{value|cell_state}}">{{value|price|cellformat:"0,00"}}</td>
+            {% endfor %}
+            <c-td-edit :url="row.update_url" />
+            <c-td-delete :url="row.delete_url" />
         </tr>
         {% empty %}
-        <tr class="table-alert-warning">
-            <td colspan="13">
-                {% blocktranslate with year=year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
-            <td></td>
+        <tr>
+            <td colspan="15">{% blocktranslate with year=year|title %}No records in {{ year }}.{% endblocktranslate %}</td>
         </tr>
         {% endfor %}
     </tbody>

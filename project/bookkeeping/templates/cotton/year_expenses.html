@@ -4,10 +4,10 @@
 {% load cell_format %}
 
 
-<table class="main striped hover">
+<table class="main striped hover year-expenses">
     <thead>
         <tr>
-            <th colspan="{{ ctx.categories|length|add:1 }}" {% if not ctx.categories|length %}style="width: 90%"{% endif %}>{% translate 'Expenses statistic' %}</th>
+            <th colspan="{{ ctx.categories|length|add:1 }}"{% if not ctx.categories|length %} class="no-categories"{% endif %}>{% translate 'Expenses statistic' %}</th>
             <th class="left-thick-border top"></th>
         </tr>
         <tr>

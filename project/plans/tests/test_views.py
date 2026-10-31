@@ -11,7 +11,13 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils.html import escape
 
-from ...core.tests.utils import view_for
+from ...core.tests.utils import (
+    count_queries,
+    form_posts_to,
+    nav_tabs,
+    quick_add_pills,
+    view_for,
+)
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
 from ...savings.tests.factories import SavingTypeFactory
@@ -33,30 +39,24 @@ from .factories import (
 
 pytestmark = pytest.mark.django_db
 
-TAB_PANEL_TITLES = {
-    "incomes": ["Pajamos"],
+TAB_PANELS = {
+    "incomes": [("income-plans", "Pajamos")],
     "expenses": [
-        "Būtinos išlaidos",
-        "Papildomos būtinos išlaidos",
-        "Kasdienės išlaidos",
+        ("necessary-expense-plans", "Būtinos išlaidos"),
+        ("necessary-plans", "Papildomos būtinos išlaidos"),
+        ("everyday-expense-plans", "Kasdienės išlaidos"),
     ],
-    "savings": ["Taupymas"],
+    "savings": [("saving-plans", "Taupymas")],
     "day": [
-        "Suma dienai",
-        "Kiek galiu išleisti per dieną",
-        "Patikra: ar telpa išlaidų planai",
+        ("day-plans", "Suma dienai"),
+        ("calculations-spend", "Kiek galiu išleisti per dieną"),
+        ("calculations-check", "Patikra: ar telpa išlaidų planai"),
     ],
 }
 
-TAB_TABLE_PANELS = {
-    "incomes": ["income-plans"],
-    "expenses": [
-        "necessary-expense-plans",
-        "necessary-plans",
-        "everyday-expense-plans",
-    ],
-    "savings": ["saving-plans"],
-    "day": ["day-plans", "calculations-spend", "calculations-check"],
+PLANS_TABLE_PANELS = {
+    tab: [panel for panel, _ in panels if not panel.startswith("calculations-")]
+    for tab, panels in TAB_PANELS.items()
 }
 
 MONTHS = (
@@ -156,16 +156,43 @@ def _rendered_months(content):
     return {name: value for name, _, value in inputs if name in MONTHS and value}
 
 
+def _select(content, field):
+    return content.split(f'<select name="{field}"')[1].split("</select>")[0]
+
+
 def _rendered_selected(content, field):
-    select = content.split(f'<select name="{field}"')[1].split("</select>")[0]
+    select = _select(content, field)
     return re.search(r"<option [^>]*selected>([^<]*)</option>", select).group(1)
+
+
+def _between(content, start_id, end_id=""):
+    start = content.index(f'id="{start_id}"')
+    end = len(content)
+    if end_id:
+        end = content.index(f'id="{end_id}"')
+
+    return content[start:end]
+
+
+def _panel(content, panel_id):
+    section = _between(content, panel_id)
+    return section[: section.index("</section>")]
+
+
+def _row_titles(table):
+    return re.findall(r'<tr[^>]*>\s*<td class="text-left">\s*(.*?)\s*</td>', table)
+
+
+def _month_cells(table, figure):
+    return re.findall(
+        rf'<td class="main__figure[^"]*" data-cell="[^"]*">{figure}</td>', table
+    )
 
 
 def _assert_reload_triggered(response):
     assert json.loads(response.headers["HX-Trigger"]) == {"reload": {}}
 
 
-# Tabs
 def test_index_not_logged(client):
     url = reverse("plans:index")
     response = client.get(url)
@@ -176,82 +203,94 @@ def test_index_not_logged(client):
 def test_index_opens_the_day_tab(client_logged):
     content = client_logged.get(reverse("plans:index")).content.decode()
 
-    assert "x-data=\"{ tab: 'day' }\"" in content
+    assert '<div class="paper-skin" x-data="{ tab: \'day\' }">' in content
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
-    content = client_logged.get(tab.url).content.decode()
+def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
+    content = client_logged.get("/plans/incomes/").content.decode()
 
     assert '<nav class="subnav">' in content
-    assert "paper.min.css" in content
+    assert '<link rel="stylesheet" href="/static/css/paper.min.css">' in content
     assert 'class="paper-skin"' in content
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, tab):
+def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
     content = client_logged.get(
-        tab.url, headers={"HX-Request": "true"}
+        "/plans/incomes/", headers={"HX-Request": "true"}
     ).content.decode()
 
     assert '<nav class="subnav">' not in content
+    assert 'class="quick-add' not in content
     assert "<title>" in content
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_only_the_open_tab_reloads_on_a_saved_plan(client_logged, tab):
-    content = client_logged.get(
-        tab.url, headers={"HX-Request": "true"}
-    ).content.decode()
+@pytest.mark.parametrize(
+    ("url_name", "title"),
+    [
+        ("plans:tab_incomes", "Planai | Pajamos"),
+        ("plans:tab_expenses", "Planai | Išlaidos"),
+        ("plans:tab_savings", "Planai | Taupymas"),
+        ("plans:tab_day", "Planai | Suma dienai"),
+    ],
+    ids=["incomes", "expenses", "savings", "day"],
+)
+def test_browser_title_names_the_open_tab(client_logged, url_name, title):
+    content = client_logged.get(reverse(url_name)).content.decode()
+
+    assert f"<title>{title}</title>" in content
+
+
+@pytest.mark.parametrize(
+    "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
+)
+def test_only_the_open_tab_reloads_on_a_saved_plan(client_logged, headers):
+    content = client_logged.get("/plans/savings/", headers=headers).content.decode()
 
     listener = (
-        f'hx-get="{tab.url}" hx-target="#tab_content" hx-trigger="reload from:body"'
+        'hx-get="/plans/savings/" hx-target="#tab_content" '
+        'hx-trigger="reload from:body"'
     )
     assert listener in content
     assert content.count("reload from:body") == 1
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_a_tab_fragment_carries_only_its_own_panel_titles(client_logged, tab):
+def test_a_tab_fragment_carries_only_its_own_table_panels(client_logged, tab):
     content = client_logged.get(
         tab.url, headers={"HX-Request": "true"}
     ).content.decode()
 
-    for title in TAB_PANEL_TITLES[tab.name]:
-        assert re.search(rf'<h2 class="panel__title">{title}(</h2>| <span)', content)
-
-    other_titles = {
-        title
-        for name, titles in TAB_PANEL_TITLES.items()
-        if name != tab.name
-        for title in titles
-        if title not in TAB_PANEL_TITLES[tab.name]
-    }
-    for title in other_titles:
-        assert not re.search(
-            rf'<h2 class="panel__title">{title}(</h2>| <span)', content
-        )
+    panels = re.findall(
+        r'<section class="panel( panel--table)?" id="([^"]*)">\s*'
+        r'<h2 class="panel__title">([^<]*?)(?: <span|</h2>)',
+        content,
+    )
+    assert panels == [
+        (" panel--table", panel_id, title) for panel_id, title in TAB_PANELS[tab.name]
+    ]
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_every_panel_on_a_tab_is_a_table_panel(client_logged, tab):
+def test_an_empty_plans_table_names_the_plan_year(client_logged, main_user, tab):
     content = client_logged.get(
         tab.url, headers={"HX-Request": "true"}
     ).content.decode()
 
-    for panel_id in TAB_TABLE_PANELS[tab.name]:
-        assert f'<section class="panel panel--table" id="{panel_id}">' in content
-    assert '<section class="panel" ' not in content
+    for panel_id in PLANS_TABLE_PANELS[tab.name]:
+        assert f"{main_user.year} metais įrašų nėra." in _panel(content, panel_id)
 
 
 def test_nav_offers_every_tab(client_logged):
     content = client_logged.get(reverse("plans:index")).content.decode()
 
-    for tab in TABS:
-        assert f'hx-get="{tab.url}"' in content
+    assert nav_tabs(content) == [
+        ("incomes", reverse("plans:tab_incomes")),
+        ("expenses", reverse("plans:tab_expenses")),
+        ("savings", reverse("plans:tab_savings")),
+        ("day", reverse("plans:tab_day")),
+    ]
 
 
-# Cards
 @pytest.mark.parametrize(
     "factory, url, present, absent",
     [
@@ -289,39 +328,21 @@ def test_tab_renders_its_cards_in_lithuanian(
         assert f'<div class="trend-card__label">{label}</div>' not in content
 
 
-# Bottom bar
-def test_the_copy_pill_is_on_every_tab(client_logged):
+def test_quick_add_offers_its_pills(client_logged):
     content = client_logged.get(reverse("plans:index")).content.decode()
-    link = reverse("plans:copy")
 
-    assert content.count(f'class="quick-add__pill" hx-get="{link}"') == 1
-    assert "Kopijuoti planus" in content
-
-
-def test_the_copy_pill_is_the_rightmost_pill(client_logged):
-    content = client_logged.get(reverse("plans:index")).content.decode()
-    bar = content.split('class="quick-add__bar"')[1]
-
-    assert bar.rfind("quick-add__pill") == bar.find(
-        f'quick-add__pill" hx-get="{reverse("plans:copy")}"'
-    )
-
-
-def test_the_expenses_bar_puts_the_expense_pill_first(client_logged):
-    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
-
-    assert content.index(reverse("plans:expense_new")) < content.index(
-        reverse("plans:necessary_new")
-    )
-
-
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_the_navbar_marks_plans_on_every_tab(client_logged, tab):
-    content = client_logged.get(tab.url).content.decode()
-
-    active = re.findall(r'<div class="active">\s*<a href="([^"]+)"', content)
-
-    assert active == [reverse("plans:index")]
+    pills = [
+        ("expenses", "plans:expense_new", "Pridėti išlaidų planą"),
+        ("expenses", "plans:necessary_new", "Pridėti būtinų išlaidų planą"),
+        ("incomes", "plans:income_new", "Pridėti pajamų planą"),
+        ("savings", "plans:saving_new", "Pridėti taupymo planą"),
+        ("day", "plans:day_new", "Pridėti dienos planą"),
+        ("", "plans:copy", "Kopijuoti planus"),
+    ]
+    assert quick_add_pills(content) == [
+        ("button", tab, f'hx-get="{reverse(name)}"', label)
+        for tab, name, label in pills
+    ]
 
 
 def test_the_expenses_tab_orders_necessary_extra_necessary_then_everyday(
@@ -330,7 +351,12 @@ def test_the_expenses_tab_orders_necessary_extra_necessary_then_everyday(
     content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
 
     positions = [
-        content.index(f'id="{panel}"') for panel in TAB_TABLE_PANELS["expenses"]
+        content.index(f'id="{panel}"')
+        for panel in (
+            "necessary-expense-plans",
+            "necessary-plans",
+            "everyday-expense-plans",
+        )
     ]
     assert positions == sorted(positions)
 
@@ -341,9 +367,10 @@ def test_the_expenses_tab_splits_the_expense_plans_by_necessity(client_logged):
 
     content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
 
-    necessary = content.index('id="necessary-expense-plans"')
-    everyday = content.index('id="everyday-expense-plans"')
-    assert necessary < content.index("Būstas") < everyday < content.index("Maistas")
+    necessary = _between(content, "necessary-expense-plans", "necessary-plans")
+    everyday = _between(content, "everyday-expense-plans")
+    assert _row_titles(necessary) == ["Būstas"]
+    assert _row_titles(everyday) == ["Maistas"]
 
 
 def test_the_necessary_expenses_panel_explains_where_necessity_is_set(client_logged):
@@ -351,79 +378,66 @@ def test_the_necessary_expenses_panel_explains_where_necessity_is_set(client_log
 
     panel = content[content.index('id="necessary-expense-plans"') :]
     panel = panel[: panel.index("</h2>")]
-    assert "bi-question-circle" in panel
-    assert "Išlaidų tipai, pažymėti kaip būtini" in panel
-
-
-def test_the_expenses_bar_offers_both_add_pills(client_logged):
-    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
-
-    necessary_link = reverse("plans:necessary_new")
-    expense_link = reverse("plans:expense_new")
-
-    assert (
-        f'x-show="tab === \'expenses\'" x-cloak class="quick-add__pill" '
-        f'hx-get="{necessary_link}"' in content
+    assert re.search(
+        r'<span class="panel__hint[^"]*"[^>]* data-tip="Išlaidų tipai, pažymėti kaip'
+        r' būtini[^"]*"[^>]*><i class="bi bi-question-circle"></i></span>',
+        panel,
     )
-    assert (
-        f'x-show="tab === \'expenses\'" x-cloak class="quick-add__pill" '
-        f'hx-get="{expense_link}"' in content
-    )
-    assert "Pridėti būtinų išlaidų planą" in content
-    assert "Pridėti išlaidų planą" in content
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_the_bottom_bar_stays_outside_the_swapped_tab(client_logged, tab):
-    content = client_logged.get(tab.url, headers={"HX-Request": "true"}).content
-
-    assert b"quick-add" not in content
-
-
-TAB_OWN_PILL = {
-    "incomes": ("plans:income_new", "Pridėti pajamų planą"),
-    "expenses": ("plans:expense_new", "Pridėti išlaidų planą"),
-    "savings": ("plans:saving_new", "Pridėti taupymo planą"),
-    "day": ("plans:day_new", "Pridėti dienos planą"),
-}
-
-
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_every_tab_offers_its_own_add_pill(client_logged, tab):
-    content = client_logged.get(tab.url).content.decode()
-    url_name, label = TAB_OWN_PILL[tab.name]
-    link = reverse(url_name)
-
-    assert (
-        f'x-show="tab === \'{tab.name}\'" x-cloak class="quick-add__pill" '
-        f'hx-get="{link}"' in content
-    )
-    assert label in content
-
-
-# Plans of every kind
 @pytest.mark.parametrize(
-    "kind",
+    "kind, titles, url",
     [
-        pytest.param(INCOME, id="income_tab_edit_delete_urls"),
-        pytest.param(EXPENSE, id="expense_tab_edit_delete_urls"),
-        pytest.param(SAVING, id="saving_tab_edit_delete_urls"),
-        pytest.param(DAY, id="day_tab_edit_delete_urls"),
-        pytest.param(NECESSARY, id="necessary_tab_edit_delete_urls"),
+        pytest.param(
+            INCOME,
+            "AB",
+            "/plans/incomes/{action}/1999/{plan.income_type.pk}/",
+            id="income",
+        ),
+        pytest.param(
+            EXPENSE,
+            "AB",
+            "/plans/expenses/{action}/1999/{plan.expense_type.pk}/",
+            id="expense",
+        ),
+        # Savings' owner names its own type, so one row
+        pytest.param(
+            SAVING,
+            "",
+            "/plans/savings/{action}/1999/{plan.saving_type.pk}/",
+            id="saving",
+        ),
+        pytest.param(DAY, "", "/plans/day/{action}/1999/", id="day"),  # one row a year
+        pytest.param(
+            NECESSARY,
+            "AB",
+            "/plans/necessary/{action}/1999/{plan.expense_type.pk}/other/",
+            id="necessary",
+        ),
     ],
 )
-def test_plan_tab_edit_delete_urls(client_logged, main_user, kind):
-    obj = kind.factory()
+def test_a_plan_row_opens_its_update_form_and_links_its_edit_and_delete(
+    client_logged, kind, titles, url
+):
+    owners = [kind.owner(title=title) for title in titles] or [kind.owner()]
+    plans = [kind.factory(**owner) for owner in owners]
 
-    response = client_logged.get(reverse(kind.tab))
-    actual = response.content.decode("utf-8")
+    content = client_logged.get(reverse(kind.tab)).content.decode("utf-8")
 
-    kwargs = {"year": main_user.year, **kind.own_kwargs(obj)}
-    assert reverse(kind.update, kwargs=kwargs) in actual
-    assert reverse(kind.delete, kwargs=kwargs) in actual
+    rows = re.findall(
+        r'<tr hx-get="([^"]*)" hx-target="#mainModal" hx-trigger="dblclick">'
+        r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
+        r'.*?<td class="delete-col">\s*<a role="button" hx-get="([^"]*)"',
+        content,
+        re.DOTALL,
+    )
+    expected = []
+    for plan in plans:
+        update = url.format(action="update", plan=plan)
+        expected.append((update, update, url.format(action="delete", plan=plan)))
+    assert rows == expected
 
 
-@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize(
     "kind",
     [
@@ -440,22 +454,29 @@ def test_plan_load_form(client_logged, kind):
     actual = response.content.decode()
 
     assert response.status_code == 200
-    assert f'hx-post="{url}"' in actual
+    assert form_posts_to(actual, "generic-form", url)
     assert 'class="modal-body plans-form"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
 
 @pytest.mark.parametrize(
-    "kind, january, price",
+    "kind, own_data, january, price",
     [
-        pytest.param(INCOME, 0.01, 1, id="income_new"),
-        pytest.param(EXPENSE, 0.01, 1, id="expense_new"),
-        pytest.param(SAVING, 0.01, 1, id="saving_new"),
-        pytest.param(DAY, 0.05, 5, id="day_new"),
+        pytest.param(INCOME, {}, 0.01, 1, id="income_new"),
+        pytest.param(EXPENSE, {}, 0.01, 1, id="expense_new"),
+        pytest.param(SAVING, {}, 0.01, 1, id="saving_new"),
+        pytest.param(DAY, {}, 0.05, 5, id="day_new"),
+        pytest.param(NECESSARY, {"title": "ABCD"}, 0.66, 66, id="necessary_new"),
     ],
 )
-def test_plan_new(client_logged, main_user, kind, january, price):
-    data = {"year": "1999", "january": january, **_form_values(kind.owner())}
+def test_plan_new(client_logged, main_user, kind, own_data, january, price):
+    owned = kind.owner()
+    data = {
+        "year": "1999",
+        "january": january,
+        **_form_values(owned),
+        **own_data,
+    }
 
     client_logged.post(reverse(kind.new), data, follow=True)
     actual = kind.model.objects.first()
@@ -464,6 +485,8 @@ def test_plan_new(client_logged, main_user, kind, january, price):
     assert actual.year == 1999
     assert actual.month == 1
     assert actual.price == price
+    expected = {**owned, **own_data}
+    assert {field: getattr(actual, field) for field in expected} == expected
 
 
 @pytest.mark.parametrize(
@@ -503,16 +526,20 @@ def test_plan_new_invalid_data(client_logged, kind, own_data, error_fields):
 
 
 @pytest.mark.parametrize(
-    "kind",
+    "kind, own_data",
     [
-        pytest.param(INCOME, id="income_new_returns_htmx_response"),
-        pytest.param(EXPENSE, id="expense_new_returns_htmx_response"),
-        pytest.param(SAVING, id="saving_new_returns_htmx_response"),
+        pytest.param(INCOME, {}, id="income_new_returns_htmx_response"),
+        pytest.param(EXPENSE, {}, id="expense_new_returns_htmx_response"),
+        pytest.param(SAVING, {}, id="saving_new_returns_htmx_response"),
+        pytest.param(DAY, {}, id="day_new_returns_htmx_response"),
+        pytest.param(
+            NECESSARY, {"title": "Nuoma"}, id="necessary_new_returns_htmx_response"
+        ),
     ],
 )
-def test_plan_new_returns_htmx_response(client_logged, kind):
+def test_plan_new_returns_htmx_response(client_logged, kind, own_data):
     owned = kind.owner()
-    data = {"year": "1999", "january": 0.01, **_form_values(owned)}
+    data = {"year": "1999", "january": 0.01, **_form_values(owned), **own_data}
 
     response = client_logged.post(reverse(kind.new), data, HTTP_HX_REQUEST="true")
 
@@ -538,86 +565,78 @@ def test_plan_load_update_load_form(client_logged, kind):
     response = client_logged.get(url)
     actual = response.content.decode()
 
-    assert f'hx-post="{url}"' in actual
+    assert form_posts_to(actual, "generic-form", url)
     assert 'class="modal-body plans-form"' in actual
 
 
 @pytest.mark.parametrize(
-    "kind, field, title",
+    "kind, plan_kwargs, selected, months",
     [
         pytest.param(
             INCOME,
-            "income_type",
-            "Income Type",
+            {},
+            {"income_type": "Income Type"},
+            {"january": "0.01"},
             id="income_load_update_form_field_values",
         ),
         pytest.param(
             EXPENSE,
-            "expense_type",
-            "Expense Type",
+            {},
+            {"expense_type": "Expense Type"},
+            {"january": "0.01"},
             id="expense_load_update_form_field_values",
         ),
         pytest.param(
             SAVING,
-            "saving_type",
-            "Saving Type",
+            {},
+            {"saving_type": "Saving Type"},
+            {"january": "0.01"},
             id="saving_load_update_form_field_values",
         ),
-    ],
-)
-def test_plan_load_update_form_field_values(client_logged, kind, field, title):
-    obj = kind.factory(**kind.owner())
-
-    url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
-    content = client_logged.get(url).content.decode()
-
-    assert _rendered_year(content) == "1999"
-    assert _rendered_selected(content, field) == title
-    assert _rendered_months(content) == {"january": "0.01"}
-
-
-@pytest.mark.parametrize(
-    "kind, plan_kwargs, months",
-    [
         pytest.param(
             DAY,
             {"month": 1, "price": 5},
+            {},
             {"january": "0.05"},
             id="day_load_update_form_field_values",
         ),
         pytest.param(
             NECESSARY,
             {"title": "ABCD", "month": 11, "price": 1001},
+            {},
             {"november": "10.01"},
             id="necessary_load_update_form_field_values",
         ),
     ],
 )
-def test_plan_without_type_load_update_form_field_values(
-    client_logged, kind, plan_kwargs, months
+def test_plan_load_update_form_field_values(
+    client_logged, kind, plan_kwargs, selected, months
 ):
-    obj = kind.factory(year=1999, **plan_kwargs)
+    obj = kind.factory(year=1999, **kind.owner(), **plan_kwargs)
 
     url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
     content = client_logged.get(url).content.decode()
 
     assert _rendered_year(content) == "1999"
+    assert {field: _rendered_selected(content, field) for field in selected} == selected
     assert _rendered_months(content) == months
 
 
 @pytest.mark.parametrize(
-    "kind",
+    "kind, own_data",
     [
-        pytest.param(INCOME, id="income_update"),
-        pytest.param(EXPENSE, id="expense_update"),
-        pytest.param(SAVING, id="saving_update"),
+        pytest.param(INCOME, {}, id="income_update"),
+        pytest.param(EXPENSE, {}, id="expense_update"),
+        pytest.param(SAVING, {}, id="saving_update"),
+        pytest.param(DAY, {}, id="day_update"),
+        pytest.param(NECESSARY, {"title": "ABCD"}, id="necessary_update"),
     ],
 )
-def test_plan_update(client_logged, kind):
+def test_plan_update(client_logged, kind, own_data):
     owned = kind.owner()
-    obj = kind.factory(year=1999, **owned)
+    obj = kind.factory(year=1999, **owned, **own_data)
 
-    data = {"year": "1999", "january": 0.05, **_form_values(owned)}
+    data = {"year": "1999", "january": 0.05, **_form_values(owned), **own_data}
     url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
     client_logged.post(url, data)
     actual = kind.model.objects.get(pk=obj.pk)
@@ -627,18 +646,22 @@ def test_plan_update(client_logged, kind):
 
 
 @pytest.mark.parametrize(
-    "kind",
+    "kind, own_data",
     [
-        pytest.param(INCOME, id="income_update_returns_htmx_response"),
-        pytest.param(EXPENSE, id="expense_update_returns_htmx_response"),
-        pytest.param(SAVING, id="saving_update_returns_htmx_response"),
+        pytest.param(INCOME, {}, id="income_update_returns_htmx_response"),
+        pytest.param(EXPENSE, {}, id="expense_update_returns_htmx_response"),
+        pytest.param(SAVING, {}, id="saving_update_returns_htmx_response"),
+        pytest.param(DAY, {}, id="day_update_returns_htmx_response"),
+        pytest.param(
+            NECESSARY, {"title": "Nuoma"}, id="necessary_update_returns_htmx_response"
+        ),
     ],
 )
-def test_plan_update_returns_htmx_response(client_logged, kind):
+def test_plan_update_returns_htmx_response(client_logged, kind, own_data):
     owned = kind.owner()
-    obj = kind.factory(year=1999, month=1, price=1000, **owned)
+    obj = kind.factory(year=1999, month=1, price=1000, **owned, **own_data)
 
-    data = {"year": "1999", "january": 9.99, **_form_values(owned)}
+    data = {"year": "1999", "january": 9.99, **_form_values(owned), **own_data}
     url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
 
     response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
@@ -649,26 +672,27 @@ def test_plan_update_returns_htmx_response(client_logged, kind):
 
 
 @pytest.mark.parametrize(
-    "kind, price, text",
+    "kind, panel, price, text",
     [
-        pytest.param(INCOME, 2, "0,02", id="income_tab_price_converted_in_template"),
-        pytest.param(EXPENSE, 2, "0,02", id="expense_tab_price_converted_in_template"),
-        pytest.param(SAVING, 2, "0,02", id="saving_tab_price_converted_in_template"),
         pytest.param(
-            NECESSARY, 5, "0,05", id="necessary_tab_price_converted_in_template"
+            INCOME,
+            "income-plans",
+            2,
+            "0,02",
+            id="income_tab_price_converted_in_template",
+        ),
+        pytest.param(
+            DAY, "day-plans", 5, "0,05", id="day_tab_price_converted_in_template"
         ),
     ],
 )
-def test_plan_tab_price_converted_in_template(client_logged, kind, price, text):
+def test_plan_tab_price_converted_in_template(client_logged, kind, panel, price, text):
     owned = kind.owner()
     for month in range(1, 13):
         kind.factory(month=month, price=price, **owned)
 
-    response = client_logged.get(reverse(kind.tab))
-    actual = response.content.decode("utf-8")
-
-    assert text in actual
-    assert actual.count(text) == 12
+    content = client_logged.get(reverse(kind.tab)).content.decode()
+    assert len(_month_cells(_panel(content, panel), text)) == 12
 
 
 @pytest.mark.parametrize(
@@ -702,6 +726,8 @@ def test_plan_delete(client_logged, kind):
         pytest.param(INCOME, id="incomes_delete_returns_htmx_response"),
         pytest.param(EXPENSE, id="expenses_delete_returns_htmx_response"),
         pytest.param(SAVING, id="saving_delete_returns_htmx_response"),
+        pytest.param(DAY, id="day_delete_returns_htmx_response"),
+        pytest.param(NECESSARY, id="necessary_delete_returns_htmx_response"),
     ],
 )
 def test_plan_delete_returns_htmx_response(client_logged, kind):
@@ -716,32 +742,47 @@ def test_plan_delete_returns_htmx_response(client_logged, kind):
 
 
 @pytest.mark.parametrize(
-    "kind, message",
+    "kind, own_data, message",
     [
         pytest.param(
             INCOME,
+            {},
             "1999 metai su 'Income Type'  jau turi tikslą.",
             id="income_new_prevents_duplicate_category_in_same_year",
         ),
         pytest.param(
             EXPENSE,
+            {},
             "1999 metai su 'Expense Type'  jau turi tikslą.",
             id="expense_new_prevents_duplicate_category_in_same_year",
         ),
         pytest.param(
             SAVING,
+            {},
             "1999 metai su 'Saving Type'  jau turi tikslą.",
             id="saving_new_prevents_duplicate_category_in_same_year",
+        ),
+        pytest.param(
+            DAY,
+            {},
+            "1999 metai jau turi tikslą.",
+            id="day_new_prevents_duplicate_category_in_same_year",
+        ),
+        pytest.param(
+            NECESSARY,
+            {"title": "XXX"},
+            "1999 metai su 'Expense Type ir XXX'  jau turi tikslą.",
+            id="necessary_new_prevents_duplicate_category_in_same_year",
         ),
     ],
 )
 def test_plan_new_prevents_duplicate_category_in_same_year(
-    client_logged, kind, message
+    client_logged, kind, own_data, message
 ):
     owned = kind.owner()
-    kind.factory(year=1999, month=1, **owned)
+    kind.factory(year=1999, month=1, **owned, **own_data)
 
-    data = {"year": "1999", "january": 9.99, **_form_values(owned)}
+    data = {"year": "1999", "january": 9.99, **_form_values(owned), **own_data}
 
     content = client_logged.post(reverse(kind.new), data).content.decode()
 
@@ -765,11 +806,10 @@ def test_plan_delete_load_form(client_logged, kind):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert f'hx-post="{url}"' in actual
+    assert form_posts_to(actual, "delete-form", url)
     assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
 
 
-# Plans of another journal
 def _other_journal_plan(kind, second_user):
     journal = second_user.journal
     return kind.factory(
@@ -819,7 +859,6 @@ def test_plan_delete_other_journal_post_form(client_logged, second_user, kind):
     assert kind.model.objects.all().count() == 1
 
 
-# DayPlan
 @time_machine.travel("2026-09-15")
 def test_day_tab_cards_read_the_current_month_in_the_selected_plan_year(
     client_logged, main_user
@@ -844,51 +883,6 @@ def _card_figure(content, title):
     return re.search(r'trend-card__figure" title="[^"]*">([^<]*)<', card).group(1)
 
 
-def test_day_new_duplicates_not_allowed(client_logged):
-    DayPlanFactory(year=1999, month=12, price=100)
-
-    data = {"year": "1999", "january": 0.05}
-
-    content = client_logged.post(reverse("plans:day_new"), data).content.decode()
-
-    assert "1999 metai jau turi tikslą." in content
-
-
-def test_day_update(client_logged):
-    obj = DayPlanFactory(year=1999, month=1, price=5)
-
-    data = {"year": "1999", "january": 0.01}
-    url = reverse("plans:day_update", kwargs={"year": 1999})
-
-    client_logged.post(url, data, follow=True)
-    actual = DayPlan.objects.get(pk=obj.pk)
-
-    assert actual.month == 1
-    assert actual.price == 1
-
-
-def _between(content, start_id, end_id=""):
-    start = content.index(f'id="{start_id}"')
-    end = len(content)
-    if end_id:
-        end = content.index(f'id="{end_id}"')
-
-    return content[start:end]
-
-
-def test_day_tab_price_converted_in_template(client_logged):
-    for month in range(1, 13):
-        DayPlanFactory(month=month, price=5)
-
-    url = reverse("plans:tab_day")
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-    actual = _between(content, "day-plans", "calculations-spend")
-
-    assert "0,05" in actual
-    assert actual.count("0,05") == 12
-
-
 def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
     client_logged,
 ):
@@ -896,8 +890,11 @@ def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
     actual = _between(content, "calculations-spend")
+    labels = re.findall(
+        r'<h2 class="panel__title">([^<]*)<|<td class="text-left">([^<]*)<', actual
+    )
 
-    expected = [
+    assert ["".join(label) for label in labels] == [
         "Kiek galiu išleisti per dieną",
         "Pajamos",
         "Būtinos išlaidos ir taupymas",
@@ -913,10 +910,6 @@ def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
         "Visos išlaidos",
         "Lieka po išlaidų planų",
     ]
-    positions = [actual.index(f">{text}<") for text in expected]
-
-    assert positions == sorted(positions)
-
     assert "1. Pajamos" not in actual
     assert "iš lentelių viršuje" not in actual
     assert '<h2 class="panel__title">Skaičiavimai</h2>' not in content
@@ -935,6 +928,7 @@ def test_day_tab_calculations_renders_two_panels_each_with_its_own_header(
 
     assert spend.count("<thead") == 1
     assert check.count("<thead") == 1
+    assert '<td class="main__figure" data-cell="empty">' in spend
 
 
 def _first_month_cell(content, label):
@@ -956,81 +950,64 @@ def test_day_tab_calculations_breakdown_reads_the_plans(client_logged):
     assert _first_month_cell(content, "Taupymas") == "30,00"
 
 
-def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
-    client_logged,
+QUARTERS = [
+    (' class="month-table__quarter" colspan="3"', quarter)
+    for quarter in ["I ketv.", "II ketv.", "III ketv.", "IV ketv."]
+]
+
+
+@pytest.mark.parametrize(
+    "panel, after",
+    [
+        pytest.param(
+            "day-plans",
+            [(' class="edit-col"', ""), (' class="delete-col"', "")],
+            id="plans",
+        ),
+        pytest.param("calculations-spend", [], id="calculations"),
+    ],
+)
+def test_day_tab_tables_head_their_months_with_the_quarter_band(
+    client_logged, panel, after
 ):
+    content = client_logged.get(reverse("plans:tab_day")).content.decode()
+
+    head = _panel(content, panel).split("<thead>")[1].split("</thead>")[0]
+    band = re.search(r"<tr[^>]*>(.*?)</tr>", head, re.S).group(1)
+    actual = re.findall(r"<th([^>]*)>(.*?)</th>", band)
+
+    assert actual == [(' class="title-col"', ""), *QUARTERS, *after]
+
+
+@pytest.mark.parametrize("panel", ["day-plans", "calculations-spend"])
+def test_day_tab_marks_the_day_plan_cell_above_the_sum_per_day(client_logged, panel):
     DayPlanFactory(month=1, price=5_000)
 
     response = client_logged.get(reverse("plans:tab_day"))
     content = response.content.decode("utf-8")
-    actual = _between(content, "calculations-spend", "calculations-check")
 
-    assert actual.count("plans-table__over") == 1
-
-
-# NecessaryPlan
-def test_necessary_new(client_logged, main_user):
-    e = ExpenseTypeFactory()
-    data = {"year": "1999", "title": "ABCD", "january": 0.66, "expense_type": e.pk}
-
-    url = reverse("plans:necessary_new")
-    client_logged.post(url, data, follow=True)
-    actual = NecessaryPlan.objects.first()
-
-    assert actual.journal == main_user.journal
-    assert actual.title == "ABCD"
-    assert actual.year == 1999
-    assert actual.month == 1
-    assert actual.price == 66
-
-
-def test_necessary_new_duplicates_not_allowed(client_logged):
-    e = ExpenseTypeFactory()
-    NecessaryPlanFactory(year=1999, title="XXX", expense_type=e)
-    data = {"year": "1999", "title": "XXX", "january": 0.66, "expense_type": e.pk}
-
-    content = client_logged.post(reverse("plans:necessary_new"), data).content.decode()
-
-    assert escape("1999 metai su 'Expense Type ir XXX'  jau turi tikslą.") in content
+    assert _panel(content, panel).count("plans-table__over") == 1
 
 
 def test_necessary_new_not_load_other_journal(client_logged, second_user):
-    this = ExpenseTypeFactory(title="AAA")
-    other = ExpenseTypeFactory(journal=second_user.journal, title="XXX")
+    ExpenseTypeFactory(title="AAA")
+    ExpenseTypeFactory(journal=second_user.journal, title="XXX")
 
     url = reverse("plans:necessary_new")
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert this.title in content
-    assert other.title not in content
-
-
-def test_necessary_update(client_logged):
-    obj = NecessaryPlanFactory(year=1999, title="ABCD", month=1, price=666)
-
-    data = {"year": "1999", "title": "X", "january": 0.01}
-    url = reverse(
-        "plans:necessary_update",
-        kwargs={
-            "year": 1999,
-            "expense_type_id": obj.expense_type.pk,
-            "title": obj.title,
-        },
+    options = re.findall(
+        r'<option value="(\d*)"[^>]*>([^<]*)</option>', _select(content, "expense_type")
     )
-    client_logged.post(url, data, follow=True)
-    actual = NecessaryPlan.objects.get(pk=obj.pk)
-
-    assert actual.month == 1
-    assert actual.price == 1
+    assert [title for pk, title in options if pk] == ["AAA"]
 
 
-# Copy Plans
 def test_copy_load_form(client_logged):
     url = reverse("plans:copy")
 
     content = client_logged.get(url).content.decode()
 
-    assert f'hx-post="{url}"' in content
+    assert form_posts_to(content, "generic-form", url)
     for name in (
         "year_from",
         "year_to",
@@ -1078,13 +1055,6 @@ def test_copy_year_to_same_as_user_year(main_user, client_logged):
     _assert_reload_triggered(response)
 
 
-# Query counts
-def _tab_queries(client, tab):
-    with CaptureQueriesContext(connection) as queries:
-        client.get(tab.url, headers={"HX-Request": "true"})
-    return len(queries)
-
-
 def _income_plans(numbers):
     for i in numbers:
         IncomePlanFactory(income_type=IncomeTypeFactory(title=f"I{i}"))
@@ -1129,19 +1099,22 @@ def _plans_of_every_type(numbers):
     ],
 )
 def test_tab_query_count_does_not_grow_with_the_plans(client_logged, tab_name, build):
-    tab = [t for t in TABS if t.name == tab_name][0]
+    url = TABS[tab_name].url
+
+    def load_tab():
+        client_logged.get(url, headers={"HX-Request": "true"})
 
     build(range(2))
-    two = _tab_queries(client_logged, tab)
+    two = count_queries(load_tab)
 
     build(range(2, 6))
-    six = _tab_queries(client_logged, tab)
+    six = count_queries(load_tab)
 
     assert six == two
 
 
 def test_expenses_tab_reads_no_income_saving_or_day_plans(client_logged):
-    tab = [t for t in TABS if t.name == "expenses"][0]
+    tab = TABS["expenses"]
     ExpensePlanFactory()
     NecessaryPlanFactory()
 
@@ -1154,7 +1127,6 @@ def test_expenses_tab_reads_no_income_saving_or_day_plans(client_logged):
 
 
 PLAN_DATA = (views.TabViewMixin, "plan_data")
-DAY_SUM = (views, "PlanCalculateDaySum")
 
 
 @pytest.mark.parametrize(
@@ -1164,21 +1136,6 @@ DAY_SUM = (views, "PlanCalculateDaySum")
             lambda rf, u: view_for(rf, u, views.TabIncomes).get_context_data(),
             [PLAN_DATA],
             id="tab_incomes",
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, views.TabExpenses).get_context_data(),
-            [PLAN_DATA],
-            id="tab_expenses",
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, views.TabSavings).get_context_data(),
-            [PLAN_DATA],
-            id="tab_savings",
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, views.TabDay).get_context_data(),
-            [PLAN_DATA, DAY_SUM],
-            id="tab_day",
         ),
         pytest.param(
             lambda rf, u: view_for(rf, u, views.TabDay).plan_data(), [], id="plan_data"

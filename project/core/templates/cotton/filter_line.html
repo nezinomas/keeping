@@ -1,0 +1,8 @@
+{# scrollLeft clamps, so a line that fits stays put and one that scrolls centres the open item #}
+<nav class="filter-line"
+     x-data
+     x-init="const open = $el.querySelector('[aria-current]'); if (open) $el.scrollLeft = open.offsetLeft - ($el.clientWidth - open.offsetWidth) / 2">
+    {% for item in items %}
+    <button type="button" class="filter-line__item"{% if item.active %} aria-current="true"{% endif %} hx-get="{{ item.url }}" hx-push-url="true" hx-target="{{ target }}">{{ item.label }}</button>
+    {% endfor %}
+</nav>

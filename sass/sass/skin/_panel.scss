@@ -15,9 +15,33 @@
 }
 
 .panel__title {
-    @include tokens.label;
-    color: $ink;
+    @include tokens.title;
+
     margin: 0 0 10px;
+
+    // a phone has no room beside the hint, so the tip opens under the title
+    @media only screen and (max-width: 767px) {
+        position: relative;
+
+        .panel__hint {
+            position: static;
+
+            &::before {
+                top: 100%;
+                left: 0;
+                right: 0;
+                min-width: 0;
+                margin: 8px 0 0;
+                transform: none;
+                // over the table's sticky first column (z-index 1)
+                z-index: 2;
+            }
+
+            &::after {
+                display: none;
+            }
+        }
+    }
 }
 
 .panel__subtitle {
@@ -27,17 +51,22 @@
     margin: -0.5rem 0 0.8rem;
 }
 
-// the tip inherits the title's mono caps; an explanation is a sentence
 .panel__hint {
     color: $ink-muted;
     cursor: help;
-    text-transform: none;
-    letter-spacing: normal;
 
     &::before {
         font-family: $body;
         white-space: normal;
         min-width: 18rem;
+        background: $ink;
+        color: $paper;
+        text-shadow: none;
+        box-shadow: none;
+    }
+
+    &.right::after {
+        border-right-color: $ink;
     }
 
     &:focus::before,

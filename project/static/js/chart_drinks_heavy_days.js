@@ -34,8 +34,7 @@ function chartDrinksHeavyDays(idData, idContainer) {
                     zIndex: 5,
                     // the soft harm step is a mark colour and fails AA as text
                     label: paperRuleLabel(
-                        `${chartData.text.guideline}: ${chartData.low_risk.toFixed(0)}`,
-                        "var(--skin-ink-muted)"
+                        `${chartData.text.guideline}: ${chartData.low_risk.toFixed(0)}`
                     )
                 },
                 {
@@ -46,7 +45,7 @@ function chartDrinksHeavyDays(idData, idContainer) {
                     zIndex: 5,
                     label: paperRuleLabel(
                         `${chartData.text.high_risk_guideline}: ${chartData.high_risk.toFixed(0)}`,
-                        "var(--skin-harm)"
+                        "harm"
                     )
                 }
             ]

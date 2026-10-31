@@ -14,7 +14,7 @@ function chartDrinksCumulative(idData, idContainer) {
             labels: {
                 rotation: -45,
                 formatter: function () {
-                    // categories are full ISO dates; show only MM-DD on the axis
+                    // categories are full ISO dates
                     return this.value.slice(5);
                 }
             }
@@ -24,22 +24,19 @@ function chartDrinksCumulative(idData, idContainer) {
                 text: chartData.text.unit
             },
             min: 0,
-            // a cumulative curve ends at its own maximum, so rounding the axis
-            // up to the next whole tick spends a fifth of the plot on empty sky
-            // above the last point — the top tick may sit below the max here
+            // a cumulative curve ends at its maximum: a rounded-up top tick
+            // would spend a fifth of the plot on empty sky above it
             endOnTick: false,
             maxPadding: 0.02,
         },
         tooltip: {
             shared: true,
-            // no borderColor: the border reads as the series being hovered
-            // Std Av is counted rather than bottled, so the unit comes from the
-            // payload instead of assuming litres
+            // no borderColor: the border reads as the series being hovered; the
+            // unit comes from the payload, since Std Av is counted, not bottled
             pointFormat: `<span style='color: {series.color}'>{series.name}: <b>{point.y:,.1f} ${chartData.text.unit}</b></span><br/>`
         },
-        // this year and last are the same measure over two spans, so they are
-        // two steps of one hue and the older one is dashed as well as paler.
-        // The target is furniture: a level, not a year, so it is ink
+        // this year and last are one measure over two spans: two steps of one hue,
+        // the older dashed and paler. The target is a level, not a year, so ink
         series: [{
             type: "spline",
             name: chartData.text.this_year,
@@ -54,7 +51,7 @@ function chartDrinksCumulative(idData, idContainer) {
             type: "spline",
             name: chartData.text.last_year,
             data: chartData.last_year,
-            color: "var(--skin-data-soft)",
+            color: "var(--skin-year-0)",
             dashStyle: "ShortDash",
             lineWidth: 2,
             marker: {

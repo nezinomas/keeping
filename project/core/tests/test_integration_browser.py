@@ -2,6 +2,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -19,11 +20,14 @@ class Browser(StaticLiveServerTestCase):
             options=chrome_options,
             service=ChromeService(ChromeDriverManager().install()),
         )
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.browser.quit()
-        super().tearDownClass()
+        # a cleanup, not tearDownClass: it runs even when the lines below raise
+        cls.addClassCleanup(cls.browser.quit)
+        # minimized, so a run never takes the desktop; the emulation keeps the page
+        # focused, or :focus-within stops matching when another window has focus
+        cls.browser.minimize_window()
+        cls.browser.execute_cdp_cmd(
+            "Emulation.setFocusEmulationEnabled", {"enabled": True}
+        )
 
     def setUp(self):
         super().setUp()
@@ -36,13 +40,14 @@ class Browser(StaticLiveServerTestCase):
         self.browser.add_cookie(
             {"name": "sessionid", "value": cookie.value, "secure": False, "path": "/"}
         )
-        self.browser.refresh()
+        # each test starts logged in on the index; not refresh(), which reloads the
+        # login the first get was sent to before the cookie existed
+        self.browser.get(self.live_server_url)
         self.wait_until_idle()
 
     def wait_until_idle(self, timeout=10):
-        # The test thread and the live server share one in-memory sqlite
-        # connection, so a query here during a request wedges both. A streak,
-        # because a swap starts the next wave of load-triggered requests.
+        # no query here mid-request: the test and the live server share one sqlite
+        # connection; a streak, since a swap starts the next load-triggered requests
         quiet = 0
 
         def settled(browser):
@@ -55,3 +60,38 @@ class Browser(StaticLiveServerTestCase):
             return quiet == 3
 
         WebDriverWait(self.browser, timeout, poll_frequency=0.1).until(settled)
+
+    def open_at(self, path: str, width: int):
+        self.addCleanup(
+            self.browser.execute_cdp_cmd, "Emulation.clearDeviceMetricsOverride", {}
+        )
+        self.browser.execute_cdp_cmd(
+            "Emulation.setDeviceMetricsOverride",
+            {"width": width, "height": 900, "deviceScaleFactor": 1, "mobile": False},
+        )
+        self.browser.get(f"{self.live_server_url}{path}")
+        self.wait_until_idle()
+
+    def assert_overview_chart_redraws(self, path: str, container: str):
+        self.browser.get(f"{self.live_server_url}{path}")
+        self.wait_until_idle()
+        assert self._chart_drawn_in(container), "no chart on load"
+
+        for tab in ("data", "index"):
+            self.browser.find_element(By.ID, f"tab-{tab}").click()
+            self.wait_until_idle()
+
+        assert self._chart_drawn_in(container), "no chart after a tab swap"
+
+    def listed_rows(self, columns: tuple[str, ...]) -> list[dict[str, str]]:
+        return [
+            dict(zip(columns, [td.text for td in tr.find_elements(By.TAG_NAME, "td")]))
+            for tr in self.browser.find_elements(By.CSS_SELECTOR, "#data tbody tr")
+        ]
+
+    def _chart_drawn_in(self, container: str) -> bool:
+        return bool(
+            self.browser.find_elements(
+                By.CSS_SELECTOR, f"#{container} svg.highcharts-root"
+            )
+        )

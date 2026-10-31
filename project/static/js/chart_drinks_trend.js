@@ -3,16 +3,18 @@ function chartTrend(idData, idContainer) {
 
     const dailyColor = "var(--skin-hair)";
 
-    const plotLines = (chartData.target !== null) ? [
+    const limit = chartData.limit;
+
+    const plotLines = limit.is_set ? [
     {
         color: "var(--skin-harm)",
         width: 1.5,
         dashStyle: "Dash",
-        value: chartData.target,
+        value: limit.amount,
         zIndex: 10,
         label: paperRuleLabel(
-            `${chartData.text.limit}: ${chartData.target.toFixed(chartData.decimals)}`,
-            "var(--skin-harm)"
+            `${chartData.text.limit}: ${limit.amount.toFixed(chartData.decimals)}`,
+            "harm"
         )
     }] : [];
 
@@ -39,7 +41,7 @@ function chartTrend(idData, idContainer) {
                 text: chartData.text.unit
             },
             min: 0,
-            softMax: (chartData.target !== null) ? chartData.target : undefined,
+            softMax: limit.is_set ? limit.amount : undefined,
             endOnTick: false,
             maxPadding: 0.02,
             tickPixelInterval: 35,
@@ -72,7 +74,7 @@ function chartTrend(idData, idContainer) {
             pointPadding: 0,
             crisp: false,
             tooltip: {
-                pointFormat: `<span style='color: var(--skin-ink-muted)'>{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
+                pointFormat: `<span class="chart-tip--muted">{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
             }
         },
         {
@@ -90,7 +92,7 @@ function chartTrend(idData, idContainer) {
             type: "spline",
             name: chartData.text.r7,
             data: chartData.rolling_7,
-            color: "var(--skin-data-soft)",
+            color: "var(--skin-year-0)",
             legendIndex: 1,
             visible: false,
             lineWidth: 1.5,
@@ -99,4 +101,4 @@ function chartTrend(idData, idContainer) {
             }
         }]
     });
-};
+}

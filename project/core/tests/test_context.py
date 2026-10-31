@@ -4,7 +4,7 @@ import pytest
 import time_machine
 from django.contrib.auth.models import AnonymousUser
 
-from ..context import context_months, yday, years
+from ..context import context_months, nav_active, yday, years
 
 pytestmark = pytest.mark.django_db
 
@@ -56,3 +56,33 @@ def test_context_months_are_the_users_year(main_user, rf):
     actual = context_months(request)
 
     assert actual == {"context_months": [date(1999, m, 1) for m in range(1, 13)]}
+
+
+@pytest.mark.parametrize(
+    "path, expect",
+    [
+        pytest.param("/", {"bookkeeping"}, id="year_menu_on_the_root_only"),
+        pytest.param("/month/", {"month"}, id="month"),
+        pytest.param("/detailed/expenses/", {"detailed"}, id="detailed_not_expenses"),
+        pytest.param("/expenses/data/all/", {"expenses"}, id="expenses_tab"),
+        pytest.param("/summary/expenses/", {"charts"}, id="charts_not_expenses"),
+        pytest.param("/plans/expenses/", {"plans"}, id="plans_not_expenses"),
+        pytest.param("/incomes/", {"incomes"}, id="incomes"),
+        pytest.param("/incomes/data/", set(), id="incomes_tab_exact_path"),
+        pytest.param("/transactions/", {"transactions"}, id="transactions"),
+        pytest.param("/savings/type/", {"savings"}, id="savings_page"),
+        pytest.param("/summary/savings/", {"charts"}, id="charts_not_savings"),
+        pytest.param("/plans/savings/", {"plans"}, id="plans_not_savings"),
+        pytest.param("/detailed/savings/", {"detailed"}, id="detailed_not_savings"),
+        pytest.param("/transactions/lists/", set(), id="transactions_list_exact"),
+        pytest.param("/debts/", {"debts"}, id="debts"),
+        pytest.param("/debts/lend/lists/", set(), id="debts_list_exact_path"),
+        pytest.param("/books/data/all/", {"books"}, id="books_tab"),
+        pytest.param("/drinks/", {"drinks"}, id="drinks"),
+        pytest.param("/drinks/data/", set(), id="drinks_tab_exact_path"),
+        pytest.param("/counts/c/count-type/", {"counts"}, id="counts"),
+        pytest.param("/settings/users/", {"settings"}, id="settings"),
+    ],
+)
+def test_nav_active_names_the_items_a_path_lights(rf, path, expect):
+    assert nav_active(rf.get(path)) == {"nav_active": expect}

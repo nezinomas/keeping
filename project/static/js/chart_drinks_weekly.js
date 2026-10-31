@@ -15,7 +15,7 @@ function chartDrinksWeekly(idData, idContainer) {
             labels: {
                 rotation: -45,
                 formatter: function () {
-                    // categories are full ISO dates (week-start); show only MM-DD
+                    // categories are full ISO dates of each week's start
                     return this.value.slice(5);
                 }
             }
@@ -25,12 +25,10 @@ function chartDrinksWeekly(idData, idContainer) {
                 text: chartData.text.unit
             },
             min: 0,
-            // below the guideline is plain paper: a week inside the guideline is
-            // not an achievement to shade. The two bands above it are steps of
-            // one hue, because they are two degrees of the same thing
+            // a week inside the guideline is no achievement to shade. Above it one
+            // tint: the two rules and the bars' colours tell guideline from threshold
             plotBands: [
-                { from: chartData.low_risk, to: chartData.high_risk, color: "var(--skin-harm-wash)" },
-                { from: chartData.high_risk, to: Number.MAX_VALUE, color: "var(--skin-harm-wash)" }
+                { from: chartData.low_risk, to: Number.MAX_VALUE, color: "var(--skin-harm-tint)" }
             ],
             plotLines: [
                 {
@@ -42,8 +40,7 @@ function chartDrinksWeekly(idData, idContainer) {
                     // the rule keeps the soft harm step; its label does not,
                     // because that step is a mark colour and fails AA as text
                     label: paperRuleLabel(
-                        `${chartData.text.guideline}: ${chartData.low_risk.toFixed(1)}`,
-                        "var(--skin-ink-muted)"
+                        `${chartData.text.guideline}: ${chartData.low_risk.toFixed(1)}`
                     )
                 },
                 {
@@ -54,7 +51,7 @@ function chartDrinksWeekly(idData, idContainer) {
                     zIndex: 5,
                     label: paperRuleLabel(
                         `${chartData.text.high_risk_guideline}: ${chartData.high_risk.toFixed(1)}`,
-                        "var(--skin-harm)"
+                        "harm"
                     )
                 }
             ]

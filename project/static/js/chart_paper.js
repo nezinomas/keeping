@@ -1,23 +1,38 @@
 // The paper skin's chart half, loaded only by pages wearing `.paper-skin`.
 // Colours are `--skin-*` tokens; `var()` resolves in Highcharts' inline SVG styles.
-//
-// A rule's label: on the right, as the left corner holds the pane name; on a
-// paper chip, so a mark crossing the rule never covers it.
-function paperRuleLabel(text, color) {
+
+// A chart's small text: every axis label and title, figure on a mark and rule label.
+// `var`, because a re-run page script would throw on a redeclared `const`.
+var PAPER_CHART_TEXT_PX = 12;
+var PAPER_CHART_TEXT = {
+    fontFamily: "var(--skin-display)",
+    fontSize: `${PAPER_CHART_TEXT_PX}px`,
+};
+
+// A rule's label, on the right, as the left corner holds the pane name; its chip is
+// `skin/_chart.scss`'s. `state` is "muted" for a guide, "harm" for a limit.
+function paperRuleLabel(text, state = "muted") {
     return {
         useHTML: true,
         align: "right",
         x: -6,
-        y: -13,
-        text: `<span style="background: var(--skin-paper); padding: 0 4px;`
-            + ` color: ${color}; font-family: var(--skin-mono); font-size: 10px;`
-            + ` letter-spacing: 0.1em; white-space: nowrap;">${text}</span>`,
+        y: -13, // the chip clears its rule
+        text: `<span class="chart-rule-label chart-rule-label--${state}">${text}</span>`,
     };
 }
 
 // The two chart heights. Standard is the theme's; a chart with two panes asks for large.
-// `var`, because a re-run page script would throw on a redeclared `const`.
 var PAPER_CHART_HEIGHT = { standard: 350, large: 420 };
+
+// Read once, at the table headers' breakpoint: below it a chart's text is cut to fit.
+var PAPER_WIDE = window.matchMedia("(min-width: 768px)").matches;
+
+// Every figure printed on a mark; each use adds only its colour.
+var PAPER_DATA_LABEL_STYLE = {
+    ...PAPER_CHART_TEXT,
+    fontWeight: "400",
+    textOutline: "none",
+};
 
 // The first and last category sit a fixed distance in from the plot edge, so a
 // chart of 21 years and one of 12 months keep the same margins at any width.
@@ -40,8 +55,9 @@ function paperFixEdges() {
     }
 }
 
-// A y-axis title laid flat above the plot, where a rotated one would not fit.
-// Its chart merges in `PAPER_PANE_TITLE_SPACE`: room for the name or a rule label.
+// A y-axis title laid flat above the plot, where a rotated one would not fit. It rises
+// this far; its chart's top margin holds the rise and the title's line above it.
+var PAPER_PANE_TITLE_RISE = 18;
 var PAPER_PANE_TITLE = {
     align: "high",
     rotation: 0,
@@ -49,16 +65,18 @@ var PAPER_PANE_TITLE = {
     reserveSpace: false,
     textAlign: "left",
     x: 0,
-    y: -18,
+    y: -PAPER_PANE_TITLE_RISE,
     style: { whiteSpace: "nowrap", textOverflow: "clip" },
 };
-var PAPER_PANE_TITLE_SPACE = { spacingTop: 0, marginTop: 27 };
+var PAPER_PANE_TITLE_SPACE = { marginTop: PAPER_PANE_TITLE_RISE + PAPER_CHART_TEXT_PX };
 
 // The parts of a two-pane chart: a reading on top, bars below. Pieces, not one
 // config, because `Highcharts.merge` replaces arrays instead of merging them.
 function paperTwoPanes() {
     const blue = "var(--skin-data)";
-    const paneTitle = PAPER_PANE_TITLE;
+    // the bottom pane takes what the top pane and the gap between them leave
+    const topHeight = 68;
+    const gap = 12;
 
     return {
         base: {
@@ -79,26 +97,19 @@ function paperTwoPanes() {
         paneTop: {
             min: 0,
             top: "0%",
-            height: "68%",
-            title: paneTitle,
+            height: `${topHeight}%`,
+            title: PAPER_PANE_TITLE,
         },
         paneBottom: {
             min: 0,
             endOnTick: false,
             // headroom, so the tallest bar's label stays clear of the pane name
             maxPadding: 0.3,
-            top: "80%",
-            height: "20%",
+            top: `${topHeight + gap}%`,
+            height: `${100 - topHeight - gap}%`,
             offset: 0,
             labels: { style: { color: blue } },
-            title: Highcharts.merge(paneTitle, { style: { color: blue } }),
-        },
-        readingDataLabelStyle: {
-            fontFamily: "var(--skin-mono)",
-            fontSize: "10px",
-            color: "var(--skin-ink)",
-            fontWeight: "400",
-            textOutline: "none",
+            title: Highcharts.merge(PAPER_PANE_TITLE, { style: { color: blue } }),
         },
         bottomBars: {
             type: "column",
@@ -111,13 +122,8 @@ function paperTwoPanes() {
                 enabled: true,
                 crop: false,
                 overflow: "allow",
-                style: {
-                    fontFamily: "var(--skin-mono)",
-                    fontSize: "10px",
-                    color: "var(--skin-ink-muted)",
-                    textOutline: "none",
-                    fontWeight: "400",
-                },
+                // the theme's `dataLabels.color` beats a `style.color`
+                color: "var(--skin-ink-muted)",
                 formatter: function () {
                     return this.y > 0 ? Highcharts.numberFormat(this.y, 1) : "";
                 },
@@ -142,7 +148,7 @@ Highcharts.setOptions({
         height: PAPER_CHART_HEIGHT.standard,
         spacing: [12, 6, 10, 6],
         style: {
-            fontFamily: "var(--skin-body)",
+            fontFamily: PAPER_CHART_TEXT.fontFamily,
         },
     },
     // the Panel title is drawn in HTML, above the chart (core/CONTEXT.md); a
@@ -150,19 +156,15 @@ Highcharts.setOptions({
     title: {
         text: null,
     },
-    // recessive axes: one ink baseline, hairline grid, mono labels
     xAxis: {
         lineColor: "var(--skin-ink)",
         lineWidth: 1,
         tickColor: "var(--skin-hair)",
         gridLineWidth: 0,
-        // an x label names a month, a weekday or a year, so it reads as a word;
-        // the axis title below is chrome and keeps the mono caps
         labels: {
             style: {
                 color: "var(--skin-ink-muted)",
-                fontFamily: "var(--skin-body)",
-                fontSize: "11px",
+                ...PAPER_CHART_TEXT,
             },
         },
     },
@@ -170,27 +172,23 @@ Highcharts.setOptions({
         gridLineColor: "var(--skin-hair-soft)",
         gridLineWidth: 1,
         lineWidth: 0,
+        // written as in a sentence, over the caps `themes/theme.js` gives a legacy chart
         title: {
             style: {
                 color: "var(--skin-ink-muted)",
-                fontFamily: "var(--skin-mono)",
-                fontSize: "10px",
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
+                ...PAPER_CHART_TEXT,
+                textTransform: "none",
             },
         },
         labels: {
             style: {
                 color: "var(--skin-ink-muted)",
-                fontFamily: "var(--skin-mono)",
-                fontSize: "10px",
+                ...PAPER_CHART_TEXT,
             },
         },
     },
-    // The tooltip keeps Highcharts' own colours — no background and no border
-    // colour is set here, so the border is drawn in the hovered series' colour.
-    // Only the width is: the shared theme switches the border off outright
-    // (`borderWidth: 0`), which is why a Drinks tooltip had no edge at all.
+    // Highcharts' own colours, so the border takes the hovered series' colour; only
+    // its width is set, as `themes/theme.js` turns the border off (`borderWidth: 0`).
     tooltip: {
         borderWidth: 1,
         borderRadius: 3,
@@ -205,8 +203,8 @@ Highcharts.setOptions({
         backgroundColor: "transparent",
         itemStyle: {
             color: "var(--skin-ink-muted)",
-            fontFamily: "var(--skin-body)",
-            fontSize: "12px",
+            ...PAPER_CHART_TEXT,
+            fontSize: "13px",
             fontWeight: "400",
         },
         itemHoverStyle: {
@@ -228,12 +226,7 @@ Highcharts.setOptions({
             },
             dataLabels: {
                 color: "var(--skin-ink)",
-                style: {
-                    fontFamily: "var(--skin-mono)",
-                    fontSize: "10px",
-                    fontWeight: "400",
-                    textOutline: "none",
-                },
+                style: PAPER_DATA_LABEL_STYLE,
             },
         },
         column: {
@@ -241,9 +234,7 @@ Highcharts.setOptions({
             // a surface-coloured gap keeps neighbouring bars from reading as one
             // block of colour
             borderColor: "var(--skin-paper)",
-            // Highcharts rounds column corners by default from v11; every other
-            // chart in the project turns that off one by one, so the theme does
-            // it once for every chart that wears the paper skin
+            // Highcharts rounds column corners from v11; the paper skin's are square
             borderRadius: 0,
         },
     },

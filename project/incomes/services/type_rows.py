@@ -1,56 +1,34 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any
 
-from django.template.defaultfilters import floatformat
+from ...core.lib.collation import lt_title
+from ...core.lib.type_table import Cells, Figures, Total, TypeOrder, figures_by_pk
+from ...core.lib.year_boundary import YearBoundary
+from ...users.models import User
+from .model_services import IncomeModelService, IncomeTypeModelService
 
-from ...core.lib.convert_price import int_cents_to_float
-from ...core.lib.table_order import Column, TableOrder
-
-NOTHING = "–"
-ORDER = TableOrder(
-    columns=(
-        Column("title"),
-        Column("this_year", descending=True),
-        Column("last_year", descending=True),
-        Column("share", descending=True),
-        Column("last_income", descending=True),
-    ),
-    default="title",
-)
-
-
-def _amount(cents: int) -> str:
-    return floatformat(int_cents_to_float(cents), "0g") if cents else NOTHING
-
-
-def _share(cents: int, total: int) -> str:
-    return f"{floatformat(cents / total * 100, '0')}%" if cents and total else NOTHING
-
-
-@dataclass(frozen=True)
-class TypeRow:
-    pk: int
-    title: str
-    this_year: str
-    last_year: str
-    share: str
-    last_income: str
-    sort_values: Mapping[str, Any]
-
-
-@dataclass(frozen=True)
-class TypeTotal:
-    this_year: str
-    last_year: str
-    share: str
+ORDER = TypeOrder(last_key="last_income")
 
 
 @dataclass(frozen=True)
 class TypesTable:
-    rows: list[TypeRow]
-    total: TypeTotal
+    rows: list[Cells]
+    total: Total
     order: str
+
+    @classmethod
+    def read(cls, user: User, boundary: YearBoundary, order: str) -> "TypesTable":
+        incomes = IncomeModelService(user)
+        types = IncomeTypeModelService(user).items().values("id", "title")
+        return cls.build(
+            types=list(types),
+            year=list(incomes.sum_by_between("income_type", *boundary.span)),
+            last_year=list(
+                incomes.sum_by_between("income_type", *boundary.previous_span)
+            ),
+            last_dates=list(incomes.last_date_by("income_type", boundary.end_date)),
+            order=order,
+        )
 
     @classmethod
     def build(
@@ -61,51 +39,18 @@ class TypesTable:
         last_dates: Sequence[dict],
         order: str,
     ) -> "TypesTable":
-        sums = {row["title"]: row["sum"] for row in year}
-        last_sums = {row["title"]: row["sum"] for row in last_year}
-        dates = {row["title"]: row["date"] for row in last_dates}
-        total = sum(sums.values())
-
+        figures = figures_by_pk([t["id"] for t in types], year, last_year, last_dates)
+        grand = Figures.summed(list(figures.values()))
         rows = [
-            _row(income_type, sums, last_sums, dates, total)
-            for income_type in sorted(types, key=lambda t: t["title"])
+            Cells(
+                pk=income_type["id"],
+                title=income_type["title"],
+                title_key=lt_title(income_type["title"]),
+                figures=figures[income_type["id"]],
+                share_of=grand.this_year,
+            )
+            for income_type in sorted(types, key=lambda t: lt_title(t["title"]))
         ]
 
-        ordered = ORDER.sort(order, rows, lambda row: row.sort_values)
-        return cls(
-            rows=ordered.rows,
-            total=TypeTotal(
-                this_year=_amount(total),
-                last_year=_amount(sum(last_sums.values())),
-                share=_share(total, total),
-            ),
-            order=ordered.active,
-        )
-
-
-def _row(
-    income_type: dict, sums: dict, last_sums: dict, dates: dict, total: int
-) -> TypeRow:
-    title = income_type["title"]
-    this_year = sums.get(title, 0)
-    last_year = last_sums.get(title, 0)
-    # share runs with this year's sum; a figure the row has not got sorts last
-    figures = {"this_year": this_year, "last_year": last_year, "share": this_year}
-    sort_values = {
-        "title": title,
-        **{k: cents for k, cents in figures.items() if cents},
-    }
-    last_income = NOTHING
-    if title in dates:
-        sort_values["last_income"] = dates[title]
-        last_income = f"{dates[title]:%Y-%m-%d}"
-
-    return TypeRow(
-        pk=income_type["id"],
-        title=title,
-        this_year=_amount(this_year),
-        last_year=_amount(last_year),
-        share=_share(this_year, total),
-        last_income=last_income,
-        sort_values=sort_values,
-    )
+        ordered = ORDER.sort(order, rows)
+        return cls(rows=ordered.rows, total=Total.of(grand), order=ordered.active)

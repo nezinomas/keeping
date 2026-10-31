@@ -11,10 +11,6 @@ from .expenses.tests.factories import ExpenseFactory
 from .incomes.tests.factories import IncomeFactory
 from .pensions.tests.factories import PensionFactory, PensionTypeFactory
 from .savings.tests.factories import SavingFactory, SavingTypeFactory
-from .transactions.tests.factories import (
-    SavingCloseFactory,
-    TransactionFactory,
-)
 from .users.tests.factories import UserFactory
 
 hypothesis.settings.register_profile("dev", max_examples=20, deadline=None)
@@ -142,42 +138,6 @@ def expenses_january():
 
 
 @pytest.fixture()
-def transactions():
-    a1, a2 = _two_accounts()
-
-    TransactionFactory(
-        date=date(1999, 1, 1),
-        price=225,
-        from_account=a1,
-        to_account=a2,
-    )
-    TransactionFactory(
-        date=date(1999, 1, 1),
-        price=225,
-        from_account=a1,
-        to_account=a2,
-    )
-    TransactionFactory(
-        date=date(1999, 1, 1),
-        price=325,
-        from_account=a2,
-        to_account=a1,
-    )
-    TransactionFactory(
-        date=date(1970, 1, 1),
-        price=125,
-        from_account=a1,
-        to_account=a2,
-    )
-    TransactionFactory(
-        date=date(1970, 1, 1),
-        price=525,
-        from_account=a2,
-        to_account=a1,
-    )
-
-
-@pytest.fixture()
 def savings():
     a1, a2 = _two_accounts()
     s1 = SavingTypeFactory(title="Saving1")
@@ -217,34 +177,6 @@ def savings():
         fee=25,
         account=a2,
         saving_type=s2,
-    )
-
-
-@pytest.fixture()
-def savings_close():
-    a1, a2 = _two_accounts()
-    s1 = SavingTypeFactory(title="Saving1")
-
-    SavingCloseFactory(
-        date=date(1999, 1, 1),
-        price=25,
-        fee=5,
-        to_account=a1,
-        from_account=s1,
-    )
-    SavingCloseFactory(
-        date=date(1999, 1, 1),
-        price=1,
-        fee=1,
-        to_account=a2,
-        from_account=s1,
-    )
-    SavingCloseFactory(
-        date=date(1970, 1, 1),
-        price=25,
-        fee=5,
-        to_account=a1,
-        from_account=s1,
     )
 
 

@@ -100,6 +100,7 @@ TEMPLATES = [
                 "project.core.context.years",
                 "project.core.context.yday",
                 "project.core.context.context_months",
+                "project.core.context.nav_active",
                 "project.counts.context.counts_menu",
                 "project.core.context.csp_nonce",
             ],

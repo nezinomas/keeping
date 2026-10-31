@@ -85,7 +85,13 @@ _Avoid_: filter, period, span
 The maximum daily volume a user sets for one year. At most one per user per
 year. Stored in Std Av, so it is re-expressed in whichever Drink type is being
 viewed — the same target reads as 500 ml of beer or 234 ml of wine.
-_Avoid_: goal, limit, quota, budget
+_Avoid_: goal, limit (that is the Limit, how a chart draws it), quota, budget
+
+**Limit**:
+A Drink Target as a chart draws it: the dashed harm rule *Riba* at the target's
+daily amount. Either set, with its amount, or not set when the year has no Drink
+Target, and then no chart draws a rule or makes room for one.
+_Avoid_: target line, cap, threshold
 
 ### Risk
 
@@ -149,7 +155,7 @@ _Avoid_: trend card, widget, KPI, metric box
 
 **Paper skin**:
 The visual language every Tab wears: a white ground, chrome in ink, hairline
-Panels, figures in a condensed display face and every label in mono. It is
+Panels, chrome in a condensed display face and what the user reads in the body face. It is
 scoped to the `.paper-skin` wrapper `index.html` puts around every Tab, so no
 app still on the old design inherits it; the `--skin-*` tokens it is built from
 are declared on `:root` instead, because Highcharts renders a tooltip outside

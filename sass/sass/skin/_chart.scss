@@ -1,0 +1,27 @@
+@use "../abstracts/variables" as *;
+
+// Unscoped: Highcharts draws a tooltip outside `.paper-skin`.
+
+// a rule's label on a paper chip, so a mark crossing the rule never covers it
+.chart-rule-label {
+    padding: 0 4px;
+    background: $paper;
+    color: $ink-muted;
+    font-family: $display;
+    font-size: 12px;
+    white-space: nowrap;
+
+    &--harm {
+        color: $harm;
+    }
+}
+
+// a tooltip line whose series is too pale to print in
+.chart-tip--muted {
+    color: $ink-muted;
+}
+
+// a tooltip figure whose series hue is a mark's, not a text's
+.chart-tip--second {
+    color: $second-ink;
+}

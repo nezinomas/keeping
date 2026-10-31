@@ -4,12 +4,11 @@
 
 {% if records %}
 
-<main class="history-grid">
+<div class="history-grid">
     <c-panel title="{% translate 'Drinks' %}">
         <div id="chart-summary-container"></div>
     </c-panel>
 
-    <!-- Year comparison: one shared chart with presets + custom pick below it -->
     <c-panel id="historical-data" title="{% translate 'Year comparison' %}">
         <div id="chart-history-container" hx-get="{% url 'drinks:compare' 2 %}" hx-trigger="load"></div>
 
@@ -23,12 +22,12 @@
             {% include 'drinks/includes/compare_form.html' %}
         </div>
     </c-panel>
-</main>
+</div>
 
 {{chart|json_script:"chart-summary-data"}}
 
 {% else %}
 
-    {% include 'core/no_records.html' with two_years=True %}
+    {% include 'core/paper_no_records.html' with two_years=True %}
 
 {% endif %}

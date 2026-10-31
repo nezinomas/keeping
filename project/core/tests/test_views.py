@@ -1,10 +1,15 @@
+import re
 from datetime import date
 
 import pytest
 import time_machine
 from django.urls import reverse
 
+from project.counts.tests.factories import CountTypeFactory
+
 pytestmark = pytest.mark.django_db
+
+HTMX_CONFIG = "<meta name=\"htmx-config\" content='[^']*"
 
 
 @pytest.mark.parametrize(
@@ -24,20 +29,94 @@ def test_set_year(year, expect, main_user, client_logged):
     assert response.wsgi_request.user.year == expect
 
 
-def test_base_leaves_the_loader_styles_to_the_stylesheet(client_logged):
+def test_base_reads_the_htmx_config_before_htmx(client_logged):
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
 
-    assert '"includeIndicatorCSS": false' in content
     assert content.index('<meta name="htmx-config"') < content.index("htmx.min.js")
 
 
-def test_base_keeps_error_responses_out_of_the_page(client_logged):
+@pytest.mark.parametrize(
+    "url",
+    [
+        pytest.param("bookkeeping:index", id="base"),
+        pytest.param("expenses:import", id="import_page"),
+    ],
+)
+def test_the_date_picker_translation_loads_once_on_the_page(client_logged, url):
+    page = client_logged.get(reverse(url)).content.decode()
+    form = client_logged.get(reverse("expenses:new")).content.decode()
+
+    script = r"<script[^>]*src=\"[^\"]*litepicker/translations/"
+    head = page.split("</head>")[0]
+    assert len(re.findall(script + r"lt\.js\"", head)) == 1
+    assert len(re.findall(script, page)) == 1
+    assert not re.search(script, form)
+
+
+@pytest.mark.parametrize(
+    "pattern",
+    [
+        pytest.param(
+            HTMX_CONFIG + re.escape('"includeIndicatorCSS": false'),
+            id="no_indicator_css",
+        ),
+        pytest.param(
+            HTMX_CONFIG + re.escape('"noSwap": [204, 304, "4xx", "5xx"]'),
+            id="no_swap",
+        ),
+        pytest.param(
+            HTMX_CONFIG + re.escape('"history": "reload"'), id="history_reload"
+        ),
+        pytest.param(
+            re.escape('<div class="day-of-year"><span>34 / <b>365</b></span></div>'),
+            id="day_of_year",
+        ),
+    ],
+)
+@time_machine.travel("1999-02-03")
+def test_base_draws_on_every_page(client_logged, pattern):
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
 
-    assert '"noSwap": [204, 304, "4xx", "5xx"]' in content
+    assert re.search(pattern, content)
 
 
-def test_base_reloads_the_page_on_back(client_logged):
-    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
+@pytest.mark.parametrize(
+    "url, panel_class",
+    [
+        pytest.param("expenses:index", "grid-one-col", id="grid"),
+        pytest.param("drinks:index", "", id="no_grid"),
+    ],
+)
+def test_a_paper_page_draws_its_tab_panel(client_logged, url, panel_class):
+    content = client_logged.get(reverse(url)).content.decode()
 
-    assert '"history": "reload"' in content
+    assert content.count("<main") == 1
+    assert (
+        f'<main id="tab_content" class="{panel_class}" role="tabpanel"'
+        " :aria-labelledby=\"'tab-' + tab\">"
+    ) in content
+
+
+@pytest.mark.parametrize(
+    "url, args",
+    [
+        pytest.param("expenses:index", [], id="expenses"),
+        pytest.param("incomes:index", [], id="incomes"),
+        pytest.param("books:index", [], id="books"),
+        pytest.param("plans:index", [], id="plans"),
+        pytest.param("counts:index", ["count-type"], id="counts"),
+        pytest.param("drinks:index", [], id="drinks"),
+    ],
+)
+def test_every_script_a_paper_page_runs_carries_the_csp_nonce(client_logged, url, args):
+    CountTypeFactory()
+    content = client_logged.get(reverse(url, args=args)).content.decode()
+
+    # a chart's json_script is data, which CSP never runs
+    scripts = [
+        tag
+        for tag in re.findall(r"<script\b[^>]*>", content)
+        if 'type="application/json"' not in tag
+    ]
+    assert scripts
+    assert [tag for tag in scripts if "nonce=" not in tag] == []
