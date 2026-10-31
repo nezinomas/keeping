@@ -22,6 +22,10 @@ class Figures:
             dates=[d for f in figures for d in f.dates],
         )
 
+    @property
+    def latest(self) -> date:
+        return max(self.dates)
+
 
 def figures_by_pk(
     pks: Sequence[int],
@@ -66,7 +70,7 @@ class Cells:
     def last_date(self) -> str:
         if not self.figures.dates:
             return NOTHING
-        return day(max(self.figures.dates))
+        return day(self.figures.latest)
 
 
 @dataclass(frozen=True)
@@ -116,5 +120,5 @@ class TypeOrder:
             **{k: cents for k, cents in sums.items() if cents},
         }
         if row.figures.dates:
-            values[self.last_key] = max(row.figures.dates)
+            values[self.last_key] = row.figures.latest
         return values
