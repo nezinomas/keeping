@@ -38,7 +38,7 @@ def month_filter(kwargs) -> MonthFilter:
     return MonthFilter.parse(kwargs["month"], date.today())
 
 
-class DuomenysAtItsMonthMixin:
+class SuccessUrlMixin:
     def get_success_url(self):
         return MonthFilter.at(self.object.date).url()
 
@@ -121,14 +121,14 @@ class Lists(ListViewMixin):
         return super().get_context_data(**kwargs) | context | get_action_buttons_html()
 
 
-class New(DuomenysAtItsMonthMixin, CreateViewMixin):
+class New(SuccessUrlMixin, CreateViewMixin):
     form_class = forms.ExpenseForm
     hx_trigger_form = "reload"
     modal_form_title = _("Expenses")
     template_name = "expenses/expense_form.html"
 
 
-class Update(DuomenysAtItsMonthMixin, PriceToFloatViewMixin, UpdateViewMixin):
+class Update(SuccessUrlMixin, PriceToFloatViewMixin, UpdateViewMixin):
     service_class = ExpenseModelService
     form_class = forms.ExpenseForm
     hx_trigger_django = "reload"
@@ -137,7 +137,7 @@ class Update(DuomenysAtItsMonthMixin, PriceToFloatViewMixin, UpdateViewMixin):
 
 
 # DeleteView builds its success url before it deletes; the 204 reply discards it
-class Delete(DuomenysAtItsMonthMixin, DeleteViewMixin):
+class Delete(SuccessUrlMixin, DeleteViewMixin):
     service_class = ExpenseModelService
     modal_form_title = _("Delete expense")
 
