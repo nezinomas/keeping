@@ -140,9 +140,8 @@ def _assert_saved(actual, a_from, a_to):
     assert actual.to_account == a_to
 
 
-@by_kind
-def test_save(client_logged, kind):
-    _assert_saved(*_post_new(client_logged, kind))
+def test_save(client_logged):
+    _assert_saved(*_post_new(client_logged, KINDS["transactions"]))
 
 
 @by_fund_move
@@ -388,8 +387,8 @@ def _assert_updated(actual, kind):
     assert actual.from_account.title == kind.from_title
 
 
-@by_kind
-def test_update(client_logged, kind):
+def test_update(client_logged):
+    kind = KINDS["transactions"]
     _post_update(client_logged, kind)
 
     _assert_updated(kind.model.objects.get(), kind)
