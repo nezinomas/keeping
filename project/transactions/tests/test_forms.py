@@ -12,6 +12,7 @@ from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping import balance_sources
 from ...bookkeeping.tests.factories import SavingWorthFactory
+from ...bookkeeping.tests.helper import quiet_build
 from ...plans.tests.factories import SavingPlanFactory
 from ...savings.forms import SavingTypeForm
 from ...savings.models import SavingBalance, SavingType
@@ -19,7 +20,7 @@ from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 from .factories import SavingChangeFactory, SavingCloseFactory
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 TODAY = date(1999, 1, 1)
 
@@ -440,11 +441,13 @@ def fixture_receiver(move):
     ],
 )
 @pytest.mark.parametrize("move", MOVES)
+@pytest.mark.syncs
 def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
     main_user, move, fee_source, debit, close, closed
 ):
-    bank, fund = _purchase(fee_source)
-    receiver = MOVES[move].receiver()
+    with quiet_build(main_user):
+        bank, fund = _purchase(fee_source)
+        receiver = MOVES[move].receiver()
     data = {
         "date": "1999-01-01",
         "from_account": fund.pk,

@@ -13,6 +13,8 @@ from ...services.model_services import (
 )
 from ..factories import SavingChangeFactory, SavingCloseFactory
 
+pytestmark = pytest.mark.usefixtures("quiet_syncs")
+
 FUNDS = ["funds", "shares"]
 
 
