@@ -94,6 +94,17 @@ def total_cells(content):
 
 
 @contextmanager
+def quiet_syncs():
+    """Saves inside the block sync no balance."""
+    with (
+        patch.object(balance_sources, "sync_accounts"),
+        patch.object(balance_sources, "sync_savings"),
+        patch.object(balance_sources, "sync_pensions"),
+    ):
+        yield
+
+
+@contextmanager
 def quiet_build(user):
     """Builds rows without the per-save balance syncs, then syncs each balance once.
 
@@ -104,11 +115,7 @@ def quiet_build(user):
         balance_sources.sync_savings,
         balance_sources.sync_pensions,
     )
-    with (
-        patch.object(balance_sources, "sync_accounts"),
-        patch.object(balance_sources, "sync_savings"),
-        patch.object(balance_sources, "sync_pensions"),
-    ):
+    with quiet_syncs():
         yield
     for sync in syncs:
         sync(user)

@@ -8,6 +8,7 @@ import time_machine
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
+from ...bookkeeping.tests.helper import quiet_build
 from ...core.tests.utils import clean_content, view_for
 from ...savings.models import SavingBalance, SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
@@ -15,7 +16,7 @@ from ...users.views import Login
 from .. import models, views
 from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
 class Kind(NamedTuple):
@@ -508,15 +509,19 @@ def _move_to_another_fund(client_logged, sell, other):
     ],
 )
 @time_machine.travel("2024-1-1")
-def test_closing_sell_removed_reopens_the_fund(client_logged, edit, years_after):
-    bank = AccountFactory(title="Bank")
-    fund = SavingTypeFactory(title="Fund")
-    other = SavingTypeFactory(title="Other")
-    SavingFactory(account=bank, saving_type=fund, date=date(2020, 1, 1), price=1000)
-    SavingCloseFactory(
-        from_account=fund, to_account=bank, date=date(2021, 1, 1), price=100
-    )
-    SavingFactory(account=bank, saving_type=fund, date=date(2022, 1, 1), price=500)
+@pytest.mark.syncs
+def test_closing_sell_removed_reopens_the_fund(
+    client_logged, main_user, edit, years_after
+):
+    with quiet_build(main_user):
+        bank = AccountFactory(title="Bank")
+        fund = SavingTypeFactory(title="Fund")
+        other = SavingTypeFactory(title="Other")
+        SavingFactory(account=bank, saving_type=fund, date=date(2020, 1, 1), price=1000)
+        SavingCloseFactory(
+            from_account=fund, to_account=bank, date=date(2021, 1, 1), price=100
+        )
+        SavingFactory(account=bank, saving_type=fund, date=date(2022, 1, 1), price=500)
     data = {
         "date": "2023-01-01",
         "price": "15",

@@ -20,7 +20,7 @@ from ..services.model_services import (
 )
 from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
 class AccountRow(NamedTuple):
@@ -185,6 +185,7 @@ def test_items_read_both_ends_in_as_many_queries_for_2_as_for_6(main_user, kind)
 
 
 @pytest.mark.parametrize("balances_emptied", [False, True], ids=["kept", "emptied"])
+@pytest.mark.syncs
 def test_transaction_save_carries_each_accounts_past(main_user, balances_emptied):
     a_from = AccountFactory(title="From")
     a_to = AccountFactory(title="To")
@@ -213,6 +214,7 @@ def test_transaction_save_carries_each_accounts_past(main_user, balances_emptied
 
 
 @pytest.mark.parametrize("kind, accounts, funds", MOVES_OF_ONE_CENT)
+@pytest.mark.syncs
 def test_new_price_syncs_balances(main_user, kind, accounts, funds):
     move = reloaded(
         kind.factory(
@@ -229,6 +231,7 @@ def test_new_price_syncs_balances(main_user, kind, accounts, funds):
 
 
 @pytest.mark.parametrize("kind, accounts, funds", MOVES_OF_ONE_CENT)
+@pytest.mark.syncs
 def test_save_with_nothing_changed_keeps_balances(main_user, kind, accounts, funds):
     move = kind.factory(
         from_account=kind.sender(title="From"),
@@ -243,6 +246,7 @@ def test_save_with_nothing_changed_keeps_balances(main_user, kind, accounts, fun
 
 
 @pytest.mark.parametrize("kind, accounts, funds", MOVES_OF_ONE_CENT)
+@pytest.mark.syncs
 def test_new_ends_take_the_balances_from_the_old(main_user, kind, accounts, funds):
     move = reloaded(
         kind.factory(
@@ -260,6 +264,7 @@ def test_new_ends_take_the_balances_from_the_old(main_user, kind, accounts, fund
 
 
 @pytest.mark.parametrize("kind", MOVES.values(), ids=MOVES.keys())
+@pytest.mark.syncs
 def test_delete_drops_its_balances(main_user, kind):
     move = kind.factory(
         from_account=kind.sender(title="From"),
@@ -274,6 +279,7 @@ def test_delete_drops_its_balances(main_user, kind):
 
 
 @pytest.mark.parametrize("kind, accounts, funds", MOVES_OF_ONE_CENT)
+@pytest.mark.syncs
 def test_delete_leaves_the_other_moves_balances(main_user, kind, accounts, funds):
     ends = {
         "from_account": kind.sender(title="From"),
@@ -376,6 +382,7 @@ def test_saving_close_month_sums(main_user, month, sums):
     ]
 
 
+@pytest.mark.syncs
 def test_saving_close_post_save_first_record(main_user):
     _to = AccountFactory(title="To")
     _from = SavingTypeFactory(title="From")
@@ -401,6 +408,7 @@ def test_saving_close_post_save_first_record(main_user):
 
 
 @pytest.mark.parametrize("balances_emptied", [False, True], ids=["kept", "emptied"])
+@pytest.mark.syncs
 def test_saving_change_save_carries_each_funds_past(main_user, balances_emptied):
     _to = SavingTypeFactory(title="To")
     _from = SavingTypeFactory(title="From")
