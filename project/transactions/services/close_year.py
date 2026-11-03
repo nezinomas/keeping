@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
 
-from django.db.models import Max
+from django.db.models import Max, QuerySet
 
 from ...savings.models import SavingType
 from ..close_rules import CloseRule, Removed
@@ -33,18 +33,25 @@ class FundCloseYear:
 
     @classmethod
     def is_closing_move(cls, fund_pk: int, day: date) -> bool:
-        close_year = cls._load(fund_pk)
+        return cls._load(fund_pk).closes(day)
 
-        return day.year == close_year.fund.closed and day >= close_year.last_move
+    @classmethod
+    def of_funds(cls, fund_pks: Iterable[int]) -> dict[int, "FundCloseYear"]:
+        return {fund.pk: cls(fund) for fund in cls._funds().filter(pk__in=fund_pks)}
 
     @classmethod
     def _load(cls, fund_pk: int) -> "FundCloseYear":
-        return cls(
-            SavingType.objects.annotate(
-                last_sell=Max("savings_close_from__date"),
-                last_switch=Max("savings_change_from__date"),
-            ).get(pk=fund_pk)
+        return cls(cls._funds().get(pk=fund_pk))
+
+    @staticmethod
+    def _funds() -> QuerySet[SavingType]:
+        return SavingType.objects.annotate(
+            last_sell=Max("savings_close_from__date"),
+            last_switch=Max("savings_change_from__date"),
         )
+
+    def closes(self, day: date) -> bool:
+        return day.year == self.fund.closed and day >= self.last_move
 
     @property
     def last_move(self) -> date:
