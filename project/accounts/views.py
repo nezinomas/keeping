@@ -7,20 +7,16 @@ from ..core.mixins.views import (
     ListViewMixin,
     UpdateViewMixin,
 )
+from ..transactions.services.account_scope import OPEN
 from . import forms, models
 from .services.model_services import AccountModelService
 
-
-class Lists(ListViewMixin):
-    model = models.Account
-
-    def get_queryset(self):
-        return AccountModelService(self.request.user).all().order_by("closed", "title")
+SAVED_URL = reverse_lazy("transactions:tab_accounts", args=[OPEN])
 
 
 class New(CreateViewMixin):
     form_class = forms.AccountForm
-    success_url = reverse_lazy("accounts:list")
+    success_url = SAVED_URL
     hx_trigger_django = "reload"
     modal_form_title = _("Account")
 
@@ -28,12 +24,12 @@ class New(CreateViewMixin):
 class Update(UpdateViewMixin):
     model = models.Account
     form_class = forms.AccountForm
-    success_url = reverse_lazy("accounts:list")
+    success_url = SAVED_URL
     hx_trigger_django = "reload"
     modal_form_title = _("Account")
 
     def get_queryset(self):
-        return AccountModelService(self.request.user).items()
+        return AccountModelService(self.request.user).all()
 
 
 class LoadAccount(ListViewMixin):

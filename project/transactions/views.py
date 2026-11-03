@@ -1,6 +1,9 @@
+from functools import cached_property
+
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
+from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceToFloatViewMixin
 from ..core.lib.utils import int_or_zero
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
@@ -12,6 +15,7 @@ from ..core.mixins.views import (
 )
 from ..savings.services.model_services import SavingTypeModelService
 from . import forms
+from .services.account_scope import AccountScope
 from .services.close_year import FundCloseYear
 from .services.model_services import (
     SavingChangeModelService,
@@ -63,6 +67,26 @@ class TabSwitches(TabViewMixin, ListViewMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return {**context, "moves": with_close_marks(context["object_list"])}
+
+
+class TabAccounts(TabViewMixin, ListViewMixin):
+    tab = TABS["accounts"]
+
+    @cached_property
+    def scope(self) -> AccountScope:
+        return AccountScope.parse(self.kwargs["scope"])
+
+    def get_queryset(self):
+        user = self.request.user
+        return self.scope.rows(AccountModelService(user), user.selected_year())
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "items": self.scope.items(),
+            # the scope shown, so a save reloads it rather than the tab's open url
+            "tab_url": self.scope.url(),
+        }
 
 
 class LoadSavingType(ListViewMixin):

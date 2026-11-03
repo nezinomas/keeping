@@ -14,6 +14,7 @@ from ...bookkeeping.tests.helper import quiet_build
 from ...core.tests.utils import (
     clean_content,
     count_queries,
+    nav_tabs,
     quick_add_pills,
     view_for,
 )
@@ -100,6 +101,7 @@ TAB_TITLES = {
     "transactions": "Pervedimai",
     "sales": "Fondų pardavimai",
     "switches": "Fondų keitimai",
+    "accounts": "Sąskaitos",
 }
 
 
@@ -134,6 +136,7 @@ A_MOVE_OUT_OF = {
     "switches": lambda i: SavingChangeFactory(
         from_account=SavingTypeFactory(title=f"F{i}", closed=1999)
     ),
+    "accounts": lambda i: AccountFactory(title=f"F{i}"),
 }
 
 
@@ -284,6 +287,119 @@ def test_a_fund_tab_lists_the_years_moves_newest_first_marking_the_close(
     )
 
 
+OPEN_URL = "/transactions/accounts/open/"
+ALL_URL = "/transactions/accounts/all/"
+OPEN_IN_2022 = [("Zeta", ""), ("Alpha", ""), ("Beta", ""), ("Edge", "")]
+
+
+# viewing 2022: open is closed empty or in 2022 or later, in order then title; only an
+# account closed before 2022 shows its year; the scope is matched exactly, so "All" is junk
+@pytest.mark.parametrize(
+    "scope, filter_line, rows, tab_url",
+    [
+        pytest.param(
+            "open",
+            [(" aria-current", OPEN_URL, "Atidarytos"), ("", ALL_URL, "Visos")],
+            OPEN_IN_2022,
+            OPEN_URL,
+            id="open",
+        ),
+        pytest.param(
+            "all",
+            [("", OPEN_URL, "Atidarytos"), (" aria-current", ALL_URL, "Visos")],
+            [("Old", "2021"), *OPEN_IN_2022],
+            ALL_URL,
+            id="all",
+        ),
+        pytest.param(
+            "All",
+            [(" aria-current", OPEN_URL, "Atidarytos"), ("", ALL_URL, "Visos")],
+            OPEN_IN_2022,
+            OPEN_URL,
+            id="junk",
+        ),
+    ],
+)
+def test_the_accounts_tab_lists_its_scope_in_order(
+    client_logged, main_user, second_user, scope, filter_line, rows, tab_url
+):
+    main_user.year = 2022
+    main_user.save()
+    AccountFactory(title="Zeta", order=1)
+    AccountFactory(title="Beta", order=2, closed=2024)
+    AccountFactory(title="Alpha", order=2)
+    AccountFactory(title="Edge", order=3, closed=2022)
+    AccountFactory(title="Old", order=1, closed=2021)
+    AccountFactory(title="Foreign", order=1, journal=second_user.journal)
+
+    content = client_logged.get(
+        reverse("transactions:tab_accounts", args=[scope])
+    ).content.decode()
+
+    assert (
+        re.findall(
+            r'<button type="button" class="filter-line__item"( aria-current)?[^>]*'
+            r' hx-get="([^"]*)" hx-push-url="true" hx-target="#tab_content">'
+            r"([^<]*)</button>",
+            content,
+        )
+        == filter_line
+    )
+    assert '<table class="main striped hover">' in content
+    assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == [
+        ("text-left", "Sąskaita"),
+        ("edit-col", ""),
+    ]
+    assert (
+        re.findall(
+            r'<tr hx-get="[^"]*" hx-trigger="dblclick" hx-target="#mainModal">\s*'
+            r'<td class="text-left">([^<]*?)(?: <span class="main__year">([^<]*)'
+            r"</span>)?</td>",
+            content,
+        )
+        == rows
+    )
+    assert re.findall(
+        r'<div hx-get="([^"]*)" hx-target="#tab_content" hx-trigger="reload', content
+    ) == [tab_url]
+
+
+def test_a_scope_with_no_accounts_draws_the_notice_under_the_filter_line(
+    client_logged,
+):
+    AccountFactory(title="Old", closed=1998)
+
+    content = client_logged.get(
+        reverse("transactions:tab_accounts", args=["open"]),
+        headers={"HX-Request": "true"},
+    ).content.decode()
+
+    assert re.search(
+        r'<nav class="filter-line".*</nav>\s*<div class="alert">\s*'
+        r"1999 metais įrašų nėra.\s*</div>",
+        content,
+        re.DOTALL,
+    )
+
+
+def test_an_account_row_opens_its_form(client_logged):
+    account = AccountFactory(title="Bank")
+
+    content = client_logged.get(
+        reverse("transactions:tab_accounts", args=["open"]),
+        headers={"HX-Request": "true"},
+    ).content.decode()
+
+    rows = re.findall(
+        r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
+        r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"',
+        content,
+        re.DOTALL,
+    )
+    update = reverse("accounts:update", args=[account.pk])
+    assert rows == [(update, update)]
+
+
 @by_kind
 def test_a_move_row_opens_its_own_forms(client_logged, kind):
     move = kind.factory()
@@ -322,6 +438,18 @@ def test_quick_add_offers_its_pill(client_logged):
         ("button", "transactions", 'hx-get="/transactions/new/"', "Pridėti pervedimą"),
         ("button", "sales", 'hx-get="/savings_close/new/"', "Pridėti pardavimą"),
         ("button", "switches", 'hx-get="/savings_change/new/"', "Pridėti keitimą"),
+        ("button", "accounts", 'hx-get="/accounts/new/"', "Pridėti sąskaitą"),
+    ]
+
+
+def test_nav_offers_every_tab(client_logged):
+    content = client_logged.get(reverse("transactions:index")).content.decode()
+
+    assert nav_tabs(content) == [
+        ("transactions", "/transactions/"),
+        ("sales", "/transactions/sales/"),
+        ("switches", "/transactions/switches/"),
+        ("accounts", "/transactions/accounts/open/"),
     ]
 
 
@@ -842,11 +970,11 @@ def test_load_saving_type_must_logged(client):
 
 @pytest.mark.parametrize(
     "view_class",
-    [views.TabTransactions, views.TabSales, views.TabSwitches],
-    ids=["transactions", "sales", "switches"],
+    [views.TabTransactions, views.TabSales, views.TabSwitches, views.TabAccounts],
+    ids=["transactions", "sales", "switches", "accounts"],
 )
 def test_a_user_with_no_year_raises(rf, main_user, view_class):
     main_user.year = None
 
     with pytest.raises(ValueError, match="has no year"):
-        view_for(rf, main_user, view_class).get_queryset()
+        view_for(rf, main_user, view_class, scope="open").get_queryset()

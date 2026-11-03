@@ -13,6 +13,11 @@ urlpatterns = [
     ),
     path("transactions/sales/", views.TabSales.as_view(), name="tab_sales"),
     path("transactions/switches/", views.TabSwitches.as_view(), name="tab_switches"),
+    path(
+        "transactions/accounts/<str:scope>/",
+        views.TabAccounts.as_view(),
+        name="tab_accounts",
+    ),
     path("transactions/new/", views.New.as_view(), name="new"),
     path("transactions/update/<int:pk>/", views.Update.as_view(), name="update"),
     path("transactions/delete/<int:pk>/", views.Delete.as_view(), name="delete"),
