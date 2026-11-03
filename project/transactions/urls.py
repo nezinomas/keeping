@@ -5,8 +5,12 @@ from . import views
 app_name = "transactions"
 
 urlpatterns = [
-    path("transactions/", views.Index.as_view(), name="index"),
-    path("transactions/lists/", views.Lists.as_view(), name="list"),
+    path("transactions/", views.TabTransactions.as_view(), name="index"),
+    path(
+        "transactions/",
+        views.TabTransactions.as_view(),
+        name="tab_transactions",
+    ),
     path("transactions/new/", views.New.as_view(), name="new"),
     path("transactions/update/<int:pk>/", views.Update.as_view(), name="update"),
     path("transactions/delete/<int:pk>/", views.Delete.as_view(), name="delete"),
