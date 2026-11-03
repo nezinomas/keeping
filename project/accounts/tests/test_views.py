@@ -1,4 +1,5 @@
 import json
+import re
 
 import pytest
 from django.urls import reverse
@@ -9,6 +10,11 @@ from .factories import AccountFactory
 pytestmark = pytest.mark.django_db
 
 
+SAVED_ROW = (
+    r'<tr hx-get="[^"]*" hx-trigger="dblclick"[^>]*>\s*<td class="text-left">Title</td>'
+)
+
+
 def test_save_account(client_logged):
     data = {"title": "Title", "order": "111"}
 
@@ -16,7 +22,8 @@ def test_save_account(client_logged):
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert "Title" in actual
+    assert response.redirect_chain == [("/transactions/accounts/open/", 302)]
+    assert re.search(SAVED_ROW, actual)
 
 
 def test_accounts_save_invalid_data(client_logged):
@@ -37,7 +44,8 @@ def test_account_update(client_logged):
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert "Title" in actual
+    assert response.redirect_chain == [("/transactions/accounts/open/", 302)]
+    assert re.search(SAVED_ROW, actual)
 
 
 @pytest.mark.parametrize(
@@ -69,17 +77,21 @@ def test_account_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_account_list_view_has_all(client_logged):
+def test_an_account_closed_before_the_year_opens_its_form(client_logged, main_user):
+    main_user.year = 2022
+    main_user.save()
+    account = AccountFactory(title="Old", closed=2021)
+
+    url = reverse("accounts:update", kwargs={"pk": account.pk})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert re.search(r'<input type="text" name="title" value="Old"', actual)
+
+
+def test_accounts_have_no_page_of_their_own(client_logged):
     AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=1974)
 
-    url = reverse("accounts:list")
-    response = client_logged.get(url)
-
-    actual = response.content.decode("utf-8")
-
-    assert ">S1</a>" in actual
-    assert ">S2</a>" in actual
+    assert client_logged.get("/accounts/").status_code == 404
 
 
 def test_new_form_renders_the_title_field(client_logged):
