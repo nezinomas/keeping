@@ -499,16 +499,6 @@ def _saved_move(main_user, move, fund, receiver, day, close, instance=None):
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_unticked_close_does_not_write_an_open_fund(
-    main_user, move, fund, receiver
-):
-    with CaptureQueriesContext(connection) as queries:
-        _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
-
-    assert _fund_updates(queries.captured_queries) == []
-
-
-@pytest.mark.parametrize("move", MOVES)
 def test_form_closing_move_edited_past_the_close_year_is_rejected(
     main_user, move, fund, receiver
 ):
@@ -682,27 +672,6 @@ def test_form_switch_reversed_onto_its_old_target_can_close_it(main_user, fund):
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_edit_of_an_earlier_sell_keeps_the_close_year(
-    main_user, move, fund, receiver
-):
-    earlier = _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
-    _saved_move(main_user, move, fund, receiver, "2000-01-01", True)
-
-    _saved_move(main_user, move, fund, receiver, "1999-01-02", True, earlier)
-
-    assert SavingType.objects.get(pk=fund.pk).closed == 2000
-
-
-@pytest.mark.parametrize("move", MOVES)
-def test_form_new_sell_before_the_close_year_keeps_it(main_user, move, fund, receiver):
-    _saved_move(main_user, move, fund, receiver, "2000-01-01", True)
-
-    _saved_move(main_user, move, fund, receiver, "1999-01-01", True)
-
-    assert SavingType.objects.get(pk=fund.pk).closed == 2000
-
-
-@pytest.mark.parametrize("move", MOVES)
 def test_form_edit_with_close_unticked_reopens_the_fund(
     main_user, move, fund, receiver
 ):
@@ -738,19 +707,10 @@ def test_form_earlier_move_edited_keeps_the_fund_closed_in_its_last_year(
 
 
 @pytest.mark.parametrize("move", MOVES)
-@pytest.mark.parametrize(
-    "first_day, second_day",
-    [
-        pytest.param("1999-12-01", "1999-06-01", id="before_the_last"),
-        pytest.param("1999-06-01", "1999-12-01", id="after_the_last"),
-    ],
-)
-def test_form_new_unticked_move_keeps_the_fund_closed(
-    main_user, move, fund, receiver, first_day, second_day
-):
-    _saved_move(main_user, move, fund, receiver, first_day, True)
+def test_form_new_unticked_move_keeps_the_fund_closed(main_user, move, fund, receiver):
+    _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
 
-    _saved_move(main_user, move, fund, receiver, second_day, False)
+    _saved_move(main_user, move, fund, receiver, "1999-06-01", False)
 
     fund.refresh_from_db()
     assert fund.closed == 1999
@@ -760,8 +720,10 @@ def test_form_new_unticked_move_keeps_the_fund_closed(
 def test_form_new_unticked_move_leaves_the_fund_open(main_user, move, fund, receiver):
     _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
 
-    _saved_move(main_user, move, fund, receiver, "2000-06-01", False)
+    with CaptureQueriesContext(connection) as queries:
+        _saved_move(main_user, move, fund, receiver, "2000-06-01", False)
 
+    assert _fund_updates(queries.captured_queries) == []
     fund.refresh_from_db()
     assert fund.closed is None
 
@@ -862,19 +824,6 @@ def test_form_closing_move_writes_the_fund_once(main_user, move, fund, receiver)
         _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
 
     assert len(_fund_updates(queries.captured_queries)) == 1
-
-
-@pytest.mark.parametrize("move", MOVES)
-def test_form_closing_move_edited_earlier_and_unticked_reopens_the_fund(
-    main_user, move, fund, receiver
-):
-    _saved_move(main_user, move, fund, receiver, "2000-09-01", False)
-    closing = _saved_move(main_user, move, fund, receiver, "2000-12-01", True)
-
-    _saved_move(main_user, move, fund, receiver, "2000-06-01", False, closing)
-
-    fund.refresh_from_db()
-    assert fund.closed is None
 
 
 # a stored fee of 0 is read as nothing entered

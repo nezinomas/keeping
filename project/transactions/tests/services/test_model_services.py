@@ -113,22 +113,38 @@ def _move(source, target, price, date_=date(1998, 6, 1)):
     )
 
 
+def _closed_fund():
+    return _fund("B", closed=1998), frozenset()
+
+
+def _hidden_fund():
+    fund = _fund("B")
+    return fund, frozenset({fund.pk})
+
+
 @pytest.mark.django_db
-def test_switched_within_follows_a_chain_through_a_closed_fund(main_user):
-    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
-    _move(a, b, 50000)
+@pytest.mark.parametrize(
+    "off_table, paid_in",
+    [
+        pytest.param(_closed_fund, 50000, id="closed"),
+        pytest.param(_closed_fund, 30000, id="closed_with_its_gain"),
+        pytest.param(_hidden_fund, 50000, id="hidden"),
+    ],
+)
+def test_switched_within_follows_a_chain_through_a_fund_off_the_table(
+    main_user, off_table, paid_in
+):
+    a = _fund("A")
+    b, hidden = off_table()
+    c = _fund("C")
+    _move(a, b, paid_in)
     _move(b, c, 50000, date(1998, 7, 1))
 
-    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000
+    actual = SavingChangeModelService(main_user).switched_within(
+        1999, FUNDS, hidden=hidden
+    )
 
-
-@pytest.mark.django_db
-def test_switched_within_passes_on_a_closed_funds_gain(main_user):
-    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
-    _move(a, b, 30000)
-    _move(b, c, 50000, date(1998, 7, 1))
-
-    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000
+    assert actual == 50000
 
 
 @pytest.mark.django_db
@@ -167,13 +183,28 @@ def _buy(fund, price, date_=date(1998, 6, 1)):
 
 
 @pytest.mark.django_db
-def test_switched_within_takes_the_table_share_of_a_closed_fund(main_user):
-    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
+@pytest.mark.parametrize(
+    "off_table",
+    [
+        pytest.param(_closed_fund, id="closed"),
+        pytest.param(_hidden_fund, id="hidden"),
+    ],
+)
+def test_switched_within_takes_the_table_share_of_a_fund_off_the_table(
+    main_user, off_table
+):
+    a = _fund("A")
+    b, hidden = off_table()
+    c = _fund("C")
     _buy(b, 20000)
     _move(a, b, 40000)
     _move(b, c, 70000, date(1998, 7, 1))
 
-    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 46667
+    actual = SavingChangeModelService(main_user).switched_within(
+        1999, FUNDS, hidden=hidden
+    )
+
+    assert actual == 46667
 
 
 @pytest.mark.django_db
@@ -204,20 +235,6 @@ def test_switched_within_ignores_a_zero_price_purchase(main_user):
     _move(b, c, 50000, date(1998, 7, 1))
 
     assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000
-
-
-@pytest.mark.django_db
-def test_switched_within_takes_the_table_share_of_a_hidden_fund(main_user):
-    a, b, c = _fund("A"), _fund("B"), _fund("C")
-    _buy(b, 20000)
-    _move(a, b, 40000)
-    _move(b, c, 70000, date(1998, 7, 1))
-
-    actual = SavingChangeModelService(main_user).switched_within(
-        1999, FUNDS, hidden=frozenset({b.pk})
-    )
-
-    assert actual == 46667
 
 
 @pytest.mark.django_db
@@ -374,19 +391,6 @@ def test_switched_within_leaves_out_a_hidden_target(main_user):
     )
 
     assert actual == 0
-
-
-@pytest.mark.django_db
-def test_switched_within_follows_a_chain_through_a_hidden_fund(main_user):
-    a, b, c = _fund("A"), _fund("B"), _fund("C")
-    _move(a, b, 50000)
-    _move(b, c, 50000, date(1998, 7, 1))
-
-    actual = SavingChangeModelService(main_user).switched_within(
-        1999, FUNDS, hidden=frozenset({b.pk})
-    )
-
-    assert actual == 50000
 
 
 @pytest.mark.django_db
