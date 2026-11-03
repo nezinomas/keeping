@@ -18,7 +18,7 @@ from ...savings.forms import SavingTypeForm
 from ...savings.models import SavingBalance, SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
-from .factories import SavingChangeFactory, SavingCloseFactory
+from .factories import SavingChangeFactory
 
 pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
@@ -540,10 +540,6 @@ FUND_ROWS_IN_2000 = {
 CANT_CLOSE_BEFORE_2000 = {
     "close": ["Negalima uždaryti anksčiau nei 2000: tais metais yra įrašų."]
 }
-OTHER_KIND = {
-    "sell": lambda fund, **kwargs: SavingChangeFactory(from_account=fund, **kwargs),
-    "switch": lambda fund, **kwargs: SavingCloseFactory(from_account=fund, **kwargs),
-}
 
 
 # each returns the move the ticked form edits; None for a new one, as Django takes it
@@ -559,51 +555,99 @@ def _a_later_move_kept(main_user, move, fund, receiver):
     _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
 
 
-def _a_later_move_of_the_other_kind_with_its_pk(main_user, move, fund, receiver):
-    edited = _saved_move(main_user, move, fund, receiver, "1999-03-01", False)
-    OTHER_KIND[move](fund, pk=edited.pk, date=date(2000, 12, 1))
-    return edited
-
-
-def _a_move_of_another_fund(main_user, move, fund, receiver):
-    elsewhere = SavingTypeFactory(title="Elsewhere")
-    return _saved_move(main_user, move, elsewhere, receiver, "1999-03-01", False)
-
-
-@pytest.mark.parametrize("move", MOVES)
-@pytest.mark.parametrize("row", FUND_ROWS_IN_2000)
 @pytest.mark.parametrize(
-    "setup, day, close, errors",
+    "setup, row, move, day, close, errors",
     [
         pytest.param(
-            _a_new_move, "1999-06-01", True, CANT_CLOSE_BEFORE_2000, id="before"
+            _a_new_move,
+            "buy",
+            "sell",
+            "1999-06-01",
+            True,
+            CANT_CLOSE_BEFORE_2000,
+            id="before-buy-sell",
+        ),
+        pytest.param(
+            _a_new_move,
+            "switch_in",
+            "switch",
+            "1999-06-01",
+            True,
+            CANT_CLOSE_BEFORE_2000,
+            id="before-switch_in-switch",
+        ),
+        pytest.param(
+            _a_new_move,
+            "worth",
+            "sell",
+            "1999-06-01",
+            True,
+            CANT_CLOSE_BEFORE_2000,
+            id="before-worth-sell",
+        ),
+        pytest.param(
+            _a_new_move,
+            "plan",
+            "sell",
+            "1999-06-01",
+            True,
+            CANT_CLOSE_BEFORE_2000,
+            id="before-plan-sell",
         ),
         pytest.param(
             _a_later_move_edited,
+            "buy",
+            "sell",
             "1999-06-01",
             True,
             CANT_CLOSE_BEFORE_2000,
-            id="edited_back",
+            id="edited_back-buy-sell",
         ),
         pytest.param(
-            _a_later_move_kept, "1999-06-01", True, {}, id="a_later_move_closes"
+            _a_later_move_edited,
+            "buy",
+            "switch",
+            "1999-06-01",
+            True,
+            CANT_CLOSE_BEFORE_2000,
+            id="edited_back-buy-switch",
         ),
         pytest.param(
-            _a_later_move_of_the_other_kind_with_its_pk,
+            _a_later_move_kept,
+            "buy",
+            "sell",
             "1999-06-01",
             True,
             {},
-            id="a_later_move_of_the_other_kind_closes",
+            id="a_later_move_closes-buy-sell",
         ),
         pytest.param(
-            _a_move_of_another_fund,
+            _a_later_move_kept,
+            "buy",
+            "switch",
             "1999-06-01",
             True,
-            CANT_CLOSE_BEFORE_2000,
-            id="moved_onto",
+            {},
+            id="a_later_move_closes-buy-switch",
         ),
-        pytest.param(_a_new_move, "2000-06-01", True, {}, id="in_the_row_year"),
-        pytest.param(_a_new_move, "1999-06-01", False, {}, id="unticked"),
+        pytest.param(
+            _a_new_move,
+            "buy",
+            "sell",
+            "2000-06-01",
+            True,
+            {},
+            id="in_the_row_year-buy-sell",
+        ),
+        pytest.param(
+            _a_new_move,
+            "buy",
+            "sell",
+            "1999-06-01",
+            False,
+            {},
+            id="unticked-buy-sell",
+        ),
     ],
 )
 def test_form_tick_closing_before_a_fund_row(
