@@ -1,14 +1,13 @@
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..accounts import views as accounts_views
 from ..core.lib.convert_price import PriceToFloatViewMixin
-from ..core.lib.utils import int_or_zero, rendered_content
+from ..core.lib.utils import int_or_zero
+from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
     ListViewMixin,
-    TemplateViewMixin,
     UpdateViewMixin,
 )
 from ..savings.services.model_services import SavingTypeModelService
@@ -18,22 +17,20 @@ from .services.model_services import (
     SavingCloseModelService,
     TransactionModelService,
 )
+from .tabs import TABS
 
 
-class Index(TemplateViewMixin):
-    template_name = "transactions/index.html"
+class TabViewMixin(CoreTabViewMixin):
+    tabs = TABS
+    default_tab = TABS["transactions"]
+    app_title = _("Transactions")
+    page_template = "transactions/index.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "transaction": rendered_content(self.request, Lists),
-                "saving_close": rendered_content(self.request, SavingsCloseLists),
-                "saving_change": rendered_content(self.request, SavingsChangeLists),
-                "account": rendered_content(self.request, accounts_views.Lists),
-            }
-        )
-        return context
+
+class TabTransactions(TabViewMixin, ListViewMixin):
+    def get_queryset(self):
+        user = self.request.user
+        return TransactionModelService(user).year(user.selected_year())
 
 
 class LoadSavingType(ListViewMixin):
@@ -48,33 +45,24 @@ class LoadSavingType(ListViewMixin):
         return self.render_to_response({"object_list": items})
 
 
-class Lists(ListViewMixin):
-    template_name = "transactions/transaction_list.html"
-
-    def get_queryset(self):
-        user = self.request.user
-        return TransactionModelService(user).year(user.selected_year())
-
-
 class New(CreateViewMixin):
     form_class = forms.TransactionForm
-    hx_trigger_form = "afterTransaction"
-    success_url = reverse_lazy("transactions:list")
+    hx_trigger_django = "reload"
+    success_url = reverse_lazy("transactions:index")
     modal_form_title = _("Transaction")
 
 
 class Update(PriceToFloatViewMixin, UpdateViewMixin):
     service_class = TransactionModelService
     form_class = forms.TransactionForm
-    hx_trigger_django = "afterTransaction"
-    success_url = reverse_lazy("transactions:list")
+    hx_trigger_django = "reload"
+    success_url = reverse_lazy("transactions:index")
     modal_form_title = _("Transaction")
 
 
 class Delete(DeleteViewMixin):
     service_class = TransactionModelService
-    hx_trigger_django = "afterTransaction"
-    success_url = reverse_lazy("transactions:list")
+    success_url = reverse_lazy("transactions:index")
     modal_form_title = _("Delete transaction")
 
 

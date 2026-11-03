@@ -2520,6 +2520,9 @@ msgstr[3] "%(count)s mėnesių"
 msgid "Add income"
 msgstr "Pridėti pajamas"
 
+msgid "Add transaction"
+msgstr "Pridėti pervedimą"
+
 msgid "Share"
 msgstr "Dalis"
 

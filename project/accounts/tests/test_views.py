@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from django.urls import reverse
 
@@ -36,6 +38,25 @@ def test_account_update(client_logged):
     actual = response.content.decode("utf-8")
 
     assert "Title" in actual
+
+
+@pytest.mark.parametrize(
+    "url_of",
+    [
+        pytest.param(lambda account: reverse("accounts:new"), id="new"),
+        pytest.param(
+            lambda account: reverse("accounts:update", kwargs={"pk": account.pk}),
+            id="update",
+        ),
+    ],
+)
+def test_an_account_form_fires_reload(client_logged, url_of):
+    account = AccountFactory()
+    data = {"title": "Title", "order": "111"}
+
+    response = client_logged.post(url_of(account), data, headers={"HX-Request": "true"})
+
+    assert json.loads(response.headers["HX-Trigger"]) == {"reload": {}}
 
 
 def test_account_not_load_other_journal(client_logged, second_user):
