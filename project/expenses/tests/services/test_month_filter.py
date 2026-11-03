@@ -4,7 +4,8 @@ import pytest
 from hypothesis import example, given
 from hypothesis import strategies as st
 
-from ...services.month_filter import FilterItem, MonthFilter
+from ....core.lib.filter_line import FilterItem
+from ...services.month_filter import MonthFilter
 
 # no example below asks for July, so a fallback that reads the clock cannot pass
 TODAY = date(1999, 7, 15)
