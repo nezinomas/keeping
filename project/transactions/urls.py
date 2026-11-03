@@ -11,16 +11,13 @@ urlpatterns = [
         views.TabTransactions.as_view(),
         name="tab_transactions",
     ),
+    path("transactions/sales/", views.TabSales.as_view(), name="tab_sales"),
+    path("transactions/switches/", views.TabSwitches.as_view(), name="tab_switches"),
     path("transactions/new/", views.New.as_view(), name="new"),
     path("transactions/update/<int:pk>/", views.Update.as_view(), name="update"),
     path("transactions/delete/<int:pk>/", views.Delete.as_view(), name="delete"),
     path(
         "savings_close/new/", views.SavingsCloseNew.as_view(), name="savings_close_new"
-    ),
-    path(
-        "savings_close/lists/",
-        views.SavingsCloseLists.as_view(),
-        name="savings_close_list",
     ),
     path(
         "savings_close/update/<int:pk>/",
@@ -36,11 +33,6 @@ urlpatterns = [
         "savings_change/new/",
         views.SavingsChangeNew.as_view(),
         name="savings_change_new",
-    ),
-    path(
-        "savings_change/lists/",
-        views.SavingsChangeLists.as_view(),
-        name="savings_change_list",
     ),
     path(
         "savings_change/update/<int:pk>/",
