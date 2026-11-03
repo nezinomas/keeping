@@ -2523,6 +2523,24 @@ msgstr "Pridėti pajamas"
 msgid "Add transaction"
 msgstr "Pridėti pervedimą"
 
+msgid "Fund sales"
+msgstr "Fondų pardavimai"
+
+msgid "Fund switches"
+msgstr "Fondų keitimai"
+
+msgid "From fund"
+msgstr "Iš fondo"
+
+msgid "To fund"
+msgstr "Į fondą"
+
+msgid "Add fund sale"
+msgstr "Pridėti pardavimą"
+
+msgid "Add fund switch"
+msgstr "Pridėti keitimą"
+
 msgid "Share"
 msgstr "Dalis"
 

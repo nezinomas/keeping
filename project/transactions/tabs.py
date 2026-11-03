@@ -7,4 +7,8 @@ class TransactionTab(Tab):
     app = "transactions"
 
 
-TABS = Tabs(TransactionTab("transactions", _("Transactions")))
+TABS = Tabs(
+    TransactionTab("transactions", _("Transactions")),
+    TransactionTab("sales", _("Fund sales")),
+    TransactionTab("switches", _("Fund switches")),
+)
