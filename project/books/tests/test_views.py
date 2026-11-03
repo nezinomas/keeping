@@ -136,8 +136,8 @@ ROW = re.compile(
     r'<td class="text-left">([^<]*)</td>\s*'
     r'<td class="text-left">„([^<]*)”</td>\s*'
     r'<td class="text-left">([^<]*)</td>\s*'
-    r'<td class="text-center date-col">([^<]*)</td>\s*'
-    r'<td class="text-center date-col">([^<]*)</td>'
+    r'<td class="text-center main__date">([^<]*)</td>\s*'
+    r'<td class="text-center main__date">([^<]*)</td>'
 )
 THIS_YEAR = ("Author", "This Year", "Remark", "1999-01-01", "-")
 OLD_BOOK = ("Author", "Old Book", "Remark", "1974-01-01", "1974-01-31")

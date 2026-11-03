@@ -32,7 +32,7 @@
             {% for object in object_list %}
 
             <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
-                <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
+                <td class="text-left main__date {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
                 <td class="text-left">{{ object.expense_type__title }}</td>
                 <td class="text-left">{{ object.expense_name__title }}</td>
                 <td class="main__figure">{{ object.quantity }}</td>
