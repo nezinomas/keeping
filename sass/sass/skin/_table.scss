@@ -53,6 +53,10 @@
             border-bottom: 1px solid $hair-soft;
         }
 
+        .main__date {
+            white-space: nowrap;
+        }
+
         .main__figure {
             font-family: $figures;
             font-size: 0.86rem;

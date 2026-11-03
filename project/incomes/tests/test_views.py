@@ -74,7 +74,7 @@ def test_income_load_form(client_logged, url_of, trigger, expected_of):
         (
             "incomes:new",
             {"date": "1999-01-01", "price": "111"},
-            r'<td class="text-left">1999-01-01</td>\s*'
+            r'<td class="text-left main__date">1999-01-01</td>\s*'
             r'<td class="text-left">Income Type</td>\s*'
             r'<td class="text-left">Account1</td>\s*'
             r'<td class="text-left"></td>\s*<td class="main__figure">111,00</td>',
@@ -321,7 +321,7 @@ def test_type_load_form(client_logged, name, with_pk):
         ("xxx", r'<div class="alert">\s*Nieko nerasta\s*</div>'),
         (
             "1999 type",
-            r'<td class="text-left">1999-01-01</td>\s*'
+            r'<td class="text-left main__date">1999-01-01</td>\s*'
             r'<td class="text-left">Income Type</td>\s*'
             r'<td class="text-left">Account1</td>\s*'
             r'<td class="text-left">remark</td>',

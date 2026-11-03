@@ -19,8 +19,8 @@
         width: 40%;
     }
 
-    // otherwise the table breaks "2026-07-25" after the month and doubles every
-    // row's height. Only above 768px, where two unbreakable dates fit
+    // the dates are whole everywhere (the skin's .main__date); their headers only
+    // above 768px, where both fit
     @media only screen and (min-width: 768px) {
         .date-col {
             white-space: nowrap;

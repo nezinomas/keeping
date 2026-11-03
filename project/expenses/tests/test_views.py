@@ -466,7 +466,9 @@ def test_expenses_list_filters_by_month(
     with time_machine.travel(today):
         content = client_logged.get(url, query).content.decode()
 
-    listed = re.findall(r'<td class="text-left [\w-]+">(\d{4}-\d\d-\d\d)</td>', content)
+    listed = re.findall(
+        r'<td class="text-left main__date [\w-]+">(\d{4}-\d\d-\d\d)</td>', content
+    )
     assert sorted(listed) == [day.isoformat() for day in expected]
 
 
@@ -495,7 +497,7 @@ def test_a_duomenys_row_keeps_its_exception_mark_and_no_reload(client_logged):
     url = reverse("expenses:list", kwargs={"month": 1})
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert '<td class="text-left exception">1999-01-01</td>' in content
+    assert '<td class="text-left main__date exception">1999-01-01</td>' in content
     assert not re.search(r'hx-trigger="[^"]*reload from:body', content)
 
 
@@ -849,7 +851,7 @@ def test_expenses_list_price_converted(client_logged, price, expected):
     content = client_logged.get(url).content.decode("utf-8")
 
     assert re.findall(
-        r'<tr hx-get=[^>]*>\s*<td class="text-left [\w-]+">([^<]*)</td>\s*'
+        r'<tr hx-get=[^>]*>\s*<td class="text-left main__date [\w-]+">([^<]*)</td>\s*'
         r'<td class="text-left">([^<]*)</td>\s*<td class="text-left">([^<]*)</td>\s*'
         r'<td class="main__figure">([^<]*)</td>\s*<td class="main__figure">([^<]*)</td>',
         content,
@@ -1142,7 +1144,7 @@ def test_search_found(client_logged):
     response = client_logged.get(url, {"search": "type"})
     actual = response.content.decode("utf-8")
 
-    assert '<td class="text-left expense-ordinary">1999-01-01</td>' in actual
+    assert '<td class="text-left main__date expense-ordinary">1999-01-01</td>' in actual
     assert '<td class="text-left cell-padding remark">Remark</td>' in actual
 
 

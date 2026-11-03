@@ -699,6 +699,7 @@ def test_data(client_logged):
 
     actual = response.content.decode("utf-8")
 
+    assert '<td class="text-left main__date">1999-01-01</td>' in actual
     assert '<td class="text-left main__figure">66,0</td>' in actual
     assert f'<a role="button" hx-get="/counts/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/counts/delete/{p.pk}/"' in actual
