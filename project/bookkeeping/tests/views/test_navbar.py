@@ -29,6 +29,7 @@ def _nav(client, path: str) -> str:
         ("/expenses/", "expenses:index"),
         ("/incomes/", "incomes:index"),
         ("/transactions/", "transactions:index"),
+        ("/transactions/sales/", "transactions:index"),
         ("/savings/", "savings:index"),
         ("/debts/", "debts:index"),
         ("/books/", "books:index"),
@@ -59,6 +60,26 @@ def test_the_navbar_menus_carry_no_flag(client_logged):
     nav = _nav(client_logged, "/")
 
     assert set(re.findall(r'<div class="(dropdown(?: [^"]*)?)"', nav)) == {"dropdown"}
+
+
+def test_the_transactions_menu_names_its_tabs_in_order(client_logged):
+    nav = _nav(client_logged, "/")
+    menus = re.findall(
+        r'<a href="/transactions/">[^<]*</a>\s*<div class="dropdown">'
+        r'\s*<button class="dropdown__btn"></button>'
+        r'\s*<div class="dropdown__menu">(.*?)</div>',
+        nav,
+        re.S,
+    )
+
+    assert [re.findall(r'<a href="([^"]+)">([^<]+)</a>', menu) for menu in menus] == [
+        [
+            (reverse("transactions:tab_transactions"), "Pervedimai"),
+            (reverse("transactions:tab_sales"), "Fondų pardavimai"),
+            (reverse("transactions:tab_switches"), "Fondų keitimai"),
+            (reverse("transactions:tab_accounts", args=["open"]), "Sąskaitos"),
+        ]
+    ]
 
 
 def test_the_navbar_names_the_selected_year(client_logged, main_user):
