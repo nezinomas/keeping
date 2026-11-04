@@ -1,6 +1,5 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
@@ -102,9 +101,7 @@ class CloseFromAccountMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["close"].label = render_to_string(
-            "transactions/includes/close_label.html"
-        )
+        self.fields["close"].label = _("Close from account")
         if self.instance.pk:
             self.fields["close"].initial = FundCloseYear.is_closing_move(
                 self.instance.from_account_id, self.instance.date
