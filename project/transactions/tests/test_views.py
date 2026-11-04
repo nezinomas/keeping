@@ -101,39 +101,13 @@ def _tab(client, url):
     return client.get(url, headers={"HX-Request": "true"}).content.decode()
 
 
-def test_transactions_tab_lists_the_years_transactions_newest_first(
-    client_logged, second_user
-):
+def _transactions(second_user):
     TransactionFactory(date=date(1999, 1, 5), from_account=AccountFactory(title="A"))
     TransactionFactory(
         date=date(1999, 3, 9), price=100_000_000, from_account=AccountFactory(title="B")
     )
     TransactionFactory(date=date(1999, 3, 2), from_account=AccountFactory(title="C"))
     _foreign_move(KINDS["transaction"], second_user.journal)
-
-    content = _tab(client_logged, reverse("transactions:tab_transactions"))
-
-    assert '<table class="main striped hover sticky-table">' in content
-    assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == [
-        ("text-left", "Data"),
-        ("text-left main__name", "Iš sąskaitos"),
-        ("text-left main__name", "Į sąskaitą"),
-        ("price-col", "Suma"),
-        ("edit-col", ""),
-        ("delete-col", ""),
-    ]
-    rows = re.findall(
-        r'<tr [^>]*class="([^"]*)">\s*<td class="text-left main__date">([^<]*)</td>'
-        r'\s*<td class="text-left main__name">([^<]*)</td>'
-        r'\s*<td class="text-left main__name">([^<]*)</td>'
-        r'\s*<td class="main__figure">([^<]*)</td>',
-        content,
-    )
-    assert rows == [
-        ("", "1999-03-09", "B", "Account2", "1.000.000,00"),
-        ("", "1999-03-02", "C", "Account2", "2,00"),
-        ("table-group-divider", "1999-01-05", "A", "Account2", "2,00"),
-    ]
 
 
 def _fund_moves(second_user):
@@ -159,14 +133,48 @@ def _fund_moves(second_user):
 
 
 CLOSED = ' <span class="main__mark">Uždaryta</span>'
+MOVE_ROW = (
+    r'<tr [^>]*class="([^"]*)">\s*<td class="text-left main__date">([^<]*)</td>'
+    r'\s*<td class="text-left main__name">(.*?)</td>'
+    r'\s*<td class="text-left main__name">(.*?)</td>'
+    r'\s*<td class="main__figure">([^<]*)</td>'
+)
+FUND_MOVE_ROW = MOVE_ROW + r'\s*<td class="main__figure main__fold">([^<]*)</td>'
+FEES = [("price-col main__fold", "Mokesčiai")]
+
+
+def _head(from_header, to_header, fees=()):
+    return [
+        ("text-left", "Data"),
+        ("text-left main__name", from_header),
+        ("text-left main__name", to_header),
+        ("price-col", "Suma"),
+        *fees,
+        ("edit-col", ""),
+        ("delete-col", ""),
+    ]
 
 
 @pytest.mark.parametrize(
-    "url_name, to_header, rows",
+    "scene, url_name, head, row, rows",
     [
         pytest.param(
+            _transactions,
+            "transactions:tab_transactions",
+            _head("Iš sąskaitos", "Į sąskaitą"),
+            MOVE_ROW,
+            [
+                ("", "1999-03-09", "B", "Account2", "1.000.000,00"),
+                ("", "1999-03-02", "C", "Account2", "2,00"),
+                ("table-group-divider", "1999-01-05", "A", "Account2", "2,00"),
+            ],
+            id="transactions",
+        ),
+        pytest.param(
+            _fund_moves,
             "transactions:tab_sales",
-            "Į sąskaitą",
+            _head("Iš fondo", "Į sąskaitą", FEES),
+            FUND_MOVE_ROW,
             [
                 ("", "1999-06-01", f"Sold{CLOSED}", "Bank", "1.000.000,00", "1.000,00"),
                 ("table-group-divider", "1999-03-01", f"Tied{CLOSED}", "Bank")
@@ -177,8 +185,10 @@ CLOSED = ' <span class="main__mark">Uždaryta</span>'
             id="sales",
         ),
         pytest.param(
+            _fund_moves,
             "transactions:tab_switches",
-            "Į fondą",
+            _head("Iš fondo", "Į fondą", FEES),
+            FUND_MOVE_ROW,
             [
                 ("", "1999-04-01", "Sold", "Other", "0,10", "0,02"),
                 ("table-group-divider", "1999-03-01", f"Tied{CLOSED}", "Other")
@@ -190,34 +200,16 @@ CLOSED = ' <span class="main__mark">Uždaryta</span>'
         ),
     ],
 )
-def test_a_fund_tab_lists_the_years_moves_newest_first_marking_the_close(
-    client_logged, second_user, url_name, to_header, rows
+def test_a_move_tab_lists_the_years_moves_newest_first_marking_the_close(
+    client_logged, second_user, scene, url_name, head, row, rows
 ):
-    _fund_moves(second_user)
+    scene(second_user)
 
     content = _tab(client_logged, reverse(url_name))
 
     assert '<table class="main striped hover sticky-table">' in content
-    assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == [
-        ("text-left", "Data"),
-        ("text-left main__name", "Iš fondo"),
-        ("text-left main__name", to_header),
-        ("price-col", "Suma"),
-        ("price-col main__fold", "Mokesčiai"),
-        ("edit-col", ""),
-        ("delete-col", ""),
-    ]
-    assert (
-        re.findall(
-            r'<tr [^>]*class="([^"]*)">\s*<td class="text-left main__date">([^<]*)</td>'
-            r'\s*<td class="text-left main__name">(.*?)</td>'
-            r'\s*<td class="text-left main__name">(.*?)</td>'
-            r'\s*<td class="main__figure">([^<]*)</td>'
-            r'\s*<td class="main__figure main__fold">([^<]*)</td>',
-            content,
-        )
-        == rows
-    )
+    assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == head
+    assert re.findall(row, content) == rows
 
 
 TAB_ACCOUNTS = "/transactions/accounts/"
@@ -657,6 +649,7 @@ def test_delete_load_form(client_logged, kind):
     actual = response.content.decode("utf-8")
 
     assert re.search(rf'<form method="POST"[^>]*hx-post="{url}"', actual)
+    assert '<h5 class="modal-title">Trint pervedimą</h5>' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{kind.delete_text}</strong>?" in actual
 
 
@@ -847,40 +840,6 @@ def test_savings_change_not_show_other_journal_types(client_logged, second_user)
 
     to_account = re.search(r'<select name="to_account".*?</select>', actual, re.DOTALL)
     assert [title for _, title in OPTION.findall(to_account[0])] == ["Own"]
-
-
-def test_load_saving_type_lists_the_open_funds_except_the_source(
-    client_logged, second_user
-):
-    s1 = SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=1000)
-    s3 = SavingTypeFactory(title="S3")
-    SavingTypeFactory(title="S4", journal=second_user.journal)
-
-    url = reverse("transactions:load_saving_type")
-    response = client_logged.get(url, {"from_account": s1.pk})
-    actual = response.content.decode("utf-8")
-
-    assert OPTION.findall(actual) == [(str(s3.pk), "S3")]
-
-
-@pytest.mark.parametrize(
-    "data",
-    [
-        pytest.param({}, id="no-value"),
-        pytest.param({"from_account": ""}, id="empty"),
-        pytest.param({"from_account": "x"}, id="not-a-number"),
-        pytest.param({"from_account": "0"}, id="zero"),
-    ],
-)
-def test_load_saving_type_empty_parent_pk(client_logged, data):
-    SavingTypeFactory(title="S1")
-
-    url = reverse("transactions:load_saving_type")
-    response = client_logged.get(url, data)
-
-    assert response.status_code == 200
-    assert OPTION.findall(response.content.decode("utf-8")) == []
 
 
 def test_load_saving_type_must_logged(client):

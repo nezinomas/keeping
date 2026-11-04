@@ -5,12 +5,12 @@ from django.utils.translation import gettext_lazy as _
 
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceToFloatViewMixin
-from ..core.lib.utils import int_or_zero
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
     ListViewMixin,
+    LoadToAccountViewMixin,
     UpdateViewMixin,
 )
 from ..savings.services.model_services import SavingTypeModelService
@@ -39,33 +39,33 @@ def with_close_marks(moves) -> list[tuple]:
 
 
 class TabTransactions(TabViewMixin, ListViewMixin):
+    tab = TABS["transactions"]
+
     def get_queryset(self):
         user = self.request.user
         return TransactionModelService(user).year(user.selected_year())
 
 
-class TabSales(TabViewMixin, ListViewMixin):
+class TabFundMoves(TabViewMixin, ListViewMixin):
+    """A tab of the year's Fund sales or switches, each beside its Close mark."""
+
+    def get_queryset(self):
+        user = self.request.user
+        return self.service_class(user).year(user.selected_year())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return {**context, "moves": with_close_marks(context["object_list"])}
+
+
+class TabSales(TabFundMoves):
     tab = TABS["sales"]
-
-    def get_queryset(self):
-        user = self.request.user
-        return SavingCloseModelService(user).year(user.selected_year())
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return {**context, "moves": with_close_marks(context["object_list"])}
+    service_class = SavingCloseModelService
 
 
-class TabSwitches(TabViewMixin, ListViewMixin):
+class TabSwitches(TabFundMoves):
     tab = TABS["switches"]
-
-    def get_queryset(self):
-        user = self.request.user
-        return SavingChangeModelService(user).year(user.selected_year())
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return {**context, "moves": with_close_marks(context["object_list"])}
+    service_class = SavingChangeModelService
 
 
 class TabAccounts(TabViewMixin, ListViewMixin):
@@ -89,88 +89,69 @@ class TabAccounts(TabViewMixin, ListViewMixin):
         }
 
 
-class LoadSavingType(ListViewMixin):
-    template_name = "core/dropdown.html"
-
-    def get(self, request, *args, **kwargs):
-        pk = int_or_zero(request.GET.get("from_account"))
-        if not pk:
-            return self.render_to_response({"object_list": []})
-
-        items = SavingTypeModelService(request.user).items().exclude(pk=pk)
-        return self.render_to_response({"object_list": items})
+class LoadSavingType(LoadToAccountViewMixin):
+    service_class = SavingTypeModelService
 
 
-class New(CreateViewMixin):
+class TransactionsMixin:
     form_class = forms.TransactionForm
     hx_trigger_django = "reload"
     success_url = reverse_lazy("transactions:index")
     modal_form_title = _("Transaction")
 
 
-class Update(PriceToFloatViewMixin, UpdateViewMixin):
-    service_class = TransactionModelService
-    form_class = forms.TransactionForm
-    hx_trigger_django = "reload"
-    success_url = reverse_lazy("transactions:index")
-    modal_form_title = _("Transaction")
+class New(TransactionsMixin, CreateViewMixin):
+    pass
 
 
-class Delete(DeleteViewMixin):
+class Update(TransactionsMixin, PriceToFloatViewMixin, UpdateViewMixin):
     service_class = TransactionModelService
-    success_url = reverse_lazy("transactions:index")
+
+
+class Delete(TransactionsMixin, DeleteViewMixin):
+    service_class = TransactionModelService
     modal_form_title = _("Delete transaction")
 
 
-class SavingsCloseNew(CreateViewMixin):
+class SalesMixin:
     form_class = forms.SavingCloseForm
     hx_trigger_django = "reload"
+    success_url = reverse_lazy("transactions:tab_sales")
+    modal_form_title = _("Fund ⇒ Account")
+
+
+class SavingsCloseNew(SalesMixin, CreateViewMixin):
     url_name = "savings_close_new"
 
-    success_url = reverse_lazy("transactions:tab_sales")
-    modal_form_title = _("Fund ⇒ Account")
 
-
-class SavingsCloseUpdate(PriceToFloatViewMixin, UpdateViewMixin):
+class SavingsCloseUpdate(SalesMixin, PriceToFloatViewMixin, UpdateViewMixin):
     service_class = SavingCloseModelService
-    form_class = forms.SavingCloseForm
-    hx_trigger_django = "reload"
     url_name = "savings_close_update"
 
-    success_url = reverse_lazy("transactions:tab_sales")
-    modal_form_title = _("Fund ⇒ Account")
 
-
-class SavingsCloseDelete(DeleteViewMixin):
+class SavingsCloseDelete(SalesMixin, DeleteViewMixin):
     service_class = SavingCloseModelService
     url_name = "savings_close_delete"
-
-    success_url = reverse_lazy("transactions:tab_sales")
     modal_form_title = _("Delete transaction")
 
 
-class SavingsChangeNew(CreateViewMixin):
+class SwitchesMixin:
     form_class = forms.SavingChangeForm
     hx_trigger_django = "reload"
+    success_url = reverse_lazy("transactions:tab_switches")
+    modal_form_title = _("Fund ⇔ Fund")
+
+
+class SavingsChangeNew(SwitchesMixin, CreateViewMixin):
     url_name = "savings_change_new"
 
-    success_url = reverse_lazy("transactions:tab_switches")
-    modal_form_title = _("Fund ⇔ Fund")
 
-
-class SavingsChangeUpdate(PriceToFloatViewMixin, UpdateViewMixin):
+class SavingsChangeUpdate(SwitchesMixin, PriceToFloatViewMixin, UpdateViewMixin):
     service_class = SavingChangeModelService
-    form_class = forms.SavingChangeForm
-    hx_trigger_django = "reload"
     url_name = "savings_change_update"
 
-    success_url = reverse_lazy("transactions:tab_switches")
-    modal_form_title = _("Fund ⇔ Fund")
 
-
-class SavingsChangeDelete(DeleteViewMixin):
+class SavingsChangeDelete(SwitchesMixin, DeleteViewMixin):
     service_class = SavingChangeModelService
     url_name = "savings_change_delete"
-
-    success_url = reverse_lazy("transactions:tab_switches")
     modal_form_title = _("Delete transaction")

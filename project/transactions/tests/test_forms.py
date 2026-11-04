@@ -67,10 +67,13 @@ def test_form_date_widget(main_user, name):
     assert form["date"].widget_type == "datepicker"
 
 
+LEFT_AFTER_FEE = "Suma kuri lieka atskaičius mokesčius"
+
+
 @pytest.mark.parametrize(
-    ("name", "field", "label"),
+    ("name", "field", "label", "help_text"),
     [
-        (name, field, label)
+        (name, field, label, "")
         for name in KINDS
         for field, label in [
             ("date", "Data"),
@@ -78,12 +81,21 @@ def test_form_date_widget(main_user, name):
             ("to_account", "Į sąskaitą"),
         ]
     ]
-    + [(name, "close", "Uždaryti iš sąskaitos") for name in FUND_MOVES],
+    + [("transaction", "price", "Suma", "")]
+    + [
+        (name, field, label, help_text)
+        for name in FUND_MOVES
+        for field, label, help_text in [
+            ("price", "Suma", LEFT_AFTER_FEE),
+            ("fee", "Mokesčiai", ""),
+            ("close", "Uždaryti iš sąskaitos", ""),
+        ]
+    ],
 )
-def test_form_labels(main_user, name, field, label):
+def test_form_labels(main_user, name, field, label, help_text):
     form = KINDS[name].form(user=main_user, today=TODAY)
 
-    assert form[field].label == label
+    assert (form[field].label, form[field].help_text) == (label, help_text)
 
 
 @pytest.mark.parametrize(
