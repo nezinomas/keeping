@@ -49,7 +49,14 @@
           </c-slot>
         </c-nav-item>
         <c-nav-item section="incomes" url="{% url 'incomes:index' %}">{% translate 'Incomes' %}</c-nav-item>
-        <c-nav-item section="transactions" url="{% url 'transactions:index' %}">{% translate 'Transactions' %}</c-nav-item>
+        <c-nav-item section="transactions" url="{% url 'transactions:index' %}">{% translate 'Transactions' %}
+          <c-slot name="menu">
+            <a href="{% url 'transactions:tab_transactions' %}">{% translate 'Transactions' %}</a>
+            <a href="{% url 'transactions:tab_sales' %}">{% translate 'Fund sales' %}</a>
+            <a href="{% url 'transactions:tab_switches' %}">{% translate 'Fund switches' %}</a>
+            <a href="{% url 'transactions:tab_accounts' 'open' %}">{% translate 'Accounts' %}</a>
+          </c-slot>
+        </c-nav-item>
         <c-nav-item section="savings" url="{% url 'savings:index' %}">{% translate 'Savings' %}</c-nav-item>
         <c-nav-item section="debts" url="{% url 'debts:index' %}">{% translate 'Debts' %}</c-nav-item>
         <c-nav-item section="books" url="{% url 'books:index' %}">{% translate 'Books' %}
