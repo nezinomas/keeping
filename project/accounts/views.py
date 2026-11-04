@@ -7,11 +7,10 @@ from ..core.mixins.views import (
     ListViewMixin,
     UpdateViewMixin,
 )
-from ..transactions.services.account_scope import OPEN
 from . import forms, models
 from .services.model_services import AccountModelService
 
-SAVED_URL = reverse_lazy("transactions:tab_accounts", args=[OPEN])
+SAVED_URL = reverse_lazy("transactions:tab_accounts")
 
 
 class New(CreateViewMixin):

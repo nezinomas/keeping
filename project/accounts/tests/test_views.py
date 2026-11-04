@@ -22,7 +22,7 @@ def test_save_account(client_logged):
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert response.redirect_chain == [("/transactions/accounts/open/", 302)]
+    assert response.redirect_chain == [("/transactions/accounts/", 302)]
     assert re.search(SAVED_ROW, actual)
 
 
@@ -44,7 +44,7 @@ def test_account_update(client_logged):
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert response.redirect_chain == [("/transactions/accounts/open/", 302)]
+    assert response.redirect_chain == [("/transactions/accounts/", 302)]
     assert re.search(SAVED_ROW, actual)
 
 

@@ -15,7 +15,6 @@ from ..core.mixins.views import (
 )
 from ..savings.services.model_services import SavingTypeModelService
 from . import forms
-from .services.account_scope import AccountScope
 from .services.close_year import FundCloseYear
 from .services.model_services import (
     SavingChangeModelService,
@@ -73,19 +72,20 @@ class TabAccounts(TabViewMixin, ListViewMixin):
     tab = TABS["accounts"]
 
     @cached_property
-    def scope(self) -> AccountScope:
-        return AccountScope.parse(self.kwargs["scope"])
+    def service(self) -> AccountModelService:
+        return AccountModelService(self.request.user)
+
+    @cached_property
+    def year(self) -> int:
+        return self.request.user.selected_year()
 
     def get_queryset(self):
-        user = self.request.user
-        return self.scope.rows(AccountModelService(user), user.selected_year())
+        return self.service.items_in(self.year)
 
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            "items": self.scope.items(),
-            # the scope shown, so a save reloads it rather than the tab's open url
-            "tab_url": self.scope.url(),
+            "closed_accounts": self.service.closed_before(self.year),
         }
 
 
