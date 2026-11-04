@@ -57,6 +57,27 @@
             white-space: nowrap;
         }
 
+        // a table too wide for a phone folds a column rather than scrolling: the
+        // pinned header (sticky-table-headers.js) follows the window, not a scroller
+        @media only screen and (max-width: 767px) {
+            .main__fold {
+                display: none;
+            }
+
+            .main__name {
+                padding-left: 0.5 * $gap;
+                padding-right: 0.5 * $gap;
+            }
+
+            td.main__name {
+                overflow-wrap: anywhere;
+
+                .main__mark {
+                    overflow-wrap: normal;
+                }
+            }
+        }
+
         .main__figure {
             font-family: $figures;
             font-size: 0.86rem;

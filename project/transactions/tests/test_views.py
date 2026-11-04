@@ -268,19 +268,20 @@ def test_a_fund_tab_lists_the_years_moves_newest_first_marking_the_close(
     assert '<table class="main striped hover sticky-table">' in content
     assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == [
         ("text-left", "Data"),
-        ("text-left", "Iš fondo"),
-        ("text-left", to_header),
+        ("text-left main__name", "Iš fondo"),
+        ("text-left main__name", to_header),
         ("price-col", "Suma"),
-        ("price-col", "Mokesčiai"),
+        ("price-col main__fold", "Mokesčiai"),
         ("edit-col", ""),
         ("delete-col", ""),
     ]
     assert (
         re.findall(
             r'<tr [^>]*class="([^"]*)">\s*<td class="text-left main__date">([^<]*)</td>'
-            r'\s*<td class="text-left">(.*?)</td>\s*<td class="text-left">(.*?)</td>'
+            r'\s*<td class="text-left main__name">(.*?)</td>'
+            r'\s*<td class="text-left main__name">(.*?)</td>'
             r'\s*<td class="main__figure">([^<]*)</td>'
-            r'\s*<td class="main__figure">([^<]*)</td>',
+            r'\s*<td class="main__figure main__fold">([^<]*)</td>',
             content,
         )
         == rows
@@ -783,8 +784,8 @@ def test_update_lands_on_its_list(client_logged, kind):
 
     row = (
         r'<td class="text-left[^"]*">1999-12-31</td>\s*'
-        rf'<td class="text-left">{kind.from_title}</td>\s*'
-        rf'<td class="text-left">{kind.to_title}</td>'
+        rf'<td class="text-left[^"]*">{kind.from_title}</td>\s*'
+        rf'<td class="text-left[^"]*">{kind.to_title}</td>'
     )
     assert re.search(row, page)
 
