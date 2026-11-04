@@ -871,6 +871,10 @@ msgstr "Pasirinktos vienodos sąskaitos."
 msgid "Close"
 msgstr "Uždaryti"
 
+#: .\project\transactions\forms.py:104
+msgid "Close from account"
+msgstr "Uždaryti iš sąskaitos"
+
 #: .\project\core\templates\core\generic_delete_form.html:11
 msgid "Are you sure you want to delete"
 msgstr "Ar tikrai norite ištrinti"

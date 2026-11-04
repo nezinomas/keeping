@@ -79,10 +79,18 @@ def test_form_date_widget(main_user, name):
     assert form["date"].widget_type == "datepicker"
 
 
-@pytest.mark.parametrize("name", KINDS)
 @pytest.mark.parametrize(
-    ("field", "label"),
-    [("date", "Data"), ("from_account", "Iš sąskaitos"), ("to_account", "Į sąskaitą")],
+    ("name", "field", "label"),
+    [
+        (name, field, label)
+        for name in KINDS
+        for field, label in [
+            ("date", "Data"),
+            ("from_account", "Iš sąskaitos"),
+            ("to_account", "Į sąskaitą"),
+        ]
+    ]
+    + [(name, "close", "Uždaryti iš sąskaitos") for name in FEE_KINDS],
 )
 def test_form_labels(main_user, name, field, label):
     form = KINDS[name].form(user=main_user, today=TODAY)
@@ -155,13 +163,6 @@ def test_form_edit_offers_every_parent_but_the_stored_from_account(main_user, na
 
     assert ">To</option>" in str(form["to_account"])
     assert ">From</option>" not in str(form["to_account"])
-
-
-@pytest.mark.parametrize("name", FEE_KINDS)
-def test_form_close_label_marks_the_from_account(main_user, name):
-    form = KINDS[name].form(user=main_user, today=TODAY)
-
-    assert "Uždaryti <b>Iš sąskaitos</b>" in form["close"].label_tag()
 
 
 @pytest.mark.parametrize("posted, cents", [("0.01", 1), ("12,1", 1210)])
