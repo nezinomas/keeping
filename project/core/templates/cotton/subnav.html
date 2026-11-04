@@ -10,6 +10,7 @@
                  next.click();
              }
          }"
+         x-init="const open = $el.querySelector('[aria-selected=true]'); $el.scrollLeft = open.offsetLeft - $el.offsetLeft - ($el.clientWidth - open.offsetWidth) / 2"
          @keydown.arrow-right.prevent="move(1)"
          @keydown.arrow-left.prevent="move(-1)">
         {% for nav_tab, url in tabs %}
