@@ -40,6 +40,10 @@ def from_account_loads(form, url):
     attrs["hx-trigger"] = "change"
 
 
+def set_amount_label(form):
+    form.fields["price"].label = _("Amount")
+
+
 class MoveFieldsMixin(UserTodayMixin):
     """The date, from_account and to_account every move form shares."""
 
@@ -92,7 +96,7 @@ class TransactionForm(
         from_account_loads(self, reverse("accounts:load"))
 
     def _translate_fields(self):
-        self.fields["price"].label = _("Amount")
+        set_amount_label(self)
 
 
 class CloseFromAccountMixin:
@@ -146,7 +150,7 @@ class CloseFromAccountMixin:
         return REOPEN
 
 
-class SavingCloseForm(
+class FundMoveForm(
     MoveFieldsMixin,
     ClosedYearMixin,
     NeverEmptyFormMixin,
@@ -155,82 +159,55 @@ class SavingCloseForm(
     YearBetweenMixin,
     forms.ModelForm,
 ):
+    """A Fund sale's or switch's form: the Fund left, the amount, fee and close box."""
+
+    price_fields = ("price", "fee")
+    _never_empty = ("fee",)
+
+    price = CommaFloatField(min_value=0.01)
+    fee = CommaFloatField(min_value=0.01, required=False)
+    close = forms.BooleanField(required=False)
+
+    class Meta:
+        fields = ["date", "from_account", "to_account", "price", "fee", "close"]
+
+    field_order = Meta.fields
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["from_account"].queryset = SavingTypeModelService(self.user).items()
+        set_amount_label(self)
+        self.fields["price"].help_text = _("Amount left after fee")
+        self.fields["fee"].label = _("Fees")
+
+
+class SavingCloseForm(FundMoveForm):
     closed_fields = {
         "from_account": (FUND_CLOSED, "date"),
         "to_account": (ACCOUNT_CLOSED, "date"),
     }
-    price_fields = ("price", "fee")
-    _never_empty = ("fee",)
 
-    price = CommaFloatField(min_value=0.01)
-    fee = CommaFloatField(min_value=0.01, required=False)
-    close = forms.BooleanField(required=False)
-
-    class Meta:
+    class Meta(FundMoveForm.Meta):
         model = SavingClose
-        fields = ["date", "from_account", "to_account", "price", "fee", "close"]
-
-    field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._overwrite_default_queries()
-        self._translate_fields()
-
-    def _overwrite_default_queries(self):
-        self.fields["from_account"].queryset = SavingTypeModelService(self.user).items()
         self.fields["to_account"].queryset = AccountModelService(self.user).items()
 
-    def _translate_fields(self):
-        self.fields["price"].label = _("Amount")
-        self.fields["price"].help_text = _("Amount left after fee")
-        self.fields["fee"].label = _("Fees")
 
-
-class SavingChangeForm(
-    MoveFieldsMixin,
-    ClosedYearMixin,
-    NeverEmptyFormMixin,
-    CloseFromAccountMixin,
-    PriceToCentsFormMixin,
-    YearBetweenMixin,
-    forms.ModelForm,
-):
+class SavingChangeForm(FundMoveForm):
     closed_fields = {
         "from_account": (FUND_CLOSED, "date"),
         "to_account": (FUND_CLOSED, "to_account"),
     }
-    price_fields = ("price", "fee")
-    _never_empty = ("fee",)
 
-    price = CommaFloatField(min_value=0.01)
-    fee = CommaFloatField(min_value=0.01, required=False)
-    close = forms.BooleanField(required=False)
-
-    class Meta:
+    class Meta(FundMoveForm.Meta):
         model = SavingChange
-        fields = ["date", "from_account", "to_account", "price", "fee", "close"]
-
-    field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._overwrite_default_queries()
-        self._set_htmx_attributes()
-        self._translate_fields()
-
-    def _overwrite_default_queries(self):
-        saving_model = SavingTypeModelService(self.user)
-
-        self.fields["from_account"].queryset = saving_model.items()
-        set_to_account_choices(self, saving_model)
-
-    def _set_htmx_attributes(self):
+        set_to_account_choices(self, SavingTypeModelService(self.user))
         from_account_loads(self, reverse("transactions:load_saving_type"))
-
-    def _translate_fields(self):
-        self.fields["price"].label = _("Amount")
-        self.fields["price"].help_text = _("Amount left after fee")
-        self.fields["fee"].label = _("Fees")

@@ -4,8 +4,8 @@
 
 {% if moves %}
 
-<table class="main striped hover sticky-table">
-    <thead>
+<c-paper-table>
+    <c-slot name="head">
         <tr>
             <th class="text-left">{% translate 'Date' %}</th>
             <th class="text-left main__name">{% translate 'From fund' %}</th>
@@ -15,23 +15,21 @@
             <th class="edit-col"></th>
             <th class="delete-col"></th>
         </tr>
-    </thead>
-    <tbody>
-        {% for move, closes_fund in moves %}
-        {% url update_url_name move.id as url_update %}
-        {% url delete_url_name move.id as url_delete %}
-        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged move.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
-            <td class="text-left main__date">{{ move.date|date:"Y-m-d" }}</td>
-            <td class="text-left main__name">{{ move.from_account }}{% if closes_fund %} <span class="main__mark">{% translate 'Closed' %}</span>{% endif %}</td>
-            <td class="text-left main__name">{{ move.to_account }}</td>
-            <td class="main__figure">{{ move.price|price|cellformat }}</td>
-            <td class="main__figure main__fold">{{ move.fee|price|cellformat }}</td>
-            <c-td-edit :url="url_update" />
-            <c-td-delete :url="url_delete" />
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    </c-slot>
+    {% for move, closes_fund in moves %}
+    {% url update_url_name move.id as url_update %}
+    {% url delete_url_name move.id as url_delete %}
+    <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged move.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+        <td class="text-left main__date">{{ move.date|date:"Y-m-d" }}</td>
+        <td class="text-left main__name">{{ move.from_account }}{% if closes_fund %} <span class="main__mark">{% translate 'Closed' %}</span>{% endif %}</td>
+        <td class="text-left main__name">{{ move.to_account }}</td>
+        <td class="main__figure">{{ move.price|price|cellformat }}</td>
+        <td class="main__figure main__fold">{{ move.fee|price|cellformat }}</td>
+        <c-td-edit :url="url_update" />
+        <c-td-delete :url="url_delete" />
+    </tr>
+    {% endfor %}
+</c-paper-table>
 
 {% else %}
 

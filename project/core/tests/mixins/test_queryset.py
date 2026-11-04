@@ -8,6 +8,7 @@ from vanilla import CreateView
 
 from ...mixins.formset import FormsetMixin
 from ...mixins.queryset import GetQuerysetMixin
+from ...mixins.views import LoadToAccountViewMixin
 
 
 class DummyService:
@@ -96,9 +97,13 @@ def _get_queryset_reads(view):
 SERVICE_CLASS_READERS = {
     "GetQuerysetMixin.get_queryset": _get_queryset_reads,
     "FormsetMixin": lambda view: issubclass(view, FormsetMixin),
+    "LoadToAccountViewMixin.get": lambda view: issubclass(view, LoadToAccountViewMixin),
     # by path: core's tests import no app
     "PlanQuerySetMixin": lambda view: issubclass(
         view, import_string("project.plans.mixins.views.PlanQuerySetMixin")
+    ),
+    "TabFundMoves": lambda view: issubclass(
+        view, import_string("project.transactions.views.TabFundMoves")
     ),
 }
 
