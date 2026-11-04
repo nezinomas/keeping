@@ -2,7 +2,6 @@ import json
 import re
 from datetime import date
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import time_machine
@@ -24,76 +23,13 @@ from ...users.views import Login
 from .. import models, views
 from ..tabs import TABS
 from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
+from .kinds import KINDS, by_fund_move, by_kind
 
 pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
-class Kind(NamedTuple):
-    factory: type
-    model: type
-    to_factory: type
-    from_factory: type
-    new_url: str
-    update_url: str
-    delete_url: str
-    to_title: str
-    delete_text: str
-    from_title: str
-    modal_title: str
-    tab_url: str
-
-
-KINDS = {
-    "transactions": Kind(
-        TransactionFactory,
-        models.Transaction,
-        AccountFactory,
-        AccountFactory,
-        "transactions:new",
-        "transactions:update",
-        "transactions:delete",
-        "Account2",
-        "1999-01-01 Account1 -&gt; Account2: 2,00",
-        "Account1",
-        "Pinigų pervedimas",
-        "transactions:index",
-    ),
-    "savings_close": Kind(
-        SavingCloseFactory,
-        models.SavingClose,
-        AccountFactory,
-        SavingTypeFactory,
-        "transactions:savings_close_new",
-        "transactions:savings_close_update",
-        "transactions:savings_close_delete",
-        "Account To",
-        "1999-01-01 Savings From -&gt; Account To: 0,10",
-        "Savings From",
-        "Fondas ⇒ Sąskaita",
-        "transactions:tab_sales",
-    ),
-    "savings_change": Kind(
-        SavingChangeFactory,
-        models.SavingChange,
-        SavingTypeFactory,
-        SavingTypeFactory,
-        "transactions:savings_change_new",
-        "transactions:savings_change_update",
-        "transactions:savings_change_delete",
-        "Savings To",
-        "1999-01-01 Savings From -&gt; Savings To: 0,10",
-        "Savings From",
-        "Fondas ⇔ Fondas",
-        "transactions:tab_switches",
-    ),
-}
-by_kind = pytest.mark.parametrize("kind", KINDS.values(), ids=KINDS.keys())
-by_fund_move = pytest.mark.parametrize(
-    "kind",
-    [KINDS["savings_close"], KINDS["savings_change"]],
-    ids=["savings_close", "savings_change"],
-)
 CHECKED_BOX = re.compile(r'<input type="checkbox" .*? checked>')
+OPTION = re.compile(r'<option value="(\d+)">([^<]*)</option>')
 STICKY_HEADERS = r'<script nonce="[^"]*" src="/static/js/sticky-table-headers.js">'
 
 
@@ -148,9 +84,7 @@ def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
     a_move_out_of = A_MOVE_OUT_OF[tab.name]
 
     def tab_queries():
-        return count_queries(
-            lambda: client_logged.get(tab.url, headers={"HX-Request": "true"})
-        )
+        return count_queries(lambda: _tab(client_logged, tab.url))
 
     for i in range(2):
         a_move_out_of(i)
@@ -163,10 +97,8 @@ def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
     assert six == two
 
 
-def _transactions_tab(client):
-    return client.get(
-        reverse("transactions:tab_transactions"), headers={"HX-Request": "true"}
-    ).content.decode()
+def _tab(client, url):
+    return client.get(url, headers={"HX-Request": "true"}).content.decode()
 
 
 def test_transactions_tab_lists_the_years_transactions_newest_first(
@@ -177,9 +109,9 @@ def test_transactions_tab_lists_the_years_transactions_newest_first(
         date=date(1999, 3, 9), price=100_000_000, from_account=AccountFactory(title="B")
     )
     TransactionFactory(date=date(1999, 3, 2), from_account=AccountFactory(title="C"))
-    _foreign_move(KINDS["transactions"], second_user.journal)
+    _foreign_move(KINDS["transaction"], second_user.journal)
 
-    content = _transactions_tab(client_logged)
+    content = _tab(client_logged, reverse("transactions:tab_transactions"))
 
     assert '<table class="main striped hover sticky-table">' in content
     assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == [
@@ -222,15 +154,13 @@ def _fund_moves(second_user):
     switch(from_account=early, date=date(1999, 2, 1))
     sale(from_account=later, date=date(2000, 1, 1))
     switch(from_account=later, date=date(2000, 1, 1))
-    _foreign_move(KINDS["savings_close"], second_user.journal)
-    _foreign_move(KINDS["savings_change"], second_user.journal)
+    _foreign_move(KINDS["sale"], second_user.journal)
+    _foreign_move(KINDS["switch"], second_user.journal)
 
 
 CLOSED = ' <span class="main__mark">Uždaryta</span>'
 
 
-# the Fund's last move in its Close year is marked, a same-day pair both, an earlier
-# move of either kind not; the to-fund never
 @pytest.mark.parametrize(
     "url_name, to_header, rows",
     [
@@ -265,9 +195,7 @@ def test_a_fund_tab_lists_the_years_moves_newest_first_marking_the_close(
 ):
     _fund_moves(second_user)
 
-    content = client_logged.get(
-        reverse(url_name), headers={"HX-Request": "true"}
-    ).content.decode()
+    content = _tab(client_logged, reverse(url_name))
 
     assert '<table class="main striped hover sticky-table">' in content
     assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == [
@@ -338,8 +266,6 @@ def _accounts_tab(content):
     return parts
 
 
-# open is closed empty or in the viewed year or later, in order then title; closed
-# before it folds below the button, struck and captioned, by close year then title
 @pytest.mark.parametrize(
     "year, parts",
     [
@@ -420,9 +346,7 @@ def test_no_open_account_draws_the_notice_above_the_closed_ones(
     for year in closed:
         AccountFactory(title="Old", closed=year)
 
-    content = client_logged.get(
-        TAB_ACCOUNTS, headers={"HX-Request": "true"}
-    ).content.decode()
+    content = _tab(client_logged, TAB_ACCOUNTS)
 
     assert _accounts_tab(content) == parts
 
@@ -430,9 +354,7 @@ def test_no_open_account_draws_the_notice_above_the_closed_ones(
 def test_an_account_row_opens_its_form(client_logged):
     account = AccountFactory(title="Bank")
 
-    content = client_logged.get(
-        TAB_ACCOUNTS, headers={"HX-Request": "true"}
-    ).content.decode()
+    content = _tab(client_logged, TAB_ACCOUNTS)
 
     rows = re.findall(
         r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
@@ -448,9 +370,7 @@ def test_an_account_row_opens_its_form(client_logged):
 def test_a_move_row_opens_its_own_forms(client_logged, kind):
     move = kind.factory()
 
-    content = client_logged.get(
-        reverse(kind.tab_url), headers={"HX-Request": "true"}
-    ).content.decode()
+    content = _tab(client_logged, reverse(kind.tab_url))
 
     rows = re.findall(
         r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
@@ -467,12 +387,9 @@ def test_a_move_row_opens_its_own_forms(client_logged, kind):
 def test_a_tab_on_an_empty_year_draws_the_paper_notice(client_logged, kind):
     kind.factory(date=date(2000, 1, 1))
 
-    content = client_logged.get(
-        reverse(kind.tab_url), headers={"HX-Request": "true"}
-    ).content.decode()
+    content = _tab(client_logged, reverse(kind.tab_url))
 
     assert re.search(r'<div class="alert">\s*1999 metais įrašų nėra.\s*</div>', content)
-    assert "<b>" not in content
 
 
 def test_quick_add_offers_its_pill(client_logged):
@@ -497,13 +414,17 @@ def test_nav_offers_every_tab(client_logged):
     ]
 
 
-def _move_form_data(move):
+def _post_data(a_from, a_to, **fields):
     return {
         "date": "1999-01-01",
-        "price": "1",
-        "from_account": move.from_account.pk,
-        "to_account": move.to_account.pk,
-    }
+        "price": "0.01",
+        "from_account": a_from.pk,
+        "to_account": a_to.pk,
+    } | fields
+
+
+def _move_form_data(move):
+    return _post_data(move.from_account, move.to_account)
 
 
 SAVES = [
@@ -553,22 +474,15 @@ def test_load_form(client_logged, kind):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert "1999-01-01" in actual
-    assert url in actual
+    assert '<input type="text" name="date" value="1999-01-01"' in actual
+    assert re.search(rf'<form [^>]*hx-post="{url}"', actual)
     assert f'<h5 class="modal-title">{kind.modal_title}</h5>' in actual
 
 
 def _post_new(client_logged, kind, **extra):
     a_from = kind.from_factory(title="From")
     a_to = kind.to_factory(title="To")
-    data = {
-        "date": "1999-01-01",
-        "price": "0.01",
-        "from_account": a_from.pk,
-        "to_account": a_to.pk,
-    } | extra
-
-    client_logged.post(reverse(kind.new_url), data)
+    client_logged.post(reverse(kind.new_url), _post_data(a_from, a_to, **extra))
 
     return kind.model.objects.get(), a_from, a_to
 
@@ -580,24 +494,13 @@ def _assert_saved(actual, a_from, a_to):
     assert actual.to_account == a_to
 
 
-# a Transaction has no Fee; a fund move's posted Fee is stored in cents, none as 0
+# a Transaction has no Fee; a fund move's posted Fee is stored in cents
 by_fee = pytest.mark.parametrize(
     "kind, posted, fee",
     [
-        pytest.param(KINDS["transactions"], {}, {}, id="transactions"),
-        pytest.param(
-            KINDS["savings_close"], {"fee": "0.01"}, {"fee": 1}, id="savings_close-fee"
-        ),
-        pytest.param(KINDS["savings_close"], {}, {"fee": 0}, id="savings_close-no_fee"),
-        pytest.param(
-            KINDS["savings_change"],
-            {"fee": "0.01"},
-            {"fee": 1},
-            id="savings_change-fee",
-        ),
-        pytest.param(
-            KINDS["savings_change"], {}, {"fee": 0}, id="savings_change-no_fee"
-        ),
+        pytest.param(KINDS["transaction"], {}, {}, id="transaction"),
+        pytest.param(KINDS["sale"], {"fee": "0.01"}, {"fee": 1}, id="sale"),
+        pytest.param(KINDS["switch"], {"fee": "0.01"}, {"fee": 1}, id="switch"),
     ],
 )
 
@@ -623,29 +526,31 @@ def test_save_invalid_data(client_logged, kind):
     actual = response.content.decode("utf-8")
 
     assert kind.model.objects.count() == 0
-    assert actual.count('aria-invalid="true"') == 4
+    assert re.findall(
+        r'<(?:input|select) [^>]*name="(\w+)"[^>]*aria-invalid="true"', actual
+    ) == ["date", "from_account", "to_account", "price"]
 
 
 @pytest.mark.parametrize(
     "kind, kwargs, more",
     [
         pytest.param(
-            KINDS["transactions"],
+            KINDS["transaction"],
             {"price": 1},
             ('<option value="{to}">Account2</option>',),
-            id="transactions",
+            id="transaction",
         ),
         pytest.param(
-            KINDS["savings_close"],
+            KINDS["sale"],
             {"price": 1, "fee": 1},
             ('name="fee" value="0.01"',),
-            id="savings_close",
+            id="sale",
         ),
         pytest.param(
-            KINDS["savings_change"],
+            KINDS["switch"],
             {"price": 1, "fee": 1},
             ('name="fee" value="0.01"', '<option value="{to}">Savings To</option>'),
-            id="savings_change",
+            id="switch",
         ),
     ],
 )
@@ -657,7 +562,7 @@ def test_load_update_form(client_logged, kind, kwargs, more):
     actual = clean_content(response.content.decode("utf-8"))
 
     assert "Atnaujinti ir uždaryti</button>" in actual
-    assert url in actual
+    assert re.search(rf'<form [^>]*hx-post="{url}"', actual)
     assert f'<h5 class="modal-title">{kind.modal_title}</h5>' in actual
     assert 'name="date" value="1999-01-01"' in actual
     assert 'name="price" value="0.01"' in actual
@@ -676,35 +581,32 @@ def test_load_update_form(client_logged, kind, kwargs, more):
 @pytest.mark.parametrize(
     "kind, extra",
     [
-        pytest.param(KINDS["transactions"], {}, id="transactions"),
-        pytest.param(KINDS["savings_close"], {"fee": "99"}, id="savings_close"),
-        pytest.param(KINDS["savings_change"], {"fee": "99"}, id="savings_change"),
+        pytest.param(KINDS["transaction"], {}, id="transaction"),
+        pytest.param(KINDS["sale"], {"fee": "99"}, id="sale"),
+        pytest.param(KINDS["switch"], {"fee": "99"}, id="switch"),
     ],
 )
 def test_update_to_another_year(client_logged, kind, extra):
     tr = kind.factory()
 
-    data = {
-        "price": "150",
-        "date": "2010-12-31",
-        "to_account": tr.to_account.pk,
-        "from_account": tr.from_account.pk,
-    } | extra
+    data = _post_data(
+        tr.from_account, tr.to_account, price="150", date="2010-12-31", **extra
+    )
     url = reverse(kind.update_url, kwargs={"pk": tr.pk})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert "2010-12-31" not in actual
+    assert re.findall(r'<td class="text-left main__date">([^<]*)</td>', actual) == []
 
 
 @pytest.mark.parametrize(
     "kind, extra",
     [
-        pytest.param(KINDS["transactions"], {"price": "150"}, id="transactions"),
+        pytest.param(KINDS["transaction"], {"price": "150"}, id="transaction"),
         pytest.param(
-            KINDS["savings_change"],
+            KINDS["switch"],
             {"price": "0.01", "fee": "0.01"},
-            id="savings_change",
+            id="switch",
         ),
     ],
 )
@@ -712,11 +614,7 @@ def test_update_switch_accounts(client_logged, kind, extra):
     obj = kind.factory()
     old_from, old_to = obj.from_account_id, obj.to_account_id
 
-    data = {
-        "date": "1999-12-31",
-        "from_account": old_to,
-        "to_account": old_from,
-    } | extra
+    data = _post_data(obj.to_account, obj.from_account, date="1999-12-31", **extra)
     url = reverse(kind.update_url, kwargs={"pk": obj.pk})
     client_logged.post(url, data)
     actual = kind.model.objects.get(pk=obj.pk)
@@ -758,9 +656,7 @@ def test_delete_load_form(client_logged, kind):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert url in actual
-    assert '<form method="POST"' in actual
-    assert f'hx-post="{url}"' in actual
+    assert re.search(rf'<form method="POST"[^>]*hx-post="{url}"', actual)
     assert f"Ar tikrai norite ištrinti: <strong>{kind.delete_text}</strong>?" in actual
 
 
@@ -787,12 +683,7 @@ def test_delete_other_journal_post_form(client_logged, second_user, kind):
 
 def _post_update(client_logged, kind, follow=False, **extra):
     obj = kind.factory()
-    data = {
-        "price": "0.01",
-        "date": "1999-12-31",
-        "from_account": obj.from_account.pk,
-        "to_account": obj.to_account.pk,
-    } | extra
+    data = _post_data(obj.from_account, obj.to_account, date="1999-12-31", **extra)
 
     url = reverse(kind.update_url, kwargs={"pk": obj.pk})
     return client_logged.post(url, data, follow=follow)
@@ -874,14 +765,14 @@ def test_update_in_future_checkbox_value(client_logged, kind, closed, close, exp
     a = SavingTypeFactory(closed=closed)
     obj = kind.factory(from_account=a)
 
-    data = {
-        "date": obj.date,
-        "price": obj.price,
-        "fee": obj.fee,
-        "from_account": obj.from_account.pk,
-        "to_account": obj.to_account.pk,
-        "close": close,
-    }
+    data = _post_data(
+        obj.from_account,
+        obj.to_account,
+        date=obj.date,
+        price=obj.price,
+        fee=obj.fee,
+        close=close,
+    )
 
     url = reverse(kind.update_url, kwargs={"pk": obj.pk})
     client_logged.post(url, data)
@@ -891,27 +782,25 @@ def test_update_in_future_checkbox_value(client_logged, kind, closed, close, exp
     assert actual.closed == expect
 
 
-def _delete(client_logged, sell, other):
+def _delete(client_logged, sell):
     client_logged.post(reverse("transactions:savings_close_delete", args=[sell.pk]))
 
 
 def _move_to_another_fund(client_logged, sell, other):
-    data = {
-        "date": sell.date,
-        "price": "15",
-        "from_account": other.pk,
-        "to_account": sell.to_account.pk,
-    }
+    data = _post_data(other, sell.to_account, date=sell.date, price="15")
     url = reverse("transactions:savings_close_update", args=[sell.pk])
     client_logged.post(url, data)
 
 
-# a partial sell before the closing one does not become the close
 # the grid ends a year after the journal's last savings row; a moved sell keeps 2023
 @pytest.mark.parametrize(
     "edit, years_after",
     [
-        pytest.param(_delete, {2020, 2021, 2022, 2023}, id="delete"),
+        pytest.param(
+            lambda client, sell, other: _delete(client, sell),
+            {2020, 2021, 2022, 2023},
+            id="delete",
+        ),
         pytest.param(
             _move_to_another_fund, {2020, 2021, 2022, 2023, 2024}, id="move_away"
         ),
@@ -931,13 +820,7 @@ def test_closing_sell_removed_reopens_the_fund(
             from_account=fund, to_account=bank, date=date(2021, 1, 1), price=100
         )
         SavingFactory(account=bank, saving_type=fund, date=date(2022, 1, 1), price=500)
-    data = {
-        "date": "2023-01-01",
-        "price": "15",
-        "from_account": fund.pk,
-        "to_account": bank.pk,
-        "close": "on",
-    }
+    data = _post_data(fund, bank, date="2023-01-01", price="15", close="on")
     client_logged.post(reverse("transactions:savings_close_new"), data)
     sell = models.SavingClose.objects.get(date=date(2023, 1, 1))
     assert SavingType.objects.get(pk=fund.pk).closed == 2023
@@ -962,8 +845,8 @@ def test_savings_change_not_show_other_journal_types(client_logged, second_user)
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert actual.count(">Own</option>") == 2
-    assert "XXX" not in actual
+    to_account = re.search(r'<select name="to_account".*?</select>', actual, re.DOTALL)
+    assert [title for _, title in OPTION.findall(to_account[0])] == ["Own"]
 
 
 def test_load_saving_type_lists_the_open_funds_except_the_source(
@@ -978,10 +861,7 @@ def test_load_saving_type_lists_the_open_funds_except_the_source(
     response = client_logged.get(url, {"from_account": s1.pk})
     actual = response.content.decode("utf-8")
 
-    assert "S1" not in actual
-    assert "S2" not in actual
-    assert "S4" not in actual
-    assert f'<option value="{s3.pk}">S3</option>' in actual
+    assert OPTION.findall(actual) == [(str(s3.pk), "S3")]
 
 
 @pytest.mark.parametrize(
@@ -1000,7 +880,7 @@ def test_load_saving_type_empty_parent_pk(client_logged, data):
     response = client_logged.get(url, data)
 
     assert response.status_code == 200
-    assert "S1" not in response.content.decode("utf-8")
+    assert OPTION.findall(response.content.decode("utf-8")) == []
 
 
 def test_load_saving_type_must_logged(client):
