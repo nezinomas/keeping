@@ -292,9 +292,8 @@ ALL_URL = "/transactions/accounts/all/"
 OPEN_IN_2022 = ["Zeta", "Alpha", "Beta", "Edge"]
 
 
-# viewing 2022: open is closed empty or in 2022 or later, in order then title; only an
-# account closed before 2022 is struck and captioned; the scope is matched exactly, so
-# "All" is junk
+# viewing 2022: open is closed empty or in 2022 or later, in order then title; closed
+# before 2022 is struck, captioned and last, by close year then title; "All" is junk
 @pytest.mark.parametrize(
     "scope, filter_line, rows, tab_url",
     [
@@ -309,8 +308,10 @@ OPEN_IN_2022 = ["Zeta", "Alpha", "Beta", "Edge"]
             "all",
             [("", OPEN_URL, "Atidarytos"), (" aria-current", ALL_URL, "Visos")],
             [
-                '<s>Old</s> <span class="main__closed">uždaryta 2021</span>',
                 *OPEN_IN_2022,
+                '<s>Young</s> <span class="main__closed">uždaryta 2019</span>',
+                '<s>Ancient</s> <span class="main__closed">uždaryta 2021</span>',
+                '<s>Old</s> <span class="main__closed">uždaryta 2021</span>',
             ],
             ALL_URL,
             id="all",
@@ -334,6 +335,8 @@ def test_the_accounts_tab_lists_its_scope_in_order(
     AccountFactory(title="Alpha", order=2)
     AccountFactory(title="Edge", order=3, closed=2022)
     AccountFactory(title="Old", order=1, closed=2021)
+    AccountFactory(title="Young", order=1, closed=2019)
+    AccountFactory(title="Ancient", order=3, closed=2021)
     AccountFactory(title="Foreign", order=1, journal=second_user.journal)
 
     content = client_logged.get(
