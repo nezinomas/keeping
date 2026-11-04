@@ -81,11 +81,16 @@
         }
 
         .main__year,
-        .main__mark {
+        .main__mark,
+        .main__closed {
             font-family: $display;
             font-size: 0.75rem;
             font-weight: 400;
             color: $ink-muted;
+        }
+
+        .main__closed {
+            color: $ink-faint;
         }
 
         // muted: a name's share is of its type, the type's share of the year

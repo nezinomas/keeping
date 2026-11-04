@@ -904,6 +904,11 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 msgid "closed"
 msgstr "uždaryta"
 
+#: .\project\transactions\templates\transactions\tab_accounts.html:18
+#, python-format
+msgid "closed %(year)s"
+msgstr "uždaryta %(year)s"
+
 #: .\project\core\templates\cotton\calendar.html:6
 msgid "Mon"
 msgstr "Pr"

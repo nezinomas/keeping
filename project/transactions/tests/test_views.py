@@ -289,11 +289,12 @@ def test_a_fund_tab_lists_the_years_moves_newest_first_marking_the_close(
 
 OPEN_URL = "/transactions/accounts/open/"
 ALL_URL = "/transactions/accounts/all/"
-OPEN_IN_2022 = [("Zeta", ""), ("Alpha", ""), ("Beta", ""), ("Edge", "")]
+OPEN_IN_2022 = ["Zeta", "Alpha", "Beta", "Edge"]
 
 
 # viewing 2022: open is closed empty or in 2022 or later, in order then title; only an
-# account closed before 2022 shows its year; the scope is matched exactly, so "All" is junk
+# account closed before 2022 is struck and captioned; the scope is matched exactly, so
+# "All" is junk
 @pytest.mark.parametrize(
     "scope, filter_line, rows, tab_url",
     [
@@ -307,7 +308,10 @@ OPEN_IN_2022 = [("Zeta", ""), ("Alpha", ""), ("Beta", ""), ("Edge", "")]
         pytest.param(
             "all",
             [("", OPEN_URL, "Atidarytos"), (" aria-current", ALL_URL, "Visos")],
-            [("Old", "2021"), *OPEN_IN_2022],
+            [
+                '<s>Old</s> <span class="main__closed">uždaryta 2021</span>',
+                *OPEN_IN_2022,
+            ],
             ALL_URL,
             id="all",
         ),
@@ -353,8 +357,7 @@ def test_the_accounts_tab_lists_its_scope_in_order(
     assert (
         re.findall(
             r'<tr hx-get="[^"]*" hx-trigger="dblclick" hx-target="#mainModal">\s*'
-            r'<td class="text-left">([^<]*?)(?: <span class="main__year">([^<]*)'
-            r"</span>)?</td>",
+            r'<td class="text-left">(.*?)</td>',
             content,
         )
         == rows
