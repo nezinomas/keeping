@@ -1,29 +1,16 @@
 {% load i18n %}
 
-<c-filter-line :items="items" target="#tab_content" />
-
 {% if object_list %}
-
-<table class="main striped hover">
-    <thead>
-        <tr>
-            <th class="text-left">{% translate 'Account' %}</th>
-            <th class="edit-col"></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for account, closed_year in object_list %}
-        {% url 'accounts:update' account.pk as url_update %}
-        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
-            <td class="text-left">{% if closed_year %}<s>{{ account.title }}</s> <span class="main__closed">{% blocktranslate with year=closed_year %}closed {{ year }}{% endblocktranslate %}</span>{% else %}{{ account.title }}{% endif %}</td>
-            <c-td-edit :url="url_update" />
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
+{% include 'transactions/accounts_table.html' with accounts=object_list %}
 {% else %}
-
 {% include 'core/paper_no_records.html' %}
+{% endif %}
 
+{% if closed_accounts %}
+<div x-data="{ shown: false }">
+    <nav class="filter-line">
+        <button type="button" class="filter-line__item" @click="shown = ! shown" :aria-current="shown ? 'true' : null">{% translate 'Closed accounts' %}</button>
+    </nav>
+    {% include 'transactions/accounts_table.html' with accounts=closed_accounts closed=True %}
+</div>
 {% endif %}

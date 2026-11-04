@@ -54,7 +54,7 @@
             <a href="{% url 'transactions:tab_transactions' %}">{% translate 'Transactions' %}</a>
             <a href="{% url 'transactions:tab_sales' %}">{% translate 'Fund sales' %}</a>
             <a href="{% url 'transactions:tab_switches' %}">{% translate 'Fund switches' %}</a>
-            <a href="{% url 'transactions:tab_accounts' 'open' %}">{% translate 'Accounts' %}</a>
+            <a href="{% url 'transactions:tab_accounts' %}">{% translate 'Accounts' %}</a>
           </c-slot>
         </c-nav-item>
         <c-nav-item section="savings" url="{% url 'savings:index' %}">{% translate 'Savings' %}</c-nav-item>

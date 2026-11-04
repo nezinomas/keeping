@@ -2550,13 +2550,8 @@ msgstr "Pridėti pardavimą"
 msgid "Add fund switch"
 msgstr "Pridėti keitimą"
 
-msgctxt "account scope"
-msgid "Open"
-msgstr "Atidarytos"
-
-msgctxt "account scope"
-msgid "All"
-msgstr "Visos"
+msgid "Closed accounts"
+msgstr "Uždarytos sąskaitos"
 
 msgid "Add account"
 msgstr "Pridėti sąskaitą"

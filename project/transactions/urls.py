@@ -14,7 +14,7 @@ urlpatterns = [
     path("transactions/sales/", views.TabSales.as_view(), name="tab_sales"),
     path("transactions/switches/", views.TabSwitches.as_view(), name="tab_switches"),
     path(
-        "transactions/accounts/<str:scope>/",
+        "transactions/accounts/",
         views.TabAccounts.as_view(),
         name="tab_accounts",
     ),

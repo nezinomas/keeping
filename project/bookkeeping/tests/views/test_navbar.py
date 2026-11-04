@@ -77,7 +77,7 @@ def test_the_transactions_menu_names_its_tabs_in_order(client_logged):
             (reverse("transactions:tab_transactions"), "Pervedimai"),
             (reverse("transactions:tab_sales"), "Fondų pardavimai"),
             (reverse("transactions:tab_switches"), "Fondų keitimai"),
-            (reverse("transactions:tab_accounts", args=["open"]), "Sąskaitos"),
+            (reverse("transactions:tab_accounts"), "Sąskaitos"),
         ]
     ]
 

@@ -136,7 +136,10 @@ A_MOVE_OUT_OF = {
     "switches": lambda i: SavingChangeFactory(
         from_account=SavingTypeFactory(title=f"F{i}", closed=1999)
     ),
-    "accounts": lambda i: AccountFactory(title=f"F{i}"),
+    "accounts": lambda i: (
+        AccountFactory(title=f"F{i}"),
+        AccountFactory(title=f"C{i}", closed=1998),
+    ),
 }
 
 
@@ -289,48 +292,91 @@ def test_a_fund_tab_lists_the_years_moves_newest_first_marking_the_close(
     )
 
 
-OPEN_URL = "/transactions/accounts/open/"
-ALL_URL = "/transactions/accounts/all/"
-OPEN_IN_2022 = ["Zeta", "Alpha", "Beta", "Edge"]
+TAB_ACCOUNTS = "/transactions/accounts/"
+CLOSED_BUTTON = re.compile(
+    r'\s*<button type="button" class="filter-line__item" @click="shown = ! shown"'
+    r""" :aria-current="shown \? 'true' : null">Uždarytos sąskaitos</button>\s*"""
+)
+TAB_PART = re.compile(
+    r'<table class="main striped hover"(?P<attrs>[^>]*)>(?P<body>.*?)</table>'
+    r'|<div class="alert">\s*(?P<notice>[^<]*?)\s*</div>'
+    r'|(?P<scope><div x-data="\{ shown: false \}">\s*)?'
+    r'<nav class="filter-line"(?P<nav_attrs>[^>]*)>(?P<nav>.*?)</nav>',
+    re.DOTALL,
+)
+HEADER = [("text-left", "Sąskaita"), ("edit-col", "")]
+FOLDED = ' x-show="shown" x-cloak'
+BUTTON = "the closed accounts' button"
+OTHER_FILTER_LINE = "another filter line"
 
 
-# viewing 2022: open is closed empty or in 2022 or later, in order then title; closed
-# before 2022 is struck, captioned and last, by close year then title; "All" is junk
+def _accounts_tab(content):
+    """The tab's tables, notice and filter lines, in page order."""
+    parts = []
+    for part in TAB_PART.finditer(content):
+        if part["notice"] is not None:
+            parts.append(part["notice"])
+        elif part["nav"] is not None:
+            button = part["scope"] and not part["nav_attrs"]
+            parts.append(
+                BUTTON
+                if button and CLOSED_BUTTON.fullmatch(part["nav"])
+                else OTHER_FILTER_LINE
+            )
+        else:
+            parts.append(
+                (
+                    part["attrs"],
+                    re.findall(r'<th class="([^"]*)">([^<]*)</th>', part["body"]),
+                    re.findall(
+                        r'<tr hx-get="[^"]*" hx-trigger="dblclick"'
+                        r' hx-target="#mainModal">\s*<td class="text-left">(.*?)</td>',
+                        part["body"],
+                    ),
+                )
+            )
+    return parts
+
+
+# open is closed empty or in the viewed year or later, in order then title; closed
+# before it folds below the button, struck and captioned, by close year then title
 @pytest.mark.parametrize(
-    "scope, filter_line, rows, tab_url",
+    "year, parts",
     [
         pytest.param(
-            "open",
-            [(" aria-current", OPEN_URL, "Atidarytos"), ("", ALL_URL, "Visos")],
-            OPEN_IN_2022,
-            OPEN_URL,
-            id="open",
-        ),
-        pytest.param(
-            "all",
-            [("", OPEN_URL, "Atidarytos"), (" aria-current", ALL_URL, "Visos")],
+            2022,
             [
-                *OPEN_IN_2022,
-                '<s>Young</s> <span class="main__closed">uždaryta 2019</span>',
-                '<s>Ancient</s> <span class="main__closed">uždaryta 2021</span>',
-                '<s>Old</s> <span class="main__closed">uždaryta 2021</span>',
+                ("", HEADER, ["Zeta", "Alpha", "Beta", "Edge"]),
+                BUTTON,
+                (
+                    FOLDED,
+                    HEADER,
+                    [
+                        '<s>Young</s> <span class="main__closed">uždaryta 2019</span>',
+                        '<s>Ancient</s> <span class="main__closed">uždaryta 2021</span>',
+                        '<s>Old</s> <span class="main__closed">uždaryta 2021</span>',
+                    ],
+                ),
             ],
-            ALL_URL,
-            id="all",
+            id="closed_before",
         ),
         pytest.param(
-            "All",
-            [(" aria-current", OPEN_URL, "Atidarytos"), ("", ALL_URL, "Visos")],
-            OPEN_IN_2022,
-            OPEN_URL,
-            id="junk",
+            2019,
+            [
+                (
+                    "",
+                    HEADER,
+                    ["Old", "Young", "Zeta", "Alpha", "Beta", "Ancient", "Edge"],
+                )
+            ],
+            id="none_closed_before",
         ),
     ],
 )
-def test_the_accounts_tab_lists_its_scope_in_order(
-    client_logged, main_user, second_user, scope, filter_line, rows, tab_url
+def test_the_accounts_tab_lists_the_open_then_folds_the_closed(
+    client_logged, main_user, second_user, year, parts
 ):
-    main_user.year = 2022
+    main_user.year = year
     main_user.save()
     AccountFactory(title="Zeta", order=1)
     AccountFactory(title="Beta", order=2, closed=2024)
@@ -341,61 +387,51 @@ def test_the_accounts_tab_lists_its_scope_in_order(
     AccountFactory(title="Ancient", order=3, closed=2021)
     AccountFactory(title="Foreign", order=1, journal=second_user.journal)
 
-    content = client_logged.get(
-        reverse("transactions:tab_accounts", args=[scope])
-    ).content.decode()
+    content = client_logged.get(TAB_ACCOUNTS).content.decode()
 
-    assert (
-        re.findall(
-            r'<button type="button" class="filter-line__item"( aria-current)?[^>]*'
-            r' hx-get="([^"]*)" hx-push-url="true" hx-target="#tab_content">'
-            r"([^<]*)</button>",
-            content,
-        )
-        == filter_line
-    )
-    assert '<table class="main striped hover">' in content
-    assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == [
-        ("text-left", "Sąskaita"),
-        ("edit-col", ""),
-    ]
-    assert (
-        re.findall(
-            r'<tr hx-get="[^"]*" hx-trigger="dblclick" hx-target="#mainModal">\s*'
-            r'<td class="text-left">(.*?)</td>',
-            content,
-        )
-        == rows
-    )
+    assert _accounts_tab(content) == parts
     assert re.findall(
         r'<div hx-get="([^"]*)" hx-target="#tab_content" hx-trigger="reload', content
-    ) == [tab_url]
+    ) == [TAB_ACCOUNTS]
 
 
-def test_a_scope_with_no_accounts_draws_the_notice_under_the_filter_line(
-    client_logged,
+@pytest.mark.parametrize(
+    "closed, parts",
+    [
+        pytest.param(
+            [1998],
+            [
+                "1999 metais įrašų nėra.",
+                BUTTON,
+                (
+                    FOLDED,
+                    HEADER,
+                    ['<s>Old</s> <span class="main__closed">uždaryta 1998</span>'],
+                ),
+            ],
+            id="closed_before",
+        ),
+        pytest.param([], ["1999 metais įrašų nėra."], id="no_accounts"),
+    ],
+)
+def test_no_open_account_draws_the_notice_above_the_closed_ones(
+    client_logged, closed, parts
 ):
-    AccountFactory(title="Old", closed=1998)
+    for year in closed:
+        AccountFactory(title="Old", closed=year)
 
     content = client_logged.get(
-        reverse("transactions:tab_accounts", args=["open"]),
-        headers={"HX-Request": "true"},
+        TAB_ACCOUNTS, headers={"HX-Request": "true"}
     ).content.decode()
 
-    assert re.search(
-        r'<nav class="filter-line".*</nav>\s*<div class="alert">\s*'
-        r"1999 metais įrašų nėra.\s*</div>",
-        content,
-        re.DOTALL,
-    )
+    assert _accounts_tab(content) == parts
 
 
 def test_an_account_row_opens_its_form(client_logged):
     account = AccountFactory(title="Bank")
 
     content = client_logged.get(
-        reverse("transactions:tab_accounts", args=["open"]),
-        headers={"HX-Request": "true"},
+        TAB_ACCOUNTS, headers={"HX-Request": "true"}
     ).content.decode()
 
     rows = re.findall(
@@ -457,7 +493,7 @@ def test_nav_offers_every_tab(client_logged):
         ("transactions", "/transactions/"),
         ("sales", "/transactions/sales/"),
         ("switches", "/transactions/switches/"),
-        ("accounts", "/transactions/accounts/open/"),
+        ("accounts", "/transactions/accounts/"),
     ]
 
 
@@ -985,4 +1021,4 @@ def test_a_user_with_no_year_raises(rf, main_user, view_class):
     main_user.year = None
 
     with pytest.raises(ValueError, match="has no year"):
-        view_for(rf, main_user, view_class, scope="open").get_queryset()
+        view_for(rf, main_user, view_class).get_queryset()
