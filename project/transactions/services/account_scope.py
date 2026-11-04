@@ -37,7 +37,12 @@ class AccountScope:
         accounts = service.items_in(year)
         if self.value == ALL:
             accounts = service.all()
-        return [(account, closed_year_before(account, year)) for account in accounts]
+        pairs = [(account, closed_year_before(account, year)) for account in accounts]
+        open_pairs = [pair for pair in pairs if not pair[1]]
+        closed_pairs = [pair for pair in pairs if pair[1]]
+        return open_pairs + sorted(
+            closed_pairs, key=lambda pair: (pair[1], pair[0].title)
+        )
 
     def items(self) -> list[FilterItem]:
         labels = {
