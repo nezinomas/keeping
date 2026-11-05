@@ -71,14 +71,14 @@ class TabData(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         month = month_filter(self.kwargs)
-        search = self.request.GET.get("search", "")
-        params = {"search": search}
+        search_text = self.request.GET.get("search", "")
+        params = {"search": search_text}
         if page := self.request.GET.get("page"):
             params["page"] = page
 
         data_url = reverse("expenses:list", args=[month.value])
         tab_url = month.url()
-        if search:
+        if search_text:
             query = urlencode(params)
             data_url = f"{reverse('expenses:search')}?{query}"
             tab_url = f"{tab_url}?{query}"
@@ -86,7 +86,7 @@ class TabData(TabViewMixin, TemplateViewMixin):
         return super().get_context_data(**kwargs) | {
             "month": month,
             "items": month.items(),
-            "search": search,
+            "search": search_text,
             "data_url": data_url,
             # a save reloads the tab at the month and search it shows
             "tab_url": tab_url,
@@ -113,10 +113,10 @@ class Lists(ListViewMixin):
         return add_fast_urls(data=data, app_name=App_name)
 
     def get_context_data(self, **kwargs):
+        year = self.user.selected_year()
         context = {
-            "month": self.month,
             "all_months": self.month.value == ALL,
-            "year": self.user.selected_year(),
+            "first_day": self.month.first_day(year),
         }
         return super().get_context_data(**kwargs) | context | get_action_buttons_html()
 

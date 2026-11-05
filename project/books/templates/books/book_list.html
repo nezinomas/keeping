@@ -7,10 +7,10 @@
 <table class="main book-table striped hover sticky-table">
     <thead>
         <tr>
-            <th class="text-left day-col">{% translate 'No.' %}</th>
+            <th class="text-left">{% translate 'No.' %}</th>
             <th class="text-left author-col">{% translate 'Author' %}</th>
             <th class="text-left book-title-col">{% translate 'Title' %}</th>
-            <th class="text-left remark-col">{% translate 'Remark' %}</th>
+            <th class="text-left">{% translate 'Remark' %}</th>
             <th class="text-center date-col">{% translate 'Started reading' %}</th>
             <th class="text-center date-col">{% translate 'Ended reading' %}</th>
             <th class="edit-col"></th>
@@ -27,8 +27,8 @@
             <td class="text-left">{{ object.author }}</td>
             <td class="text-left">„{{ object.title }}”</td>
             <td class="text-left">{{ object.remark }}</td>
-            <td class="text-center date-col">{{ object.started|date:"Y-m-d" }}</td>
-            <td class="text-center date-col">{{ object.ended|date:"Y-m-d"|default:'-' }}</td>
+            <td class="text-center main__date">{{ object.started|date:"Y-m-d" }}</td>
+            <td class="text-center main__date">{{ object.ended|date:"Y-m-d"|default:'-' }}</td>
             <c-td-edit :url="url_update" />
             <c-td-delete :url="url_delete" />
         </tr>
@@ -42,14 +42,12 @@
 {% else %}
 
 {# a search brings its own notice, from SearchMixin #}
-<div class="alert">
 {% if notice %}
-    {{ notice }}
+<div class="alert">{{ notice }}</div>
 {% elif scope == "all" %}
-    {% translate "No records" %}
+<div class="alert">{% translate "No records" %}</div>
 {% else %}
-    {% blocktranslate with year=request.user.selected_year %}No records in {{ year }}.{% endblocktranslate %}
+{% include 'core/paper_no_records.html' %}
 {% endif %}
-</div>
 
 {% endif %}

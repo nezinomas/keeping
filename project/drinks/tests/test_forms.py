@@ -29,8 +29,9 @@ def test_drink_init_fields(main_user):
     assert '<input type="text" name="counter_type"' not in form
 
 
-def test_drink_quantity_rewrites_a_decimal_comma(main_user):
-    form = DrinkForm(user=main_user, today=TODAY).as_p()
+@pytest.mark.parametrize("form_class", [DrinkForm, DrinkTargetForm])
+def test_quantity_rewrites_a_decimal_comma(main_user, form_class):
+    form = form_class(user=main_user, today=TODAY).as_p()
 
     assert 'inputmode="decimal"' in form
     assert "@keyup=" in form
@@ -235,16 +236,6 @@ def test_drink_target_init_fields(main_user):
     assert '<select name="user"' not in form
 
 
-def test_drink_target_quantity_rewrites_a_decimal_comma(main_user):
-    form = DrinkTargetForm(user=main_user, today=TODAY).as_p()
-
-    assert 'inputmode="decimal"' in form
-    assert "@keyup=" in form
-    assert "$el.value.replace(" in form
-    assert "[^0-9.]" in form
-    assert r"^(\d*\.?\d*).*" in form
-
-
 def test_drink_target_year_initial_value(main_user):
     UserFactory()
 
@@ -339,77 +330,40 @@ def test_a_posted_user_is_ignored(main_user, second_user, form_class, data):
     assert form.save().user == main_user
 
 
-def test_drink_filter_init_fields(main_user):
-    form = DrinkCompareForm(user=main_user, today=TODAY).as_p()
+@pytest.mark.parametrize("form_class", [DrinkCompareForm, TypicalYearForm])
+def test_year_forms_init_fields(main_user, form_class):
+    form = form_class(user=main_user, today=TODAY).as_p()
 
-    assert '<input type="number" name="year1"' in form
-    assert '<input type="number" name="year2"' in form
-
-
-def test_drink_filter_initial_values(main_user):
-    form = DrinkCompareForm(user=main_user, today=TODAY).as_p()
-
-    assert '<input type="number" name="year2" value="1999"' in form
+    for field in form_class.field_order:
+        assert f'<input type="number" name="{field}"' in form
 
 
 @pytest.mark.parametrize(
-    "year1, year2",
+    "form_class, first, second",
     [
-        (None, None),
-        ("", ""),
-        (None, 1111),
-        ("", 1111),
-        (1111, None),
-        (1111, ""),
-        (111, 111),
-        (11111, 11111),
-        ("xxx", "xxx"),
+        pytest.param(DrinkCompareForm, None, None, id="compare-none"),
+        pytest.param(DrinkCompareForm, "", "", id="compare-blank"),
+        pytest.param(DrinkCompareForm, None, 1111, id="compare-first_none"),
+        pytest.param(DrinkCompareForm, "", 1111, id="compare-first_blank"),
+        pytest.param(DrinkCompareForm, 1111, None, id="compare-second_none"),
+        pytest.param(DrinkCompareForm, 1111, "", id="compare-second_blank"),
+        pytest.param(DrinkCompareForm, 111, 111, id="compare-too_small"),
+        pytest.param(DrinkCompareForm, 11111, 11111, id="compare-too_big"),
+        pytest.param(DrinkCompareForm, "xxx", "xxx", id="compare-text"),
+        pytest.param(TypicalYearForm, None, None, id="typical_year-none"),
+        pytest.param(TypicalYearForm, "", "", id="typical_year-blank"),
+        pytest.param(TypicalYearForm, None, 2000, id="typical_year-first_none"),
+        pytest.param(TypicalYearForm, 2000, "", id="typical_year-second_blank"),
+        pytest.param(TypicalYearForm, 111, 111, id="typical_year-too_small"),
+        pytest.param(TypicalYearForm, 11111, 11111, id="typical_year-too_big"),
+        pytest.param(TypicalYearForm, "xxx", "xxx", id="typical_year-text"),
     ],
 )
-def test_drink_filter_form_invalid(main_user, year1, year2):
-    form = DrinkCompareForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "year1": year1,
-            "year2": year2,
-        },
-    )
+def test_year_forms_invalid(main_user, form_class, first, second):
+    data = dict(zip(form_class.field_order, (first, second), strict=True))
+    form = form_class(user=main_user, today=TODAY, data=data)
 
     assert not form.is_valid()
-
-
-@pytest.mark.parametrize(
-    "year1, year2, valid",
-    [
-        (2000, 2001, False),
-        (2001, 2001, False),
-        (2001, 2002, False),
-        (2002, 2003, False),
-        (2000, 2003, True),
-    ],
-)
-def test_drink_filter_clean_years_fields(main_user, year1, year2, valid):
-    DrinkFactory(date=date(2000, 1, 1))
-    DrinkFactory(date=date(2003, 1, 1))
-
-    form = DrinkCompareForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "year1": year1,
-            "year2": year2,
-        },
-    )
-
-    assert form.is_valid() == valid
-
-
-def test_typical_year_init_fields(main_user):
-    form = TypicalYearForm(user=main_user, today=TODAY).as_p()
-
-    assert '<input type="number" name="year_from"' in form
-    assert '<input type="number" name="year_to"' in form
 
 
 def test_typical_year_boxes_open_on_the_users_full_span(main_user):
@@ -425,54 +379,30 @@ def test_typical_year_boxes_open_on_the_users_full_span(main_user):
 
 
 @pytest.mark.parametrize(
-    "year_from, year_to",
+    "form_class, first, second, valid",
     [
-        (None, None),
-        ("", ""),
-        (None, 2000),
-        (2000, ""),
-        (111, 111),
-        (11111, 11111),
-        ("xxx", "xxx"),
+        pytest.param(DrinkCompareForm, 2000, 2001, False, id="compare-second_empty"),
+        pytest.param(DrinkCompareForm, 2001, 2001, False, id="compare-same_year"),
+        pytest.param(DrinkCompareForm, 2001, 2002, False, id="compare-both_empty"),
+        pytest.param(DrinkCompareForm, 2002, 2003, False, id="compare-first_empty"),
+        pytest.param(DrinkCompareForm, 2000, 2003, True, id="compare-valid"),
+        pytest.param(TypicalYearForm, 2000, 2003, True, id="typical_year-valid"),
+        # pooling one year is a reading, not a mistake
+        pytest.param(TypicalYearForm, 2000, 2000, True, id="typical_year-one_year"),
+        pytest.param(TypicalYearForm, 2003, 2003, True, id="typical_year-last_year"),
+        # reversed, and never silently swapped
+        pytest.param(TypicalYearForm, 2003, 2000, False, id="typical_year-reversed"),
+        pytest.param(TypicalYearForm, 2001, 2003, False, id="typical_year-from_empty"),
+        pytest.param(TypicalYearForm, 2000, 2002, False, id="typical_year-to_empty"),
+        pytest.param(TypicalYearForm, 1999, 2003, False, id="typical_year-outside"),
     ],
 )
-def test_typical_year_form_invalid(main_user, year_from, year_to):
-    form = TypicalYearForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "year_from": year_from,
-            "year_to": year_to,
-        },
-    )
-
-    assert not form.is_valid()
-
-
-@pytest.mark.parametrize(
-    "year_from, year_to, valid",
-    [
-        (2000, 2003, True),
-        (2000, 2000, True),  # pooling one year is a reading, not a mistake
-        (2003, 2003, True),
-        (2003, 2000, False),  # reversed, and never silently swapped
-        (2001, 2003, False),  # no records in 2001
-        (2000, 2002, False),  # no records in 2002
-        (1999, 2003, False),  # outside the years on record
-    ],
-)
-def test_typical_year_clean_years_fields(main_user, year_from, year_to, valid):
+def test_year_forms_clean_years_fields(main_user, form_class, first, second, valid):
     DrinkFactory(date=date(2000, 1, 1))
     DrinkFactory(date=date(2003, 1, 1))
 
-    form = TypicalYearForm(
-        user=main_user,
-        today=TODAY,
-        data={
-            "year_from": year_from,
-            "year_to": year_to,
-        },
-    )
+    data = dict(zip(form_class.field_order, (first, second), strict=True))
+    form = form_class(user=main_user, today=TODAY, data=data)
 
     assert form.is_valid() == valid
 
@@ -499,3 +429,29 @@ def test_drink_filter_opens_on_the_header_year(main_user):
     form = DrinkCompareForm(user=main_user, today=TODAY).as_p()
 
     assert '<input type="number" name="year2" value="2000"' in form
+
+
+@pytest.mark.parametrize(
+    "form_class, data, errors",
+    [
+        pytest.param(
+            TypicalYearForm,
+            {"year_from": 2014, "year_to": 2015},
+            {"year_from": ["2014 metais įrašų nėra."], "year_to": []},
+            id="typical_year",
+        ),
+        pytest.param(
+            DrinkCompareForm,
+            {"year1": 2014, "year2": 2015},
+            {"year1": ["2014 metais įrašų nėra."], "year2": []},
+            id="compare",
+        ),
+    ],
+)
+def test_a_year_with_no_records_names_itself(main_user, form_class, data, errors):
+    DrinkFactory(date=date(2015, 1, 1))
+
+    form = form_class(user=main_user, today=TODAY, data=data)
+    form.is_valid()
+
+    assert {field: form.errors.get(field, []) for field in errors} == errors

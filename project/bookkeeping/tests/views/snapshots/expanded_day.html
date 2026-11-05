@@ -26,7 +26,7 @@
                 <th class="text-left">Išlaidų pavadinimas</th>
                 <th class="qty-col">Kiek</th>
                 <th class="price-col">Kaina</th>
-                <th class="remark-col text-left">Pastaba</th>
+                <th class="text-left">Pastaba</th>
                 <th class="file-col">Failas</th>
                 <th>Sąskaita</th>
                 <th class="edit-col"></th>
@@ -40,7 +40,7 @@
             
 
             <tr hx-get="/expenses/update/3/" hx-trigger="dblclick" hx-target="#mainModal" class="">
-                <td class="text-left expense-ordinary">1999-01-01</td>
+                <td class="text-left main__date">1999-01-01</td>
                 <td class="text-left">Drinks</td>
                 <td class="text-left">Beer</td>
                 <td class="main__figure">13</td>
@@ -74,7 +74,7 @@
             
 
             <tr hx-get="/expenses/update/1/" hx-trigger="dblclick" hx-target="#mainModal" class="">
-                <td class="text-left exception">1999-01-01</td>
+                <td class="text-left main__date exception">1999-01-01</td>
                 <td class="text-left">Food</td>
                 <td class="text-left">Bread</td>
                 <td class="main__figure">13</td>
@@ -104,7 +104,7 @@
             
 
             <tr hx-get="/expenses/update/2/" hx-trigger="dblclick" hx-target="#mainModal" class="">
-                <td class="text-left expense-ordinary">1999-01-01</td>
+                <td class="text-left main__date">1999-01-01</td>
                 <td class="text-left">Food</td>
                 <td class="text-left">Milk</td>
                 <td class="main__figure">13</td>
@@ -147,7 +147,6 @@
 
 
 
-<!-- modal image -->
 <div id="imgModalContainer" class="modal" hidden>
     <div id="imgModal" class="modal-dialog"></div>
 </div>

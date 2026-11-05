@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 import pytest
@@ -20,7 +21,10 @@ def test_debt_return_list_empty(client_logged, debt_type):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert "<b>1999</b> metais įrašų nėra" in content
+    assert re.search(
+        r'<div class="alert alert-warning">\s*1999 metais įrašų nėra\.\s*</div>',
+        content,
+    )
 
 
 @pytest.mark.parametrize(
@@ -238,3 +242,44 @@ def test_debt_return_delete(client_logged, debt_type):
 
     assert response.status_code == 204
     assert not models.DebtReturn.objects.filter(pk=p.pk).exists()
+
+
+RETURN_ROW = re.compile(
+    r'<tr hx-get="([^"]*)" hx-trigger="([^"]*)" hx-target="([^"]*)" class="([^"]*)">'
+    r'\s*<td[^>]*>[^<]*</td>\s*<td class="text-left cell-padding">([^<]*)</td>'
+)
+
+
+@pytest.mark.parametrize(
+    "debts, divided",
+    [
+        pytest.param(
+            [("A", False, 2), ("B", False, 1)],
+            [("", "A"), ("", "A"), ("table-group-divider", "B")],
+            id="name",
+        ),
+        pytest.param(
+            [("A", False, 1), ("A", True, 1)],
+            [("", "A"), ("table-group-divider", "A")],
+            id="closed",
+        ),
+    ],
+)
+def test_debt_return_list_divides_its_debts(client_logged, debts, divided):
+    returns = []
+    for name, closed, count in debts:
+        debt = factories.BorrowFactory(name=name, closed=closed)
+        returns += factories.BorrowReturnFactory.create_batch(count, debt=debt)
+
+    url = reverse("debts:return_list", kwargs={"debt_type": "borrow"})
+    rows = RETURN_ROW.findall(client_logged.get(url).content.decode("utf-8"))
+
+    assert [(divider, name) for *_, divider, name in rows] == divided
+    assert {(get, trigger, target) for get, trigger, target, *_ in rows} == {
+        (
+            reverse("debts:return_update", kwargs={"pk": r.pk, "debt_type": "borrow"}),
+            "dblclick",
+            "#mainModal",
+        )
+        for r in returns
+    }

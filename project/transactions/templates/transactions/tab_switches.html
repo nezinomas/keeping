@@ -1,0 +1,3 @@
+{% load i18n %}
+{% translate 'To fund' as to_header %}
+{% include 'transactions/fund_moves.html' with update_url_name='transactions:savings_change_update' delete_url_name='transactions:savings_change_delete' %}

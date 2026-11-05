@@ -9,13 +9,17 @@ from ...core.lib.stat_card import Card, EmptyStatCard, StatCard
 from .counter_life import CounterLife
 
 
+def no_records_card(title: str) -> EmptyStatCard:
+    return EmptyStatCard(title, _("No records"))
+
+
 def card_total_ever(life: CounterLife) -> Card:
     """On two Tabs on purpose: Overview reads the year against it, History is
     about it."""
     title = _("Total ever")
 
     if not life.records:
-        return EmptyStatCard(title, _("No records"))
+        return no_records_card(title)
 
     return StatCard(
         title=title,
@@ -39,7 +43,8 @@ class OverviewCards:
         title = pgettext("counts card", "This year")
 
         if not self.life.rhythm.year_records:
-            return EmptyStatCard(title, _("No records"))
+            note = _("No records in %(year)s.") % {"year": self.life.boundary.year}
+            return EmptyStatCard(title, note)
 
         return StatCard(title=title, value=floatformat(self.life.year_total, "0g"))
 
@@ -86,7 +91,7 @@ class HistoryCards:
         explanation = (_("Years with at least one record"),)
 
         if not years:
-            return EmptyStatCard(title, _("No records"))
+            return no_records_card(title)
 
         span = f"{years[0]}" if len(years) == 1 else f"{years[0]}–{years[-1]}"
 
@@ -107,7 +112,7 @@ class HistoryCards:
         ]
 
         if not totals:
-            return EmptyStatCard(title, _("No records"))
+            return no_records_card(title)
 
         note = _("from %(low)s to %(high)s") % {
             "low": floatformat(min(totals), "0g"),
@@ -138,7 +143,7 @@ class PeriodicityCards:
         rate = self.life.rhythm.rate
 
         if not self.life.records:
-            return EmptyStatCard(title, _("No records"))
+            return no_records_card(title)
 
         # one Record spans no time, so it supports no rate — but it is a Record
         if not rate:
@@ -160,7 +165,7 @@ class PeriodicityCards:
         typical = rhythm.typical_gap
 
         if not typical.has_data:
-            return EmptyStatCard(title, _("No records"))
+            return no_records_card(title)
 
         note = ""
         if rhythm.year_median_gap.has_data:
@@ -180,7 +185,7 @@ class PeriodicityCards:
         longest = self.life.rhythm.longest_gap
 
         if not longest.has_data:
-            return EmptyStatCard(title, _("No records"))
+            return no_records_card(title)
 
         return StatCard(
             title=title,

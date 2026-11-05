@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 import pytest
@@ -227,6 +228,19 @@ def test_savings_list_price_converted(
 
     assert shown_price in actual
     assert shown_fee in actual
+
+
+@pytest.mark.parametrize(
+    "records, shown",
+    [pytest.param(0, True, id="empty"), pytest.param(1, False, id="listed")],
+)
+def test_savings_list_names_its_empty_year(client_logged, records, shown):
+    SavingFactory.create_batch(records)
+
+    actual = client_logged.get(reverse("savings:list")).content.decode("utf-8")
+
+    notice = r'<div class="alert alert-warning">\s*1999 metais įrašų nėra\.\s*</div>'
+    assert bool(re.search(notice, actual)) == shown
 
 
 def test_view_saving_delete_load_form(client_logged):

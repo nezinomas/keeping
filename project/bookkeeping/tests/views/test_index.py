@@ -107,6 +107,20 @@ def test_view_index_names_each_chart_data_element_once(index_content):
     assert counts == [1, 1, 1, 1]
 
 
+def test_view_index_accounts_reload_on_a_saved_move(index_content):
+    listeners = re.findall(
+        r'<div id="accounts" hx-get="([^"]*)" hx-trigger="([^"]*)"', index_content
+    )
+
+    assert listeners == [
+        (
+            reverse("bookkeeping:accounts"),
+            "afterAccountWorthNew from:body, afterReset from:body, "
+            "afterSignalAccounts from:body, afterSignal from:body, reload from:body",
+        )
+    ]
+
+
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
 def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     client_logged, fee_source

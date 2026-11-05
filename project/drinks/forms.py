@@ -120,6 +120,15 @@ class DrinkTargetForm(UserTodayMixin, OneTargetAYearMixin, forms.ModelForm):
         )
 
 
+def add_no_records_errors(
+    form: forms.Form, fields: tuple[str, ...], years: list[int]
+) -> None:
+    for field in fields:
+        year = form.cleaned_data.get(field)
+        if year not in years and not form.errors.get(field):
+            form.add_error(field, _("No records in %(year)s.") % {"year": year})
+
+
 class TypicalYearForm(UserTodayMixin, forms.Form):
     year_from = forms.IntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2100)]
@@ -149,14 +158,7 @@ class TypicalYearForm(UserTodayMixin, forms.Form):
         year_from = cleaned.get("year_from")
         year_to = cleaned.get("year_to")
 
-        years = self._years
-
-        msg_no_records = _("No records this year")
-        if year_from not in years and not self.errors.get("year_from"):
-            self.add_error("year_from", msg_no_records)
-
-        if year_to not in years and not self.errors.get("year_to"):
-            self.add_error("year_to", msg_no_records)
+        add_no_records_errors(self, ("year_from", "year_to"), self._years)
 
         # a reversed range is a mistake to report, not one to correct: swapping
         # it would caption the chart with a span the user never asked for
@@ -190,20 +192,9 @@ class DrinkCompareForm(UserTodayMixin, forms.Form):
         year1 = cleaned.get("year1")
         year2 = cleaned.get("year2")
 
-        years = (
-            DrinkModelService(self.user)
-            .items()
-            .values_list("date__year", flat=True)
-            .order_by()
-            .distinct()
+        add_no_records_errors(
+            self, ("year1", "year2"), DrinkModelService(self.user).years()
         )
-
-        msg_no_records = _("No records this year")
-        if year1 not in years and not self.errors.get("year1"):
-            self.add_error("year1", msg_no_records)
-
-        if year2 not in years and not self.errors.get("year2"):
-            self.add_error("year2", msg_no_records)
 
         msg_different = _("Years must be different")
         if year1 == year2:

@@ -49,7 +49,14 @@
           </c-slot>
         </c-nav-item>
         <c-nav-item section="incomes" url="{% url 'incomes:index' %}">{% translate 'Incomes' %}</c-nav-item>
-        <c-nav-item section="transactions" url="{% url 'transactions:index' %}">{% translate 'Transactions' %}</c-nav-item>
+        <c-nav-item section="transactions" url="{% url 'transactions:index' %}">{% translate 'Transactions' %}
+          <c-slot name="menu">
+            <a href="{% url 'transactions:tab_transactions' %}">{% translate 'Transactions' %}</a>
+            <a href="{% url 'transactions:tab_sales' %}">{% translate 'Fund sales' %}</a>
+            <a href="{% url 'transactions:tab_switches' %}">{% translate 'Fund switches' %}</a>
+            <a href="{% url 'transactions:tab_accounts' %}">{% translate 'Accounts' %}</a>
+          </c-slot>
+        </c-nav-item>
         <c-nav-item section="savings" url="{% url 'savings:index' %}">{% translate 'Savings' %}</c-nav-item>
         <c-nav-item section="debts" url="{% url 'debts:index' %}">{% translate 'Debts' %}</c-nav-item>
         <c-nav-item section="books" url="{% url 'books:index' %}">{% translate 'Books' %}
@@ -119,12 +126,20 @@
 
       <script nonce="{{ csp_nonce }}" src="{% static 'js/modal.js' %}"></script>
       <script nonce="{{ csp_nonce }}">
-        document.addEventListener('htmx:after:swap', function () {
-            if (typeof stickyThead !== 'undefined') {
-                const tables = document.querySelectorAll('.sticky-table');
-                if (tables.length) stickyThead.apply(tables);
-            }
+        let pinnedTables = [];
+        function pinTableHeads() {
+            if (typeof stickyThead === 'undefined') return;
+            {# a swapped-out table's pin keeps its window listeners and print style until destroyed #}
+            const swappedOut = pinnedTables.filter(table => !table.isConnected);
+            stickyThead.apply(swappedOut, 'destroy');
+            pinnedTables = Array.from(document.querySelectorAll('.sticky-table'));
+            if (pinnedTables.length) stickyThead.apply(pinnedTables);
+        }
+        {# a legacy page keeps pinning only after a swap: its look is frozen #}
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.querySelector('.paper-skin')) pinTableHeads();
         });
+        document.addEventListener('htmx:after:swap', pinTableHeads);
       </script>
     </footer>
   </body>

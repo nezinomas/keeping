@@ -74,7 +74,7 @@ def test_income_load_form(client_logged, url_of, trigger, expected_of):
         (
             "incomes:new",
             {"date": "1999-01-01", "price": "111"},
-            r'<td class="text-left">1999-01-01</td>\s*'
+            r'<td class="text-left main__date">1999-01-01</td>\s*'
             r'<td class="text-left">Income Type</td>\s*'
             r'<td class="text-left">Account1</td>\s*'
             r'<td class="text-left"></td>\s*<td class="main__figure">111,00</td>',
@@ -246,10 +246,20 @@ def test_incomes_list_shows_the_price_with_the_subnav_only_on_the_tab(
     assert ('<nav class="subnav">' in content) is has_subnav
 
 
+def test_the_list_heads_its_text_columns_left(client_logged):
+    IncomeFactory()
+
+    content = client_logged.get(reverse("incomes:list")).content.decode("utf-8")
+
+    headers = re.findall(r'<th class="([^"]*)">([^<]*)</th>', content)
+    left = [label for classes, label in headers if "text-left" in classes.split()]
+    assert left == ["Data", "Pajamų rūšis", "Sąskaita", "Pastaba"]
+
+
 def test_list_empty_state_names_the_selected_year(client_logged):
     actual = client_logged.get(reverse("incomes:list")).content.decode("utf-8")
 
-    assert re.search(r'<div class="alert[^"]*">\s*1999 metais įrašų nėra\.', actual)
+    assert re.search(r'<div class="alert">\s*1999 metais įrašų nėra\.', actual)
 
 
 @pytest.mark.parametrize(
@@ -321,9 +331,9 @@ def test_type_load_form(client_logged, name, with_pk):
         ("xxx", r'<div class="alert">\s*Nieko nerasta\s*</div>'),
         (
             "1999 type",
-            r'<td class="text-left">1999-01-01</td>\s*'
-            r'<td class="text-left">Income Type</td>\s*'
-            r'<td class="text-left">Account1</td>\s*'
+            r'<td class="text-left main__date">1999-01-01</td>\s*'
+            r'<td class="text-left">[^<]*</td>\s*'
+            r'<td class="text-left">[^<]*</td>\s*'
             r'<td class="text-left">remark</td>',
         ),
     ],
@@ -385,6 +395,44 @@ def test_an_income_row_opens_its_own_forms(client_logged):
     )
     update = f"/incomes/update/{income.pk}/"
     assert rows == [(update, update, f"/incomes/delete/{income.pk}/")]
+
+
+@pytest.mark.parametrize(
+    "url, query, dates, rows",
+    [
+        (
+            "incomes:search",
+            {"search": "type"},
+            ["2000-01-15", "1999-01-15"],
+            [("", "2000-01-15"), ("table-group-divider", "1999-01-15")],
+        ),
+        (
+            "incomes:list",
+            {},
+            ["1999-01-15", "1999-02-15", "1999-02-20"],
+            [
+                ("", "1999-02-20"),
+                ("", "1999-02-15"),
+                ("table-group-divider", "1999-01-15"),
+            ],
+        ),
+    ],
+    ids=["search_two_januaries", "year_list_two_months"],
+)
+def test_a_divider_opens_each_new_month(client_logged, url, query, dates, rows):
+    for on in dates:
+        IncomeFactory(date=date.fromisoformat(on))
+
+    content = client_logged.get(reverse(url), query).content.decode("utf-8")
+
+    assert (
+        re.findall(
+            r'<tr hx-get="[^"]*" hx-trigger="dblclick" hx-target="#mainModal"'
+            r' class="([^"]*)">\s*<td class="text-left main__date">([\d-]+)</td>',
+            content,
+        )
+        == rows
+    )
 
 
 def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
@@ -610,16 +658,10 @@ def _type_rows(content):
     )
 
 
-def test_types_tab_draws_no_group_dividers(client_logged):
+def test_types_tab_draws_no_group_dividers_and_no_accordion(client_logged):
     content = _types_tab_of_two_kinds(client_logged)
 
     assert _type_rows(content) == [("", "Alga"), ("", "Kita")]
-
-
-def test_types_tab_draws_no_accordion(client_logged):
-    content = _types_tab_of_two_kinds(client_logged)
-
-    assert len(_type_rows(content)) == 2
     assert not re.search(r'<ul\b[^>]*class="accordion\b', content)
 
 

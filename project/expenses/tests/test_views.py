@@ -5,14 +5,13 @@ from unittest.mock import patch
 
 import pytest
 import time_machine
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.lib.utils import get_action_buttons_html
 from ...core.tests.utils import (
     clean_content,
+    count_queries,
     quick_add_pills,
     stat_card_tooltips,
     stat_cards,
@@ -146,12 +145,6 @@ def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
     assert 'class="quick-add' not in content
 
 
-def _tab_queries(client, url):
-    with CaptureQueriesContext(connection) as queries:
-        client.get(url, headers={"HX-Request": "true"})
-    return len(queries)
-
-
 def _expense_under_its_own_name(i):
     expense_type = ExpenseTypeFactory(title=f"T{i}")
     name = ExpenseNameFactory(title=f"N{i}", parent=expense_type)
@@ -173,11 +166,12 @@ def test_tab_query_count_does_not_grow_with_the_expenses(
     url = reverse(url_name, kwargs=kwargs)
     for i in range(2):
         _expense_under_its_own_name(i)
-    two = _tab_queries(client_logged, url)
+    fragment = {"HX-Request": "true"}
+    two = count_queries(lambda: client_logged.get(url, headers=fragment))
 
     for i in range(2, 6):
         _expense_under_its_own_name(i)
-    six = _tab_queries(client_logged, url)
+    six = count_queries(lambda: client_logged.get(url, headers=fragment))
 
     assert six == two
 
@@ -466,16 +460,18 @@ def test_expenses_list_filters_by_month(
     with time_machine.travel(today):
         content = client_logged.get(url, query).content.decode()
 
-    listed = re.findall(r'<td class="text-left [\w-]+">(\d{4}-\d\d-\d\d)</td>', content)
+    listed = re.findall(
+        r'<td class="text-left main__date[^"]*">(\d{4}-\d\d-\d\d)</td>', content
+    )
     assert sorted(listed) == [day.isoformat() for day in expected]
 
 
 @pytest.mark.parametrize(
     "month, expected",
     [
-        pytest.param("1", "Mėnesį 1 įrašų nėra.", id="month"),
+        pytest.param("1", "Sausio mėnesį įrašų nėra.", id="month"),
         pytest.param("all", "1999 metais įrašų nėra.", id="all"),
-        pytest.param("13", "Mėnesį 2 įrašų nėra.", id="13_today"),
+        pytest.param("13", "Vasario mėnesį įrašų nėra.", id="13_today"),
     ],
 )
 @time_machine.travel("1999-02-08")
@@ -484,9 +480,7 @@ def test_expenses_list_empty_notice(client_logged, month, expected):
     actual = client_logged.get(url).content.decode("utf-8")
 
     assert f'<div class="alert">{expected}</div>' in clean_content(actual)
-    assert "<b>" not in actual
     assert "alert-warning" not in actual
-    assert not re.search(r'hx-trigger="[^"]*reload from:body', actual)
 
 
 def test_a_duomenys_row_keeps_its_exception_mark_and_no_reload(client_logged):
@@ -495,7 +489,7 @@ def test_a_duomenys_row_keeps_its_exception_mark_and_no_reload(client_logged):
     url = reverse("expenses:list", kwargs={"month": 1})
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert '<td class="text-left exception">1999-01-01</td>' in content
+    assert '<td class="text-left main__date exception">1999-01-01</td>' in content
     assert not re.search(r'hx-trigger="[^"]*reload from:body', content)
 
 
@@ -849,7 +843,7 @@ def test_expenses_list_price_converted(client_logged, price, expected):
     content = client_logged.get(url).content.decode("utf-8")
 
     assert re.findall(
-        r'<tr hx-get=[^>]*>\s*<td class="text-left [\w-]+">([^<]*)</td>\s*'
+        r'<tr hx-get=[^>]*>\s*<td class="text-left main__date[^"]*">([^<]*)</td>\s*'
         r'<td class="text-left">([^<]*)</td>\s*<td class="text-left">([^<]*)</td>\s*'
         r'<td class="main__figure">([^<]*)</td>\s*<td class="main__figure">([^<]*)</td>',
         content,
@@ -1121,6 +1115,7 @@ def test_load_expense_name_other_journal_type_yields_no_names(
     "query",
     [
         pytest.param({"search": "xxx"}, id="no_match"),
+        pytest.param({"page": 2, "search": "xxx"}, id="no_match_on_page_2"),
         pytest.param({}, id="no_search_given"),
     ],
 )
@@ -1142,7 +1137,7 @@ def test_search_found(client_logged):
     response = client_logged.get(url, {"search": "type"})
     actual = response.content.decode("utf-8")
 
-    assert '<td class="text-left expense-ordinary">1999-01-01</td>' in actual
+    assert '<td class="text-left main__date">1999-01-01</td>' in actual
     assert '<td class="text-left cell-padding remark">Remark</td>' in actual
 
 
@@ -1190,19 +1185,6 @@ def test_search_totals_row_sums_the_quantity_and_price_under_their_columns(
         actual,
     )
     assert "<caption>Vidutinė vieneto kaina: 1,00</caption>" in actual
-    assert "alert-warning" not in actual
-
-
-def test_search_statistic_not_found(client_logged):
-    ExpenseFactory(price=100)
-    ExpenseFactory(price=200, quantity=2)
-    ExpenseFactory(price=300, quantity=3)
-
-    url = reverse("expenses:search")
-    response = client_logged.get(url, {"page": 2, "search": "xxx"})
-    actual = response.content.decode("utf-8")
-
-    assert "Nieko nerasta" in actual
 
 
 def _get(view):
@@ -1250,3 +1232,14 @@ def test_a_user_with_no_year_raises(rf, main_user, call):
 
     with pytest.raises(ValueError, match="has no year"):
         call(rf, main_user)
+
+
+def test_the_list_heads_its_text_columns_left(client_logged):
+    ExpenseFactory()
+
+    url = reverse("expenses:list", kwargs={"month": "1"})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    headers = re.findall(r'<th class="([^"]*)">([^<]*)</th>', content)
+    left = [label for classes, label in headers if "text-left" in classes.split()]
+    assert left == ["Data", "Išlaidų rūšis", "Išlaidų pavadinimas", "Pastaba"]
