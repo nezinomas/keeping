@@ -315,13 +315,15 @@ def test_page_links_keep_their_query(
     assert len(re.findall(page_link, content)) == 2
 
 
-def test_the_number_column_header_is_translated(client_logged):
+def test_the_list_heads_its_text_columns_left(client_logged):
     BookFactory()
 
     url = reverse("books:list", kwargs={"scope": "year"})
-    actual = client_logged.get(url).content.decode("utf-8")
+    content = client_logged.get(url).content.decode("utf-8")
 
-    assert '<th class="text-left day-col">Nr.</th>' in actual
+    headers = re.findall(r'<th class="([^"]*)">([^<]*)</th>', content)
+    left = [label for classes, label in headers if "text-left" in classes.split()]
+    assert left == ["Nr.", "Autorius", "Pavadinimas", "Pastaba"]
 
 
 @pytest.mark.parametrize(

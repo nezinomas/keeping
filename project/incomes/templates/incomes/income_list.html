@@ -10,7 +10,7 @@
             <th class="text-left">{% translate 'Date' %}</th>
             <th class="text-left">{% translate 'Incomes type' %}</th>
             <th class="text-left">{% translate 'Account' %}</th>
-            <th class="remark-col text-left">{% translate 'Remark' %}</th>
+            <th class="text-left">{% translate 'Remark' %}</th>
             <th class="price-col">{% translate 'Amount' %}</th>
             <th class="edit-col"></th>
             <th class="delete-col"></th>
@@ -38,12 +38,10 @@
 
 {% else %}
 
-<div class="alert">
 {% if notice %}
-    {{ notice }}
+<div class="alert">{{ notice }}</div>
 {% else %}
-    {% blocktranslate with year=request.user.selected_year %}No records in {{ year }}.{% endblocktranslate %}
+{% include 'core/paper_no_records.html' %}
 {% endif %}
-</div>
 
 {% endif %}

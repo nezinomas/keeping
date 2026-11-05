@@ -7,10 +7,10 @@
 <table class="main book-table striped hover sticky-table">
     <thead>
         <tr>
-            <th class="text-left day-col">{% translate 'No.' %}</th>
+            <th class="text-left">{% translate 'No.' %}</th>
             <th class="text-left author-col">{% translate 'Author' %}</th>
             <th class="text-left book-title-col">{% translate 'Title' %}</th>
-            <th class="text-left remark-col">{% translate 'Remark' %}</th>
+            <th class="text-left">{% translate 'Remark' %}</th>
             <th class="text-center date-col">{% translate 'Started reading' %}</th>
             <th class="text-center date-col">{% translate 'Ended reading' %}</th>
             <th class="edit-col"></th>
@@ -42,14 +42,12 @@
 {% else %}
 
 {# a search brings its own notice, from SearchMixin #}
-<div class="alert">
 {% if notice %}
-    {{ notice }}
+<div class="alert">{{ notice }}</div>
 {% elif scope == "all" %}
-    {% translate "No records" %}
+<div class="alert">{% translate "No records" %}</div>
 {% else %}
-    {% blocktranslate with year=request.user.selected_year %}No records in {{ year }}.{% endblocktranslate %}
+{% include 'core/paper_no_records.html' %}
 {% endif %}
-</div>
 
 {% endif %}

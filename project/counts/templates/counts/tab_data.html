@@ -3,7 +3,6 @@
 
 {% if object_list %}
 
-<div class="table-responsive">
 <table class="main striped hover sticky-table">
     <thead>
         <tr>
@@ -27,7 +26,6 @@
         {% endfor %}
     </tbody>
 </table>
-</div>
 
 {% else %}
     {% include 'counts/includes/notice.html' %}
