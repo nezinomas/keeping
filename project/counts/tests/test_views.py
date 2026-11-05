@@ -511,14 +511,13 @@ def test_index_draws_the_overview_cards(client_logged):
 
 
 @time_machine.travel(datetime(1999, 1, 1))
-def test_index_calendar_replaces_the_heatmap_charts(client_logged):
+def test_index_draws_the_calendar(client_logged):
     CountFactory()
 
     url = reverse("counts:index", kwargs={"slug": "count-type"})
     content = client_logged.get(url).content.decode()
 
-    assert '<div id="chart-calendar-1H-container">' not in content
-    assert '<div id="chart-calendar-2H-container">' not in content
+    assert '<div class="heat-card" id="heat-card">' in content
 
 
 @time_machine.travel(datetime(1999, 1, 1))
