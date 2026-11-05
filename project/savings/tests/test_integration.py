@@ -4,7 +4,7 @@ from selenium.webdriver.support.ui import Select
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
-from .factories import SavingTypeFactory
+from .factories import SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -42,3 +42,14 @@ class Savings(Browser):
         # sum and fee fields should be empty, not 0.0 or 0
         assert self.browser.find_element(By.ID, "id_price").get_attribute("value") == ""
         assert self.browser.find_element(By.ID, "id_fee").get_attribute("value") == ""
+
+    def test_the_legacy_list_pins_no_table_head_on_load(self):
+        SavingFactory()
+
+        self.browser.get(f"{self.live_server_url}/savings/")
+        self.wait_until_idle()
+
+        assert self.browser.find_elements(By.CSS_SELECTOR, ".sticky-table")
+        assert not self.browser.find_elements(
+            By.CSS_SELECTOR, ".sticky-table thead.tableFloatingHeaderOriginal"
+        )
