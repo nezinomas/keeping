@@ -72,7 +72,8 @@
             td.main__name {
                 overflow-wrap: anywhere;
 
-                .main__mark {
+                .main__mark,
+                .main__closed {
                     overflow-wrap: normal;
                 }
             }
