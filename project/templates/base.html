@@ -126,11 +126,14 @@
 
       <script nonce="{{ csp_nonce }}" src="{% static 'js/modal.js' %}"></script>
       <script nonce="{{ csp_nonce }}">
+        let pinnedTables = [];
         function pinTableHeads() {
-            if (typeof stickyThead !== 'undefined') {
-                const tables = document.querySelectorAll('.sticky-table');
-                if (tables.length) stickyThead.apply(tables);
-            }
+            if (typeof stickyThead === 'undefined') return;
+            {# a swapped-out table's pin keeps its window listeners and print style until destroyed #}
+            const swappedOut = pinnedTables.filter(table => !table.isConnected);
+            stickyThead.apply(swappedOut, 'destroy');
+            pinnedTables = Array.from(document.querySelectorAll('.sticky-table'));
+            if (pinnedTables.length) stickyThead.apply(pinnedTables);
         }
         {# a legacy page keeps pinning only after a swap: its look is frozen #}
         document.addEventListener('DOMContentLoaded', function () {
