@@ -115,9 +115,7 @@ class Lists(ListViewMixin):
     def get_context_data(self, **kwargs):
         year = self.user.selected_year()
         context = {
-            "month": self.month,
             "all_months": self.month.value == ALL,
-            "year": year,
             "first_day": self.month.first_day(year),
         }
         return super().get_context_data(**kwargs) | context | get_action_buttons_html()
