@@ -107,24 +107,27 @@ def test_books_adds_a_book_from_the_foot_of_the_page(client_logged):
     ]
 
 
+# the Index chart counts every year's finished books; the lists show 1999's alone
 @pytest.mark.parametrize(
-    ("url_name", "kwargs"),
+    ("url_name", "kwargs", "other_years"),
     [
-        ("books:tab_index", {}),
-        ("books:tab_data", {"scope": "year"}),
-        ("books:list", {"scope": "year"}),
+        ("books:tab_index", {}, (1997, 1998)),
+        ("books:tab_data", {"scope": "year"}, ()),
+        ("books:list", {"scope": "year"}, ()),
     ],
     ids=["index", "data", "list"],
 )
-def test_page_query_count_does_not_grow_with_the_books(client_logged, url_name, kwargs):
+def test_page_query_count_does_not_grow_with_the_books(
+    client_logged, url_name, kwargs, other_years
+):
     url = reverse(url_name, kwargs=kwargs)
     BookFactory()
     BookFactory(ended=date(1999, 2, 1))
     two = count_queries(lambda: client_logged.get(url))
 
-    BookFactory()
-    BookFactory(ended=date(1999, 3, 1))
-    for year in (1997, 1998):
+    BookFactory.create_batch(2)
+    BookFactory.create_batch(2, ended=date(1999, 3, 1))
+    for year in other_years:
         BookFactory(started=date(year, 1, 1), ended=date(year, 2, 1))
     six = count_queries(lambda: client_logged.get(url))
 
