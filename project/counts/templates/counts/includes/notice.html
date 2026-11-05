@@ -1,7 +1,0 @@
-{% load i18n %}
-
-{% if notice == 'empty_year' %}
-{% include 'core/paper_no_records.html' %}
-{% elif notice == 'no_counters' %}
-<div class="alert">{% translate 'You have no counters.' %}</div>
-{% endif %}
