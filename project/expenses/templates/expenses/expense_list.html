@@ -85,7 +85,7 @@
 {% elif all_months %}
 {% include 'core/paper_no_records.html' %}
 {% else %}
-<div class="alert">{% blocktranslate with month=month.value %}There are no records for month {{ month }}.{% endblocktranslate %}</div>
+<div class="alert">{% blocktranslate with month=first_day|date:"E"|capfirst %}No records for {{ month }}.{% endblocktranslate %}</div>
 {% endif %}
 
 {% endif %}

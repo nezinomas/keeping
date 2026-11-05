@@ -707,8 +707,15 @@ def test_data(client_logged):
     assert f'<a role="button" hx-get="/counts/delete/{p.pk}/"' in actual
 
 
-def test_data_with_records_reads_the_counts_once(client_logged):
-    CountFactory()
+@pytest.mark.parametrize(
+    "day",
+    [
+        pytest.param(date(1999, 1, 1), id="records"),
+        pytest.param(date(1974, 1, 1), id="empty_year"),
+    ],
+)
+def test_data_reads_the_counts_once(client_logged, day):
+    CountFactory(date=day)
 
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
     with CaptureQueriesContext(connection) as queries:
@@ -728,14 +735,17 @@ def test_data_no_records(client_logged):
     assert "1999 metais įrašų nėra." in actual
 
 
-def test_data_of_a_counter_with_no_records_at_all_names_no_year(client_logged):
+def test_data_of_a_counter_with_no_records_at_all_names_the_year(
+    client_logged, main_user
+):
+    main_user.year = 2000
+    main_user.save()
     CountTypeFactory()
 
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
     actual = client_logged.get(url, follow=True).content.decode("utf-8")
 
-    assert "Įrašų nėra" in actual
-    assert "metais įrašų nėra" not in actual
+    assert re.search(r'<div class="alert">\s*2000 metais įrašų nėra\.\s*</div>', actual)
 
 
 def test_the_counts_notices_are_the_paper_notice_and_not_the_legacy_alert(
@@ -776,7 +786,11 @@ def test_history_context_carries_the_cards_and_keeps_records(client_logged):
     assert "info_row" not in response.context
 
 
-def test_history_of_a_counter_with_no_records_renders_its_empty_state(client_logged):
+def test_history_of_a_counter_with_no_records_renders_its_empty_state(
+    client_logged, main_user
+):
+    main_user.year = 2000
+    main_user.save()
     CountTypeFactory()
 
     url = reverse("counts:tab_history", kwargs={"slug": "count-type"})
@@ -784,6 +798,9 @@ def test_history_of_a_counter_with_no_records_renders_its_empty_state(client_log
 
     assert content.count('class="trend-card"') == 3
     assert "Įrašų nėra" in content
+    assert re.search(
+        r'<div class="alert">\s*2000 metais įrašų nėra\.\s*</div>', content
+    )
     assert "Trūksta duomenų." not in content
 
 

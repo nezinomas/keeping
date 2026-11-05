@@ -18,7 +18,7 @@ from ..core.mixins.views import (
 )
 from . import services
 from .forms import CountForm, CountTypeForm
-from .lib.notices import EMPTY_YEAR, NO_RECORDS
+from .lib.notices import EMPTY_YEAR
 from .lib.views_helper import CountUrlMixin
 from .models import CountType
 from .services.cards import HistoryCards, OverviewCards, PeriodicityCards
@@ -117,11 +117,7 @@ class TabData(TabViewMixin, ListViewMixin):
         if context["object_list"]:
             return context
 
-        notice = NO_RECORDS
-        if self.service.items(count_type=self.kwargs["slug"]).exists():
-            notice = EMPTY_YEAR
-
-        return {**context, "notice": notice}
+        return {**context, "notice": EMPTY_YEAR}
 
 
 class TabHistory(TabViewMixin, TemplateViewMixin):
@@ -135,7 +131,7 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **context,
             "cards": HistoryCards.build(life),
-            "notice": "" if context["records"] else NO_RECORDS,
+            "notice": "" if context["records"] else EMPTY_YEAR,
         }
 
 

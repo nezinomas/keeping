@@ -33,6 +33,12 @@ class MonthFilter:
             return {}
         return {"date__month": int(self.value)}
 
+    def first_day(self, year: int) -> date:
+        month = 1
+        if self.value != ALL:
+            month = int(self.value)
+        return date(year, month, 1)
+
     def items(self) -> list[FilterItem]:
         labels = (*month_names().values(), _("All records"))
         return [
