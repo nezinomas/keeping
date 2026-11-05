@@ -22,7 +22,7 @@
         <td class="text-left main__date">{{ object.date|date:"Y-m-d" }}</td>
         <td class="text-left main__name">{{ object.from_account }}</td>
         <td class="text-left main__name">{{ object.to_account }}</td>
-        <td class="main__figure">{{ object.price|price|cellformat }}</td>
+        <td class="main__figure" data-cell="{{ object.price|cell_state }}">{{ object.price|price|cellformat }}</td>
         <c-td-edit :url="url_update" />
         <c-td-delete :url="url_delete" />
     </tr>

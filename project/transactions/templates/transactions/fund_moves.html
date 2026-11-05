@@ -23,8 +23,8 @@
         <td class="text-left main__date">{{ move.date|date:"Y-m-d" }}</td>
         <td class="text-left main__name">{{ move.from_account }}{% if closes_fund %} <span class="main__mark">{% translate 'Closed' %}</span>{% endif %}</td>
         <td class="text-left main__name">{{ move.to_account }}</td>
-        <td class="main__figure">{{ move.price|price|cellformat }}</td>
-        <td class="main__figure main__fold">{{ move.fee|price|cellformat }}</td>
+        <td class="main__figure" data-cell="{{ move.price|cell_state }}">{{ move.price|price|cellformat }}</td>
+        <td class="main__figure main__fold" data-cell="{{ move.fee|cell_state }}">{{ move.fee|price|cellformat }}</td>
         <c-td-edit :url="url_update" />
         <c-td-delete :url="url_delete" />
     </tr>

@@ -124,8 +124,8 @@ def _fund_moves(second_user):
     switch(from_account=sold, date=date(1999, 4, 1))
     sale(from_account=tied, date=date(1999, 3, 1))
     switch(from_account=tied, date=date(1999, 3, 1))
-    sale(from_account=early, date=date(1999, 1, 1))
-    switch(from_account=early, date=date(1999, 2, 1))
+    sale(from_account=early, date=date(1999, 1, 1), fee=0)
+    switch(from_account=early, date=date(1999, 2, 1), fee=0)
     sale(from_account=later, date=date(2000, 1, 1))
     switch(from_account=later, date=date(2000, 1, 1))
     _foreign_move(KINDS["sale"], second_user.journal)
@@ -137,9 +137,12 @@ MOVE_ROW = (
     r'<tr [^>]*class="([^"]*)">\s*<td class="text-left main__date">([^<]*)</td>'
     r'\s*<td class="text-left main__name">(.*?)</td>'
     r'\s*<td class="text-left main__name">(.*?)</td>'
-    r'\s*<td class="main__figure">([^<]*)</td>'
+    r'\s*<td class="main__figure" data-cell="">([^<]*)</td>'
 )
-FUND_MOVE_ROW = MOVE_ROW + r'\s*<td class="main__figure main__fold">([^<]*)</td>'
+FUND_MOVE_ROW = (
+    MOVE_ROW
+    + r'\s*<td class="main__figure main__fold" data-cell="([^"]*)">([^<]*)</td>'
+)
 FEES = [("price-col main__fold", "Mokesčiai")]
 
 
@@ -176,11 +179,12 @@ def _head(from_header, to_header, fees=()):
             _head("Iš fondo", "Į sąskaitą", FEES),
             FUND_MOVE_ROW,
             [
-                ("", "1999-06-01", f"Sold{CLOSED}", "Bank", "1.000.000,00", "1.000,00"),
+                ("", "1999-06-01", f"Sold{CLOSED}", "Bank", "1.000.000,00")
+                + ("", "1.000,00"),
                 ("table-group-divider", "1999-03-01", f"Tied{CLOSED}", "Bank")
-                + ("1.000.000,00", "1.000,00"),
+                + ("1.000.000,00", "", "1.000,00"),
                 ("table-group-divider", "1999-01-01", "Early", "Bank")
-                + ("1.000.000,00", "1.000,00"),
+                + ("1.000.000,00", "empty", "-"),
             ],
             id="sales",
         ),
@@ -190,11 +194,11 @@ def _head(from_header, to_header, fees=()):
             _head("Iš fondo", "Į fondą", FEES),
             FUND_MOVE_ROW,
             [
-                ("", "1999-04-01", "Sold", "Other", "0,10", "0,02"),
+                ("", "1999-04-01", "Sold", "Other", "0,10", "", "0,02"),
                 ("table-group-divider", "1999-03-01", f"Tied{CLOSED}", "Other")
-                + ("0,10", "0,02"),
+                + ("0,10", "", "0,02"),
                 ("table-group-divider", "1999-02-01", f"Early{CLOSED}", "Other")
-                + ("0,10", "0,02"),
+                + ("0,10", "empty", "-"),
             ],
             id="switches",
         ),
