@@ -11,7 +11,8 @@ pytestmark = pytest.mark.django_db
 
 
 SAVED_ROW = (
-    r'<tr hx-get="[^"]*" hx-trigger="dblclick"[^>]*>\s*<td class="text-left">Title</td>'
+    r'<tr hx-get="[^"]*" hx-trigger="dblclick"[^>]*>\s*'
+    r'<td class="text-left main__name">Title</td>'
 )
 
 

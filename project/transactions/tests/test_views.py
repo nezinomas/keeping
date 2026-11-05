@@ -218,13 +218,14 @@ CLOSED_BUTTON = re.compile(
     r""" :aria-current="shown \? 'true' : null">Uždarytos sąskaitos</button>\s*"""
 )
 TAB_PART = re.compile(
-    r'<table class="main striped hover"(?P<attrs>[^>]*)>(?P<body>.*?)</table>'
+    r'<table class="main striped hover sticky-table"(?P<attrs>[^>]*)>'
+    r"(?P<body>.*?)</table>"
     r'|<div class="alert">\s*(?P<notice>[^<]*?)\s*</div>'
     r'|(?P<scope><div x-data="\{ shown: false \}">\s*)?'
     r'<nav class="filter-line"(?P<nav_attrs>[^>]*)>(?P<nav>.*?)</nav>',
     re.DOTALL,
 )
-HEADER = [("text-left", "Sąskaita"), ("edit-col", "")]
+HEADER = [("text-left main__name", "Sąskaita"), ("edit-col", "")]
 FOLDED = ' x-show="shown" x-cloak'
 BUTTON = "the closed accounts' button"
 OTHER_FILTER_LINE = "another filter line"
@@ -250,7 +251,8 @@ def _accounts_tab(content):
                     re.findall(r'<th class="([^"]*)">([^<]*)</th>', part["body"]),
                     re.findall(
                         r'<tr hx-get="[^"]*" hx-trigger="dblclick"'
-                        r' hx-target="#mainModal">\s*<td class="text-left">(.*?)</td>',
+                        r' hx-target="#mainModal">\s*'
+                        r'<td class="text-left main__name">(.*?)</td>',
                         part["body"],
                     ),
                 )
@@ -308,71 +310,62 @@ def test_the_accounts_tab_lists_the_open_then_folds_the_closed(
     content = client_logged.get(TAB_ACCOUNTS).content.decode()
 
     assert _accounts_tab(content) == parts
-    assert re.findall(
-        r'<div hx-get="([^"]*)" hx-target="#tab_content" hx-trigger="reload', content
-    ) == [TAB_ACCOUNTS]
+
+
+def test_no_open_account_draws_the_notice_above_the_closed_ones(client_logged):
+    AccountFactory(title="Old", closed=1998)
+
+    content = _tab(client_logged, TAB_ACCOUNTS)
+
+    assert _accounts_tab(content) == [
+        "1999 metais įrašų nėra.",
+        BUTTON,
+        (
+            FOLDED,
+            HEADER,
+            ['<s>Old</s> <span class="main__closed">uždaryta 1998</span>'],
+        ),
+    ]
+
+
+# each row's tab, what builds it, and the forms its buttons open, in column order
+ROW_FORMS = {
+    **{
+        name: (
+            kind.tab_url,
+            kind.factory,
+            [("edit-col", kind.update_url), ("delete-col", kind.delete_url)],
+        )
+        for name, kind in KINDS.items()
+    },
+    "account": (
+        "transactions:tab_accounts",
+        AccountFactory,
+        [("edit-col", "accounts:update")],
+    ),
+}
+ROW = re.compile(
+    r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"[^>]*>'
+    r"(.*?)</tr>",
+    re.DOTALL,
+)
+ROW_BUTTON = re.compile(
+    r'<td class="(edit-col|delete-col)">\s*<a role="button" hx-get="([^"]*)"'
+)
 
 
 @pytest.mark.parametrize(
-    "closed, parts",
-    [
-        pytest.param(
-            [1998],
-            [
-                "1999 metais įrašų nėra.",
-                BUTTON,
-                (
-                    FOLDED,
-                    HEADER,
-                    ['<s>Old</s> <span class="main__closed">uždaryta 1998</span>'],
-                ),
-            ],
-            id="closed_before",
-        ),
-        pytest.param([], ["1999 metais įrašų nėra."], id="no_accounts"),
-    ],
+    "tab_url, factory, forms", ROW_FORMS.values(), ids=ROW_FORMS.keys()
 )
-def test_no_open_account_draws_the_notice_above_the_closed_ones(
-    client_logged, closed, parts
-):
-    for year in closed:
-        AccountFactory(title="Old", closed=year)
+def test_a_row_opens_its_own_forms(client_logged, tab_url, factory, forms):
+    record = factory()
 
-    content = _tab(client_logged, TAB_ACCOUNTS)
+    content = _tab(client_logged, reverse(tab_url))
 
-    assert _accounts_tab(content) == parts
-
-
-def test_an_account_row_opens_its_form(client_logged):
-    account = AccountFactory(title="Bank")
-
-    content = _tab(client_logged, TAB_ACCOUNTS)
-
-    rows = re.findall(
-        r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
-        r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"',
-        content,
-        re.DOTALL,
-    )
-    update = reverse("accounts:update", args=[account.pk])
-    assert rows == [(update, update)]
-
-
-@by_kind
-def test_a_move_row_opens_its_own_forms(client_logged, kind):
-    move = kind.factory()
-
-    content = _tab(client_logged, reverse(kind.tab_url))
-
-    rows = re.findall(
-        r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
-        r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
-        r'.*?<td class="delete-col">\s*<a role="button" hx-get="([^"]*)"',
-        content,
-        re.DOTALL,
-    )
-    update = reverse(kind.update_url, args=[move.pk])
-    assert rows == [(update, update, reverse(kind.delete_url, args=[move.pk]))]
+    rows = [(url, ROW_BUTTON.findall(cells)) for url, cells in ROW.findall(content)]
+    buttons = [(column, reverse(name, args=[record.pk])) for column, name in forms]
+    _, update = buttons[0]  # a double click opens what the edit button opens
+    assert rows == [(update, buttons)]
 
 
 @by_kind

@@ -1,7 +1,7 @@
 {% load i18n %}
 
 {% if object_list %}
-{% include 'transactions/accounts_table.html' with accounts=object_list %}
+<c-accounts-table :accounts="object_list" />
 {% else %}
 {% include 'core/paper_no_records.html' %}
 {% endif %}
@@ -11,6 +11,6 @@
     <nav class="filter-line">
         <button type="button" class="filter-line__item" @click="shown = ! shown" :aria-current="shown ? 'true' : null">{% translate 'Closed accounts' %}</button>
     </nav>
-    {% include 'transactions/accounts_table.html' with accounts=closed_accounts closed=True %}
+    <c-accounts-table :accounts="closed_accounts" closed x-show="shown" x-cloak />
 </div>
 {% endif %}

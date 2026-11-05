@@ -1,0 +1,18 @@
+{% load i18n %}
+<c-vars accounts="" closed="" />
+
+<c-paper-table :attrs="attrs">
+    <c-slot name="head">
+        <tr>
+            <th class="text-left main__name">{% translate 'Account' %}</th>
+            <th class="edit-col"></th>
+        </tr>
+    </c-slot>
+    {% for account in accounts %}
+    {% url 'accounts:update' account.pk as url_update %}
+    <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
+        <td class="text-left main__name">{% if closed %}<s>{{ account.title }}</s> <span class="main__closed">{% blocktranslate with year=account.closed %}closed {{ year }}{% endblocktranslate %}</span>{% else %}{{ account.title }}{% endif %}</td>
+        <c-td-edit :url="url_update" />
+    </tr>
+    {% endfor %}
+</c-paper-table>
