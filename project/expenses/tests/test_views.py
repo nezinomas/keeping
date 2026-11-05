@@ -1232,3 +1232,14 @@ def test_a_user_with_no_year_raises(rf, main_user, call):
 
     with pytest.raises(ValueError, match="has no year"):
         call(rf, main_user)
+
+
+def test_the_list_heads_its_text_columns_left(client_logged):
+    ExpenseFactory()
+
+    url = reverse("expenses:list", kwargs={"month": "1"})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    headers = re.findall(r'<th class="([^"]*)">([^<]*)</th>', content)
+    left = [label for classes, label in headers if "text-left" in classes.split()]
+    assert left == ["Data", "Išlaidų rūšis", "Išlaidų pavadinimas", "Pastaba"]
