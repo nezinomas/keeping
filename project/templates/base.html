@@ -126,12 +126,17 @@
 
       <script nonce="{{ csp_nonce }}" src="{% static 'js/modal.js' %}"></script>
       <script nonce="{{ csp_nonce }}">
-        document.addEventListener('htmx:after:swap', function () {
+        function pinTableHeads() {
             if (typeof stickyThead !== 'undefined') {
                 const tables = document.querySelectorAll('.sticky-table');
                 if (tables.length) stickyThead.apply(tables);
             }
+        }
+        {# a legacy page keeps pinning only after a swap: its look is frozen #}
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.querySelector('.paper-skin')) pinTableHeads();
         });
+        document.addEventListener('htmx:after:swap', pinTableHeads);
       </script>
     </footer>
   </body>
