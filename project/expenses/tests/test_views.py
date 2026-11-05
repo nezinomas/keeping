@@ -475,9 +475,9 @@ def test_expenses_list_filters_by_month(
 @pytest.mark.parametrize(
     "month, expected",
     [
-        pytest.param("1", "Mėnesį 1 įrašų nėra.", id="month"),
+        pytest.param("1", "Sausio mėnesį įrašų nėra.", id="month"),
         pytest.param("all", "1999 metais įrašų nėra.", id="all"),
-        pytest.param("13", "Mėnesį 2 įrašų nėra.", id="13_today"),
+        pytest.param("13", "Vasario mėnesį įrašų nėra.", id="13_today"),
     ],
 )
 @time_machine.travel("1999-02-08")

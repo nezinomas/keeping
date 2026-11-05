@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 import pytest
@@ -28,7 +29,10 @@ def test_debt_list_empty(client_logged, debt_type, other_factory):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert "<b>1999</b> metais įrašų nėra" in content
+    assert re.search(
+        r'<div class="alert alert-warning">\s*1999 metais įrašų nėra\.\s*</div>',
+        content,
+    )
 
 
 @pytest.mark.parametrize(

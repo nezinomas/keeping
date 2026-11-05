@@ -28,6 +28,8 @@
 
 {% else %}
 
-    {% include 'core/paper_no_records.html' with two_years=True %}
+    <div class="alert">
+        {% translate 'Data are missing. At least two years of data is required.' %}
+    </div>
 
 {% endif %}

@@ -63,3 +63,14 @@ def test_the_items_name_every_month_then_all_and_mark_the_open_one():
 )
 def test_a_filter_looks_its_month_up_in_the_date(value, expected):
     assert MonthFilter(value).lookup() == expected
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        pytest.param("all", date(1999, 1, 1), id="all"),
+        pytest.param("3", date(1999, 3, 1), id="month"),
+    ],
+)
+def test_a_filter_starts_on_its_first_day(value, expected):
+    assert MonthFilter(value).first_day(1999) == expected
