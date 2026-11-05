@@ -397,6 +397,44 @@ def test_an_income_row_opens_its_own_forms(client_logged):
     assert rows == [(update, update, f"/incomes/delete/{income.pk}/")]
 
 
+@pytest.mark.parametrize(
+    "url, query, dates, rows",
+    [
+        (
+            "incomes:search",
+            {"search": "type"},
+            ["2000-01-15", "1999-01-15"],
+            [("", "2000-01-15"), ("table-group-divider", "1999-01-15")],
+        ),
+        (
+            "incomes:list",
+            {},
+            ["1999-01-15", "1999-02-15", "1999-02-20"],
+            [
+                ("", "1999-02-20"),
+                ("", "1999-02-15"),
+                ("table-group-divider", "1999-01-15"),
+            ],
+        ),
+    ],
+    ids=["search_two_januaries", "year_list_two_months"],
+)
+def test_a_divider_opens_each_new_month(client_logged, url, query, dates, rows):
+    for on in dates:
+        IncomeFactory(date=date.fromisoformat(on))
+
+    content = client_logged.get(reverse(url), query).content.decode("utf-8")
+
+    assert (
+        re.findall(
+            r'<tr hx-get="[^"]*" hx-trigger="dblclick" hx-target="#mainModal"'
+            r' class="([^"]*)">\s*<td class="text-left main__date">([\d-]+)</td>',
+            content,
+        )
+        == rows
+    )
+
+
 def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
     content = client_logged.get(reverse("incomes:tab_data")).content.decode()
 
