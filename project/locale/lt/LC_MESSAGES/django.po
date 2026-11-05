@@ -2203,10 +2203,6 @@ msgstr "Į sąskaitą"
 msgid "Amount left after fee"
 msgstr "Suma kuri lieka atskaičius mokesčius"
 
-#: .\project\transactions\templates\transactions\index.html:20
-msgid "Account ⇔ Account"
-msgstr "Sąskaita ⇔ Sąskaita"
-
 #: .\project\transactions\templates\transactions\index.html:27
 #: .\project\transactions\views.py:107 .\project\transactions\views.py:117
 msgid "Fund ⇒ Account"
