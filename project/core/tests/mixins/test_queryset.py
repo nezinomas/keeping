@@ -41,7 +41,7 @@ def test_service_class_is_not_callable(mocker):
     view.service_class = "IncomeModelService"
     view.request = mocker.Mock()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="object is not callable"):
         view.get_queryset()
 
 

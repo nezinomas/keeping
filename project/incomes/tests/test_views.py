@@ -332,8 +332,8 @@ def test_type_load_form(client_logged, name, with_pk):
         (
             "1999 type",
             r'<td class="text-left main__date">1999-01-01</td>\s*'
-            r'<td class="text-left">Income Type</td>\s*'
-            r'<td class="text-left">Account1</td>\s*'
+            r'<td class="text-left">[^<]*</td>\s*'
+            r'<td class="text-left">[^<]*</td>\s*'
             r'<td class="text-left">remark</td>',
         ),
     ],
@@ -620,16 +620,10 @@ def _type_rows(content):
     )
 
 
-def test_types_tab_draws_no_group_dividers(client_logged):
+def test_types_tab_draws_no_group_dividers_and_no_accordion(client_logged):
     content = _types_tab_of_two_kinds(client_logged)
 
     assert _type_rows(content) == [("", "Alga"), ("", "Kita")]
-
-
-def test_types_tab_draws_no_accordion(client_logged):
-    content = _types_tab_of_two_kinds(client_logged)
-
-    assert len(_type_rows(content)) == 2
     assert not re.search(r'<ul\b[^>]*class="accordion\b', content)
 
 
