@@ -602,6 +602,8 @@ def test_update_to_another_year(client_logged, kind, extra):
     actual = response.content.decode("utf-8")
 
     assert re.findall(r'<td class="text-left main__date">([^<]*)</td>', actual) == []
+    tr.refresh_from_db()
+    assert tr.date == date(2010, 12, 31)
 
 
 @pytest.mark.parametrize(
