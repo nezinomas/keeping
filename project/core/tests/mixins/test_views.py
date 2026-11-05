@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
 from ....savings.tests.factories import SavingTypeFactory
+from ....users.views import Login
 
 pytestmark = pytest.mark.django_db
 
@@ -41,3 +42,17 @@ def test_a_load_view_lists_the_journals_open_items_but_the_source(
     actual = client_logged.get(reverse(url_name), data_of(source)).content.decode()
 
     assert OPTION.findall(actual) == listed
+
+
+@pytest.mark.parametrize(
+    "url_name",
+    [
+        pytest.param("transactions:load_saving_type", id="fund"),
+        pytest.param("accounts:load", id="account"),
+        pytest.param("accounts:new", id="account_new"),
+    ],
+)
+def test_a_view_sends_the_anonymous_to_login(client, url_name):
+    response = client.get(reverse(url_name), follow=True)
+
+    assert response.resolver_match.func.view_class is Login

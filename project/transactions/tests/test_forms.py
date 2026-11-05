@@ -15,8 +15,8 @@ from ...bookkeeping.tests.helper import quiet_build
 from ...plans.tests.factories import SavingPlanFactory
 from ...savings.forms import SavingTypeForm
 from ...savings.models import SavingBalance, SavingType
+from ...savings.services.model_services import SavingTypeModelService
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
-from ..forms import SavingChangeForm
 from .factories import SavingChangeFactory
 from .kinds import FUND_MOVES, KINDS
 
@@ -219,7 +219,6 @@ def test_form_invalid_date(main_user, name, year):
     )
 
     assert not form.is_valid()
-    assert "date" in form.errors
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
@@ -609,7 +608,7 @@ def test_form_switch_reversed_onto_its_old_target_can_close_it(main_user, fund):
     target = SavingTypeFactory(title="Target")
     switch = _saved_move(main_user, "switch", source, fund, "2000-12-01", False)
 
-    form = SavingChangeForm(
+    form = KINDS["switch"].form(
         user=main_user,
         today=TODAY,
         instance=switch,
@@ -627,7 +626,7 @@ def test_form_edit_with_close_unticked_reopens_the_fund(
 
     _saved_move(main_user, move, fund, receiver, "1999-01-01", False, row)
 
-    assert SavingType.objects.get(pk=fund.pk).closed is None
+    assert fund in SavingTypeModelService(main_user).items(year=2000)
 
 
 @pytest.mark.parametrize("move", FUND_MOVES)
@@ -705,8 +704,7 @@ def test_form_closing_move_moved_to_another_fund_reopens_the_first(
 
     _saved_move(main_user, move, second, receiver, "1999-12-01", True, row)
 
-    first.refresh_from_db()
-    assert first.closed is None
+    assert first in SavingTypeModelService(main_user).items(year=2000)
     second.refresh_from_db()
     assert second.closed == 1999
 
@@ -729,8 +727,7 @@ def test_form_closing_move_moved_away_unticked_reopens_the_first(
 
     _saved_move(main_user, move, second, receiver, "2000-12-01", False, row)
 
-    first.refresh_from_db()
-    assert first.closed is None
+    assert first in SavingTypeModelService(main_user).items(year=2001)
     second.refresh_from_db()
     assert second.closed == second_closed
 

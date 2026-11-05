@@ -18,8 +18,8 @@ from ...core.tests.utils import (
     view_for,
 )
 from ...savings.models import SavingBalance, SavingType
+from ...savings.services.model_services import SavingTypeModelService
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
-from ...users.views import Login
 from .. import models, views
 from ..tabs import TABS
 from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
@@ -460,6 +460,24 @@ def test_load_form(client_logged, kind):
     actual = response.content.decode("utf-8")
 
     assert '<input type="text" name="date" value="1999-01-01"' in actual
+
+
+@by_kind
+@pytest.mark.parametrize(
+    "url_of",
+    [
+        pytest.param(lambda kind: reverse(kind.new_url), id="new"),
+        pytest.param(
+            lambda kind: reverse(kind.update_url, kwargs={"pk": kind.factory().pk}),
+            id="update",
+        ),
+    ],
+)
+def test_a_form_posts_to_its_own_url_under_the_kinds_title(client_logged, kind, url_of):
+    url = url_of(kind)
+
+    actual = client_logged.get(url).content.decode("utf-8")
+
     assert re.search(rf'<form [^>]*hx-post="{url}"', actual)
     assert f'<h5 class="modal-title">{kind.modal_title}</h5>' in actual
 
@@ -547,8 +565,6 @@ def test_load_update_form(client_logged, kind, kwargs, more):
     actual = clean_content(response.content.decode("utf-8"))
 
     assert "Atnaujinti ir uždaryti</button>" in actual
-    assert re.search(rf'<form [^>]*hx-post="{url}"', actual)
-    assert f'<h5 class="modal-title">{kind.modal_title}</h5>' in actual
     assert 'name="date" value="1999-01-01"' in actual
     assert 'name="price" value="0.01"' in actual
     assert (
@@ -813,7 +829,7 @@ def test_closing_sell_removed_reopens_the_fund(
 
     edit(client_logged, sell, other)
 
-    assert SavingType.objects.get(pk=fund.pk).closed is None
+    assert fund in SavingTypeModelService(main_user).items(year=2024)
     years = SavingBalance.objects.filter(saving_type=fund).values_list("year")
     assert {year for (year,) in years} == years_after
 
@@ -833,15 +849,6 @@ def test_savings_change_not_show_other_journal_types(client_logged, second_user)
 
     to_account = re.search(r'<select name="to_account".*?</select>', actual, re.DOTALL)
     assert [title for _, title in OPTION.findall(to_account[0])] == ["Own"]
-
-
-def test_load_saving_type_must_logged(client):
-    url = reverse("transactions:load_saving_type")
-
-    response = client.get(url, follow=True)
-
-    assert response.status_code == 200
-    assert response.resolver_match.func.view_class is Login
 
 
 @pytest.mark.parametrize(

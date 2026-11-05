@@ -4,7 +4,6 @@ import re
 import pytest
 from django.urls import reverse
 
-from ...users.views import Login
 from .factories import AccountFactory
 
 pytestmark = pytest.mark.django_db
@@ -47,7 +46,10 @@ def test_accounts_save_invalid_data(client_logged):
     response = client_logged.post(url, data)
     actual = response.content.decode("utf-8")
 
-    assert actual.count('aria-invalid="true"') == 2
+    assert re.findall(r'name="(\w+)"[^>]*aria-invalid="true"', actual) == [
+        "title",
+        "order",
+    ]
 
 
 @BY_FORM
@@ -82,8 +84,6 @@ def test_an_account_closed_before_the_year_opens_its_form(client_logged, main_us
 
 
 def test_accounts_have_no_page_of_their_own(client_logged):
-    AccountFactory(title="S1")
-
     assert client_logged.get("/accounts/").status_code == 404
 
 
@@ -95,16 +95,3 @@ def test_new_form_renders_the_title_field(client_logged):
 
     assert '<h5 class="modal-title">Sąskaita</h5>' in actual
     assert 'name="title"' in actual
-
-
-def test_new_form_redirects_anonymous_to_login(tp):
-    response = tp.get("accounts:new")
-
-    assert response.status_code == 302
-    assert response.url.startswith(reverse("users:login"))
-
-
-def test_load_to_account_must_logged(tp):
-    response = tp.get("accounts:load", follow=True)
-
-    assert response.resolver_match.func.view_class is Login
