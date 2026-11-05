@@ -21,6 +21,9 @@ class AccountModelService(BaseModelService):
     def items_in(self, year: int):
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
+    def closed_before(self, year: int):
+        return self.objects.filter(closed__lt=year).order_by("closed", "title")
+
     def all(self):
         return self.objects.all()
 

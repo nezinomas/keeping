@@ -4,17 +4,11 @@ from datetime import date
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from ...core.lib.filter_line import FilterItem
 from ...core.lib.translation import month_names
 
 MONTHS = tuple(str(month) for month in range(1, 13))
 ALL = "all"
-
-
-@dataclass(frozen=True)
-class FilterItem:
-    label: str
-    url: str
-    active: bool
 
 
 @dataclass(frozen=True)
@@ -38,6 +32,12 @@ class MonthFilter:
         if self.value == ALL:
             return {}
         return {"date__month": int(self.value)}
+
+    def first_day(self, year: int) -> date:
+        month = 1
+        if self.value != ALL:
+            month = int(self.value)
+        return date(year, month, 1)
 
     def items(self) -> list[FilterItem]:
         labels = (*month_names().values(), _("All records"))

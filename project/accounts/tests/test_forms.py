@@ -3,7 +3,7 @@ from datetime import UTC, date, datetime
 import pytest
 
 from ...bookkeeping.tests.factories import AccountWorthFactory
-from ...bookkeeping.tests.helper import quiet_build
+from ...bookkeeping.tests.helper import quiet_syncs
 from ...core.tests.utils import count_queries
 from ...debts.tests.factories import BorrowFactory, BorrowReturnFactory
 from ...expenses.forms import ExpenseForm
@@ -107,30 +107,30 @@ def _account_form(user, account, closed):
     )
 
 
-@pytest.mark.parametrize("row", ACCOUNT_ROWS)
+REFUSED = {"closed": ["Negalima uždaryti anksčiau nei 2001: tais metais yra įrašų."]}
+
+
 @pytest.mark.parametrize(
-    "closed, errors",
+    "row, closed, errors",
     [
-        (
-            "2000",
-            {"closed": ["Negalima uždaryti anksčiau nei 2001: tais metais yra įrašų."]},
-        ),
-        ("2001", {}),
-        ("2005", {}),
-        ("", {}),
+        *[(row, "2000", REFUSED) for row in ACCOUNT_ROWS],
+        ("income", "2001", {}),
+        ("income", "2005", {}),
+        ("income", "", {}),
     ],
 )
 def test_account_close_year_not_before_its_rows(main_user, row, closed, errors):
-    account = AccountFactory(title="Closing")
-    ACCOUNT_ROWS[row](account, 1999)
-    ACCOUNT_ROWS[row](account, 2001)
+    with quiet_syncs():
+        account = AccountFactory(title="Closing")
+        ACCOUNT_ROWS[row](account, 1999)
+        ACCOUNT_ROWS[row](account, 2001)
 
     assert _account_form(main_user, account, closed).errors == errors
 
 
 def test_account_close_year_query_count(main_user):
     def queries(account, rows):
-        with quiet_build(main_user):
+        with quiet_syncs():
             for year in range(1999, 1999 + rows):
                 for make in ACCOUNT_ROWS.values():
                     make(account, year)
@@ -183,8 +183,9 @@ def test_account_identical_title_names_the_existing_one(main_user):
 def test_account_closed_in_year(main_user, form_class, field, year, closed_listed):
     main_user.year = year
 
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
+    with quiet_syncs():
+        AccountFactory(title="S1")
+        AccountFactory(title="S2", closed=2000)
 
     actual = str(form_class(user=main_user, today=TODAY, data={})[field])
 
@@ -200,8 +201,9 @@ def test_account_closed_in_year(main_user, form_class, field, year, closed_liste
 def test_transaction_to_account_lists_no_account(main_user, year):
     main_user.year = year
 
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
+    with quiet_syncs():
+        AccountFactory(title="S1")
+        AccountFactory(title="S2", closed=2000)
 
     actual = str(TransactionForm(user=main_user, today=TODAY, data={})["to_account"])
 

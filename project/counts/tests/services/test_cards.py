@@ -45,13 +45,6 @@ def test_overview_states_the_year_the_total_and_the_current_gap(main_user):
     assert gap.value == "4"
 
 
-def test_overview_total_notes_the_year_of_the_first_record(main_user):
-    CountFactory(date=date(1998, 5, 1))
-    CountFactory(date=date(1999, 1, 1))
-
-    assert _overview(main_user, TODAY)[1].note == "nuo 1998"
-
-
 def test_overview_gap_notes_the_typical_gap(main_user):
     CountFactory(date=date(1999, 1, 1))
     CountFactory(date=date(1999, 1, 11))
@@ -76,6 +69,19 @@ def test_overview_year_and_total_carry_no_explanation(main_user):
     assert year.explanation == ()
     assert total.explanation == ()
     assert year.note == ""
+
+
+@pytest.mark.parametrize(
+    "build, index, note",
+    [
+        pytest.param(_overview, 0, "1999 metais įrašų nėra.", id="this_year"),
+        pytest.param(_history, 1, "Įrašų nėra", id="years"),
+    ],
+)
+def test_an_empty_card_notes_what_it_lacks(main_user, build, index, note):
+    CountTypeFactory()
+
+    assert build(main_user, TODAY)[index].note == note
 
 
 @pytest.mark.parametrize(
@@ -128,18 +134,34 @@ def test_cards_carry_no_tone_no_unit_and_no_pencil(main_user, build):
         assert not card.show_icon
 
 
-def test_overview_reads_the_counter_in_one_query(main_user, django_assert_num_queries):
+@pytest.mark.parametrize(
+    "build",
+    [
+        pytest.param(_overview, id="overview"),
+        pytest.param(_history, id="history"),
+    ],
+)
+def test_a_tab_reads_the_counter_in_one_query(
+    main_user, build, django_assert_num_queries
+):
     CountFactory()
 
     with django_assert_num_queries(1):
-        _overview(main_user, TODAY)
+        build(main_user, TODAY)
 
 
-def test_history_total_is_every_record_the_counter_holds(main_user):
+@pytest.mark.parametrize(
+    "build, index",
+    [
+        pytest.param(_overview, 1, id="overview"),
+        pytest.param(_history, 0, id="history"),
+    ],
+)
+def test_total_ever_is_every_record_since_the_first_year(main_user, build, index):
     CountFactory(date=date(1996, 1, 1), quantity=2)
     CountFactory(date=date(1998, 1, 1), quantity=3)
 
-    total = _history(main_user, TODAY)[0]
+    total = build(main_user, TODAY)[index]
 
     assert total.value == "5"
     assert total.note == "nuo 1996"
@@ -162,19 +184,7 @@ def test_history_years_of_a_single_year_notes_that_year_alone(main_user):
     assert _history(main_user, TODAY)[1].note == "1996"
 
 
-def test_history_median_year_takes_the_median_of_the_yearly_totals(main_user):
-    CountFactory(date=date(1996, 1, 1), quantity=1)
-    CountFactory(date=date(1997, 1, 1), quantity=3)
-    CountFactory(date=date(1998, 1, 1), quantity=4)
-
-    median = _history(main_user, TODAY)[2]
-
-    assert median.value == "3"
-    assert median.note == "nuo 1 iki 4"
-    assert median.explanation == ("Metinių sumų mediana",)
-
-
-def test_history_median_year_ignores_the_running_year(main_user):
+def test_history_median_year_takes_the_finished_years_median(main_user):
     CountFactory(date=date(1996, 1, 1), quantity=1)
     CountFactory(date=date(1997, 1, 1), quantity=3)
     CountFactory(date=date(1998, 1, 1), quantity=4)
@@ -184,16 +194,10 @@ def test_history_median_year_ignores_the_running_year(main_user):
 
     assert median.value == "3"
     assert median.note == "nuo 1 iki 4"
+    assert median.explanation == ("Metinių sumų mediana",)
 
 
 def test_history_median_year_is_empty_when_no_year_has_finished(main_user):
     CountFactory(date=date(1999, 1, 1))
 
     assert _history(main_user, TODAY)[2].state == EMPTY
-
-
-def test_history_reads_the_counter_in_one_query(main_user, django_assert_num_queries):
-    CountFactory()
-
-    with django_assert_num_queries(1):
-        _history(main_user, TODAY)

@@ -877,6 +877,7 @@ def test_tab_data(client_logged):
 
     actual = response.content.decode("utf-8")
 
+    assert '<td class="text-left main__date">1999-01-01</td>' in actual
     assert '<td class="text-left main__figure">19,0 vnt</td>' in actual
     assert f'<a role="button" hx-get="{reverse("drinks:update", args=[p.pk])}"' in (
         actual

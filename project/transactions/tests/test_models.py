@@ -14,13 +14,13 @@ from ...savings.models import SavingBalance
 from ...savings.services.model_services import SavingBalanceModelService
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..services.model_services import (
-    SavingChangeModelService,
     SavingCloseModelService,
     TransactionModelService,
 )
 from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
+from .kinds import KINDS, by_kind
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
 class AccountRow(NamedTuple):
@@ -42,33 +42,11 @@ class FundRow(NamedTuple):
     incomes: int
 
 
-class _Move(NamedTuple):
-    service: type
-    factory: type
-    sender: type
-    receiver: type
-
-
-MOVES = {
-    "transaction": _Move(
-        TransactionModelService, TransactionFactory, AccountFactory, AccountFactory
-    ),
-    "saving_close": _Move(
-        SavingCloseModelService, SavingCloseFactory, SavingTypeFactory, AccountFactory
-    ),
-    "saving_change": _Move(
-        SavingChangeModelService,
-        SavingChangeFactory,
-        SavingTypeFactory,
-        SavingTypeFactory,
-    ),
-}
-
 # what a 0,01 move from "From" to "To" in 1999 leaves; the sync writes each
 # balance up to a year past the last record
 MOVES_OF_ONE_CENT = [
     pytest.param(
-        MOVES["transaction"],
+        KINDS["transaction"],
         [
             AccountRow("From", 1999, 0, 0, 1, -1, 1),
             AccountRow("From", 2000, -1, 0, 0, -1, 1),
@@ -79,16 +57,16 @@ MOVES_OF_ONE_CENT = [
         id="transaction",
     ),
     pytest.param(
-        MOVES["saving_close"],
+        KINDS["sale"],
         [
             AccountRow("To", 1999, 0, 1, 0, 1, -1),
             AccountRow("To", 2000, 1, 0, 0, 1, -1),
         ],
         [FundRow("From", 1999, 0, 0, 0, 0), FundRow("From", 2000, 0, 0, 0, 0)],
-        id="saving_close",
+        id="sale",
     ),
     pytest.param(
-        MOVES["saving_change"],
+        KINDS["switch"],
         [],
         [
             FundRow("From", 1999, 0, 0, 0, 0),
@@ -96,7 +74,7 @@ MOVES_OF_ONE_CENT = [
             FundRow("To", 1999, 0, 0, 0, 1),
             FundRow("To", 2000, 1, 0, 0, 1),
         ],
-        id="saving_change",
+        id="switch",
     ),
 ]
 
@@ -139,12 +117,12 @@ def reloaded(move):
     return type(move).objects.get(pk=move.pk)
 
 
-@pytest.mark.parametrize("kind", MOVES.values(), ids=MOVES.keys())
+@by_kind
 def test_related(main_user, second_user, kind):
-    mine_from = kind.sender(title="F1")
-    mine_to = kind.receiver(title="T1")
-    their_from = kind.sender(title="F2", journal=second_user.journal)
-    their_to = kind.receiver(title="T2", journal=second_user.journal)
+    mine_from = kind.from_factory(title="F1")
+    mine_to = kind.to_factory(title="T1")
+    their_from = kind.from_factory(title="F2", journal=second_user.journal)
+    their_to = kind.to_factory(title="T2", journal=second_user.journal)
 
     kind.factory(to_account=mine_to, from_account=mine_from)
     kind.factory(to_account=their_to, from_account=their_from)
@@ -168,7 +146,7 @@ def test_transaction_year(main_user, second_user):
     assert actual.count() == 1
 
 
-@pytest.mark.parametrize("kind", MOVES.values(), ids=MOVES.keys())
+@by_kind
 def test_items_read_both_ends_in_as_many_queries_for_2_as_for_6(main_user, kind):
     def ends():
         return [
@@ -185,6 +163,7 @@ def test_items_read_both_ends_in_as_many_queries_for_2_as_for_6(main_user, kind)
 
 
 @pytest.mark.parametrize("balances_emptied", [False, True], ids=["kept", "emptied"])
+@pytest.mark.syncs
 def test_transaction_save_carries_each_accounts_past(main_user, balances_emptied):
     a_from = AccountFactory(title="From")
     a_to = AccountFactory(title="To")
@@ -213,11 +192,12 @@ def test_transaction_save_carries_each_accounts_past(main_user, balances_emptied
 
 
 @pytest.mark.parametrize("kind, accounts, funds", MOVES_OF_ONE_CENT)
+@pytest.mark.syncs
 def test_new_price_syncs_balances(main_user, kind, accounts, funds):
     move = reloaded(
         kind.factory(
-            from_account=kind.sender(title="From"),
-            to_account=kind.receiver(title="To"),
+            from_account=kind.from_factory(title="From"),
+            to_account=kind.to_factory(title="To"),
             price=5,
         )
     )
@@ -229,10 +209,11 @@ def test_new_price_syncs_balances(main_user, kind, accounts, funds):
 
 
 @pytest.mark.parametrize("kind, accounts, funds", MOVES_OF_ONE_CENT)
+@pytest.mark.syncs
 def test_save_with_nothing_changed_keeps_balances(main_user, kind, accounts, funds):
     move = kind.factory(
-        from_account=kind.sender(title="From"),
-        to_account=kind.receiver(title="To"),
+        from_account=kind.from_factory(title="From"),
+        to_account=kind.to_factory(title="To"),
         price=1,
     )
 
@@ -243,27 +224,29 @@ def test_save_with_nothing_changed_keeps_balances(main_user, kind, accounts, fun
 
 
 @pytest.mark.parametrize("kind, accounts, funds", MOVES_OF_ONE_CENT)
+@pytest.mark.syncs
 def test_new_ends_take_the_balances_from_the_old(main_user, kind, accounts, funds):
     move = reloaded(
         kind.factory(
-            from_account=kind.sender(title="Old-From"),
-            to_account=kind.receiver(title="Old-To"),
+            from_account=kind.from_factory(title="Old-From"),
+            to_account=kind.to_factory(title="Old-To"),
             price=1,
         )
     )
-    move.from_account = kind.sender(title="From")
-    move.to_account = kind.receiver(title="To")
+    move.from_account = kind.from_factory(title="From")
+    move.to_account = kind.to_factory(title="To")
     move.save()
 
     assert account_rows(main_user) == accounts
     assert fund_rows(main_user) == funds
 
 
-@pytest.mark.parametrize("kind", MOVES.values(), ids=MOVES.keys())
+@by_kind
+@pytest.mark.syncs
 def test_delete_drops_its_balances(main_user, kind):
     move = kind.factory(
-        from_account=kind.sender(title="From"),
-        to_account=kind.receiver(title="To"),
+        from_account=kind.from_factory(title="From"),
+        to_account=kind.to_factory(title="To"),
     )
 
     reloaded(move).delete()
@@ -274,10 +257,11 @@ def test_delete_drops_its_balances(main_user, kind):
 
 
 @pytest.mark.parametrize("kind, accounts, funds", MOVES_OF_ONE_CENT)
+@pytest.mark.syncs
 def test_delete_leaves_the_other_moves_balances(main_user, kind, accounts, funds):
     ends = {
-        "from_account": kind.sender(title="From"),
-        "to_account": kind.receiver(title="To"),
+        "from_account": kind.from_factory(title="From"),
+        "to_account": kind.to_factory(title="To"),
     }
     kept = kind.factory(price=1, **ends)
 
@@ -311,29 +295,29 @@ def test_transaction_incomes_sum_each_receiver_by_year(main_user):
     "kind, with_fee, sums",
     [
         pytest.param(
-            MOVES["transaction"],
+            KINDS["transaction"],
             {},
             [(1970, {"expenses": 25}), (1999, {"expenses": 26})],
             id="transaction",
         ),
         pytest.param(
-            MOVES["saving_close"],
+            KINDS["sale"],
             {"fee": 1},
             [(1970, {"expenses": 25, "fee": 1}), (1999, {"expenses": 26, "fee": 2})],
-            id="saving_close",
+            id="sale",
         ),
         pytest.param(
-            MOVES["saving_change"],
+            KINDS["switch"],
             {"fee": 1},
             [(1970, {"expenses": 25, "fee": 1}), (1999, {"expenses": 26, "fee": 2})],
-            id="saving_change",
+            id="switch",
         ),
     ],
 )
 def test_expenses_sum_each_sender_by_year(main_user, kind, with_fee, sums):
-    fund = kind.sender(title="Saving1")
-    a1 = kind.receiver(title="To1")
-    a2 = kind.receiver(title="To2")
+    fund = kind.from_factory(title="Saving1")
+    a1 = kind.to_factory(title="To1")
+    a2 = kind.to_factory(title="To2")
     ends = {"from_account": fund, **with_fee}
     kind.factory(date=date(1999, 1, 1), price=25, to_account=a1, **ends)
     kind.factory(date=date(1999, 1, 1), price=1, to_account=a2, **ends)
@@ -376,6 +360,7 @@ def test_saving_close_month_sums(main_user, month, sums):
     ]
 
 
+@pytest.mark.syncs
 def test_saving_close_post_save_first_record(main_user):
     _to = AccountFactory(title="To")
     _from = SavingTypeFactory(title="From")
@@ -401,6 +386,7 @@ def test_saving_close_post_save_first_record(main_user):
 
 
 @pytest.mark.parametrize("balances_emptied", [False, True], ids=["kept", "emptied"])
+@pytest.mark.syncs
 def test_saving_change_save_carries_each_funds_past(main_user, balances_emptied):
     _to = SavingTypeFactory(title="To")
     _from = SavingTypeFactory(title="From")
@@ -426,13 +412,13 @@ def test_saving_change_save_carries_each_funds_past(main_user, balances_emptied)
 @pytest.mark.parametrize(
     "kind",
     [
-        pytest.param(MOVES["transaction"], id="transaction"),
-        pytest.param(MOVES["saving_close"], id="saving_close"),
+        pytest.param(KINDS["transaction"], id="transaction"),
+        pytest.param(KINDS["sale"], id="sale"),
     ],
 )
 def test_move_journal_is_its_from_accounts(second_user, kind):
     journal = second_user.journal
 
-    obj = kind.factory.build(from_account=kind.sender(journal=journal))
+    obj = kind.factory.build(from_account=kind.from_factory(journal=journal))
 
     assert obj.journal == journal

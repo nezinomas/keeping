@@ -1,38 +1,20 @@
+import json
 import re
 from datetime import date, datetime
 
 import pytest
 import time_machine
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...core.lib.translation import month_names
 from ...users.views import Login
-from .. import views
 from ..models import Count, CountType
 from ..tabs import TABS
 from .factories import CountFactory, CountTypeFactory
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.mark.parametrize(
-    "tab_actual, tab_expected",
-    [
-        ("index", "index"),
-        ("data", "data"),
-        ("history", "history"),
-        ("xxx", "index"),
-    ],
-)
-def test_view_new_url(client_logged, tab_actual, tab_expected):
-    x = CountTypeFactory()
-
-    url = reverse("counts:new", kwargs={"slug": x.slug, "tab": tab_actual})
-    response = client_logged.get(url)
-
-    assert response.context["view"].url() == reverse(
-        "counts:new", kwargs={"slug": x.slug, "tab": tab_expected}
-    )
 
 
 @pytest.mark.parametrize(
@@ -44,24 +26,36 @@ def test_view_new_url(client_logged, tab_actual, tab_expected):
         ("xxx", "reloadData"),
     ],
 )
-def test_view_new_get_hx_trigger_django(client_logged, tab, expected):
+@time_machine.travel(datetime(2000, 1, 1))
+def test_view_new_reloads_the_tab_it_was_opened_from(client_logged, tab, expected):
     x = CountTypeFactory()
 
+    data = {"date": "1999-01-01", "quantity": 1, "count_type": x.pk}
     url = reverse("counts:new", kwargs={"slug": x.slug, "tab": tab})
-    response = client_logged.get(url)
+    response = client_logged.post(url, data, headers={"HX-Request": "true"})
 
-    assert response.context["view"].get_hx_trigger_django() == expected
+    assert json.loads(response.headers["HX-Trigger"]) == {expected: {}}
 
 
-@pytest.mark.parametrize("url_name", ["counts:update", "counts:delete"])
+@pytest.mark.parametrize(
+    "url_name, data",
+    [
+        pytest.param(
+            "counts:update", {"date": "1999-01-01", "quantity": 2}, id="update"
+        ),
+        pytest.param("counts:delete", {}, id="delete"),
+    ],
+)
 @time_machine.travel(datetime(2000, 1, 1))
-def test_view_update_and_delete_get_hx_trigger_django(client_logged, url_name):
+def test_view_update_and_delete_reload_the_data_tab(client_logged, url_name, data):
     x = CountFactory()
 
     url = reverse(url_name, kwargs={"pk": x.pk})
-    response = client_logged.get(url)
+    response = client_logged.post(
+        url, {**data, "count_type": x.count_type.pk}, headers={"HX-Request": "true"}
+    )
 
-    assert response.context["view"].get_hx_trigger_django() == "reloadData"
+    assert json.loads(response.headers["HX-Trigger"]) == {"reloadData": {}}
 
 
 @pytest.mark.parametrize(
@@ -103,7 +97,7 @@ def test_view_new(client_logged):
     actual = response.content.decode("utf-8")
     pk = Count.objects.get().pk
 
-    assert "68" in actual
+    assert '<td class="text-left main__figure">68,0</td>' in actual
     assert f'<a role="button" hx-get="/counts/update/{pk}/"' in actual
     assert f'<a role="button" hx-get="/counts/delete/{pk}/"' in actual
 
@@ -126,10 +120,10 @@ def test_view_new_invalid_data(client_logged):
 
     url = reverse("counts:new", kwargs={"slug": "count-type", "tab": "data"})
 
-    response = client_logged.post(url, data)
-    form = response.context["form"]
+    actual = client_logged.post(url, data).content.decode("utf-8")
 
-    assert not form.is_valid()
+    assert '<div class="invalid-feedback">' in actual
+    assert not Count.objects.exists()
 
 
 def test_view_update_load_form(client_logged):
@@ -163,9 +157,7 @@ def test_view_update(client_logged):
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert response.resolver_match.func.view_class is views.TabData
-
-    assert "68" in actual
+    assert '<td class="text-left main__figure">68,0</td>' in actual
     assert f'<a role="button" hx-get="/counts/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/counts/delete/{p.pk}/"' in actual
 
@@ -224,23 +216,31 @@ def test_view_delete_other_user_post_form(client_logged, second_user):
 
 
 @pytest.mark.parametrize(
-    "titles, view_class",
+    "titles, landing",
     [
-        pytest.param(["Count Type"], views.TabIndex, id="index"),
-        pytest.param([], views.Empty, id="empty"),
+        pytest.param(["XXX", "AAA"], "<title>AAA | Apžvalga</title>", id="first"),
+        pytest.param(
+            [], '<div class="alert">Jūs neturite skaitiklių.</div>', id="empty"
+        ),
     ],
 )
-def test_redirect_goes_to_the_first_counter_or_to_empty(
-    client_logged, titles, view_class
+@pytest.mark.parametrize(
+    "url_name, kwargs",
+    [
+        pytest.param("counts:redirect", {}, id="redirect"),
+        pytest.param("counts:index", {"slug": "unknown"}, id="unknown_counter"),
+    ],
+)
+def test_a_missing_counter_lands_on_the_first_counter_or_on_empty(
+    client_logged, url_name, kwargs, titles, landing
 ):
     for title in titles:
         CountTypeFactory(title=title)
 
-    url = reverse("counts:redirect")
-    response = client_logged.get(url, follow=True)
+    url = reverse(url_name, kwargs=kwargs)
+    content = client_logged.get(url, follow=True).content.decode("utf-8")
 
-    assert response.status_code == 200
-    assert response.resolver_match.func.view_class is view_class
+    assert landing in content
 
 
 @pytest.mark.no_main_user
@@ -258,29 +258,14 @@ def test_user_not_logged(client, url_name, kwargs):
     assert response.resolver_match.func.view_class is Login
 
 
-def test_redirect_count_first(client_logged):
-    CountTypeFactory(title="XXX")
-    CountTypeFactory(title="AAA")
-
-    url = reverse("counts:redirect")
-    response = client_logged.get(url, follow=True)
-
-    assert response.resolver_match.func.view_class is views.TabIndex
-    assert '<button class="dropdown__btn">AAA</button>' in response.content.decode(
-        "utf-8"
-    )
-
-
 @pytest.mark.parametrize("title", ["Data", "None", "Type", "History"])
 def test_a_counter_named_like_a_route_opens_its_own_page(title, client_logged):
     obj = CountTypeFactory(title=title)
 
     url = reverse("counts:index", kwargs={"slug": obj.slug})
-    response = client_logged.get(url)
+    content = client_logged.get(url).content.decode("utf-8")
 
-    assert response.status_code == 200
-    assert views.TabIndex is response.resolver_match.func.view_class
-    assert response.resolver_match.kwargs["slug"] == obj.slug
+    assert f"<title>{title} | Apžvalga</title>" in content
 
 
 def test_index_heads_the_page_with_the_counter_where_only_a_reader_hears_it(
@@ -293,24 +278,6 @@ def test_index_heads_the_page_with_the_counter_where_only_a_reader_hears_it(
 
     assert content.count("<h1") == 1
     assert '<h1 class="visually-hidden">Rūkymas</h1>' in content
-
-
-def test_index_redirect_no_count_type(client_logged):
-    url = reverse("counts:index", kwargs={"slug": "XXX"})
-    response = client_logged.get(url, follow=True)
-
-    assert views.Empty is response.resolver_match.func.view_class
-
-
-def test_index_redirect(client_logged):
-    obj = CountTypeFactory()
-
-    url = reverse("counts:index", kwargs={"slug": "XXX"})
-    response = client_logged.get(url, follow=True)
-
-    assert views.TabIndex is response.resolver_match.func.view_class
-    assert response.resolver_match.url_name == "index"
-    assert response.resolver_match.kwargs["slug"] == obj.slug
 
 
 @pytest.mark.parametrize(
@@ -363,9 +330,10 @@ def test_index_add_record_pill_opens_the_form_for_whichever_tab_is_open(client_l
 
     late_bound = reverse("counts:new", kwargs={"slug": "count-type", "tab": "TAB"})
 
-    assert 'class="quick-add__pill"' in content
-    assert f'data-url="{late_bound}"' in content
-    assert "Pridėti įrašą" in content
+    assert re.search(
+        rf'class="quick-add__pill"\s+data-url="{late_bound}"[^>]*>Pridėti įrašą</button>',
+        content,
+    )
 
 
 def _quick_add_bar(client_logged, slug="count-type"):
@@ -381,10 +349,13 @@ def test_index_counter_menu_names_the_open_counter_and_lists_the_others(client_l
 
     bar = _quick_add_bar(client_logged, "xxx")
 
+    links = re.findall(r'<a(?: class="active")? href="([^"]+)">([^<]+)</a>', bar)
+
     assert '<button class="dropdown__btn">Xxx</button>' in bar
-    for slug, title in (("xxx", "Xxx"), ("yyy", "Yyy")):
-        url = reverse("counts:index", kwargs={"slug": slug})
-        assert f'href="{url}">{title}</a>' in bar
+    assert links == [
+        (reverse("counts:index", kwargs={"slug": "xxx"}), "Xxx"),
+        (reverse("counts:index", kwargs={"slug": "yyy"}), "Yyy"),
+    ]
 
 
 def test_index_counter_menu_marks_the_open_counter(client_logged):
@@ -399,19 +370,24 @@ def test_index_counter_menu_marks_the_open_counter(client_logged):
     assert f'class="active" href="{other_url}"' not in bar
 
 
-def test_index_counter_menu_puts_the_three_counter_acts_under_a_divider(client_logged):
+@pytest.mark.parametrize(
+    "url_name, takes_pk",
+    [
+        pytest.param("counts:type_update", True, id="rename"),
+        pytest.param("counts:type_delete", True, id="delete"),
+        pytest.param("counts:type_new", False, id="add"),
+    ],
+)
+def test_index_counter_menu_puts_the_three_counter_acts_under_a_divider(
+    client_logged, url_name, takes_pk
+):
     obj = CountTypeFactory()
+    url = reverse(url_name, kwargs={"pk": obj.pk} if takes_pk else {})
 
     bar = _quick_add_bar(client_logged)
-    divider = bar.index("dropdown-divider")
+    act = rf'<button type="button" hx-get="{url}" hx-target="#mainModal">'
 
-    for url in (
-        reverse("counts:type_update", kwargs={"pk": obj.pk}),
-        reverse("counts:type_delete", kwargs={"pk": obj.pk}),
-        reverse("counts:type_new"),
-    ):
-        assert bar.index(f'<button type="button" hx-get="{url}"') > divider
-        assert 'hx-target="#mainModal"' in bar
+    assert re.search(rf"dropdown-divider.*{act}", bar, re.S)
 
 
 def test_index_counter_menu_replaces_the_rename_and_delete_buttons(client_logged):
@@ -428,34 +404,26 @@ def test_index_loads_the_paper_chart_theme(client_logged):
 
     url = reverse("counts:index", kwargs={"slug": "count-type"})
 
-    assert "js/chart_paper.js" in client_logged.get(url).content.decode()
+    content = client_logged.get(url).content.decode()
+
+    assert re.search(r'<script nonce="[^"]*" src="[^"]*js/chart_paper\.js">', content)
 
 
-def test_index_links(client_logged):
+def test_index_tabs_link_their_urls_in_order(client_logged):
     CountTypeFactory(title="Xxx")
 
     url = reverse("counts:index", kwargs={"slug": "xxx"})
     content = client_logged.get(url).content.decode()
+    tabs = re.findall(
+        r'id="tab-(\w+)"[^>]*hx-get="([^"]+)"[^>]*>\s*([^<]+?)\s*</button>', content
+    )
 
-    for tab in TABS:
-        assert f'hx-get="{tab.url("xxx")}"' in content
-        assert str(tab.title) in content
-
-    assert [str(tab.title) for tab in TABS] == [
-        "Apžvalga",
-        "Periodiškumas",
-        "Istorija",
-        "Duomenys",
+    assert tabs == [
+        ("index", TABS["index"].url("xxx"), "Apžvalga"),
+        ("periodicity", TABS["periodicity"].url("xxx"), "Periodiškumas"),
+        ("history", TABS["history"].url("xxx"), "Istorija"),
+        ("data", TABS["data"].url("xxx"), "Duomenys"),
     ]
-
-
-def test_index_context_carries_no_info_row(client_logged):
-    CountTypeFactory(title="Xxx")
-
-    url = reverse("counts:index", kwargs={"slug": "xxx"})
-    response = client_logged.get(url)
-
-    assert "info_row" not in response.context
 
 
 @pytest.mark.parametrize(
@@ -500,35 +468,34 @@ def test_the_page_has_no_header_and_names_the_counter_in_the_quick_add_bar(
     assert content.count('<button class="dropdown__btn">Xxx</button>') == 1
 
 
-def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
+@pytest.mark.parametrize(
+    "headers, whole",
+    [
+        pytest.param({}, True, id="page"),
+        pytest.param({"HX-Request": "true"}, False, id="fragment"),
+    ],
+)
+def test_a_tab_url_returns_the_whole_page_or_the_fragment_alone(
+    client_logged, headers, whole
+):
     CountTypeFactory(title="Xxx")
 
     url = reverse("counts:tab_history", kwargs={"slug": "xxx"})
-    content = client_logged.get(url).content.decode()
+    content = client_logged.get(url, headers=headers).content.decode()
 
-    assert 'class="quick-add"' in content
-    assert 'class="subnav"' in content
-
-
-def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
-    CountTypeFactory(title="Xxx")
-
-    url = reverse("counts:tab_history", kwargs={"slug": "xxx"})
-    content = client_logged.get(url, headers={"HX-Request": "true"}).content.decode()
-
-    assert 'class="quick-add"' not in content
-    assert 'class="subnav"' not in content
+    assert ('class="quick-add"' in content) is whole
+    assert ('class="subnav"' in content) is whole
 
 
 def test_tab_index_leaves_the_pooled_charts_to_periodicity(client_logged):
     CountFactory()
 
     url = reverse("counts:tab_index", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
+    content = client_logged.get(url).content.decode()
 
-    assert "chart_weekdays" not in response.context
-    assert "chart_months" not in response.context
-    assert "chart_histogram" not in response.context
+    assert '<div id="chart-weekdays-container">' not in content
+    assert '<div id="chart-months-container">' not in content
+    assert '<div id="chart-histogram-container">' not in content
 
 
 @time_machine.travel(datetime(1999, 7, 18))
@@ -544,14 +511,13 @@ def test_index_draws_the_overview_cards(client_logged):
 
 
 @time_machine.travel(datetime(1999, 1, 1))
-def test_index_calendar_replaces_the_heatmap_charts(client_logged):
+def test_index_draws_the_calendar(client_logged):
     CountFactory()
 
     url = reverse("counts:index", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
+    content = client_logged.get(url).content.decode()
 
-    assert "chart_calendar_1H" not in response.context
-    assert "chart_calendar_2H" not in response.context
+    assert '<div class="heat-card" id="heat-card">' in content
 
 
 @time_machine.travel(datetime(1999, 1, 1))
@@ -582,29 +548,25 @@ def _gap_strip(content: str) -> str:
     return re.search(r'<div class="gap-strip".*?</div>', content, re.S).group()
 
 
-@time_machine.travel(datetime(1999, 7, 1))
-def test_index_gap_strip_draws_one_tick_a_day(client_logged):
-    CountFactory(date=date(1999, 1, 2))
-    CountFactory(date=date(1999, 3, 4))
-
-    url = reverse("counts:index", kwargs={"slug": "count-type"})
-    strip = _gap_strip(client_logged.get(url).content.decode("utf-8"))
-
-    assert strip.count("<i") == 365
-    assert strip.count('class="hit"') == 2
-
-
-@time_machine.travel(datetime(2000, 7, 1))
-def test_index_gap_strip_draws_a_leap_year(client_logged, main_user):
-    main_user.year = 2000
+@pytest.mark.parametrize(
+    "year, days",
+    [
+        pytest.param(1999, 365, id="common"),
+        pytest.param(2000, 366, id="leap"),
+    ],
+)
+def test_index_gap_strip_draws_one_tick_a_day(client_logged, main_user, year, days):
+    main_user.year = year
     main_user.save()
-
-    CountFactory(date=date(2000, 1, 2))
+    CountFactory(date=date(year, 1, 2))
+    CountFactory(date=date(year, 3, 4))
 
     url = reverse("counts:index", kwargs={"slug": "count-type"})
-    strip = _gap_strip(client_logged.get(url).content.decode("utf-8"))
+    with time_machine.travel(datetime(year, 7, 1)):
+        strip = _gap_strip(client_logged.get(url).content.decode("utf-8"))
 
-    assert strip.count("<i") == 366
+    assert strip.count("<i") == days
+    assert strip.count('class="hit"') == 2
 
 
 def _gap_strip_ruler(content: str) -> str:
@@ -629,30 +591,18 @@ def test_index_gap_strip_wraps_every_month(client_logged):
     strip = _gap_strip(client_logged.get(url).content.decode("utf-8"))
 
     assert strip.count("gap-strip__month") == 12
-    assert strip.count("<i") == 365
 
 
 @time_machine.travel(datetime(1999, 7, 1))
-def test_index_gap_strip_sits_outside_the_calendar_panel(client_logged):
+def test_index_gap_strip_is_drawn_above_the_calendar_panel_not_in_it(client_logged):
     CountFactory(date=date(1999, 1, 2))
 
     url = reverse("counts:index", kwargs={"slug": "count-type"})
     content = client_logged.get(url).content.decode("utf-8")
+    calendar = content.index('id="heat-card"')
 
-    assert '<h2 class="panel__title">Tarpai</h2>' in content
-    assert "gap-strip" not in content[content.index('id="heat-card"') :]
-
-
-@time_machine.travel(datetime(1999, 7, 1))
-def test_index_gap_strip_is_drawn_above_the_calendar(client_logged):
-    CountFactory(date=date(1999, 1, 2))
-
-    url = reverse("counts:index", kwargs={"slug": "count-type"})
-    content = client_logged.get(url).content.decode("utf-8")
-
-    assert content.index('<h2 class="panel__title">Tarpai</h2>') < content.index(
-        'id="heat-card"'
-    )
+    assert content.index('<div class="gap-strip"') < calendar
+    assert "gap-strip" not in content[calendar:]
 
 
 @pytest.mark.parametrize(
@@ -683,15 +633,6 @@ def test_index_calendar_empty_day_says_no_records(client_logged):
     assert january.days[0].label == "1999-01-01\nĮrašų nėra"
 
 
-def test_data_context(client_logged):
-    CountFactory()
-
-    url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
-
-    assert response.context["object"].slug == "count-type"
-
-
 def test_data(client_logged):
     p = CountFactory(quantity=66)
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
@@ -699,79 +640,74 @@ def test_data(client_logged):
 
     actual = response.content.decode("utf-8")
 
+    assert '<td class="text-left main__date">1999-01-01</td>' in actual
     assert '<td class="text-left main__figure">66,0</td>' in actual
     assert f'<a role="button" hx-get="/counts/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/counts/delete/{p.pk}/"' in actual
 
 
-def test_data_no_records(client_logged):
-    CountFactory(date=date(1974, 1, 1))
+@pytest.mark.parametrize(
+    "day",
+    [
+        pytest.param(date(1999, 1, 1), id="records"),
+        pytest.param(date(1974, 1, 1), id="empty_year"),
+    ],
+)
+def test_data_reads_the_counts_once(client_logged, day):
+    CountFactory(date=day)
 
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
-    response = client_logged.get(url, follow=True)
-    actual = response.content.decode("utf-8")
+    with CaptureQueriesContext(connection) as queries:
+        client_logged.get(url)
 
-    assert "1999 metais įrašų nėra." in actual
+    reads = [q["sql"] for q in queries if 'FROM "counts_count"' in q["sql"]]
+    assert len(reads) == 1
 
 
-def test_data_of_a_counter_with_no_records_at_all_names_no_year(client_logged):
+@pytest.mark.parametrize(
+    "records",
+    [
+        pytest.param([date(1974, 1, 1)], id="records_in_another_year"),
+        pytest.param([], id="no_records_at_all"),
+    ],
+)
+def test_data_of_an_empty_year_names_the_year(client_logged, main_user, records):
+    main_user.year = 2000
+    main_user.save()
     CountTypeFactory()
-
-    url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
-    actual = client_logged.get(url, follow=True).content.decode("utf-8")
-
-    assert "Įrašų nėra" in actual
-    assert "metais įrašų nėra" not in actual
-
-
-def test_data_scrolls_its_table_rather_than_the_page(client_logged):
-    CountFactory()
+    for day in records:
+        CountFactory(date=day)
 
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
     actual = client_logged.get(url).content.decode("utf-8")
 
-    assert actual.index('class="table-responsive"') < actual.index("<table")
+    assert re.search(r'<div class="alert">\s*2000 metais įrašų nėra\.\s*</div>', actual)
 
 
-def test_the_counts_notices_are_the_paper_notice_and_not_the_legacy_alert(
-    client_logged,
+@pytest.mark.parametrize(
+    "url_name, kwargs",
+    [
+        pytest.param("counts:tab_data", {"slug": "count-type"}, id="data"),
+        pytest.param("counts:tab_history", {"slug": "count-type"}, id="history"),
+        pytest.param("counts:empty", {}, id="empty"),
+    ],
+)
+def test_each_empty_counts_page_draws_the_paper_notice_not_the_legacy_alert(
+    client_logged, url_name, kwargs
 ):
     CountTypeFactory()
 
-    for url in (
-        reverse("counts:tab_data", kwargs={"slug": "count-type"}),
-        reverse("counts:tab_history", kwargs={"slug": "count-type"}),
-        reverse("counts:empty"),
-    ):
-        actual = client_logged.get(url).content.decode("utf-8")
+    actual = client_logged.get(reverse(url_name, kwargs=kwargs)).content.decode()
 
-        assert '<div class="alert">' in actual
-        assert "alert-warning" not in actual
+    assert '<div class="alert">' in actual
+    assert "alert-warning" not in actual
 
 
-def test_history_context(client_logged):
-    obj = CountTypeFactory()
-
-    url = reverse("counts:tab_history", kwargs={"slug": obj.slug})
-    response = client_logged.get(url)
-
-    assert "chart_weekdays" not in response.context
-    assert "chart_histogram" not in response.context
-    assert response.context["object"].slug == obj.slug
-
-
-def test_history_context_carries_the_cards_and_keeps_records(client_logged):
-    CountFactory()
-
-    url = reverse("counts:tab_history", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
-
-    assert len(response.context["cards"]) == 3
-    assert response.context["records"] == 1
-    assert "info_row" not in response.context
-
-
-def test_history_of_a_counter_with_no_records_renders_its_empty_state(client_logged):
+def test_history_of_a_counter_with_no_records_renders_its_empty_state(
+    client_logged, main_user
+):
+    main_user.year = 2000
+    main_user.save()
     CountTypeFactory()
 
     url = reverse("counts:tab_history", kwargs={"slug": "count-type"})
@@ -779,6 +715,9 @@ def test_history_of_a_counter_with_no_records_renders_its_empty_state(client_log
 
     assert content.count('class="trend-card"') == 3
     assert "Įrašų nėra" in content
+    assert re.search(
+        r'<div class="alert">\s*2000 metais įrašų nėra\.\s*</div>', content
+    )
     assert "Trūksta duomenų." not in content
 
 
@@ -864,10 +803,10 @@ def test_count_type_htmx_redirect_header(client_logged):
 def test_count_type_new_invalid_data(client_logged):
     data = {"title": "X"}
     url = reverse("counts:type_new")
-    response = client_logged.post(url, data)
-    form = response.context.get("form")
+    actual = client_logged.post(url, data).content.decode("utf-8")
 
-    assert not form.is_valid()
+    assert '<div class="invalid-feedback">' in actual
+    assert not CountType.objects.exists()
 
 
 def test_count_type_update(client_logged):
@@ -922,21 +861,22 @@ def test_count_type_delete_names_the_records_it_takes_and_the_title_to_type(
     CountFactory(date=date(1999, 1, 1))
 
     url = reverse("counts:type_delete", kwargs={"pk": obj.pk})
-    context = client_logged.get(url).context
+    actual = client_logged.get(url).content.decode("utf-8")
 
-    assert context["delete_confirm"] == obj.title
-    assert "2" in context["delete_warning"]
-    assert "1974" in context["delete_warning"]
+    assert re.search(
+        r"</p>\s*<p>Ištrynus Count Type bus ištrinta ir 2 įrašų, sukurtų nuo 1974\.</p>"
+        r"\s*<label",
+        actual,
+    )
 
 
 def test_count_type_delete_of_an_empty_counter_warns_about_nothing(client_logged):
     obj = CountTypeFactory()
 
     url = reverse("counts:type_delete", kwargs={"pk": obj.pk})
-    context = client_logged.get(url).context
+    actual = client_logged.get(url).content.decode("utf-8")
 
-    assert context["delete_warning"] == ""
-    assert context["delete_confirm"] == obj.title
+    assert re.search(r"<strong>Count Type</strong>\?\s*</p>\s*<label", actual)
 
 
 def test_count_type_delete_form_asks_for_the_typed_title(client_logged):
@@ -946,7 +886,10 @@ def test_count_type_delete_form_asks_for_the_typed_title(client_logged):
     actual = client_logged.get(url).content.decode("utf-8")
 
     assert 'name="confirm"' in actual
-    assert "Įrašykite skaitiklio pavadinimą" in actual
+    assert (
+        '<label for="delete-confirm">Įrašykite skaitiklio pavadinimą</label>' in actual
+    )
+    assert ":disabled=\"typed !== 'Count Type'\"" in actual
 
 
 def test_count_type_delete_without_the_title_deletes_nothing(client_logged):

@@ -248,22 +248,6 @@ msgstr "Procentai"
 msgid "Wealth"
 msgstr "Turtas"
 
-#: .\project\bookkeeping\templates\bookkeeping\detailed.html:26
-#: .\project\books\views.py:81 .\project\core\templates\core\no_records.html:9
-#: .\project\counts\templates\counts\includes\notice.html:6
-#: .\project\debts\templates\debts\debt_list.html:54
-#: .\project\debts\templates\debts\debtreturn_list.html:53
-#: .\project\expenses\templates\expenses\expense_list.html:86
-#: .\project\expenses\views\expenses.py:64
-#: .\project\incomes\templates\incomes\income_list.html:47
-#: .\project\pensions\templates\pensions\pension_list.html:38
-#: .\project\plans\templates\cotton\plans_table.html:78
-#: .\project\savings\templates\savings\saving_list.html:41
-#: .\project\transactions\templates\cotton\transactions_table.html:40
-#, python-format
-msgid "No records in <b>%(year)s</b>."
-msgstr "<b>%(year)s</b> metais įrašų nėra."
-
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:13
 msgid "Have"
 msgstr "Turiu"
@@ -871,6 +855,10 @@ msgstr "Pasirinktos vienodos sąskaitos."
 msgid "Close"
 msgstr "Uždaryti"
 
+#: .\project\transactions\forms.py:104
+msgid "Close from account"
+msgstr "Uždaryti iš sąskaitos"
+
 #: .\project\core\templates\core\generic_delete_form.html:11
 msgid "Are you sure you want to delete"
 msgstr "Ar tikrai norite ištrinti"
@@ -899,6 +887,11 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 #: .\project\core\templates\cotton\accordion.html:13
 msgid "closed"
 msgstr "uždaryta"
+
+#: .\project\transactions\templates\transactions\tab_accounts.html:18
+#, python-format
+msgid "closed %(year)s"
+msgstr "uždaryta %(year)s"
 
 #: .\project\core\templates\cotton\calendar.html:6
 msgid "Mon"
@@ -1237,10 +1230,6 @@ msgstr "Gėrimo tipas"
 #, python-format
 msgid "%(year)s already has a goal."
 msgstr "%(year)s metai jau turi tikslą."
-
-#: .\project\drinks\forms.py:183 .\project\drinks\forms.py:234
-msgid "No records this year"
-msgstr "Šiais metais įrašų nėra"
 
 #: .\project\drinks\forms.py:193 .\project\drinks\tests\test_forms.py:481
 msgid "Years must be in order"
@@ -1872,20 +1861,15 @@ msgctxt "expenses type button"
 msgid "Expenses type"
 msgstr "Išlaidų rūšį"
 
-#: .\project\expenses\views\expenses.py:60
-#, python-format
-msgid "There are no records for month <b>%(month)s</b>."
-msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
-
-#: .\project\expenses\templates\expenses\expense_list.html
-#, python-format
-msgid "There are no records for month %(month)s."
-msgstr "Mėnesį %(month)s įrašų nėra."
-
 #: .\project\expenses\templates\expenses\expense_list.html
 #, python-format
 msgid "No records in %(year)s."
 msgstr "%(year)s metais įrašų nėra."
+
+#: .\project\expenses\templates\expenses\expense_list.html
+#, python-format
+msgid "No records for %(month)s."
+msgstr "%(month)s mėnesį įrašų nėra."
 
 #: .\project\expenses\views\expenses.py:93
 msgid "Delete expense"
@@ -2219,10 +2203,6 @@ msgstr "Į sąskaitą"
 msgid "Amount left after fee"
 msgstr "Suma kuri lieka atskaičius mokesčius"
 
-#: .\project\transactions\templates\transactions\index.html:20
-msgid "Account ⇔ Account"
-msgstr "Sąskaita ⇔ Sąskaita"
-
 #: .\project\transactions\templates\transactions\index.html:27
 #: .\project\transactions\views.py:107 .\project\transactions\views.py:117
 msgid "Fund ⇒ Account"
@@ -2519,6 +2499,33 @@ msgstr[3] "%(count)s mėnesių"
 
 msgid "Add income"
 msgstr "Pridėti pajamas"
+
+msgid "Add transaction"
+msgstr "Pridėti pervedimą"
+
+msgid "Fund sales"
+msgstr "Fondų pardavimai"
+
+msgid "Fund switches"
+msgstr "Fondų keitimai"
+
+msgid "From fund"
+msgstr "Iš fondo"
+
+msgid "To fund"
+msgstr "Į fondą"
+
+msgid "Add fund sale"
+msgstr "Pridėti pardavimą"
+
+msgid "Add fund switch"
+msgstr "Pridėti keitimą"
+
+msgid "Closed accounts"
+msgstr "Uždarytos sąskaitos"
+
+msgid "Add account"
+msgstr "Pridėti sąskaitą"
 
 msgid "Share"
 msgstr "Dalis"

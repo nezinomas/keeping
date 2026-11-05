@@ -195,7 +195,8 @@ def _tab_queries(client, name):
 
 
 @pytest.mark.parametrize(
-    "name", ["counts:index", "counts:tab_periodicity", "counts:tab_history"]
+    "name",
+    ["counts:index", "counts:tab_periodicity", "counts:tab_history", "counts:tab_data"],
 )
 def test_tab_query_count_does_not_grow_with_the_records(client_logged, name):
     for _i in range(2):
