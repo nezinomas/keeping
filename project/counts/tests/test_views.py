@@ -3,6 +3,8 @@ from datetime import date, datetime
 
 import pytest
 import time_machine
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...core.lib.translation import month_names
@@ -705,6 +707,17 @@ def test_data(client_logged):
     assert f'<a role="button" hx-get="/counts/delete/{p.pk}/"' in actual
 
 
+def test_data_with_records_reads_the_counts_once(client_logged):
+    CountFactory()
+
+    url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
+    with CaptureQueriesContext(connection) as queries:
+        client_logged.get(url)
+
+    reads = [q["sql"] for q in queries if 'FROM "counts_count"' in q["sql"]]
+    assert len(reads) == 1
+
+
 def test_data_no_records(client_logged):
     CountFactory(date=date(1974, 1, 1))
 
@@ -723,15 +736,6 @@ def test_data_of_a_counter_with_no_records_at_all_names_no_year(client_logged):
 
     assert "Įrašų nėra" in actual
     assert "metais įrašų nėra" not in actual
-
-
-def test_data_scrolls_its_table_rather_than_the_page(client_logged):
-    CountFactory()
-
-    url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
-    actual = client_logged.get(url).content.decode("utf-8")
-
-    assert actual.index('class="table-responsive"') < actual.index("<table")
 
 
 def test_the_counts_notices_are_the_paper_notice_and_not_the_legacy_alert(

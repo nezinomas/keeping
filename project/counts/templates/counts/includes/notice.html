@@ -1,13 +1,9 @@
 {% load i18n %}
 
-{% if notice %}
-<div class="alert">
-    {% if notice == 'empty_year' %}
-        {% blocktranslate with year=notice_year %}No records in {{ year }}.{% endblocktranslate %}
-    {% elif notice == 'no_records' %}
-        {% translate 'No records' %}
-    {% elif notice == 'no_counters' %}
-        {% translate 'You have no counters.' %}
-    {% endif %}
-</div>
+{% if notice == 'empty_year' %}
+{% include 'core/paper_no_records.html' %}
+{% elif notice == 'no_records' %}
+<div class="alert">{% translate 'No records' %}</div>
+{% elif notice == 'no_counters' %}
+<div class="alert">{% translate 'You have no counters.' %}</div>
 {% endif %}

@@ -246,10 +246,20 @@ def test_incomes_list_shows_the_price_with_the_subnav_only_on_the_tab(
     assert ('<nav class="subnav">' in content) is has_subnav
 
 
+def test_the_list_heads_its_text_columns_left(client_logged):
+    IncomeFactory()
+
+    content = client_logged.get(reverse("incomes:list")).content.decode("utf-8")
+
+    headers = re.findall(r'<th class="([^"]*)">([^<]*)</th>', content)
+    left = [label for classes, label in headers if "text-left" in classes.split()]
+    assert left == ["Data", "Pajamų rūšis", "Sąskaita", "Pastaba"]
+
+
 def test_list_empty_state_names_the_selected_year(client_logged):
     actual = client_logged.get(reverse("incomes:list")).content.decode("utf-8")
 
-    assert re.search(r'<div class="alert[^"]*">\s*1999 metais įrašų nėra\.', actual)
+    assert re.search(r'<div class="alert">\s*1999 metais įrašų nėra\.', actual)
 
 
 @pytest.mark.parametrize(

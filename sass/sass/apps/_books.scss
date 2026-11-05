@@ -2,9 +2,8 @@
 
 // Books — the markup only this app renders; the rest comes from the skin.
 .book-table {
-    // an Open book: started, not finished. Translucent, so the stripe reads over it
+    // an Open book: started, not finished. A state in ink, so only its hair rules mark it
     tr.currently-reading-book {
-        background-color: rgba($data, 0.06);
         border-top: 1px solid $hair;
         border-bottom: 1px solid $hair;
     }

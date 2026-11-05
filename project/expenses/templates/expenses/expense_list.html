@@ -1,6 +1,5 @@
 {% load static %}
 {% load i18n %}
-{% load humanize %}
 {% load math %}
 {% load cell_format %}
 {% load fast_rendering %}
@@ -18,7 +17,7 @@
                 <th class="text-left">{% translate 'Expense name' %}</th>
                 <th class="qty-col">{% translate 'How many' %}</th>
                 <th class="price-col">{% translate 'Price' %}</th>
-                <th class="remark-col text-left">{% translate 'Remark' %}</th>
+                <th class="text-left">{% translate 'Remark' %}</th>
                 <th class="file-col">{% translate 'Attachment' %}</th>
                 <th>{% translate 'Account' %}</th>
                 <th class="edit-col"></th>
@@ -32,7 +31,7 @@
             {% for object in object_list %}
 
             <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
-                <td class="text-left main__date {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
+                <td class="text-left main__date{% if object.exception %} exception{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
                 <td class="text-left">{{ object.expense_type__title }}</td>
                 <td class="text-left">{{ object.expense_name__title }}</td>
                 <td class="main__figure">{{ object.quantity }}</td>
@@ -74,7 +73,6 @@
 {% endif %}
 
 
-<!-- modal image -->
 <div id="imgModalContainer" class="modal" hidden>
     <div id="imgModal" class="modal-dialog"></div>
 </div>
@@ -82,14 +80,12 @@
 
 {% else %}
 
-<div class="alert">
 {% if notice %}
-    {{ notice }}
+<div class="alert">{{ notice }}</div>
 {% elif all_months %}
-    {% blocktranslate with year=year %}No records in {{ year }}.{% endblocktranslate %}
+{% include 'core/paper_no_records.html' %}
 {% else %}
-    {% blocktranslate with month=month.value %}There are no records for month {{ month }}.{% endblocktranslate %}
+<div class="alert">{% blocktranslate with month=month.value %}There are no records for month {{ month }}.{% endblocktranslate %}</div>
 {% endif %}
-</div>
 
 {% endif %}
