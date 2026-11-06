@@ -24,12 +24,13 @@ def test_title_slug_lets_no_expanding_character_through():
     expanding = []
     for code_point in range(0x20000):
         title = f"a{chr(code_point)}a"
+        if len(slugify(title)) <= len(title):
+            continue
         try:
             validate_title_slug(title)
         except ValidationError:
             continue
-        if len(slugify(title)) > len(title):
-            expanding.append(chr(code_point))
+        expanding.append(chr(code_point))
 
     assert expanding == []
 

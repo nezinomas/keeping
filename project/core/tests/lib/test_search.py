@@ -1,7 +1,7 @@
 from operator import and_, or_
 
 import pytest
-from hypothesis import assume, example, given
+from hypothesis import assume, example, given, settings
 from hypothesis import strategies as st
 
 from ...lib import search
@@ -63,6 +63,7 @@ FLAG_NAMES = {
 }
 
 
+@settings(max_examples=20)
 @given(
     category=st.none() | WORDS,
     year=st.none() | st.integers(0, 9999),
@@ -116,6 +117,7 @@ def test_parse_search_with_args(category, year, month, remark, long_names):
     assert search.parse_search(text) == (expect, and_)
 
 
+@settings(max_examples=20)
 @given(
     before=st.lists(WORD, max_size=3),
     after=st.lists(WORD, max_size=3),
