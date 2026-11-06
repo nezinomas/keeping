@@ -31,7 +31,7 @@ class ChartMonths:
 
     def _months(self, rows: Sequence[dict]) -> list[float]:
         # last year stops where this year does, or the comparison lies
-        months = self.boundary.end_date.month
+        months = self.boundary.months_elapsed
         sums = [0.0] * months
 
         for row in rows:

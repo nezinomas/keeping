@@ -7,6 +7,7 @@ from ....core.lib.year_boundary import YearBoundary
 
 RUNNING = YearBoundary(year=2026, today=date(2026, 9, 15))
 FINISHED = YearBoundary(year=2025, today=date(2026, 9, 15))
+COMING = YearBoundary(year=2027, today=date(2026, 9, 15))
 
 
 def _chart(year=(), last_year=(), boundary=RUNNING):
@@ -52,6 +53,16 @@ def test_a_running_year_stops_each_series_at_the_boundary_month(rows, series):
 
 def test_a_finished_year_has_twelve_months():
     assert len(_data(_chart(boundary=FINISHED))["2025"]) == 12
+
+
+def test_a_coming_year_has_no_months_in_either_series():
+    chart = _chart(
+        year=[{"date": date(2027, 1, 2), "sum": 100}],
+        last_year=[{"date": date(2026, 1, 1), "sum": 100}],
+        boundary=COMING,
+    )
+
+    assert _data(chart) == {"2026": [], "2027": []}
 
 
 def test_amounts_are_euro_and_a_month_without_rows_is_zero():

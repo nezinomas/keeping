@@ -97,8 +97,10 @@ class OverviewCards:
         return StatCard(title=title, value=amount(total), note=note)
 
     def _per_month(self, title: str, total: int) -> Card:
-        # the Year boundary, never 12: a running year has not reached every month
-        months = self.boundary.end_date.month
+        months = self.boundary.months_elapsed
+
+        if not months:
+            return EmptyStatCard(title)
 
         return StatCard(
             title=title,
