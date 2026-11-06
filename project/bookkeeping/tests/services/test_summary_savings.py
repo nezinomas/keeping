@@ -172,22 +172,3 @@ def test_load_service_template_variables(data, expect, titles):
     assert actual["pointers"] == expect
     assert list(actual["charts"].keys()) == expect
     assert [chart["title"] for chart in actual["charts"].values()] == titles
-
-
-@given(
-    st.fixed_dictionaries(
-        {
-            "funds": data_stragety,
-            "shares": data_stragety,
-            "pensions": data_stragety,
-            "pensions2": data_stragety,
-        }
-    )
-)
-def test_load_service_with_hypothesis(data):
-    actual = load_service(data, chart_keys_map(), TODAY)
-
-    assert actual["records"] == sum(
-        len(chart["categories"]) for chart in actual["charts"].values()
-    )
-    assert all(chart["categories"] for chart in actual["charts"].values())

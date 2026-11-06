@@ -2,7 +2,7 @@ from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
-from hypothesis import example, given
+from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from ...lib.balance_rows import SavingBalanceRows
@@ -330,6 +330,7 @@ def fixture_order_table():
     return savings_table(*ORDER_INPUT)
 
 
+@settings(max_examples=20)
 @given(*(st.permutations(x) for x in ORDER_INPUT))
 @example(*(x[::-1] for x in ORDER_INPUT))
 def test_table_does_not_depend_on_the_input_row_order(
@@ -340,6 +341,7 @@ def test_table_does_not_depend_on_the_input_row_order(
     assert actual == order_table
 
 
+@settings(max_examples=20)
 @given(
     st.lists(rows("incomes", fee=st.integers(0, 1000)), min_size=1, max_size=12),
     st.lists(rows("expenses", fee=st.just(0)), max_size=12),

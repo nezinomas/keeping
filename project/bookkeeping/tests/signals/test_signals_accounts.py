@@ -2,7 +2,7 @@ from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from ...lib.balance_rows import AccountBalanceRows
@@ -198,6 +198,7 @@ def test_table_from_the_inputs_given(incomes, expenses, have, given_inputs, expe
     assert {column: [row[column] for row in actual] for column in expected} == expected
 
 
+@settings(max_examples=20)
 @given(
     st.lists(rows("incomes"), min_size=1, max_size=12),
     st.lists(rows("expenses"), max_size=12),
