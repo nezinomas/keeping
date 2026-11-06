@@ -59,27 +59,28 @@ def fixture_index_content(client_logged):
     return client_logged.get(reverse("bookkeeping:index")).content.decode()
 
 
-@pytest.mark.parametrize(
-    "marker",
-    [
-        pytest.param("<th>1999</th>", id="year"),
-        pytest.param('<td data-sign="loss" data-cell="">-1,00</td>', id="balance"),
-        pytest.param("1999 pabaigoje", id="balance_short"),
-        pytest.param(
-            '<td class="left-thick-border" data-cell="">1,00</td>', id="expenses"
-        ),
-        pytest.param("Vidutinės pajamos", id="averages"),
-        pytest.param('data-tip="Liko grąžinti:  70,00"', id="borrow"),
-        pytest.param('data-tip="Liko grąžinti:  90,00"', id="lend"),
-        pytest.param(">Account1</span>", id="accounts"),
-        pytest.param("Pajamų dalis pervedama taupymui", id="savings"),
-        pytest.param(">PensionType</td>", id="pensions"),
-        pytest.param("Turtas", id="wealth"),
-        pytest.param("€ + F + P", id="no_incomes"),
-    ],
-)
-def test_view_index_renders_its_tables_and_panels(index_content, marker):
-    assert marker in index_content
+INDEX_MARKERS = {
+    "year": "<th>1999</th>",
+    "balance": '<td data-sign="loss" data-cell="">-1,00</td>',
+    "balance_short": "1999 pabaigoje",
+    "expenses": '<td class="left-thick-border" data-cell="">1,00</td>',
+    "averages": "Vidutinės pajamos",
+    "borrow": 'data-tip="Liko grąžinti:  70,00"',
+    "lend": 'data-tip="Liko grąžinti:  90,00"',
+    "accounts": ">Account1</span>",
+    "savings": "Pajamų dalis pervedama taupymui",
+    "pensions": ">PensionType</td>",
+    "wealth": "Turtas",
+    "no_incomes": "€ + F + P",
+}
+
+
+def test_view_index_renders_its_tables_and_panels(index_content):
+    missing = [
+        name for name, marker in INDEX_MARKERS.items() if marker not in index_content
+    ]
+
+    assert missing == []
 
 
 @pytest.mark.parametrize("url_name", ["bookkeeping:index", "bookkeeping:reload_index"])
