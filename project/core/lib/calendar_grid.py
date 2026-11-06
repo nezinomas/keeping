@@ -115,7 +115,7 @@ class CalendarDays:
             qty=self.qty_by_date.get(day_date, 0.0),
             gap=gap,
             is_today=is_today,
-            is_future=day_date > boundary.end_date,
+            is_future=day_date > boundary.today,
         )
 
 
