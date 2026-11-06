@@ -65,6 +65,8 @@ How far into a year a metric may read: today while the year is still running,
 Dec 31 once it is over, nothing yet for a Coming year — and, for the year before it,
 only as far as the same month and day (today, for a Coming year). The rule lives in [`core.lib.year_boundary`](lib/year_boundary.py);
 every app that reports a year reads it there. Do not re-derive it.
+A view builds one from the Selected year and today's date for core's widgets; a
+service takes `year` and `today` and builds its own.
 _Avoid_: cutoff, year end, clipping
 
 **Coming year**:
