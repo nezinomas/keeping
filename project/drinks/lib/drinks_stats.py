@@ -80,6 +80,22 @@ class DrinkStats:
 
     @cached_property
     def monthly(self) -> MonthlyStatsDTO:
+        # a running year's December drawn as 0.0 cannot be told apart from a
+        # December with no Drink in it, so the series ends at the month reached
+        return self._months_to(self._year.months_elapsed)
+
+    def _months_to(self, month: int) -> MonthlyStatsDTO:
+        months = self._whole_year
+
+        return MonthlyStatsDTO(
+            total_volume=months.total_volume[:month],
+            avg_daily_volume=months.avg_daily_volume[:month],
+            total_quantity=months.total_quantity[:month],
+            total_stdav=months.total_stdav[:month],
+        )
+
+    @cached_property
+    def _whole_year(self) -> MonthlyStatsDTO:
         monthly_stdav = [0.0] * 12
         monthly_qty = [0.0] * 12
 
@@ -96,23 +112,20 @@ class DrinkStats:
         ]
 
         return MonthlyStatsDTO(
-            total_volume=self._to_month_reached(total_volume),
-            avg_daily_volume=self._to_month_reached(avg_daily_volume),
-            total_quantity=self._to_month_reached(monthly_qty),
-            total_stdav=self._to_month_reached(monthly_stdav),
+            total_volume=total_volume,
+            avg_daily_volume=avg_daily_volume,
+            total_quantity=monthly_qty,
+            total_stdav=monthly_stdav,
         )
-
-    def _to_month_reached(self, months: list[float]) -> list[float]:
-        # a running year's December drawn as 0.0 cannot be told apart from a
-        # December with no Drink in it, so the series ends at the month reached
-        return months[: self._year.end_date.month]
 
     @cached_property
     def yearly(self) -> YearlyStatsDTO:
+        # a total reads the span, so a Coming year's Drinks dated ahead count
+        months = self._months_to(self._year.end_date.month)
         days_passed = self._year.days_elapsed
-        total_volume = sum(self.monthly.total_volume)
-        total_quantity = sum(self.monthly.total_quantity)
-        stdav = sum(self.monthly.total_stdav)
+        total_volume = sum(months.total_volume)
+        total_quantity = sum(months.total_quantity)
+        stdav = sum(months.total_stdav)
         pure_alcohol_liters = stdav_to_alcohol(stdav)
 
         return YearlyStatsDTO(

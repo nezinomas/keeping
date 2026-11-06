@@ -224,3 +224,13 @@ def test_build_is_the_same_tab_under_every_drink_type(drink_type, main_user):
     assert chart.heavy_threshold == HEAVY_DAY_STDAV
     assert actual["cards"][0].value == "7.9"
     assert actual["cards"][0].unit == "Std Av"
+
+
+def test_habits_tab_build_per_drinking_day_of_a_coming_year_reads_its_drinks(
+    main_user,
+):
+    DrinkFactory(date=date(2027, 1, 2), stdav=12)
+
+    cards = HabitsTab.build(main_user, 2027, date(2026, 11, 3))["cards"]
+
+    assert cards[0].value == "12.0"

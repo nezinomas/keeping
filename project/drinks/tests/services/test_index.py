@@ -516,6 +516,23 @@ def test_index_tab_build_charts_end_at_the_month_reached(
     assert len(actual["chart_quantity"].data) == months
 
 
+@pytest.mark.parametrize(
+    "year, drinks, rows",
+    [
+        pytest.param(2026, [date(2026, 1, 2)], 4, id="one_row_per_drink_type"),
+        pytest.param(2026, [], 0, id="none_without_a_drink"),
+        pytest.param(2027, [date(2027, 1, 2)], 0, id="none_in_a_coming_year"),
+    ],
+)
+def test_index_tab_build_conversion_rows_need_days_gone(main_user, year, drinks, rows):
+    for drink_date in drinks:
+        DrinkFactory(date=drink_date, stdav=2.5)
+
+    actual = IndexTab.build(main_user, year, date(2026, 11, 3))
+
+    assert len(actual["tbl_std_av"].items) == rows
+
+
 def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
     # two Drinks on one day and one on another: two Drinking days, not three
     # rows — the count DrinkStats' monthly rows could not have produced
@@ -643,3 +660,69 @@ def test_index_tab_build_counts_days_dry_from_the_last_drink_not_after_today(
 
     assert card.value == "142"
     assert card.note == "1999-01-10"
+
+
+@pytest.mark.parametrize(
+    "title, value",
+    [
+        pytest.param(_("Days dry"), "297", id="days_dry_since_the_last_drink"),
+        pytest.param(_("Drinking days"), "1", id="drinking_days_a_count"),
+        pytest.param(_("Std drinks"), "12", id="std_drinks_a_total"),
+        pytest.param(_("Avg per day"), "", id="avg_per_day_a_rate"),
+        pytest.param(
+            _("Pure alcohol"), f"{stdav_to_alcohol(12):.1f}", id="pure_alcohol_a_total"
+        ),
+    ],
+)
+def test_index_tab_build_cards_of_a_coming_year(main_user, title, value):
+    DrinkFactory(date=date(2027, 1, 2), stdav=12)
+    DrinkFactory(date=date(2026, 1, 10), stdav=5)
+
+    cards = IndexTab.build(main_user, 2027, date(2026, 11, 3))["cards"]
+    card = next(card for card in cards if card.title == title)
+
+    assert card.value == value
+
+
+def test_card_std_drinks_of_a_coming_year_compares_with_last_year_to_today(main_user):
+    DrinkFactory(date=date(2027, 1, 2), stdav=12)
+    DrinkFactory(date=date(2026, 1, 10), stdav=5)
+    DrinkFactory(date=date(2026, 12, 1), stdav=100)  # dated ahead of today
+
+    cards = IndexTab.build(main_user, 2027, date(2026, 11, 3))["cards"]
+    card = next(card for card in cards if card.title == _("Std drinks"))
+
+    assert (card.note, card.improving) == (f"{_('Last year')} 5", False)
+
+
+@pytest.mark.parametrize(
+    "past, note, explanation",
+    [
+        pytest.param(
+            [date(2026, 1, 10)],
+            f"{_('Last year')} 1",
+            (
+                _("Calendar days with at least one Drink recorded."),
+                _("The arrow compares with last year, up to the same date."),
+            ),
+            id="against_last_year",
+        ),
+        pytest.param(
+            [],
+            _("Calendar days with at least one Drink recorded."),
+            (_("Calendar days with at least one Drink recorded."),),
+            id="without_a_prior_year",
+        ),
+    ],
+)
+def test_card_drinking_days_of_a_coming_year_states_no_share(
+    main_user, past, note, explanation
+):
+    DrinkFactory(date=date(2027, 1, 2), stdav=12)
+    for drink_date in past:
+        DrinkFactory(date=drink_date, stdav=5)
+
+    cards = IndexTab.build(main_user, 2027, date(2026, 11, 3))["cards"]
+    card = next(card for card in cards if card.title == _("Drinking days"))
+
+    assert (card.note, card.explanation) == (note, explanation)

@@ -44,6 +44,7 @@ def test_is_current_only_while_the_year_is_the_one_running():
         pytest.param(2026, date(2026, 3, 1), 60, id="up_to_today_in_the_current_year"),
         pytest.param(2025, date(2026, 6, 15), 365, id="the_whole_of_a_finished_year"),
         pytest.param(2024, date(2026, 6, 15), 366, id="the_leap_day"),
+        pytest.param(2027, date(2026, 6, 15), 0, id="none_of_a_coming_year"),
     ],
 )
 def test_days_elapsed_counts_to_today_or_to_the_end_of_the_year(year, today, expect):
@@ -70,10 +71,23 @@ def test_days_elapsed_counts_to_today_or_to_the_end_of_the_year(year, today, exp
             52,
             id="full_count_in_a_december_iso_counts_as_next_year",
         ),
+        pytest.param(2027, date(2026, 6, 15), 0, id="none_of_a_coming_year"),
     ],
 )
 def test_weeks_elapsed_counts_iso_weeks_inside_the_year(year, today, expect):
     assert YearBoundary(year=year, today=today).weeks_elapsed == expect
+
+
+@pytest.mark.parametrize(
+    "year, expect",
+    [
+        pytest.param(2026, 8, id="the_month_reached_in_the_current_year"),
+        pytest.param(2025, 12, id="all_twelve_of_a_finished_year"),
+        pytest.param(2027, 0, id="none_of_a_coming_year"),
+    ],
+)
+def test_months_elapsed_counts_the_months_the_year_has_reached(year, expect):
+    assert YearBoundary(year=year, today=date(2026, 8, 11)).months_elapsed == expect
 
 
 def test_clip_keeps_rows_up_to_the_same_month_and_day():
@@ -83,6 +97,15 @@ def test_clip_keeps_rows_up_to_the_same_month_and_day():
     kept = boundary.clip(rows)
 
     assert [row.date for row in kept] == [date(2025, 1, 1), date(2025, 2, 1)]
+
+
+def test_clip_reads_the_year_before_a_coming_year_only_to_today():
+    boundary = YearBoundary(year=2027, today=date(2026, 6, 15))
+    rows = [_row(date(2026, 6, 15)), _row(date(2026, 6, 16))]
+
+    kept = boundary.clip(rows)
+
+    assert [row.date for row in kept] == [date(2026, 6, 15)]
 
 
 def test_clip_keeps_dec_31_of_a_leap_year_before_a_finished_year():
@@ -128,6 +151,12 @@ def test_clip_of_nothing_is_empty():
             date(2024, 2, 29),
             date(2023, 2, 28),
             id="leap_day_clamped_onto_a_common_year",
+        ),
+        pytest.param(
+            2027,
+            date(2026, 6, 15),
+            date(2026, 6, 15),
+            id="today_before_a_coming_year",
         ),
     ],
 )

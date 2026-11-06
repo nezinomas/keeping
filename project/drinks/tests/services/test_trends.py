@@ -431,3 +431,24 @@ def test_trends_tab_build_plots_the_selected_year_when_it_is_empty(main_user):
 
     assert result["chart_trend"].categories[0] == "2027-01-01"
     assert result["chart_cumulative"].categories[0] == "2027-01-01"
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        pytest.param(_("Trend (2 weeks)"), id="two_weeks"),
+        pytest.param(_("Trend (month)"), id="month"),
+        pytest.param(_("Trend (90 days)"), id="ninety_days"),
+        pytest.param(_("This year vs last"), id="year_to_date"),
+        pytest.param(_("Year-end forecast"), id="forecast"),
+    ],
+)
+def test_trends_tab_build_cards_of_a_coming_year_read_no_data(main_user, title):
+    # dated late in the year, so a window ending Dec 31 would reach it
+    DrinkFactory(date=date(2027, 12, 20), stdav=12)
+    DrinkFactory(date=date(2026, 1, 10), stdav=5)
+
+    cards = TrendsTab.build(main_user, 2027, date(2026, 11, 3))["cards"]
+    card = next(card for card in cards if card.title == title)
+
+    assert (card.value, card.note) == ("", _("No data"))

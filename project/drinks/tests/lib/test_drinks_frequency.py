@@ -100,6 +100,13 @@ def test_drinking_days(rows, year, today, expected):
             0,
             id="never_negative",
         ),
+        pytest.param(
+            [_row(date(2027, 1, 2), 3)],
+            2027,
+            date(2026, 11, 3),
+            0,
+            id="a_coming_year_has_no_days_to_be_dry",
+        ),
     ],
 )
 def test_dry_days_count_the_days_elapsed(rows, year, today, expected):
@@ -376,6 +383,15 @@ def test_weekday_profile_counts_only_the_weekdays_elapsed_in_a_running_year():
 
     assert actual[3].calendar_days == 3
     assert actual[4].calendar_days == 2
+
+
+def test_weekday_profile_of_a_coming_year_reaches_no_weekday():
+    actual = FrequencyStats(
+        [_row(date(2027, 1, 2), 5)], year=2027, today=date(2026, 11, 3)
+    ).weekday_profile()
+
+    assert [point.calendar_days for point in actual] == [0] * 7
+    assert actual[5].drinking_day_share == 0.0
 
 
 def test_weekday_profile_counts_every_occurrence_of_a_year_already_over():

@@ -55,6 +55,10 @@ class FrequencyStats:
         is a share of the days elapsed and not of all 365."""
         return self._year.is_current
 
+    @property
+    def days_elapsed(self) -> int:
+        return self._year.days_elapsed
+
     @staticmethod
     def _count_drinking_days(records: Iterable[DataRow]) -> int:
         """Calendar days carrying a Drink, not rows: a day can hold several."""
@@ -73,7 +77,7 @@ class FrequencyStats:
     def dry_days(self) -> int:
         """Days of the year reached with no Drink on them — so today for the
         year running, Dec 31 for one already over."""
-        return max(self._year.days_elapsed - self.drinking_days, 0)
+        return max(self.days_elapsed - self.drinking_days, 0)
 
     @cached_property
     def drinking_day_share(self) -> float:
@@ -89,7 +93,7 @@ class FrequencyStats:
         if not self._current_daily_records:
             return 0.0
 
-        elapsed = self._year.days_elapsed
+        elapsed = self.days_elapsed
         return days / elapsed if elapsed else 0.0
 
     @cached_property
@@ -122,7 +126,7 @@ class FrequencyStats:
     def _calendar_days_of(self, weekday: int) -> int:
         """How many of one weekday the year has reached — counting all 52 in a
         running year would report a rate that has not happened yet."""
-        elapsed = self._year.days_elapsed
+        elapsed = self.days_elapsed
         offset = (weekday - date(self._year.year, 1, 1).weekday()) % 7
 
         return (elapsed - offset - 1) // WEEKDAYS + 1 if offset < elapsed else 0

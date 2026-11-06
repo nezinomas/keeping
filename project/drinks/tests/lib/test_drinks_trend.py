@@ -256,6 +256,34 @@ def test_projection_without_target(converter):
     assert projection.percentage_difference == 0.0
 
 
+def test_a_coming_year_draws_no_line_on_its_own_calendar(converter):
+    stats = TrendStats(
+        converter,
+        year=2027,
+        current_daily=[_row(date(2027, 1, 2), 5)],
+        past_daily=[_row(date(2026, 1, 1), 5)],
+        today=date(2026, 11, 3),
+    )
+
+    assert stats.cumulative_current_year == []
+    assert stats.daily_volume == []
+    assert len(stats.date_labels) == 365
+    assert stats.calculate_rolling_average(7) == []
+    assert len(stats.cumulative_categories) == 365
+
+
+def test_a_coming_year_has_no_recent_period(converter):
+    # dated late in the year, so a window ending Dec 31 would reach it
+    stats = TrendStats(
+        converter,
+        year=2027,
+        current_daily=[_row(date(2027, 12, 20), 5)],
+        today=date(2026, 11, 3),
+    )
+
+    assert stats.compare_recent_period(14).has_data is False
+
+
 def test_current_year_is_the_year_the_caller_views(converter):
     stats = TrendStats(
         converter,

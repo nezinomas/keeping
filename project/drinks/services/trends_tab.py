@@ -107,7 +107,7 @@ class TrendsBuilder:
         )
 
     def get_cards(self) -> list[Card]:
-        return [
+        cards = [
             self._build_period_card(
                 _("Trend (2 weeks)"), self._stats.compare_recent_period(14)
             ),
@@ -120,6 +120,12 @@ class TrendsBuilder:
             self._build_ytd_card(),
             self._build_projection_card(),
         ]
+
+        # every Trends card reads time gone, and none of a Coming year has gone
+        if not self._stats.days_elapsed:
+            return [EmptyStatCard(card.title, _("No data")) for card in cards]
+
+        return cards
 
     def _build_period_card(
         self, title: str, stats: RecentPeriodComparison | EmptyRecentPeriodComparison

@@ -20,11 +20,11 @@ def _total(year: int, month: int, stdav: float, drinking_days: int) -> MonthTota
     return MonthTotal(year=year, month=month, stdav=stdav, drinking_days=drinking_days)
 
 
-def _profile(rows=(), today=date(2022, 6, 1)) -> TypicalYearProfile:
+def _profile(rows=(), today=date(2026, 7, 15)) -> TypicalYearProfile:
     return TypicalYearProfile.pool(rows, today=today)
 
 
-def _chart(year_rows=(), pooled_rows=(), today=date(2022, 6, 1)):
+def _chart(year_rows=(), pooled_rows=(), today=date(2026, 7, 15)):
     return TypicalYearBuilder(
         year=_profile(year_rows, today), pooled=_profile(pooled_rows, today)
     ).chart()
@@ -91,6 +91,14 @@ def test_pool_mixes_a_finished_year_with_the_running_one():
     )
 
     assert actual.points[6].calendar_days == 46  # all of 2025-07, half of 2026-07
+
+
+def test_pool_leaves_a_coming_year_out():
+    rows = [_total(2025, 7, 30, 3), _total(2026, 7, 30, 3)]
+
+    actual = _profile([*rows, _total(2027, 7, 30, 3)], today=date(2026, 7, 15))
+
+    assert actual.points == _profile(rows, today=date(2026, 7, 15)).points
 
 
 def test_pool_a_month_with_no_records_is_zero_not_a_division_error():

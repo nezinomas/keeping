@@ -117,6 +117,9 @@ class RiskStats:
 
     def weekly_series(self) -> list[WeeklySeriesPoint]:
         """Dense weekly totals from the first week of the year to the current week."""
+        if not self._year.days_elapsed:
+            return []
+
         first_monday = self._week_start(date(self.current_year, 1, 1))
         last_monday = self._week_start(self._year.end_date)
         units_by_week = self._current_weekly_units
@@ -139,7 +142,10 @@ class RiskStats:
             end=self._week_end(monday).isoformat(),
         )
 
-    def current_week(self) -> WeeklyRiskZone:
+    def current_week(self) -> WeeklyRiskZone | EmptyWeeklyRiskZone:
+        if not self._year.days_elapsed:
+            return EmptyWeeklyRiskZone()
+
         monday = self._week_start(self._year.end_date)
         return self._make_weekly_risk_zone(
             monday, self._current_weekly_units.get(monday, 0.0)

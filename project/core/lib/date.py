@@ -54,13 +54,7 @@ def last_months_window(today: date, months: int) -> tuple[date, date]:
 
 def yday(year: int, today: date) -> tuple[int, int]:
     """Days of the year gone by, and days it holds."""
-    boundary = YearBoundary(year, today)
-
-    elapsed = 0
-    if year <= boundary.today.year:
-        elapsed = boundary.days_elapsed
-
-    return (elapsed, ydays(boundary.year))
+    return (YearBoundary(year, today).days_elapsed, ydays(year))
 
 
 def ydays(year: int) -> int:

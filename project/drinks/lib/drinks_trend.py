@@ -99,6 +99,10 @@ class TrendStats:
         return round(abs(current - past) / past * 100, 1)
 
     @property
+    def days_elapsed(self) -> int:
+        return self._year.days_elapsed
+
+    @property
     def unit(self) -> str:
         return self._converter.display_unit
 
@@ -115,7 +119,7 @@ class TrendStats:
 
         return [
             self._converter.stdav_to_display(by_date.get(day, 0.0))
-            for day in self._date_range(start, self._year.end_date)
+            for day in self._date_range(start, self._year.last_day_reached)
         ]
 
     @cached_property
@@ -150,7 +154,7 @@ class TrendStats:
 
     @cached_property
     def cumulative_current_year(self) -> list[float]:
-        return self._running_total(self._current_year_records, self._year.days_elapsed)
+        return self._running_total(self._current_year_records, self.days_elapsed)
 
     @cached_property
     def cumulative_past_year(self) -> list[float]:
@@ -180,7 +184,7 @@ class TrendStats:
 
         series = [
             self._converter.stdav_to_display(lookup.get(day, 0.0))
-            for day in self._date_range(start, self._year.end_date)
+            for day in self._date_range(start, self._year.last_day_reached)
         ]
 
         return [
@@ -192,6 +196,9 @@ class TrendStats:
         self, days: int
     ) -> RecentPeriodComparison | EmptyRecentPeriodComparison:
         """Most recent ``days`` vs the equal-length window right before it."""
+        if not self.days_elapsed:
+            return EmptyRecentPeriodComparison()
+
         end = self._year.end_date
         current_start = end - timedelta(days=days)
         previous_start = end - timedelta(days=2 * days)
@@ -213,7 +220,7 @@ class TrendStats:
         )
 
     def compare_year_to_date(self) -> YearToDateComparison | EmptyYearToDateComparison:
-        day_of_year = self._year.days_elapsed
+        day_of_year = self.days_elapsed
         current = self._sum_stdav(self._current_year_records, day_of_year)
 
         if not self._past_year_records:

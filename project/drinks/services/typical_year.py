@@ -58,12 +58,15 @@ class TypicalYearProfile:
 
     @classmethod
     def pool(cls, rows: Sequence[MonthTotal], today: date) -> "TypicalYearProfile":
-        """Only years carrying a Drink add days: an unlogged year is not abstinence."""
-        years = sorted({row.year for row in rows})
+        """Only years carrying a Drink add days: an unlogged year is not abstinence,
+        and a Coming year has no days to add yet."""
+        years = sorted(
+            {row.year for row in rows if YearBoundary(row.year, today).days_elapsed}
+        )
         stdav = [0.0] * MONTHS
         drinking_days = [0] * MONTHS
 
-        for row in rows:
+        for row in (row for row in rows if row.year in years):
             stdav[row.month - 1] += row.stdav
             drinking_days[row.month - 1] += row.drinking_days
 

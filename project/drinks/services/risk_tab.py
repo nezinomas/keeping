@@ -109,8 +109,13 @@ class RiskViewModelBuilder:
 
     def _build_current_week_card(self) -> Card:
         week = self._stats.current_week()
+        title = _("This week")
+
+        if not week.has_data:
+            return EmptyStatCard(title, _("No data"))
+
         return LevelStatCard(
-            _("This week"),
+            title,
             state=week.state,
             value=f"{week.stdav:.1f}",
             note=f"{_('Low-risk guideline')}: {WEEKLY_LOW_RISK_STDAV:.1f} Std Av",
