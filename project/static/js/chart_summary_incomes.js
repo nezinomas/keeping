@@ -1,11 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const chartData = JSON.parse(document.getElementById("chart-incomes-data").textContent);
 
-    // convert data
-    for (i = 0; i < chartData.incomes.length; i++) {
-        chartData.incomes[i] /= 100
-        chartData.salary[i] /= 100
-    }
+    // null is a Coming year's gap, and null / 100 would draw it as 0
+    const toEuro = (cents) => (cents === null ? null : cents / 100);
+    chartData.incomes = chartData.incomes.map(toEuro);
+    chartData.salary = chartData.salary.map(toEuro);
 
     Highcharts.chart("chart-incomes-container", {
         chart: {
