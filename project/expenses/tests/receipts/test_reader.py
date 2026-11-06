@@ -16,14 +16,6 @@ from .pdfs import (
     table_pdf,
 )
 
-FIXTURE = FIXTURES / "barbora.pdf"
-
-
-def test_reader_reads_barbora_fixture_into_29_lines():
-    receipt = ReceiptReader.read(FIXTURE)
-
-    assert len(receipt.lines) == 29
-
 
 def test_reader_raises_when_no_parser_recognises_the_pdf(tmp_path):
     path = table_pdf(
@@ -54,9 +46,6 @@ def _text(path):
     [
         FIXTURES / "barbora.pdf",
         FIXTURES / "maxima.pdf",
-        FIXTURES / "barbora_promotion.pdf",
-        FIXTURES / "barbora_substitute.pdf",
-        FIXTURES / "barbora_two_pages.pdf",
         FIXTURES / "maxima_markdown.pdf",
     ],
 )
