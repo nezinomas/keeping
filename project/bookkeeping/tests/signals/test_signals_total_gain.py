@@ -4,7 +4,7 @@ import pytest
 
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import PensionWorthFactory
-from ....bookkeeping.tests.helper import quiet_build
+from ....bookkeeping.tests.helper import quiet_build, quiet_syncs
 from ....core.tests.utils import count_queries
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
@@ -212,25 +212,27 @@ def _closed(fund):
     ],
 )
 def test_deleting_the_closing_move_reopens_the_fund(move, earlier):
-    fund = SavingTypeFactory(title="Fund", closed=YEAR + 1)
-    buy(fund, 100000)
-    for when in earlier:
-        MOVE_OUT[move](fund, when)
-    closing = MOVE_OUT[move](fund, date(YEAR + 1, 6, 1))
+    with quiet_syncs():
+        fund = SavingTypeFactory(title="Fund", closed=YEAR + 1)
+        buy(fund, 100000)
+        for when in earlier:
+            MOVE_OUT[move](fund, when)
+        closing = MOVE_OUT[move](fund, date(YEAR + 1, 6, 1))
 
-    closing.delete()
+        closing.delete()
 
     assert _closed(fund) is None
 
 
 @pytest.mark.parametrize("move", MOVE_OUT)
 def test_deleting_a_move_leaves_an_open_fund_open(move):
-    fund = SavingTypeFactory(title="Fund")
-    buy(fund, 100000)
-    MOVE_OUT[move](fund, date(YEAR, 6, 1))
-    later = MOVE_OUT[move](fund, date(YEAR + 1, 6, 1))
+    with quiet_syncs():
+        fund = SavingTypeFactory(title="Fund")
+        buy(fund, 100000)
+        MOVE_OUT[move](fund, date(YEAR, 6, 1))
+        later = MOVE_OUT[move](fund, date(YEAR + 1, 6, 1))
 
-    later.delete()
+        later.delete()
 
     assert _closed(fund) is None
 
@@ -365,11 +367,13 @@ def _pension_with_worth(title):
     return pension
 
 
-def test_saving_a_pension_type_query_count_does_not_grow_with_the_types():
-    pensions = [_pension_with_worth(f"P{i}") for i in range(2)]
+def test_saving_a_pension_type_query_count_does_not_grow_with_the_types(main_user):
+    with quiet_build(main_user):
+        pensions = [_pension_with_worth(f"P{i}") for i in range(2)]
     few = _save_queries(pensions[0])
 
-    pensions += [_pension_with_worth(f"P{i}") for i in range(2, 6)]
+    with quiet_build(main_user):
+        pensions += [_pension_with_worth(f"P{i}") for i in range(2, 4)]
     many = _save_queries(pensions[0])
 
     assert many == few

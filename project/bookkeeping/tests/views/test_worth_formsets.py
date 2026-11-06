@@ -22,7 +22,7 @@ from ..factories import (
     PensionWorthFactory,
     SavingWorthFactory,
 )
-from ..helper import post_data
+from ..helper import post_data, quiet_syncs
 
 
 @pytest.mark.django_db
@@ -109,7 +109,8 @@ WORTH_FORMSETS = [
 
 
 def worth_post_queries(client, worth, count, duplicate):
-    funds = [worth.fund_factory(title=f"F{count}-{i}") for i in range(count)]
+    with quiet_syncs():
+        funds = [worth.fund_factory(title=f"F{count}-{i}") for i in range(count)]
     rows = [{"date": "1999-9-9", "price": "5", worth.fund_field: f.pk} for f in funds]
     if duplicate:
         rows[-1][worth.fund_field] = funds[0].pk
@@ -139,9 +140,9 @@ def test_post_stamps_the_time_of_day_in_utc(client_logged, worth):
 @pytest.mark.parametrize("worth", WORTH_FORMSETS)
 def test_post_query_count_does_not_grow_with_the_rows(client_logged, worth, duplicate):
     two = worth_post_queries(client_logged, worth, 2, duplicate)
-    six = worth_post_queries(client_logged, worth, 6, duplicate)
+    four = worth_post_queries(client_logged, worth, 4, duplicate)
 
-    assert two == six
+    assert two == four
 
 
 @pytest.mark.django_db

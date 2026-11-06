@@ -10,11 +10,19 @@ from ....savings.tests.factories import SavingTypeFactory
 from ....transactions.close_rules import KEEP
 from ....transactions.forms import SavingChangeForm, SavingCloseForm
 from ....transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
+from ..helper import quiet_syncs
 
 pytestmark = pytest.mark.django_db
 
 FACTORIES = {"sell": SavingCloseFactory, "switch": SavingChangeFactory}
 FORMS = {"sell": SavingCloseForm, "switch": SavingChangeForm}
+
+
+@pytest.fixture(name="no_balance_syncs", autouse=True)
+def fixture_no_balance_syncs():
+    """No assertion here reads a balance row; the receivers still run."""
+    with quiet_syncs():
+        yield
 
 
 @pytest.mark.parametrize("move", FACTORIES)

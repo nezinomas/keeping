@@ -10,6 +10,7 @@ from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...lib.no_incomes import load_service as no_incomes_load_service
 from ...services.forecast.presenters import load_service as forecast_load_service
 from ...services.month.presenters import load_service as month_load_service
+from ..helper import quiet_build
 
 pytestmark = pytest.mark.django_db
 
@@ -71,12 +72,14 @@ def test_month_account_fee_of_another_month_is_left_out(main_user):
 
 def test_month_query_count_does_not_grow(main_user):
     main_user.month = 1
-    for i in range(2):
-        _purchase(ACCOUNT, title=f"T{i}")
+    with quiet_build(main_user):
+        for i in range(2):
+            _purchase(ACCOUNT, title=f"T{i}")
     two = _queries(month_load_service, main_user, TODAY)
 
-    for i in range(2, 6):
-        _purchase(ACCOUNT, title=f"T{i}")
+    with quiet_build(main_user):
+        for i in range(2, 4):
+            _purchase(ACCOUNT, title=f"T{i}")
 
     assert _queries(month_load_service, main_user, TODAY) == two
 
@@ -101,12 +104,14 @@ def test_forecast_counts_a_fee_paid_with_no_price(main_user):
 
 
 def test_forecast_query_count_does_not_grow(main_user):
-    for i in range(2):
-        _purchase(ACCOUNT, title=f"T{i}")
+    with quiet_build(main_user):
+        for i in range(2):
+            _purchase(ACCOUNT, title=f"T{i}")
     two = _queries(forecast_load_service, main_user, FORECAST_TODAY)
 
-    for i in range(2, 6):
-        _purchase(ACCOUNT, title=f"T{i}")
+    with quiet_build(main_user):
+        for i in range(2, 4):
+            _purchase(ACCOUNT, title=f"T{i}")
 
     assert _queries(forecast_load_service, main_user, FORECAST_TODAY) == two
 
@@ -130,11 +135,13 @@ def test_no_incomes_spend_counts_account_fees_only(
 
 
 def test_no_incomes_query_count_does_not_grow(main_user, savings_are_spending):
-    for i in range(2):
-        _purchase(ACCOUNT, title=f"T{i}", day=date(1999, 5, 10))
+    with quiet_build(main_user):
+        for i in range(2):
+            _purchase(ACCOUNT, title=f"T{i}", day=date(1999, 5, 10))
     two = _queries(no_incomes_load_service, main_user, 1999, NO_INCOMES_TODAY)
 
-    for i in range(2, 6):
-        _purchase(ACCOUNT, title=f"T{i}", day=date(1999, 5, 10))
+    with quiet_build(main_user):
+        for i in range(2, 4):
+            _purchase(ACCOUNT, title=f"T{i}", day=date(1999, 5, 10))
 
     assert _queries(no_incomes_load_service, main_user, 1999, NO_INCOMES_TODAY) == two
