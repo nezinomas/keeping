@@ -8,6 +8,7 @@ import time_machine
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
+from ...bookkeeping.tests.helper import quiet_build
 from ...core.lib.utils import get_action_buttons_html
 from ...core.tests.utils import (
     clean_content,
@@ -145,10 +146,10 @@ def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
     assert 'class="quick-add' not in content
 
 
-def _expense_under_its_own_name(i):
+def _expense_under_its_own_name(i, account):
     expense_type = ExpenseTypeFactory(title=f"T{i}")
     name = ExpenseNameFactory(title=f"N{i}", parent=expense_type)
-    ExpenseFactory(expense_type=expense_type, expense_name=name)
+    ExpenseFactory(expense_type=expense_type, expense_name=name, account=account)
 
 
 @pytest.mark.parametrize(
@@ -161,16 +162,19 @@ def _expense_under_its_own_name(i):
     ],
 )
 def test_tab_query_count_does_not_grow_with_the_expenses(
-    client_logged, url_name, kwargs
+    main_user, client_logged, url_name, kwargs
 ):
     url = reverse(url_name, kwargs=kwargs)
-    for i in range(2):
-        _expense_under_its_own_name(i)
+    account = AccountFactory()
+    with quiet_build(main_user):
+        for i in range(2):
+            _expense_under_its_own_name(i, account)
     fragment = {"HX-Request": "true"}
     two = count_queries(lambda: client_logged.get(url, headers=fragment))
 
-    for i in range(2, 6):
-        _expense_under_its_own_name(i)
+    with quiet_build(main_user):
+        for i in range(2, 6):
+            _expense_under_its_own_name(i, account)
     six = count_queries(lambda: client_logged.get(url, headers=fragment))
 
     assert six == two
