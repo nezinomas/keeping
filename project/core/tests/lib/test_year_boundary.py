@@ -85,6 +85,30 @@ def test_weeks_elapsed_counts_iso_weeks_inside_the_year(year, today, expect):
 
 
 @pytest.mark.parametrize(
+    "year, today, weekday, expect",
+    [
+        # 2025 began on a Wednesday, so it holds 53 of them
+        pytest.param(
+            2025, date(2026, 6, 15), 2, 53, id="every_occurrence_of_a_finished_year"
+        ),
+        # 2026 began on a Thursday: by Thursday Jan 15, Fridays 2nd and 9th
+        pytest.param(
+            2026, date(2026, 1, 15), 4, 2, id="those_reached_in_the_running_year"
+        ),
+        pytest.param(
+            2026, date(2026, 1, 2), 5, 0, id="none_before_its_first_day_this_year"
+        ),
+        # 2027 begins on a Friday
+        pytest.param(2027, date(2026, 6, 15), 4, 0, id="none_of_a_coming_year"),
+    ],
+)
+def test_weekdays_reached_counts_one_weekday_inside_the_year(
+    year, today, weekday, expect
+):
+    assert YearBoundary(year=year, today=today).weekdays_reached(weekday) == expect
+
+
+@pytest.mark.parametrize(
     "year, expect",
     [
         pytest.param(2026, 8, id="the_month_reached_in_the_current_year"),

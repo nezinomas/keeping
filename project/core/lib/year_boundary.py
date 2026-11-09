@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Protocol, TypeVar
 
+WEEKDAYS = 7
+
 
 class DatedRow(Protocol):
     """Structural, so an app's rows satisfy it without core importing the app."""
@@ -102,6 +104,14 @@ class YearBoundary:
             return 0
 
         return self.end_date.month
+
+    def weekdays_reached(self, weekday: int) -> int:
+        """How many of one weekday (Monday 0) the year has reached: counting all 52
+        in a running year would report a rate that has not happened yet."""
+        elapsed = self.days_elapsed
+        offset = (weekday - date(self.year, 1, 1).weekday()) % WEEKDAYS
+
+        return (elapsed - offset - 1) // WEEKDAYS + 1 if offset < elapsed else 0
 
     def clip(self, rows: Sequence[RowT]) -> list[RowT]:
         """Matches (month, day), not ordinal day, so leap years keep the cutoff."""

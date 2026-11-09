@@ -3,15 +3,13 @@ from dataclasses import dataclass
 from datetime import date
 from functools import cached_property
 
-from ...core.lib.year_boundary import YearBoundary
+from ...core.lib.year_boundary import WEEKDAYS, YearBoundary
 from .drinks_stats import (
     DataRow,
     EmptyYearOverYear,
     YearOverYear,
     YearOverYearReading,
 )
-
-WEEKDAYS = 7
 
 
 @dataclass(frozen=True)
@@ -139,14 +137,6 @@ class FrequencyStats:
     def compare_intensity(self) -> YearOverYearReading:
         return self._compare(self.intensity, self._past_point.intensity)
 
-    def _calendar_days_of(self, weekday: int) -> int:
-        """How many of one weekday the year has reached — counting all 52 in a
-        running year would report a rate that has not happened yet."""
-        elapsed = self.days_elapsed
-        offset = (weekday - date(self._year.year, 1, 1).weekday()) % 7
-
-        return (elapsed - offset - 1) // WEEKDAYS + 1 if offset < elapsed else 0
-
     def weekday_profile(self) -> list[WeekdayPoint]:
         """Always seven points, Monday first: a weekday nobody drank on is a finding."""
         by_weekday: list[list[DataRow]] = [[] for _ in range(WEEKDAYS)]
@@ -161,7 +151,7 @@ class FrequencyStats:
     def _weekday_point(self, weekday: int, rows: Sequence[DataRow]) -> WeekdayPoint:
         return WeekdayPoint(
             weekday=weekday,
-            calendar_days=self._calendar_days_of(weekday),
+            calendar_days=self._year.weekdays_reached(weekday),
             drinking_days=self._count_drinking_days(rows),
             stdav=sum(row.stdav for row in rows),
         )
