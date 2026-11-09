@@ -32,10 +32,16 @@ def test_end_date_is_today_only_while_the_year_runs(year, expect):
     assert boundary.end_date == expect
 
 
-def test_is_current_only_while_the_year_is_the_one_running():
-    assert YearBoundary(year=2026, today=date(2026, 12, 31)).is_current is True
-    assert YearBoundary(year=2025, today=date(2026, 1, 1)).is_current is False
-    assert YearBoundary(year=2027, today=date(2026, 6, 15)).is_current is False
+@pytest.mark.parametrize(
+    "year, today, expect",
+    [
+        pytest.param(2026, date(2026, 12, 31), True, id="the_running_year"),
+        pytest.param(2025, date(2026, 1, 1), False, id="a_finished_year"),
+        pytest.param(2027, date(2026, 6, 15), False, id="a_coming_year"),
+    ],
+)
+def test_is_current_only_while_the_year_is_the_one_running(year, today, expect):
+    assert YearBoundary(year=year, today=today).is_current is expect
 
 
 @pytest.mark.parametrize(
@@ -90,45 +96,48 @@ def test_months_elapsed_counts_the_months_the_year_has_reached(year, expect):
     assert YearBoundary(year=year, today=date(2026, 8, 11)).months_elapsed == expect
 
 
-def test_clip_keeps_rows_up_to_the_same_month_and_day():
-    boundary = YearBoundary(year=2026, today=date(2026, 2, 1))
-    rows = [_row(date(2025, 1, 1)), _row(date(2025, 2, 1)), _row(date(2025, 12, 31))]
+@pytest.mark.parametrize(
+    "year, today, dates, expect",
+    [
+        pytest.param(
+            2026,
+            date(2026, 2, 1),
+            [date(2025, 1, 1), date(2025, 2, 1), date(2025, 12, 31)],
+            [date(2025, 1, 1), date(2025, 2, 1)],
+            id="to_today_while_the_year_runs",
+        ),
+        pytest.param(
+            2027,
+            date(2026, 6, 15),
+            [date(2026, 6, 15), date(2026, 6, 16)],
+            [date(2026, 6, 15)],
+            id="the_year_before_a_coming_year_only_to_today",
+        ),
+        # 2024-12-31 is day 366 and 2025-12-31 is day 365, so an ordinal day-of-year
+        # cutoff would drop it; matching on (month, day) keeps it
+        pytest.param(
+            2025,
+            date(2026, 6, 15),
+            [date(2024, 12, 31)],
+            [date(2024, 12, 31)],
+            id="dec_31_of_a_leap_year_before_a_finished_year",
+        ),
+        pytest.param(
+            2025,
+            date(2026, 6, 15),
+            [date(2024, 1, 1), date(2024, 7, 15), date(2024, 12, 31)],
+            [date(2024, 1, 1), date(2024, 7, 15), date(2024, 12, 31)],
+            id="the_whole_year_before_a_finished_year",
+        ),
+        pytest.param(2026, date(2026, 2, 1), [], [], id="nothing"),
+    ],
+)
+def test_clip_keeps_rows_up_to_the_same_month_and_day(year, today, dates, expect):
+    boundary = YearBoundary(year=year, today=today)
 
-    kept = boundary.clip(rows)
+    kept = boundary.clip([_row(day) for day in dates])
 
-    assert [row.date for row in kept] == [date(2025, 1, 1), date(2025, 2, 1)]
-
-
-def test_clip_reads_the_year_before_a_coming_year_only_to_today():
-    boundary = YearBoundary(year=2027, today=date(2026, 6, 15))
-    rows = [_row(date(2026, 6, 15)), _row(date(2026, 6, 16))]
-
-    kept = boundary.clip(rows)
-
-    assert [row.date for row in kept] == [date(2026, 6, 15)]
-
-
-def test_clip_keeps_dec_31_of_a_leap_year_before_a_finished_year():
-    # 2024-12-31 is day 366 and 2025-12-31 is day 365, so an ordinal day-of-year
-    # cutoff would drop it; matching on (month, day) keeps it
-    boundary = YearBoundary(year=2025, today=date(2026, 6, 15))
-
-    kept = boundary.clip([_row(date(2024, 12, 31))])
-
-    assert [row.date for row in kept] == [date(2024, 12, 31)]
-
-
-def test_clip_keeps_the_whole_year_before_a_finished_year():
-    boundary = YearBoundary(year=2025, today=date(2026, 6, 15))
-    rows = [_row(date(2024, 1, 1)), _row(date(2024, 7, 15)), _row(date(2024, 12, 31))]
-
-    assert len(boundary.clip(rows)) == 3
-
-
-def test_clip_of_nothing_is_empty():
-    boundary = YearBoundary(year=2026, today=date(2026, 2, 1))
-
-    assert boundary.clip([]) == []
+    assert [row.date for row in kept] == expect
 
 
 @pytest.mark.parametrize(
@@ -162,6 +171,24 @@ def test_clip_of_nothing_is_empty():
 )
 def test_previous_end_date_is_a_year_back(year, today, expect):
     assert YearBoundary(year=year, today=today).previous_end_date == expect
+
+
+@pytest.mark.parametrize(
+    "year, day, expect",
+    [
+        pytest.param(2025, date(2024, 3, 1), date(2025, 3, 1), id="same_month_and_day"),
+        pytest.param(
+            2025, date(2024, 2, 29), date(2025, 2, 28), id="leap_day_folds_into_feb_28"
+        ),
+        pytest.param(
+            2024, date(2023, 2, 28), date(2024, 2, 28), id="feb_28_onto_a_leap_year"
+        ),
+    ],
+)
+def test_this_years_day_matches_month_and_day(year, day, expect):
+    boundary = YearBoundary(year=year, today=date(2026, 8, 11))
+
+    assert boundary.this_years_day(day) == expect
 
 
 @pytest.mark.parametrize(

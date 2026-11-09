@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -32,7 +33,7 @@ class EmptyRecentPeriodComparison:
 @dataclass(frozen=True)
 class YearToDateComparison:
     current_year_average: float  # std av consumed year-to-date
-    previous_year_average: float  # std av consumed to the same day-of-year last period
+    previous_year_average: float  # std av consumed to the same month and day last year
     percentage_change: float
     improving: bool
     has_past: bool = True
@@ -114,7 +115,7 @@ class TrendStats:
     def daily_volume(self) -> list[float]:
         """Dense day-by-day amount in the unit it is shown in (0 on days
         without records)."""
-        by_date = {row.date: row.stdav for row in self._current_year_records}
+        by_date = self._current_by_date
         start = date(self.current_year, 1, 1)
 
         return [
@@ -142,23 +143,25 @@ class TrendStats:
         reports Std Av under a dropdown set to beer."""
         return self._converter.stdav_to_total(stdav)
 
-    def _running_total(self, rows: list[DataRow], days: int) -> list[float]:
-        """Day-by-day running total in ``total_unit``."""
-        by_yday = {row.date.timetuple().tm_yday: row.stdav for row in rows}
+    def _running_total(self, by_date: dict[date, float], end: date) -> list[float]:
+        """Day-by-day running total in ``total_unit``, Jan 1 to ``end``."""
         cum = 0.0
         series = []
-        for i in range(1, days + 1):
-            cum += self._converter.stdav_to_total(by_yday.get(i, 0.0))
+        for day in self._date_range(date(self.current_year, 1, 1), end):
+            cum += self._converter.stdav_to_total(by_date.get(day, 0.0))
             series.append(cum)
         return series
 
     @cached_property
     def cumulative_current_year(self) -> list[float]:
-        return self._running_total(self._current_year_records, self.days_elapsed)
+        return self._running_total(self._current_by_date, self._year.last_day_reached)
 
     @cached_property
     def cumulative_past_year(self) -> list[float]:
-        return self._running_total(self._past_year_records, ydays(self.current_year))
+        by_date: dict[date, float] = defaultdict(float)
+        for row in self._past_year_records:
+            by_date[self._year.this_years_day(row.date)] += row.stdav
+        return self._running_total(by_date, date(self.current_year, 12, 31))
 
     @cached_property
     def cumulative_target(self) -> list[float]:
@@ -220,13 +223,16 @@ class TrendStats:
         )
 
     def compare_year_to_date(self) -> YearToDateComparison | EmptyYearToDateComparison:
-        day_of_year = self.days_elapsed
-        current = self._sum_stdav(self._current_year_records, day_of_year)
+        current = sum(
+            row.stdav
+            for row in self._current_year_records
+            if row.date <= self._year.last_day_reached
+        )
 
         if not self._past_year_records:
             return EmptyYearToDateComparison(current)
 
-        past = self._sum_stdav(self._past_year_records, day_of_year)
+        past = sum(row.stdav for row in self._year.clip(self._past_year_records))
 
         return YearToDateComparison(
             current,
@@ -260,15 +266,13 @@ class TrendStats:
         )
 
     @cached_property
-    def _stdav_by_date(self) -> dict:
+    def _stdav_by_date(self) -> dict[date, float]:
         """Date -> std av across the current and previous year (for windows
         that straddle the year boundary)."""
         lookup = {row.date: row.stdav for row in self._past_year_records}
-        lookup.update({row.date: row.stdav for row in self._current_year_records})
+        lookup.update(self._current_by_date)
         return lookup
 
-    @staticmethod
-    def _sum_stdav(rows: list[DataRow], day_of_year: int) -> float:
-        return sum(
-            row.stdav for row in rows if row.date.timetuple().tm_yday <= day_of_year
-        )
+    @cached_property
+    def _current_by_date(self) -> dict[date, float]:
+        return {row.date: row.stdav for row in self._current_year_records}

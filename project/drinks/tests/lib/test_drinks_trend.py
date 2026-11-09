@@ -54,34 +54,26 @@ def test_rolling_average_divides_by_full_window(converter):
     assert stats.calculate_rolling_average(30) == pytest.approx([1000 / 30] * 5)
 
 
-def test_rolling_average_shows_std_av_as_typed():
-    """Std Av is canonical, so it is shown as typed — never scaled into ml.
-
-    ``stdav_to_ml`` would turn 1 Std Av into the 10 ml of pure alcohol it
-    contains, putting the series 10x above the Drink Target it is read against.
-    """
+@pytest.mark.parametrize(
+    "drink_type, expected",
+    [
+        # never scaled into the 10 ml of pure alcohol one Std Av holds, which would
+        # put the series 10x above the Drink Target it is read against
+        pytest.param("stdav", (5 / 7, 5), id="std_av_as_typed"),
+        pytest.param("beer", (1000 / 7, 1000), id="a_volume_drink_type_in_ml"),
+    ],
+)
+def test_rolling_average_shows_the_drink_types_unit(drink_type, expected):
     stats = TrendStats(
-        DrinkConverter("stdav"),
+        DrinkConverter(drink_type),
         current_daily=[_row(date(2026, 1, 1), 5)],
         year=2026,
         today=date(2026, 1, 5),
     )
 
-    assert stats.calculate_rolling_average(7)[0] == pytest.approx(5 / 7)
-    assert stats.daily_volume[0] == pytest.approx(5)
+    actual = (stats.calculate_rolling_average(7)[0], stats.daily_volume[0])
 
-
-def test_rolling_average_still_converts_a_volume_drink_type(converter):
-    # beer is read as a volume, so 5 std av is still 1000 ml
-    stats = TrendStats(
-        converter,
-        current_daily=[_row(date(2026, 1, 1), 5)],
-        year=2026,
-        today=date(2026, 1, 5),
-    )
-
-    assert stats.calculate_rolling_average(7)[0] == pytest.approx(1000 / 7)
-    assert stats.daily_volume[0] == pytest.approx(1000)
+    assert actual == pytest.approx(expected)
 
 
 def test_rolling_average_seeds_from_previous_december(converter):
@@ -163,7 +155,7 @@ def test_ytd_vs_last_year(converter):
     current = [_row(date(2026, 1, 1), 10), _row(date(2026, 2, 1), 5)]
     past = [
         _row(date(2025, 1, 1), 20),
-        _row(date(2025, 4, 10), 100),  # day-of-year > today's, must be excluded
+        _row(date(2025, 4, 10), 100),  # after today's month and day, left out
     ]
     stats = TrendStats(
         converter,
@@ -199,47 +191,112 @@ def test_ytd_without_past_data(converter):
     assert ytd.percentage_change == 0.0
 
 
-def test_projection_over_target(converter):
-    # 10 stdav -> 2000 ml over 10 days = 200 ml/day pace
+@pytest.mark.parametrize(
+    "current, past, expected",
+    [
+        pytest.param(
+            [],
+            [_row(date(2024, 2, 29), 1), _row(date(2024, 3, 1), 2)],
+            (0, 3),
+            id="last_year_after_a_leap_year",
+        ),
+        pytest.param(
+            [_row(date(2025, 3, 1), 1), _row(date(2025, 3, 2), 2)],
+            [_row(date(2024, 1, 1), 4)],
+            (1, 4),
+            id="this_year_to_today",
+        ),
+    ],
+)
+def test_ytd_reads_each_year_to_the_same_month_and_day(current, past, expected):
     stats = TrendStats(
-        converter,
+        DrinkConverter("stdav"),
+        current_daily=current,
+        past_daily=past,
+        year=2025,
+        today=date(2025, 3, 1),
+    )
+    ytd = stats.compare_year_to_date()
+
+    assert (ytd.current_year_average, ytd.previous_year_average) == expected
+
+
+def _steps(series: list[float]) -> tuple[int, dict[int, float]]:
+    """The series' length and each index its total changes at: the whole line, read
+    without a 365-item diff."""
+    changes = {i: v for i, v in enumerate(series) if i == 0 or v != series[i - 1]}
+    return len(series), changes
+
+
+# index 58 is Feb 28, 59 is Mar 1 of a common year and Feb 29 of a leap one
+@pytest.mark.parametrize(
+    "year, past, expected",
+    [
+        pytest.param(
+            2025,
+            [_row(date(2024, 3, 1), 1), _row(date(2024, 12, 31), 2)],
+            (365, {0: 0.0, 59: 1.0, 364: 3.0}),
+            id="after_a_leap_year_mar_1_and_dec_31_keep_their_days",
+        ),
+        pytest.param(
+            2025,
+            [_row(date(2024, 2, 29), 1)],
+            (365, {0: 0.0, 58: 1.0}),
+            id="after_a_leap_year_feb_29_folds_into_feb_28",
+        ),
+        pytest.param(
+            2025,
+            [_row(date(2024, 2, 28), 1), _row(date(2024, 2, 29), 2)],
+            (365, {0: 0.0, 58: 3.0}),
+            id="after_a_leap_year_feb_28_and_29_add_up",
+        ),
+        pytest.param(
+            2024,
+            [_row(date(2023, 2, 28), 1), _row(date(2023, 3, 1), 2)],
+            (366, {0: 0.0, 58: 1.0, 60: 3.0}),
+            id="in_a_leap_year_feb_29_has_no_last_year_day",
+        ),
+    ],
+)
+def test_cumulative_past_year_matches_days_by_month_and_day(year, past, expected):
+    stats = TrendStats(
+        DrinkConverter("stdav"),
+        past_daily=past,
+        year=year,
+        today=date(2026, 6, 15),
+    )
+
+    assert _steps(stats.cumulative_past_year) == expected
+
+
+@pytest.mark.parametrize(
+    "drink_type, daily_target, expected",
+    [
+        # 10 std av -> 2000 ml over 10 days = 200 ml/day, * 365 / 1000
+        pytest.param("beer", 100, ("L", 73.0, 36.5), id="beer_in_litres"),
+        # the forecast and its target share one unit: 1/day * 365, not 3650
+        pytest.param("stdav", 0.5, ("Std Av", 365.0, 182.5), id="std_av_as_typed"),
+    ],
+)
+def test_projection_over_target(drink_type, daily_target, expected):
+    stats = TrendStats(
+        DrinkConverter(drink_type),
         current_daily=[_row(date(2026, 1, 1), 10)],
-        limit=DailyLimit(100),
+        limit=DailyLimit(daily_target),
         year=2026,
         today=date(2026, 1, 10),
     )
 
     projection = stats.calculate_projection()
 
-    assert projection.projected_total == 73.0  # 200 ml/day * 365 / 1000
-    assert projection.target_total == 36.5  # 100 ml/day * 365 / 1000
+    assert (
+        stats.total_unit,
+        projection.projected_total,
+        projection.target_total,
+    ) == expected
     assert projection.percentage_difference == 100.0
     assert projection.over is True
     assert projection.has_target is True
-
-
-def test_projection_counts_std_av_instead_of_bottling_it():
-    """The forecast and the target it is read against share one unit.
-
-    The projection used to be built from millilitres while the target stayed in
-    Std Av, so a Std Av user was shown a forecast ten times their target.
-    """
-    # 10 Std Av over 10 days = 1 Std Av/day pace, against a 0.5/day target
-    stats = TrendStats(
-        DrinkConverter("stdav"),
-        current_daily=[_row(date(2026, 1, 1), 10)],
-        limit=DailyLimit(0.5),
-        year=2026,
-        today=date(2026, 1, 10),
-    )
-
-    projection = stats.calculate_projection()
-
-    assert stats.total_unit == "Std Av"
-    assert projection.projected_total == 365.0  # 1/day * 365, not 3650
-    assert projection.target_total == 182.5  # 0.5/day * 365
-    assert projection.percentage_difference == 100.0
-    assert projection.over is True
 
 
 def test_projection_without_target(converter):

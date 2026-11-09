@@ -15,6 +15,12 @@ class DatedRow(Protocol):
 RowT = TypeVar("RowT", bound=DatedRow)
 
 
+def _same_month_and_day(day: date, year: int) -> date:
+    """Feb 29 folds into Feb 28, the one day a common year has no counterpart for."""
+    last = calendar.monthrange(year, day.month)[1]
+    return date(year, day.month, min(day.day, last))
+
+
 @dataclass(frozen=True)
 class YearBoundary:
     """How far into a year a metric may read: to today while it runs, Dec 31 after,
@@ -55,11 +61,11 @@ class YearBoundary:
 
     @property
     def previous_end_date(self) -> date:
-        """Feb 29 clamps to Feb 28, the one day with no counterpart a year back."""
-        end = self._year_before_reads_to
-        day = min(end.day, calendar.monthrange(self.year - 1, end.month)[1])
+        return _same_month_and_day(self._year_before_reads_to, self.year - 1)
 
-        return date(self.year - 1, end.month, day)
+    def this_years_day(self, day: date) -> date:
+        """A day of the year before, moved to this year's same month and day."""
+        return _same_month_and_day(day, self.year)
 
     @property
     def span(self) -> tuple[date, date]:
@@ -80,7 +86,7 @@ class YearBoundary:
             return 0
 
         weeks_in_year = date(self.year, 12, 28).isocalendar()[1]
-        if self.year != self.today.year:
+        if not self.is_current:
             return weeks_in_year
 
         iso = self.today.isocalendar()
