@@ -29,13 +29,15 @@ def card_total_ever(life: CounterLife) -> Card:
 
 
 @dataclass(frozen=True)
-class OverviewCards:
+class CounterCards:
     life: CounterLife
 
     @classmethod
     def build(cls, life: CounterLife) -> list[Card]:
         return cls(life)._cards()
 
+
+class OverviewCards(CounterCards):
     def _cards(self) -> list[Card]:
         return [self._card_year(), card_total_ever(self.life), self._card_gap()]
 
@@ -70,14 +72,7 @@ class OverviewCards:
         )
 
 
-@dataclass(frozen=True)
-class HistoryCards:
-    life: CounterLife
-
-    @classmethod
-    def build(cls, life: CounterLife) -> list[Card]:
-        return cls(life)._cards()
-
+class HistoryCards(CounterCards):
     def _cards(self) -> list[Card]:
         return [
             card_total_ever(self.life),
@@ -127,14 +122,7 @@ class HistoryCards:
         )
 
 
-@dataclass(frozen=True)
-class PeriodicityCards:
-    life: CounterLife
-
-    @classmethod
-    def build(cls, life: CounterLife) -> list[Card]:
-        return cls(life)._cards()
-
+class PeriodicityCards(CounterCards):
     def _cards(self) -> list[Card]:
         return [self._card_rate(), self._card_typical_gap(), self._card_longest_gap()]
 
