@@ -3,7 +3,7 @@ from datetime import date
 from django.db.models import F
 from django.utils.translation import gettext as _
 
-from ...core.lib.utils import add_fast_urls, get_action_buttons_html
+from ...core.lib.utils import add_fast_urls
 from ...expenses.services.model_services import ExpenseModelService
 from ...users.models import User
 
@@ -31,4 +31,4 @@ class ExpandDayService:
             "day": self.date.day,
             "object_list": self.data,
             "notice": _("No records on day %(day)s") % ({"day": f"{self.date:%F}"}),
-        } | get_action_buttons_html()
+        }

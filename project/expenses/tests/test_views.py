@@ -9,7 +9,6 @@ from django.urls import reverse, reverse_lazy
 
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.helper import quiet_build
-from ...core.lib.utils import get_action_buttons_html
 from ...core.mixins import kwargs as core_kwargs
 from ...core.tests.utils import (
     clean_content,
@@ -523,9 +522,6 @@ def test_a_duomenys_row_keeps_its_exception_mark_and_no_reload(client_logged):
 def test_lists_renders_row_buttons_equal_for_2_and_6_expenses(client_logged):
     url = reverse("expenses:list", kwargs={"month": 1})
     buttons = {"cotton/td_edit.html", "cotton/td_delete.html"}
-    # the buttons render once per process (lru_cache): warm it, or the first
-    # request alone renders them
-    get_action_buttons_html()
 
     def button_renders():
         templates = client_logged.get(url).templates

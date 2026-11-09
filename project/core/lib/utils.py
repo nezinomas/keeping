@@ -1,10 +1,8 @@
 import contextlib
 import json
-from functools import lru_cache
 from urllib.parse import urlparse
 
 from django.http import HttpResponse
-from django.template.loader import render_to_string
 from django.urls import Resolver404, resolve, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
@@ -52,18 +50,6 @@ def profit_percent(row: dict, switched_within: int = 0) -> float:
         return 0.0
 
     return row.get("profit_sum", 0) / base * 100
-
-
-@lru_cache(maxsize=1)
-def get_action_buttons_html() -> dict[str, str]:
-    """
-    Returns the pre-compiled HTML strings for the action buttons.
-    Cached indefinitely since the template code doesn't change during runtime.
-    """
-    return {
-        "edit_col": render_to_string("cotton/td_edit.html", {"url": "[[url]]"}),
-        "delete_col": render_to_string("cotton/td_delete.html", {"url": "[[url]]"}),
-    }
 
 
 def add_fast_urls(

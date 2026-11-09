@@ -6,7 +6,6 @@ from django.utils.translation import gettext_lazy as _
 
 from ...users.models import User
 from ..lib.paginator import CountlessPaginator
-from ..lib.utils import get_action_buttons_html
 
 PER_PAGE = 50
 
@@ -30,11 +29,7 @@ class SearchMixin:
     search_rows = staticmethod(keep_rows)
 
     def get_context_data(self, **kwargs):
-        return (
-            super().get_context_data(**kwargs)
-            | self.search()
-            | get_action_buttons_html()
-        )
+        return super().get_context_data(**kwargs) | self.search()
 
     def search(self):
         search_str = self.request.GET.get("search", "")

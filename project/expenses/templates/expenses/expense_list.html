@@ -2,7 +2,6 @@
 {% load i18n %}
 {% load math %}
 {% load cell_format %}
-{% load fast_rendering %}
 
 {% if object_list %}
 
@@ -47,8 +46,8 @@
                     {% endif %}
                 </td>
                 <td>{{ object.account__title }}</td>
-                {{ edit_col|inject_url:object.url_update }}
-                {{ delete_col|inject_url:object.url_delete }}
+                <td class="edit-col"><a role="button" hx-get="{{ object.url_update }}" hx-target="#mainModal" class="edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a></td>
+                <td class="delete-col"><a role="button" hx-get="{{ object.url_delete }}" hx-target="#mainModal" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a></td>
             </tr>
             {% endfor %}
         </tbody>

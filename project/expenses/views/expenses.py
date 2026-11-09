@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import PriceToFloatViewMixin
 from ...core.lib.overview_cards import Overview
-from ...core.lib.utils import add_fast_urls, get_action_buttons_html, int_or_zero
+from ...core.lib.utils import add_fast_urls, int_or_zero
 from ...core.lib.year_boundary import YearBoundary
 from ...core.mixins.kwargs import TodayMixin
 from ...core.mixins.tabs import TabViewMixin as CoreTabViewMixin
@@ -113,7 +113,7 @@ class Lists(TodayMixin, ListViewMixin):
             "all_months": self.month.value == ALL,
             "first_day": self.month.first_day(year),
         }
-        return super().get_context_data(**kwargs) | context | get_action_buttons_html()
+        return super().get_context_data(**kwargs) | context
 
 
 class New(SuccessUrlMixin, CreateViewMixin):
