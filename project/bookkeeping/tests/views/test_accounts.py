@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
 from ....incomes.tests.factories import IncomeFactory
+from ....pensions.tests.factories import PensionFactory
 from ....savings.tests.factories import SavingFactory
 from .. import factories
 
@@ -29,6 +30,35 @@ def test_latest_check(client_logged):
     items = response.context["items"]
 
     assert items[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
+
+
+FUNDS_HEADER = (
+    r'<th rowspan="2" colspan="2" class="[^"]*">1999 pradžioje</th>\s*'
+    r'<th colspan="2" class="[^"]*">1999</th>'
+)
+
+
+@pytest.mark.parametrize(
+    "url_name, factory, header",
+    [
+        pytest.param(
+            "bookkeeping:accounts",
+            factories.AccountWorthFactory,
+            r"<th>1999 pradžioje</th>",
+            id="accounts",
+        ),
+        pytest.param("bookkeeping:savings", SavingFactory, FUNDS_HEADER, id="savings"),
+        pytest.param(
+            "bookkeeping:pensions", PensionFactory, FUNDS_HEADER, id="pensions"
+        ),
+    ],
+)
+def test_header_reads_the_selected_year(client_logged, url_name, factory, header):
+    factory()
+
+    content = client_logged.get(reverse(url_name)).content.decode("utf-8")
+
+    assert re.search(header, content)
 
 
 def test_negative_delta_is_marked_as_a_loss(client_logged):
