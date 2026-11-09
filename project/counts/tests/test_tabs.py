@@ -1,13 +1,7 @@
 import pytest
-from django.urls import reverse
 
 from .. import views
 from ..tabs import TABS
-
-
-@pytest.mark.parametrize("tab", TABS)
-def test_tab_url_names_the_counter(tab):
-    assert tab.url("xxx") == reverse(tab.url_name, kwargs={"slug": "xxx"})
 
 
 @pytest.mark.parametrize("tab", TABS)

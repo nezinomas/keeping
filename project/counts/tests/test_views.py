@@ -310,17 +310,19 @@ def test_index_names_the_open_tab_and_the_counter_in_the_browser_title(
     assert f"<title>Xxx | {title}</title>" in content
 
 
+@pytest.mark.parametrize("tab", TABS, ids=[tab.name for tab in TABS])
 @pytest.mark.parametrize(
     "headers", [{"HX-Request": "true"}, {}], ids=["fragment", "page"]
 )
-def test_only_the_open_tab_reloads_on_its_trigger(client_logged, headers):
+def test_only_the_open_tab_reloads_on_its_trigger(client_logged, headers, tab):
     CountTypeFactory(title="Xxx")
+    url = reverse(tab.url_name, kwargs={"slug": "xxx"})
 
-    content = client_logged.get("/counts/c/xxx/data/", headers=headers).content.decode()
+    content = client_logged.get(url, headers=headers).content.decode()
 
     listener = (
-        'hx-get="/counts/c/xxx/data/" hx-target="#tab_content" '
-        'hx-trigger="reloadData from:body"'
+        f'hx-get="{url}" hx-target="#tab_content" '
+        f'hx-trigger="{tab.reload_trigger} from:body"'
     )
     assert listener in content
     assert content.count(" from:body") == 1
@@ -403,6 +405,9 @@ def test_index_counter_menu_replaces_the_rename_and_delete_buttons(client_logged
     assert "counter-name" not in bar
 
 
+
+
+
 def test_index_loads_the_paper_chart_theme(client_logged):
     CountTypeFactory()
 
@@ -423,10 +428,10 @@ def test_index_tabs_link_their_urls_in_order(client_logged):
     )
 
     assert tabs == [
-        ("index", TABS["index"].url("xxx"), "Apžvalga"),
-        ("periodicity", TABS["periodicity"].url("xxx"), "Periodiškumas"),
-        ("history", TABS["history"].url("xxx"), "Istorija"),
-        ("data", TABS["data"].url("xxx"), "Duomenys"),
+        ("index", "/counts/c/xxx/index/", "Apžvalga"),
+        ("periodicity", "/counts/c/xxx/periodicity/", "Periodiškumas"),
+        ("history", "/counts/c/xxx/history/", "Istorija"),
+        ("data", "/counts/c/xxx/data/", "Duomenys"),
     ]
 
 

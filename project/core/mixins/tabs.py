@@ -30,7 +30,7 @@ class TabViewMixin:
         return {
             **super().get_context_data(**kwargs),
             "tab": self.tab.name,
-            "tab_url": self.tab.url,
+            "tab_url": self.tab_url_of(self.tab),
             "reload_trigger": self.tab.reload_trigger,
         }
 
@@ -48,5 +48,8 @@ class TabViewMixin:
     def page_context(self) -> dict:
         return {
             "page_title": format_lazy("{} | {}", self.app_title, self.tab.title),
-            "tabs": [(tab, tab.url) for tab in self.tabs],
+            "tabs": [(tab, self.tab_url_of(tab)) for tab in self.tabs],
         }
+
+    def tab_url_of(self, tab: Tab) -> str:
+        return tab.url
