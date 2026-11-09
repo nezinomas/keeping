@@ -9,7 +9,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...core.lib.translation import month_names
-from ...core.tests.utils import edit_row_opening
+from ...core.tests.utils import count_queries, edit_row_opening
 from ...users.views import Login
 from ..models import Count, CountType
 from ..tabs import TABS
@@ -405,7 +405,17 @@ def test_index_counter_menu_replaces_the_rename_and_delete_buttons(client_logged
     assert "counter-name" not in bar
 
 
+def test_index_counter_menu_query_count_does_not_grow_with_the_counters(client_logged):
+    for title in ("Xxx", "B"):
+        CountTypeFactory(title=title)
+    url = reverse("counts:index", kwargs={"slug": "xxx"})
+    two = count_queries(lambda: client_logged.get(url))
 
+    for title in ("C", "D", "E", "F"):
+        CountTypeFactory(title=title)
+    six = count_queries(lambda: client_logged.get(url))
+
+    assert six == two
 
 
 def test_index_loads_the_paper_chart_theme(client_logged):
