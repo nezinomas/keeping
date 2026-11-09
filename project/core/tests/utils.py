@@ -6,6 +6,11 @@ from django.test.utils import CaptureQueriesContext
 PICKER_SCRIPT = r'<script[^>]*src="[^"]*/js/([a-z]+-picker\.js)"'
 
 
+def edit_row_opening(url):
+    """The start tag of a list row whose double-click opens `url` in the modal."""
+    return f'<tr hx-get="{url}" hx-trigger="dblclick" hx-target="#mainModal"'
+
+
 def clean_content(rendered):
     return str(rendered).replace("\n", "").replace("\t", "").replace("  ", "")
 

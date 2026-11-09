@@ -19,7 +19,7 @@
         {% for object in object_list %}
         {% url 'pensions:update' object.id as url_update %}
         {% url 'pensions:delete' object.id as url_delete %}
-        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
+        <c-edit-row :url="url_update">
             <td class="text-left">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ object.pension_type }}</td>
             <td class="text-left" colspan="2">{{ object.remark }}</td>
@@ -27,7 +27,7 @@
             <td data-cell="{{object.fee|cell_state}}">{{object.fee|price|cellformat}}</td>
             <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
-        </tr>
+        </c-edit-row>
         {% endfor %}
     </tbody>
 </table>

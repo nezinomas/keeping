@@ -13,6 +13,7 @@ from ...core.lib.utils import get_action_buttons_html
 from ...core.tests.utils import (
     clean_content,
     count_queries,
+    edit_row_opening,
     quick_add_pills,
     stat_card_tooltips,
     stat_cards,
@@ -213,12 +214,12 @@ def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
         )
 
     rows = [
-        r'<tbody>\s*<tr class="main__group"[^>]*>\s*'
+        r'<tbody>\s*<tr[^>]* class="main__group">\s*'
         r'<td class="text-left">Buitinės</td>\s*'
         + cells(100, "–", "10%", "1999-04-01"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Muilas</td>\s*'
         + name_cells(100, "–", "100%", "1999-04-01"),
-        r'</tbody>\s*<tbody>\s*<tr class="main__group table-group-divider"[^>]*>\s*'
+        r'</tbody>\s*<tbody>\s*<tr[^>]* class="main__group table-group-divider">\s*'
         r'<td class="text-left">Maistas</td>\s*' + cells(900, 200, "90%", "1999-03-07"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Duona</td>\s*'
         + name_cells(300, "–", "33%", "1999-03-07"),
@@ -226,7 +227,7 @@ def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
         + name_cells(600, 200, "67%", "1999-02-05"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Sūris</td>\s*'
         + name_cells("–", "–", "–", "–"),
-        r'</tbody>\s*<tbody>\s*<tr class="main__group table-group-divider"[^>]*>\s*'
+        r'</tbody>\s*<tbody>\s*<tr[^>]* class="main__group table-group-divider">\s*'
         r'<td class="text-left">Tuščia</td>\s*' + cells("–", "–", "–", "–"),
         r'</tbody>\s*<tfoot>\s*<tr class="main__total">\s*'
         r'<td class="text-left">Viso</td>\s*' + figures("1.000", 200, "100%"),
@@ -309,9 +310,11 @@ def test_types_tab_edits_each_type_and_name_from_its_row(client_logged):
 
     content = client_logged.get(reverse("expenses:tab_types")).content.decode()
 
-    for row, link in (('<tr class="main__group"', type_link), ("<tr", name_link)):
-        dblclick = f'hx-get="{link}" hx-trigger="dblclick" hx-target="#mainModal">'
-        assert f"{row} {dblclick}" in content
+    for link, group in ((type_link, ' class="main__group"'), (name_link, "")):
+        row = (
+            f'<tr hx-get="{link}" hx-trigger="dblclick" hx-target="#mainModal"{group}>'
+        )
+        assert row in content
         assert re.search(rf'<a role="button" hx-get="{link}"[^>]*class="edit"', content)
 
 
@@ -1286,3 +1289,14 @@ def test_the_list_heads_its_text_columns_left(client_logged):
     headers = re.findall(r'<th class="([^"]*)">([^<]*)</th>', content)
     left = [label for classes, label in headers if "text-left" in classes.split()]
     assert left == ["Data", "Išlaidų rūšis", "Išlaidų pavadinimas", "Pastaba"]
+
+
+def test_an_expense_row_opens_its_update_form(client_logged):
+    obj = ExpenseFactory()
+
+    content = client_logged.get(
+        reverse("expenses:list", kwargs={"month": "all"})
+    ).content.decode("utf-8")
+
+    update = reverse("expenses:update", kwargs={"pk": obj.pk})
+    assert edit_row_opening(update) in content

@@ -20,14 +20,14 @@
     </thead>
     <tbody>
         {% for row in rows %}
-        <tr hx-get="{{ row.update_url }}" hx-target="#mainModal" hx-trigger="dblclick">
+        <c-edit-row :url="row.update_url">
             <td class="text-left">{{ row.title }}</td>
             {% for value, state in row.cells %}
             <td class="main__figure{% if state == 'over' %} plans-table__over{% endif %}" data-cell="{{value|cell_state}}">{{value|price|cellformat:"0,00"}}</td>
             {% endfor %}
             <c-td-edit :url="row.update_url" />
             <c-td-delete :url="row.delete_url" />
-        </tr>
+        </c-edit-row>
         {% empty %}
         <tr>
             <td colspan="15">{% include "core/no_records_in_year.html" with year=year %}</td>

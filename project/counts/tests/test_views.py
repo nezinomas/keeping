@@ -9,6 +9,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...core.lib.translation import month_names
+from ...core.tests.utils import edit_row_opening
 from ...users.views import Login
 from ..models import Count, CountType
 from ..tabs import TABS
@@ -1000,3 +1001,14 @@ def test_count_type_delete_confirm_field_is_marked_as_dangerous(client_logged):
     actual = client_logged.get(url).content.decode("utf-8")
 
     assert 'class="form-control input-danger"' in actual
+
+
+def test_a_count_row_opens_its_update_form(client_logged):
+    obj = CountFactory()
+
+    content = client_logged.get(
+        reverse("counts:tab_data", kwargs={"slug": obj.count_type.slug})
+    ).content.decode("utf-8")
+
+    update = reverse("counts:update", kwargs={"pk": obj.pk})
+    assert edit_row_opening(update) in content

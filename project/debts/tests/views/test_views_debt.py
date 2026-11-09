@@ -7,6 +7,7 @@ from django.test import Client
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
+from ....core.tests.utils import edit_row_opening
 from ... import models
 from ...services.model_services import DebtModelService
 from .. import factories
@@ -283,3 +284,14 @@ def test_debt_delete(client_logged, debt_type):
 
     assert response.status_code == 204
     assert not models.Debt.objects.filter(pk=p.pk).exists()
+
+
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_a_debt_row_opens_its_update_form(client_logged, debt_type):
+    obj = DEBT_FACTORIES[debt_type]()
+
+    url = reverse("debts:list", kwargs={"debt_type": debt_type})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    update = reverse("debts:update", kwargs={"pk": obj.pk, "debt_type": debt_type})
+    assert edit_row_opening(update) in content

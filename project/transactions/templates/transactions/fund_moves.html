@@ -19,7 +19,7 @@
     {% for move, closes_fund in moves %}
     {% url update_url_name move.id as url_update %}
     {% url delete_url_name move.id as url_delete %}
-    <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged move.date.year move.date.month %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+    <c-edit-row :url="url_update" class="{% ifchanged move.date.year move.date.month %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
         <td class="text-left main__date">{{ move.date|date:"Y-m-d" }}</td>
         <td class="text-left main__name">{{ move.from_account }}{% if closes_fund %} <span class="main__mark">{% translate 'Closed' %}</span>{% endif %}</td>
         <td class="text-left main__name">{{ move.to_account }}</td>
@@ -27,7 +27,7 @@
         <td class="main__figure main__fold" data-cell="{{ move.fee|cell_state }}">{{ move.fee|price|cellformat }}</td>
         <c-td-edit :url="url_update" />
         <c-td-delete :url="url_delete" />
-    </tr>
+    </c-edit-row>
     {% endfor %}
 </c-paper-table>
 

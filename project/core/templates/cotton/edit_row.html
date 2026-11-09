@@ -1,0 +1,8 @@
+<c-vars url="" />
+
+{# attrs counts the vars too, so only its text says whether a caller passed more #}
+{% with rest=attrs|stringformat:"s" %}
+<tr hx-get="{{ url }}" hx-trigger="dblclick" hx-target="#mainModal"{% if rest %} {{ rest }}{% endif %}>
+    {{ slot }}
+</tr>
+{% endwith %}

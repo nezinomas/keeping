@@ -11,6 +11,7 @@ from django.utils.translation import gettext as _
 from ...core.mixins import kwargs as core_kwargs
 from ...core.tests.utils import (
     count_queries,
+    edit_row_opening,
     form_posts_to,
     nav_tabs,
     setup_view,
@@ -1492,3 +1493,12 @@ def test_a_user_with_no_year_raises(rf, main_user, mocker, call):
 
     with pytest.raises(ValueError, match="has no year"):
         call(rf, main_user)
+
+
+def test_a_drink_row_opens_its_update_form(client_logged):
+    obj = DrinkFactory()
+
+    content = client_logged.get(reverse("drinks:tab_data")).content.decode("utf-8")
+
+    update = reverse("drinks:update", kwargs={"pk": obj.pk})
+    assert edit_row_opening(update) in content
