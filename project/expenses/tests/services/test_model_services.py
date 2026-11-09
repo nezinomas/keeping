@@ -43,7 +43,6 @@ class TestExpenseService:
                 "exception": True,
                 "price_str": "1.200,50",
                 "is_pdf": True,
-                "month_group": date(1999, 1, 1),
             }
         ]
 

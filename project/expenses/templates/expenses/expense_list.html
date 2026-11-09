@@ -30,7 +30,7 @@
 
             {% for object in object_list %}
 
-            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.date.year object.date.month %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left main__date{% if object.exception %} exception{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
                 <td class="text-left">{{ object.expense_type__title }}</td>
                 <td class="text-left">{{ object.expense_name__title }}</td>

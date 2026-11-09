@@ -510,6 +510,30 @@ def test_std_av_table_marks_the_total_row_by_its_state_not_its_title():
 
 
 @pytest.mark.parametrize(
+    "dates, classes",
+    [
+        pytest.param(
+            [date(2000, 1, 5), date(1999, 1, 5)],
+            ["", "table-group-divider"],
+            id="two_januaries",
+        ),
+        pytest.param(
+            [date(1999, 3, 5), date(1999, 1, 9), date(1999, 1, 5)],
+            ["", "table-group-divider", ""],
+            id="two_months",
+        ),
+    ],
+)
+def test_data_list_divides_each_month(dates, classes):
+    # no Drinks page lists two years, so the list is rendered alone
+    rows = [DrinkFactory(date=on) for on in dates]
+
+    html = render_to_string("drinks/tab_data.html", {"object_list": rows})
+
+    assert re.findall(r'<tr hx-get="[^"]*"[^>]*class="([^"]*)"', html) == classes
+
+
+@pytest.mark.parametrize(
     "tab, cards", [("index", 6), ("habits", 1), ("trends", 5), ("risk", 4)]
 )
 def test_tab_renders_its_cards(client_logged, tab, cards):

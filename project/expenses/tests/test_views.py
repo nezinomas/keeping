@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 import time_machine
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.helper import quiet_build
@@ -1113,6 +1113,45 @@ def test_load_expense_name_other_journal_type_yields_no_names(
     response = client_logged.get(url, {"expense_type": other_type.pk})
 
     assert _name_options(response) == []
+
+
+@pytest.mark.parametrize(
+    "url, query, dates, rows",
+    [
+        pytest.param(
+            reverse_lazy("expenses:search"),
+            {"search": "type"},
+            ["2000-01-15", "1999-01-15"],
+            [("", "2000-01-15"), ("table-group-divider", "1999-01-15")],
+            id="search_two_januaries",
+        ),
+        pytest.param(
+            reverse_lazy("expenses:list", kwargs={"month": "all"}),
+            {},
+            ["1999-01-15", "1999-02-15", "1999-02-20"],
+            [
+                ("", "1999-02-20"),
+                ("", "1999-02-15"),
+                ("table-group-divider", "1999-01-15"),
+            ],
+            id="year_list_two_months",
+        ),
+    ],
+)
+def test_a_divider_opens_each_new_month(client_logged, url, query, dates, rows):
+    for on in dates:
+        ExpenseFactory(date=date.fromisoformat(on))
+
+    content = client_logged.get(url, query).content.decode("utf-8")
+
+    assert (
+        re.findall(
+            r'<tr hx-get="[^"]*"[^>]*class="([^"]*)">'
+            r'\s*<td class="text-left main__date">([\d-]+)</td>',
+            content,
+        )
+        == rows
+    )
 
 
 @pytest.mark.parametrize(

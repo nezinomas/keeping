@@ -205,7 +205,6 @@ class ExpenseModelService(SpanReadsMixin, SumMixin, DatedModelService):
                     default=Value(False),
                     output_field=BooleanField(),
                 ),
-                month_group=TruncMonth("date"),
             )
             .order_by("-date", "expense_type__title", F("expense_name__title").asc())
             .values(
@@ -221,7 +220,6 @@ class ExpenseModelService(SpanReadsMixin, SumMixin, DatedModelService):
                 "exception",
                 "price_str",
                 "is_pdf",
-                "month_group",
             )
         )
 
