@@ -5,7 +5,7 @@ import pytest
 from django.db import IntegrityError
 from django.db.models.signals import post_save
 
-from ...accounts.models import AccountBalance
+from ...accounts.models import Account, AccountBalance
 from ...accounts.services.model_services import (
     AccountBalanceModelService,
 )
@@ -20,7 +20,6 @@ from .factories import IncomeFactory, IncomeTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# Income Type
 def test_income_type_str():
     i = IncomeTypeFactory.build()
 
@@ -34,8 +33,7 @@ def test_income_type_items_journal(main_user, second_user):
 
     actual = IncomeTypeModelService(main_user).items()
 
-    assert actual.count() == 1
-    assert actual[0].title == "T1"
+    assert [t.title for t in actual] == ["T1"]
 
 
 def test_income_type_items_journal_queries(main_user, django_assert_max_num_queries):
@@ -63,7 +61,6 @@ def test_income_type_slug_unique_per_journal():
         IncomeTypeFactory(title="Bustas", journal=obj1.journal)
 
 
-# Income
 def test_income_str():
     i = IncomeFactory.build()
 
@@ -81,13 +78,6 @@ def test_sum_all_months(main_user, incomes):
     assert expect == actual
 
 
-def test_sum_all_months_ordering(main_user, incomes):
-    actual = list(IncomeModelService(main_user).sum_by_month(1999))
-
-    assert actual[0]["date"] == date(1999, 1, 1)
-    assert actual[1]["date"] == date(1999, 2, 1)
-
-
 def test_sum_one_month(main_user, incomes):
     expect = [{"date": date(1999, 1, 1), "sum": 550, "title": "incomes"}]
 
@@ -97,10 +87,14 @@ def test_sum_one_month(main_user, incomes):
 
 
 @factory.django.mute_signals(post_save)
-def test_incomes_items(main_user):
-    IncomeFactory()
+def test_incomes_items(main_user, second_user):
+    income = IncomeFactory()
+    IncomeFactory(
+        account=AccountFactory(journal=second_user.journal),
+        income_type=IncomeTypeFactory(title="T2", journal=second_user.journal),
+    )
 
-    assert len(IncomeModelService(main_user).items()) == 1
+    assert list(IncomeModelService(main_user).items()) == [income]
 
 
 def test_incomes_items_query_count(main_user, django_assert_max_num_queries):
@@ -122,12 +116,17 @@ def test_incomes_income_sum_query_count(main_user, django_assert_max_num_queries
 
 
 def test_balance(main_user, incomes):
-    qs = IncomeModelService(main_user).incomes()
+    a1 = Account.objects.get(title="Account1").pk
+    a2 = Account.objects.get(title="Account2").pk
 
-    assert qs[0] == {"year": 1970, "incomes": 525, "category_id": 1}
-    assert qs[1] == {"year": 1970, "incomes": 450, "category_id": 2}
-    assert qs[2] == {"year": 1999, "incomes": 325, "category_id": 1}
-    assert qs[3] == {"year": 1999, "incomes": 350, "category_id": 2}
+    actual = list(IncomeModelService(main_user).incomes())
+
+    assert actual == [
+        {"year": 1970, "incomes": 525, "category_id": a1},
+        {"year": 1970, "incomes": 450, "category_id": a2},
+        {"year": 1999, "incomes": 325, "category_id": a1},
+        {"year": 1999, "incomes": 350, "category_id": a2},
+    ]
 
 
 @factory.django.mute_signals(post_save)
@@ -185,64 +184,45 @@ def test_income_year_type_sum(main_user):
     assert expect == [*actual]
 
 
-def test_income_new_post_save(main_user):
-    IncomeFactory()
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 1
-
-    actual = actual[0]
-
-    assert actual.account.title == "Account1"
-    assert actual.incomes == 1000
-    assert actual.balance == 1000
+def _created(income):
+    pass
 
 
-def test_income_update_post_save(main_user):
-    obj = IncomeFactory(price=5)
+def _price_changed(income):
+    income.price = 1
+    income.save()
 
-    # update price
-    obj_update = Income.objects.get(pk=obj.pk)
-    obj_update.price = 1
-    obj_update.save()
 
-    actual = AccountBalanceModelService(main_user).year(1999)
+def _saved_unchanged(income):
+    income.save()
 
-    assert actual.count() == 1
 
-    actual = actual[0]
+@pytest.mark.parametrize(
+    "save, expected",
+    [(_created, 5), (_price_changed, 1), (_saved_unchanged, 5)],
+    ids=["new", "update", "nothing_changed"],
+)
+def test_income_save_syncs_its_balance_row(main_user, save, expected):
+    save(IncomeFactory(price=5))
 
-    assert actual.account.title == "Account1"
-    assert actual.incomes == 1.0
-    assert actual.balance == 1.0
+    actual = [
+        (row.account.title, row.incomes, row.balance)
+        for row in AccountBalanceModelService(main_user).year(1999)
+    ]
+
+    assert actual == [("Account1", expected, expected)]
 
 
 def test_income_post_save_different_accounts():
     IncomeFactory(price=5, account=AccountFactory(title="X"))
     IncomeFactory(price=50, account=AccountFactory(title="Z"))
 
-    actual = AccountBalance.objects.all()
+    actual = [
+        (row.account.title, row.year, row.incomes)
+        for row in AccountBalance.objects.order_by("account__title", "year")
+    ]
 
-    assert actual.count() == 4
-
-
-def test_income_post_save_update_with_nothing_changed(main_user):
-    obj = IncomeFactory(price=5)
-
-    # update price
-    obj_update = Income.objects.get(pk=obj.pk)
-    obj_update.save()
-
-    actual = AccountBalanceModelService(main_user).year(1999)
-
-    assert actual.count() == 1
-
-    actual = actual[0]
-
-    assert actual.account.title == "Account1"
-    assert actual.incomes == 5.0
-    assert actual.balance == 5.0
+    assert actual == [("X", 1999, 5), ("X", 2000, 0), ("Z", 1999, 50), ("Z", 2000, 0)]
 
 
 def test_income_post_save_change_account():
@@ -267,30 +247,29 @@ def test_income_post_save_change_account():
     assert actual.balance == 5.0
 
 
-def test_income_post_save_create_new_object_user_model_year(main_user):
-    assert date(1999, 1, 1) == Journal.objects.get(pk=main_user.journal.pk).first_record
-
-    IncomeFactory(date=date(1974, 2, 3), price=5)
-
-    assert date(1974, 2, 3) == Journal.objects.get(pk=main_user.journal.pk).first_record
+def _created_in_1974():
+    IncomeFactory(date=date(1974, 2, 3))
 
 
-def test_income_post_save_update_object_user_model_year(main_user):
-    assert date(1999, 1, 1) == Journal.objects.get(pk=main_user.journal.pk).first_record
-
-    obj = IncomeFactory(price=5)
-
-    income = Income.objects.get(pk=obj.pk)
-
+def _moved_to_1974():
+    income = IncomeFactory()
     income.date = date(1974, 2, 3)
     income.save()
 
-    assert date(1974, 2, 3) == Journal.objects.get(pk=main_user.journal.pk).first_record
+
+@pytest.mark.parametrize(
+    "save", [_created_in_1974, _moved_to_1974], ids=["new", "update"]
+)
+def test_income_save_lowers_the_first_record(main_user, save):
+    assert Journal.objects.get(pk=main_user.journal.pk).first_record == date(1999, 1, 1)
+
+    save()
+
+    assert Journal.objects.get(pk=main_user.journal.pk).first_record == date(1974, 2, 3)
 
 
 def test_income_post_delete(main_user):
-    obj = IncomeFactory()
-    Income.objects.get(pk=obj.pk).delete()
+    IncomeFactory().delete()
 
     actual = AccountBalanceModelService(main_user).year(1999)
 
@@ -307,7 +286,7 @@ def test_income_post_delete_with_update():
     assert actual.incomes == 6.0
     assert actual.balance == 6.0
 
-    Income.objects.get(pk=obj.pk).delete()
+    obj.delete()
 
     actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == "Account1"
@@ -377,24 +356,10 @@ def test_income_post_save_first_year_record():
     assert actual.delta == -5
 
 
-def test_income_post_save_update_balance_row():
-    IncomeFactory(date=date(1974, 1, 1), price=5)
-    obj = IncomeFactory(date=date(1999, 1, 1), price=1)
-
-    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-
-    assert actual.past == 5
-    assert actual.incomes == 1
-    assert actual.expenses == 0
-    assert actual.balance == 6
-    assert actual.delta == -6
-
-
 def test_income_post_delete_new_signal():
     IncomeFactory(date=date(1974, 1, 1), price=5)
     obj = IncomeFactory(date=date(1999, 1, 1), price=1)
 
-    # check before delete
     actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.past == 5
     assert actual.incomes == 1
@@ -402,7 +367,7 @@ def test_income_post_delete_new_signal():
     assert actual.balance == 6
     assert actual.delta == -6
 
-    Income.objects.get(pk=obj.pk).delete()
+    obj.delete()
 
     assert not AccountBalance.objects.filter(
         account_id=obj.account.pk, year=1999
@@ -415,19 +380,16 @@ def test_income_post_delete_empty_account_balance_table():
 
     AccountBalance.objects.all().delete()
 
-    # delete Income object
-    Income.objects.get(pk=obj_del.pk).delete()
+    obj_del.delete()
 
-    actual = AccountBalance.objects.all()
+    actual = [
+        (row.year, row.past, row.incomes, row.expenses, row.balance, row.delta)
+        for row in AccountBalance.objects.filter(account=obj_stay.account)
+    ]
+    others = AccountBalance.objects.exclude(account=obj_stay.account)
 
-    assert actual.count() == 2
-    assert actual[0].account_id == obj_stay.account.pk
-    assert actual[0].year == 1974
-    assert actual[0].past == 0
-    assert actual[0].incomes == 5
-    assert actual[0].expenses == 0
-    assert actual[0].balance == 5
-    assert actual[0].delta == -5
+    assert actual == [(1974, 0, 5, 0, 5, -5), (1975, 5, 0, 0, 5, -5)]
+    assert not others.exists()
 
 
 def test_income_years_sum(main_user):
@@ -436,13 +398,9 @@ def test_income_years_sum(main_user):
     IncomeFactory(date=date(1999, 1, 1), price=5.0)
     IncomeFactory(date=date(1999, 1, 1), price=5.0)
 
-    actual = IncomeModelService(main_user).sum_by_year()
+    actual = list(IncomeModelService(main_user).sum_by_year())
 
-    assert actual[0]["year"] == 1998
-    assert actual[0]["sum"] == 8.0
-
-    assert actual[1]["year"] == 1999
-    assert actual[1]["sum"] == 10.0
+    assert actual == [{"year": 1998, "sum": 8.0}, {"year": 1999, "sum": 10.0}]
 
 
 def test_income_year_sum_count_qs(main_user, django_assert_max_num_queries):
@@ -450,7 +408,8 @@ def test_income_year_sum_count_qs(main_user, django_assert_max_num_queries):
 
     with django_assert_max_num_queries(1):
         actual = [x["year"] for x in IncomeModelService(main_user).sum_by_year()]
-        assert len(list(actual)) == 1
+
+    assert actual == [1999]
 
 
 @pytest.mark.parametrize(
