@@ -20,7 +20,7 @@
         {% for object in object_list %}
         {% url 'incomes:update' object.id as url_update %}
         {% url 'incomes:delete' object.id as url_delete %}
-        <c-edit-row :url="url_update" class="{% ifchanged object.date.year object.date.month %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+        <c-edit-row :url="url_update" class="{% ifchanged object.date.year object.date.month %}{{ forloop.first|yesno:",table-group-divider" }}{% endifchanged %}">
             <td class="text-left main__date">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ object.income_type__title }}</td>
             <td class="text-left">{{ object.account__title }}</td>
