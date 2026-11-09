@@ -112,7 +112,7 @@ class TypicalYearChart(UserMixin, HtmxFormRetargetMixin, FormViewMixin):
 
         return self._render(chart, form)
 
-    def _chart(self, pooled: services.PooledRange):
+    def _chart(self, pooled: services.PooledRange | services.NoPooledRange):
         return services.TypicalYear.build(
             self.user, self.user.selected_year(), self.today, pooled
         )

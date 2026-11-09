@@ -123,7 +123,8 @@ class PooledRange:
         return TypicalYearProfile.pool(rows, today)
 
 
-class NoPooledRange(PooledRange):
+@dataclass(frozen=True)
+class NoPooledRange:
     """Nothing pooled: the chart opens on the header year alone, at no query.
     Pooling a decade behind the year is a reading to ask for, not to be given."""
 
@@ -164,7 +165,11 @@ class TypicalYear:
 
     @classmethod
     def build(
-        cls, user, year: int, today: date, pooled: PooledRange = NoPooledRange()
+        cls,
+        user,
+        year: int,
+        today: date,
+        pooled: PooledRange | NoPooledRange = NoPooledRange(),
     ) -> TypicalYearChartViewModel:
         """The header year, and the pooled range behind it if one was asked for.
         A query a layer: the range may not contain the header year."""

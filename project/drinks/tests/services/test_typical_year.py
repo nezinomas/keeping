@@ -268,7 +268,6 @@ def test_chart_as_dict_carries_the_layers_it_draws_and_no_python_only_span():
 def test_resolve_of_zero_pools_every_year_on_record():
     actual = PooledRange.resolve(2025, 0)
 
-    # not NoPooledRange, which subclasses it
     assert type(actual) is PooledRange
     assert (actual.year_from, actual.year_to) == (0, 0)
 
