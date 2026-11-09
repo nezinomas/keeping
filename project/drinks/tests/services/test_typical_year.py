@@ -347,7 +347,7 @@ def test_build_counts_drinking_days_not_rows(main_user):
     assert actual.year.intensity[0] == 10.0
 
 
-@pytest.mark.parametrize("years", [1, 5])
+@pytest.mark.parametrize("years", [2, 6])
 def test_build_costs_one_query_when_nothing_is_pooled(
     main_user, years, django_assert_num_queries
 ):
@@ -358,7 +358,7 @@ def test_build_costs_one_query_when_nothing_is_pooled(
         TypicalYear.build(main_user, 2020, date(2026, 7, 15))
 
 
-@pytest.mark.parametrize("years", [1, 5])
+@pytest.mark.parametrize("years", [2, 6])
 def test_build_costs_one_query_per_layer_however_many_years(
     main_user, years, django_assert_num_queries
 ):
