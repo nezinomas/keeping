@@ -23,7 +23,7 @@ class CounterLife:
     boundary: YearBoundary
 
     @classmethod
-    def read(cls, user: User, count_type: str, today: date) -> "CounterLife":
+    def read(cls, user: User, count_type: str, year: int, today: date) -> "CounterLife":
         return cls(
             user=user,
             count_type=count_type,
@@ -32,7 +32,7 @@ class CounterLife:
                 .items(count_type=count_type)
                 .values("date", qty=F("quantity"))
             ),
-            boundary=YearBoundary(user.selected_year(), today),
+            boundary=YearBoundary(year, today),
         )
 
     @cached_property

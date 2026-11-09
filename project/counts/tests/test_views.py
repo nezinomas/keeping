@@ -17,6 +17,11 @@ from .factories import CountFactory, CountTypeFactory
 pytestmark = pytest.mark.django_db
 
 
+def _form_posts_to(content: str, form_id: str, url: str) -> bool:
+    pattern = rf'<form method="POST" id="{form_id}"[^>]*hx-post="{re.escape(url)}"'
+    return bool(re.search(pattern, content))
+
+
 @pytest.mark.parametrize(
     "tab, expected",
     [
@@ -77,8 +82,7 @@ def test_view_new_form_initial(client_logged, tab_sent, tab_actual):
 
     url = reverse("counts:new", kwargs={"slug": x.slug, "tab": tab_actual})
 
-    assert '<form method="POST"' in actual
-    assert f'hx-post="{url}"' in actual
+    assert _form_posts_to(actual, "generic-form", url)
     assert '<input type="text" name="date" value="1999-01-01"' in actual
     assert '<select name="count_type"' in actual
     assert '<input type="number" name="quantity" value="1"' in actual
@@ -110,7 +114,7 @@ def test_view_new_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert f'hx-post="{url}"' in actual
+    assert _form_posts_to(actual, "generic-form", url)
     assert f'<option value="{o1.pk}">{o1.title}</option>' in actual
     assert f'<option value="{o2.pk}" selected>{o2.title}</option>' in actual
 
@@ -136,7 +140,7 @@ def test_view_update_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert f'hx-post="{url}"' in actual
+    assert _form_posts_to(actual, "generic-form", url)
     assert (
         f'<option value="{count_type_1.pk}" selected>{count_type_1.title}</option>'
         in actual
@@ -181,8 +185,7 @@ def test_view_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert '<form method="POST"' in actual
-    assert f'hx-post="{url}"' in actual
+    assert _form_posts_to(actual, "delete-form", url)
     assert "Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?" in actual
 
 
@@ -510,6 +513,21 @@ def test_index_draws_the_overview_cards(client_logged):
     assert "info-row" not in content
 
 
+@time_machine.travel(datetime(1999, 7, 18))
+def test_index_cards_read_the_selected_year_not_the_running_one(
+    client_logged, main_user
+):
+    main_user.year = 1998
+    main_user.save()
+    CountFactory(date=date(1998, 5, 1), quantity=2)
+    CountFactory(date=date(1999, 7, 8), quantity=3)
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    year = client_logged.get(url).context["cards"][0]
+
+    assert year.value == "2"
+
+
 @time_machine.travel(datetime(1999, 1, 1))
 def test_index_draws_the_calendar(client_logged):
     CountFactory()
@@ -653,8 +671,9 @@ def test_data(client_logged):
         pytest.param(date(1974, 1, 1), id="empty_year"),
     ],
 )
-def test_data_reads_the_counts_once(client_logged, day):
-    CountFactory(date=day)
+@pytest.mark.parametrize("records", [2, 6])
+def test_data_reads_the_counts_once(client_logged, day, records):
+    CountFactory.create_batch(records, date=day)
 
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
     with CaptureQueriesContext(connection) as queries:
@@ -665,20 +684,23 @@ def test_data_reads_the_counts_once(client_logged, day):
 
 
 @pytest.mark.parametrize(
-    "records",
+    "url_name, records",
     [
-        pytest.param([date(1974, 1, 1)], id="records_in_another_year"),
-        pytest.param([], id="no_records_at_all"),
+        pytest.param(
+            "counts:tab_data", [date(1974, 1, 1)], id="data_records_in_another_year"
+        ),
+        pytest.param("counts:tab_data", [], id="data_no_records_at_all"),
+        pytest.param("counts:tab_history", [], id="history_no_records_at_all"),
     ],
 )
-def test_data_of_an_empty_year_names_the_year(client_logged, main_user, records):
+def test_an_empty_year_names_the_year(client_logged, main_user, url_name, records):
     main_user.year = 2000
     main_user.save()
     CountTypeFactory()
     for day in records:
         CountFactory(date=day)
 
-    url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
+    url = reverse(url_name, kwargs={"slug": "count-type"})
     actual = client_logged.get(url).content.decode("utf-8")
 
     assert re.search(r'<div class="alert">\s*2000 metais įrašų nėra\.\s*</div>', actual)
@@ -703,7 +725,7 @@ def test_each_empty_counts_page_draws_the_paper_notice_not_the_legacy_alert(
     assert "alert-warning" not in actual
 
 
-def test_history_of_a_counter_with_no_records_renders_its_empty_state(
+def test_history_of_a_counter_with_no_records_renders_its_empty_cards(
     client_logged, main_user
 ):
     main_user.year = 2000
@@ -715,9 +737,6 @@ def test_history_of_a_counter_with_no_records_renders_its_empty_state(
 
     assert content.count('class="trend-card"') == 3
     assert "Įrašų nėra" in content
-    assert re.search(
-        r'<div class="alert">\s*2000 metais įrašų nėra\.\s*</div>', content
-    )
     assert "Trūksta duomenų." not in content
 
 
@@ -755,7 +774,7 @@ def test_count_type_new_load_form(client_logged):
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
-    assert f'hx-post="{url}"' in content
+    assert _form_posts_to(content, "generic-form", url)
 
 
 def test_count_type_update_load_form(client_logged):
@@ -767,7 +786,7 @@ def test_count_type_update_load_form(client_logged):
 
     assert response.status_code == 200
     assert obj.title in content
-    assert f'hx-post="{url}"' in content
+    assert _form_posts_to(content, "generic-form", url)
 
 
 def test_count_type_new_form_fields(client_logged):
@@ -848,8 +867,7 @@ def test_count_type_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert '<form method="POST"' in actual
-    assert f'hx-post="{url}"' in actual
+    assert _form_posts_to(actual, "delete-form", url)
     assert "Ar tikrai norite ištrinti: <strong>Count Type</strong>?" in actual
 
 

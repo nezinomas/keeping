@@ -1,10 +1,8 @@
-from datetime import date
-
 import pytest
 
 from ...core.tests.utils import view_for
-from ..services.counter_life import CounterLife
-from ..views import TabData
+from ..models import CountType
+from ..views import TabData, TabIndex
 
 pytestmark = pytest.mark.django_db
 
@@ -17,13 +15,16 @@ def _records_of(rf, user):
     return _data_tab(rf, user).get_queryset()
 
 
+def _index_tab(rf, user):
+    view = view_for(rf, user, TabIndex, slug="x")
+    view.object = CountType(slug="x")
+    return view.get_context_data()
+
+
 @pytest.mark.parametrize(
     "read",
     [
-        pytest.param(
-            lambda rf, user: CounterLife.read(user, "x", date(1999, 1, 1)),
-            id="counter_life",
-        ),
+        pytest.param(_index_tab, id="index_tab"),
         pytest.param(_records_of, id="data_tab_records"),
     ],
 )

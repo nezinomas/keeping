@@ -1,4 +1,3 @@
-from datetime import date
 from functools import cached_property
 
 from django.db.models import Min
@@ -7,6 +6,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
+from ..core.mixins.kwargs import TodayMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -38,7 +38,7 @@ class Empty(TemplateViewMixin):
     template_name = "counts/empty.html"
 
 
-class TabViewMixin(CoreTabViewMixin):
+class TabViewMixin(TodayMixin, CoreTabViewMixin):
     tabs = TABS
     default_tab = TABS["index"]
     page_template = "counts/index.html"
@@ -71,7 +71,12 @@ class TabViewMixin(CoreTabViewMixin):
         }
 
     def _life(self) -> CounterLife:
-        return CounterLife.read(self.request.user, self.object.slug, date.today())
+        return CounterLife.read(
+            self.request.user,
+            self.object.slug,
+            self.request.user.selected_year(),
+            self.today,
+        )
 
 
 class TabIndex(TabViewMixin, TemplateViewMixin):
