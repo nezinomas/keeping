@@ -170,7 +170,12 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             "form": forms.DrinkCompareForm(user=self.user, today=self.today),
-            **services.history.load_service(self.user, self.today),
+            **services.history.load_service(
+                self.user,
+                self.user.selected_year(),
+                self.user.drink_type,
+                self.today,
+            ),
         }
 
 

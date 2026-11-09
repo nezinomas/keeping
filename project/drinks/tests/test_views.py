@@ -21,7 +21,6 @@ from ...core.tests.utils import (
 )
 from ...users.tests.factories import User
 from .. import forms, models, views
-from ..services.history import HistoryService
 from ..services.index_tab import ConversionRowViewModel, StdAvViewModel
 from .factories import DrinkFactory, DrinkTargetFactory
 
@@ -923,6 +922,26 @@ def test_tab_history_renders_the_summary_chart_data(client_logged):
     assert payload["data_alcohol"][:2] == pytest.approx([0.01, 0.0], abs=1e-5)
 
 
+def test_tab_history_reads_the_selected_year_and_drink_type(
+    client_logged, main_user, mocker
+):
+    view_today(mocker, date(1999, 6, 1))
+    main_user.year = 2000
+    main_user.drink_type = "stdav"
+    main_user.save()
+    DrinkFactory(date=date(1999, 1, 1), stdav=152)
+
+    page = client_logged.get(reverse("drinks:tab_history")).content.decode()
+    payload = chart_data(page, "summary")
+
+    # Jun 1 is day 152 of 1999; 2000 is a Coming year, its average a gap
+    assert (payload["categories"], payload["data_ml"], payload["unit"]) == (
+        [1999, 2000],
+        [1.0, None],
+        "Std Av",
+    )
+
+
 def test_tab_history_titles_its_panels(client_logged):
     DrinkFactory()
     content = client_logged.get(reverse("drinks:tab_history")).content.decode()
@@ -1412,9 +1431,6 @@ def _typical_year_post(view):
         pytest.param(
             lambda rf, u: view_for(rf, u, views.Compare, qty=1).get_context_data(),
             id="compare",
-        ),
-        pytest.param(
-            lambda rf, u: HistoryService(u, [], date(2025, 1, 1)), id="history_service"
         ),
         pytest.param(
             lambda rf, u: forms.DrinkTargetForm(user=u, today=date(2025, 1, 1)),

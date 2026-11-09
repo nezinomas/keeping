@@ -5,17 +5,17 @@ import polars as pl
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import ydays
+from ...core.lib.year_boundary import YearBoundary
 from ...users.models import User
 from ..lib.drinks_options import DrinkConverter, stdav_to_alcohol
 from ..services.model_services import DrinkModelService
 
 
 class HistoryService:
-    def __init__(self, user: User, data: Iterable[dict], today: date):
-        self.converter: DrinkConverter = DrinkConverter(user.drink_type)
-        self._header_year: int = user.selected_year()
+    def __init__(self, year: int, drink_type: str, data: Iterable[dict], today: date):
+        self.converter: DrinkConverter = DrinkConverter(drink_type)
+        self._year = year
         self._today = today
-        self._days_elapsed = today.timetuple().tm_yday
 
         rows = list(data)
         self.history_df: pl.DataFrame = pl.DataFrame()
@@ -31,7 +31,7 @@ class HistoryService:
         return self._data_frame_column("alcohol")
 
     @property
-    def per_day(self) -> list[float]:
+    def per_day(self) -> list[float | None]:
         return self._data_frame_column("per_day")
 
     @property
@@ -42,38 +42,42 @@ class HistoryService:
     def forecast(self) -> list[dict]:
         """The running year's straight-line pace of pure alcohol, as one point."""
         calendar_year = self._today.year
+        years = self.years
 
-        if calendar_year not in self.years:
+        if calendar_year not in years:
             return []
 
-        index = self.years.index(calendar_year)
-        litres = self.alcohol[index] / self._days_elapsed * ydays(calendar_year)
+        index = years.index(calendar_year)
+        days = YearBoundary(calendar_year, self._today).days_elapsed
+        litres = self.alcohol[index] / days * ydays(calendar_year)
 
         return [{"x": index, "y": litres}]
 
-    def _prepare_data_frame(self, data) -> pl.DataFrame:
-        history_df = pl.DataFrame(data).lazy()
-
-        if not history_df.collect().is_empty():
-            start_year = history_df.select(pl.col.year.min()).collect().item()
-            last_recorded = history_df.select(pl.col.year.max()).collect().item()
-            # the furthest of the three, so a header year ahead of the calendar
-            # year still gets its own column
-            end_year = max(self._today.year, self._header_year, last_recorded)
-            years_df = pl.DataFrame({"year": range(start_year, end_year + 1)}).lazy()
-            history_df = years_df.join(history_df, on="year", how="left").fill_null(0)
+    def _prepare_data_frame(self, rows: list[dict]) -> pl.DataFrame:
+        recorded = pl.DataFrame(rows)
+        # the furthest of the three, so a Selected year ahead of the calendar
+        # year still gets its own column
+        end_year = max(self._today.year, self._year, recorded["year"].max())
+        years = range(recorded["year"].min(), end_year + 1)
+        columns = pl.LazyFrame(
+            {
+                "year": years,
+                "days_elapsed": [
+                    YearBoundary(year, self._today).days_elapsed for year in years
+                ],
+            }
+        )
 
         return (
-            self._aggregate_by_year(history_df)
-            .with_columns(date=pl.date("year", 1, 1))
-            .pipe(self._calculate_days_in_year)
+            columns.join(self._aggregate_by_year(recorded), on="year", how="left")
+            .fill_null(0)
             .pipe(self._calculate_consumption_stats)
             .sort(pl.col.year)
             .collect()
         )
 
-    def _aggregate_by_year(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        return df.group_by("year").agg(pl.col.qty.sum(), pl.col.stdav.sum())
+    def _aggregate_by_year(self, df: pl.DataFrame) -> pl.LazyFrame:
+        return df.lazy().group_by("year").agg(pl.col.qty.sum(), pl.col.stdav.sum())
 
     def _calculate_consumption_stats(self, df: pl.LazyFrame) -> pl.LazyFrame:
         # pure alcohol is a real volume whatever the drink type, but the amount
@@ -81,17 +85,11 @@ class HistoryService:
         return df.with_columns(
             alcohol=stdav_to_alcohol(pl.col.stdav),
             shown=self.converter.stdav_to_display(pl.col.stdav),
-        ).with_columns(per_day=pl.col.shown / pl.col.days_in_year)
-
-    def _calculate_days_in_year(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        return df.with_columns(
-            days_in_year=pl.when(pl.col.date.dt.is_leap_year())
-            .then(pl.lit(366))
-            .otherwise(pl.lit(365))
         ).with_columns(
-            days_in_year=pl.when(pl.col.year == self._today.year)
-            .then(pl.lit(self._days_elapsed))
-            .otherwise(pl.col.days_in_year)
+            # a Coming year has reached no day: null, Highcharts' gap
+            per_day=pl.when(pl.col.days_elapsed > 0).then(
+                pl.col.shown / pl.col.days_elapsed
+            )
         )
 
     def _data_frame_column(self, column_name: str) -> list:
@@ -101,14 +99,15 @@ class HistoryService:
         return self.history_df[column_name].to_list()
 
 
-def load_service(user, today: date) -> dict:
+def load_service(user: User, year: int, drink_type: str, today: date) -> dict:
     data = DrinkModelService(user).sum_by_year()
-    service = HistoryService(user, data, today)
+    service = HistoryService(year, drink_type, data, today)
+    years = service.years
 
     return {
-        "records": len(service.years) if len(service.years) > 1 else 0,
+        "records": len(years) if len(years) > 1 else 0,
         "chart": {
-            "categories": service.years,
+            "categories": years,
             "data_ml": service.per_day,
             "data_alcohol": service.alcohol,
             "forecast": service.forecast,
