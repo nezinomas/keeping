@@ -41,7 +41,7 @@
                     {% if not object.is_pdf %}
                     <button type="button" class="button-secondary transparent button-xs" hx-get="{{ modal_image_url }}" hx-trigger="click" hx-target="#imgModal" data-url="{{ media_url }}{{ object.attachment }}">{% translate 'Image' %}</button>
                     {% else %}
-                    <a role="button" class="button-outline-primary transparent button-xs" href="{{ media_url }}{{ object.attachment }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
+                    <a role="button" class="button-secondary transparent button-xs" href="{{ media_url }}{{ object.attachment }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
                     {% endif %}
                     {% endif %}
                 </td>
