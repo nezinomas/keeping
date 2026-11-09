@@ -125,6 +125,25 @@ class BookkeepingIndex(TestCase, Browser):
             body,
         ]
 
+    def test_a_swap_beside_a_table_with_no_pin_library_throws_nothing(self):
+        # the summary draws a .sticky-table and loads no sticky-table-headers.js
+        self.browser.get(
+            self.live_server_url + reverse("bookkeeping:summary_savings_and_incomes")
+        )
+        self.wait_until_idle()
+        self.browser.execute_script(
+            "window.errors = [];"
+            " addEventListener('error', e => errors.push(e.message));"
+            f" htmx.ajax('GET', '{reverse('incomes:new')}', '#mainModal');"
+        )
+        self.wait_until_idle()
+
+        swap = self.browser.execute_script(
+            "return {tables: document.querySelectorAll('.sticky-table').length,"
+            " form: !!document.querySelector('#mainModal .modal-form'), errors};"
+        )
+        assert swap == {"tables": 1, "form": True, "errors": []}
+
     def _add_rows(self, numbers):
         # A type's save re-syncs its balances, so the rows come from records.
         for i in numbers:
