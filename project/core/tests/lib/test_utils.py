@@ -87,54 +87,47 @@ def test_get_safe_redirect_custom_fallback(rf):
     assert utils.get_safe_redirect(request, None, fallback="/dashboard") == "/dashboard"
 
 
-def test_add_fast_urls_basic(mocker):
-    # Patch the reference inside your specific utils file!
-    mock_reverse = mocker.patch("project.core.lib.utils.reverse")
+@pytest.mark.parametrize(
+    "rows, pk_key, expected",
+    [
+        pytest.param(
+            [{"id": 1, "title": "Coffee"}, {"id": 99, "title": "Laptop"}],
+            "id",
+            [
+                ("/v0/app/update/1/", "/v0/app/delete/1/"),
+                ("/v0/app/update/99/", "/v0/app/delete/99/"),
+            ],
+            id="id",
+        ),
+        pytest.param(
+            [{"custom_pk": 42}],
+            "custom_pk",
+            [("/v0/app/update/42/", "/v0/app/delete/42/")],
+            id="custom_pk",
+        ),
+    ],
+)
+def test_add_fast_urls_fills_only_the_pk_of_each_url(mocker, rows, pk_key, expected):
+    # a 0 outside the pk's place stays: the urls are reversed with a pk of 0
+    mocker.patch(
+        "project.core.lib.utils.reverse",
+        side_effect=lambda name, args: f"/v0/{name.replace(':', '/')}/{args[0]}/",
+    )
 
-    def side_effect(viewname, args):
-        app_action = viewname.replace(":", "/")
-        return f"/{app_action}/{args[0]}/"
+    actual = utils.add_fast_urls(
+        rows, update="app:update", delete="app:delete", pk_key=pk_key
+    )
 
-    mock_reverse.side_effect = side_effect
-
-    raw_data = [
-        {"id": 1, "title": "Coffee"},
-        {"id": 99, "title": "Laptop"},
-    ]
-
-    actual = utils.add_fast_urls(data=raw_data, app_name="expenses")
-
-    assert len(actual) == 2
-    assert actual[0]["url_update"] == "/expenses/update/1/"
-    assert actual[0]["url_delete"] == "/expenses/delete/1/"
-    assert actual[1]["url_update"] == "/expenses/update/99/"
-    assert actual[1]["url_delete"] == "/expenses/delete/99/"
-
-
-def test_add_fast_urls_custom_pk_key(mocker):
-    # Patch the reference inside your specific utils file!
-    mock_reverse = mocker.patch("project.core.lib.utils.reverse")
-
-    # Use side_effect here too, since reverse is called twice (update & delete)
-    def side_effect(viewname, args):
-        app_action = viewname.replace(":", "/")
-        return f"/{app_action}/{args[0]}/"
-
-    mock_reverse.side_effect = side_effect
-
-    raw_data = [{"custom_pk": 42}]
-
-    actual = utils.add_fast_urls(data=raw_data, app_name="app", pk_key="custom_pk")
-
-    assert actual[0]["url_update"] == "/app/update/42/"
-    assert actual[0]["url_delete"] == "/app/delete/42/"
+    assert [(row["url_update"], row["url_delete"]) for row in actual] == expected
 
 
 def test_add_fast_urls_raises_on_a_row_without_the_pk(mocker):
     mocker.patch("project.core.lib.utils.reverse", return_value="/app/update/0/")
 
     with pytest.raises(KeyError, match="id"):
-        utils.add_fast_urls(data=[{"title": "no id"}], app_name="app")
+        utils.add_fast_urls(
+            [{"title": "no id"}], update="app:update", delete="app:delete"
+        )
 
 
 def test_http_htmx_response_trigger_detail_is_an_object():

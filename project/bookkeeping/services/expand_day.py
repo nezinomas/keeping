@@ -4,7 +4,6 @@ from django.db.models import F
 from django.utils.translation import gettext as _
 
 from ...core.lib.utils import add_fast_urls, get_action_buttons_html
-from ...expenses.apps import App_name as Expenses_app_name
 from ...expenses.services.model_services import ExpenseModelService
 from ...users.models import User
 
@@ -25,7 +24,7 @@ class ExpandDayService:
 
         data = service.expenses_list(qs)
 
-        return add_fast_urls(data=data, app_name=Expenses_app_name)
+        return add_fast_urls(data, update="expenses:update", delete="expenses:delete")
 
     def context(self) -> dict:
         return {

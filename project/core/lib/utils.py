@@ -66,28 +66,29 @@ def get_action_buttons_html() -> dict[str, str]:
     }
 
 
-def add_fast_urls(data: list[dict], app_name: str, pk_key: str = "id") -> list[dict]:
-    """
-    Fast URL generation for lists of dictionaries.
-    Replaces database-level Concat to decouple DB from Routing.
-    """
-
+def add_fast_urls(
+    data: list[dict], update: str, delete: str, pk_key: str = "id"
+) -> list[dict]:
+    """Each row's update and delete url, reversed once per list rather than per row."""
     if not data:
         return []
 
-    dummy_id = "0"
-
-    url_update = reverse(f"{app_name}:update", args=[dummy_id])
-    url_delete = reverse(f"{app_name}:delete", args=[dummy_id])
+    update_head, update_tail = _around_pk(update)
+    delete_head, delete_tail = _around_pk(delete)
 
     return [
         {
             **row,
-            "url_update": url_update.replace(dummy_id, str(row[pk_key])),
-            "url_delete": url_delete.replace(dummy_id, str(row[pk_key])),
+            "url_update": f"{update_head}{row[pk_key]}{update_tail}",
+            "url_delete": f"{delete_head}{row[pk_key]}{delete_tail}",
         }
         for row in data
     ]
+
+
+def _around_pk(url_name: str) -> tuple[str, str]:
+    head, _, tail = reverse(url_name, args=[0]).rpartition("0")
+    return head, tail
 
 
 def rendered_content(request, view_class, **kwargs):

@@ -22,7 +22,6 @@ from ...core.mixins.views import (
 )
 from ...users.models import User
 from .. import forms
-from ..apps import App_name
 from ..services import search
 from ..services.model_services import (
     ExpenseModelService,
@@ -106,7 +105,7 @@ class Lists(TodayMixin, ListViewMixin):
 
         data = service.expenses_list(qs)
 
-        return add_fast_urls(data=data, app_name=App_name)
+        return add_fast_urls(data, update="expenses:update", delete="expenses:delete")
 
     def get_context_data(self, **kwargs):
         year = self.user.selected_year()
@@ -142,7 +141,9 @@ class Search(SearchViewMixin):
     template_name = "expenses/expense_list.html"
     search_method = staticmethod(search.search_expenses)
     search_totals = staticmethod(search.search_totals)
-    search_rows = staticmethod(partial(add_fast_urls, app_name=App_name))
+    search_rows = staticmethod(
+        partial(add_fast_urls, update="expenses:update", delete="expenses:delete")
+    )
 
     def get_context_data(self, **kwargs):
         # a page link of only a query lands on the Duomenys url the search was pushed to
