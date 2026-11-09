@@ -25,24 +25,17 @@ def fixture_no_balance_syncs():
         yield
 
 
+@pytest.mark.parametrize(
+    "closed", [pytest.param(1999, id="closed"), pytest.param(None, id="open")]
+)
 @pytest.mark.parametrize("move", FACTORIES)
-def test_move_saved_without_a_form_keeps_the_close_year(move):
-    fund = SavingTypeFactory(title="Fund", closed=1999)
+def test_move_saved_without_a_form_keeps_the_close_year(move, closed):
+    fund = SavingTypeFactory(title="Fund", closed=closed)
 
     FACTORIES[move](from_account=fund, date="2000-06-01")
 
     fund.refresh_from_db()
-    assert fund.closed == 1999
-
-
-@pytest.mark.parametrize("move", FACTORIES)
-def test_move_saved_without_a_form_leaves_an_open_fund_open(move):
-    fund = SavingTypeFactory(title="Fund")
-
-    FACTORIES[move](from_account=fund, date="2000-06-01")
-
-    fund.refresh_from_db()
-    assert fund.closed is None
+    assert fund.closed == closed
 
 
 def _ticked_form(main_user, move, close=True):
@@ -88,11 +81,20 @@ def test_form_move_syncs_once_whether_it_closes_the_fund_or_not(
 
 
 @time_machine.travel("1999-1-1")
+@pytest.mark.parametrize(
+    "earlier",
+    [
+        pytest.param([], id="the_only_move"),
+        pytest.param([date(1998, 6, 1)], id="after_an_earlier_move"),
+    ],
+)
 @pytest.mark.parametrize("move", FACTORIES)
 def test_deleting_the_closing_move_syncs_once_and_reopens_the_fund(
-    main_user, mocker, move
+    main_user, mocker, move, earlier
 ):
     fund, form = _ticked_form(main_user, move)
+    for day in earlier:
+        FACTORIES[move](from_account=fund, date=day)
     row = form.save()
     savings = mocker.spy(balance_sources, "sync_savings")
 
@@ -163,22 +165,7 @@ def test_move_saved_again_without_a_form_leaves_a_fund_it_left_alone(move):
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", FACTORIES)
 def test_form_unticked_box_is_not_applied_to_a_later_save_of_the_row(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = (
-        SavingTypeFactory(title="Other") if move == "switch" else AccountFactory()
-    )
-    form = FORMS[move](
-        user=main_user,
-        today=date(1999, 1, 1),
-        data={
-            "date": "1999-01-01",
-            "from_account": fund.pk,
-            "to_account": receiver.pk,
-            "price": "5",
-            "close": False,
-        },
-    )
-    assert form.is_valid()
+    fund, form = _ticked_form(main_user, move, close=False)
     row = form.save()
     SavingType.objects.filter(pk=fund.pk).update(closed=1999)
 

@@ -191,7 +191,7 @@ def test_closing_a_pension_type_drops_its_later_rows():
 
 
 # ----------------------------------------------------------------------------
-#                                   deleting the closing move reopens the fund
+#                                        deleting a move leaves an open fund open
 # ----------------------------------------------------------------------------
 MOVE_OUT = {
     "sell": lambda fund, when: sell(fund, 10000, when=when),
@@ -201,27 +201,6 @@ MOVE_OUT = {
 
 def _closed(fund):
     return SavingType.objects.get(pk=fund.pk).closed
-
-
-@pytest.mark.parametrize("move", MOVE_OUT)
-@pytest.mark.parametrize(
-    "earlier",
-    [
-        pytest.param([date(YEAR, 6, 1)], id="after_an_earlier_move"),
-        pytest.param([], id="the_only_move"),
-    ],
-)
-def test_deleting_the_closing_move_reopens_the_fund(move, earlier):
-    with quiet_syncs():
-        fund = SavingTypeFactory(title="Fund", closed=YEAR + 1)
-        buy(fund, 100000)
-        for when in earlier:
-            MOVE_OUT[move](fund, when)
-        closing = MOVE_OUT[move](fund, date(YEAR + 1, 6, 1))
-
-        closing.delete()
-
-    assert _closed(fund) is None
 
 
 @pytest.mark.parametrize("move", MOVE_OUT)

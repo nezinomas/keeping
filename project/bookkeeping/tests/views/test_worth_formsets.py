@@ -4,13 +4,11 @@ from typing import NamedTuple
 
 import pytest
 import time_machine
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
-from ....core.tests.utils import PICKER_SCRIPT, setup_view
+from ....core.tests.utils import PICKER_SCRIPT, count_queries, setup_view
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionTypeFactory
 from ....savings.models import SavingBalance
@@ -33,12 +31,14 @@ def test_post_writes_all_rows_in_one_insert(client_logged, count):
     accounts = [AccountFactory(title=f"A{i}") for i in range(count)]
     rows = [{"date": "1999-9-9", "price": "5", "account": a.pk} for a in accounts]
 
-    with CaptureQueriesContext(connection) as queries:
-        client_logged.post(reverse("bookkeeping:accounts_worth_new"), post_data(rows))
+    inserts = count_queries(
+        lambda: client_logged.post(
+            reverse("bookkeeping:accounts_worth_new"), post_data(rows)
+        ),
+        starting_with=f'INSERT INTO "{AccountWorth._meta.db_table}"',
+    )
 
-    table = AccountWorth._meta.db_table
-    inserts = [q for q in queries if q["sql"].startswith(f'INSERT INTO "{table}"')]
-    assert len(inserts) == 1
+    assert inserts == 1
     assert AccountWorth.objects.count() == count
 
 
@@ -115,10 +115,7 @@ def worth_post_queries(client, worth, count, duplicate):
     if duplicate:
         rows[-1][worth.fund_field] = funds[0].pk
 
-    with CaptureQueriesContext(connection) as queries:
-        client.post(reverse(worth.url), post_data(rows))
-
-    return len(queries)
+    return count_queries(lambda: client.post(reverse(worth.url), post_data(rows)))
 
 
 @pytest.mark.django_db
@@ -186,16 +183,18 @@ def test_worth_form_ignores_a_posted_row_id(
     row_id = {"foreign": foreign.pk, "missing": foreign.pk + 1}[posted_id]
     row = {"id": row_id, "date": "1999-2-3", "price": "7", worth.fund_field: own.pk}
 
-    with CaptureQueriesContext(connection) as queries:
-        data = post_data([row]) | {"form-INITIAL_FORMS": 1}
-        client_logged.post(reverse(worth.url), data)
+    data = post_data([row]) | {"form-INITIAL_FORMS": 1}
+
+    row_reads = count_queries(
+        lambda: client_logged.post(reverse(worth.url), data),
+        starting_with=f'SELECT "{worth.model._meta.db_table}"."id"',
+    )
 
     foreign.refresh_from_db()
     assert (getattr(foreign, worth.fund_field), foreign.price) == (foreign_fund, 5)
     own_rows = worth.model.objects.filter(**{worth.fund_field: own})
     assert list(own_rows.values_list("price", flat=True)) == [700]
-    row_reads = f'SELECT "{worth.model._meta.db_table}"."id"'
-    assert not [q for q in queries if q["sql"].startswith(row_reads)]
+    assert row_reads == 0
 
 
 @pytest.mark.django_db

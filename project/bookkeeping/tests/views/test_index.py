@@ -62,22 +62,24 @@ def fixture_index_content(client_logged):
 INDEX_MARKERS = {
     "year": "<th>1999</th>",
     "balance": '<td data-sign="loss" data-cell="">-1,00</td>',
-    "balance_short": "1999 pabaigoje",
+    "balance_short": r'<th class="text-nowrap long-price-col">\s*1999 pabaigoje\s*</th>',
     "expenses": '<td class="left-thick-border" data-cell="">1,00</td>',
-    "averages": "Vidutinės pajamos",
+    "averages": r"<th>\s*Vidutinės pajamos\s*</th>",
     "borrow": 'data-tip="Liko grąžinti:  70,00"',
     "lend": 'data-tip="Liko grąžinti:  90,00"',
     "accounts": ">Account1</span>",
     "savings": "Pajamų dalis pervedama taupymui",
     "pensions": ">PensionType</td>",
-    "wealth": "Turtas",
-    "no_incomes": "€ + F + P",
+    "wealth": r"<th>\s*Turtas\s*</th>",
+    "no_incomes": r'<th class="long-price-col">€ \+ F \+ P</th>',
 }
 
 
 def test_view_index_renders_its_tables_and_panels(index_content):
     missing = [
-        name for name, marker in INDEX_MARKERS.items() if marker not in index_content
+        name
+        for name, marker in INDEX_MARKERS.items()
+        if not re.search(marker, index_content)
     ]
 
     assert missing == []
@@ -162,13 +164,14 @@ def test_view_index_regenerate_buttons(client_logged):
     SavingFactory()
     PensionFactory()
 
-    response = client_logged.get(reverse("bookkeeping:index"))
-    content = response.content.decode("utf-8")
+    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
+    url = re.escape(reverse("bookkeeping:regenerate_balances"))
 
-    regenerate_url = reverse("bookkeeping:regenerate_balances")
+    tips = re.findall(
+        rf'<button[^>]*hx-get="{url}"[^>]*><span[^>]*data-tip="([^"]*)"', content
+    )
 
-    assert f'hx-get="{regenerate_url}"' in content
-    assert "Bus atnaujinti visų metų balansai." in content
+    assert tips == ["Bus atnaujinti visų metų balansai."]
 
 
 @pytest.mark.parametrize(

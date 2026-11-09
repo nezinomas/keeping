@@ -1,9 +1,8 @@
 from datetime import date
 
 import pytest
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 
+from ....core.tests.utils import count_queries
 from ....incomes.tests.factories import IncomeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
@@ -30,12 +29,6 @@ def _purchase(fee_source, title="Fund", day=date(1999, 1, 1), price=200, fee=3):
 TODAY = date(1999, 1, 1)
 FORECAST_TODAY = date(1999, 1, 15)
 NO_INCOMES_TODAY = date(1999, 6, 1)
-
-
-def _queries(func, *args):
-    with CaptureQueriesContext(connection) as ctx:
-        func(*args)
-    return len(ctx)
 
 
 @pytest.mark.parametrize("fee_source, balance", [(ACCOUNT, 797), (INVESTMENT, 800)])
@@ -75,13 +68,13 @@ def test_month_query_count_does_not_grow(main_user):
     with quiet_build(main_user):
         for i in range(2):
             _purchase(ACCOUNT, title=f"T{i}")
-    two = _queries(month_load_service, main_user, TODAY)
+    two = count_queries(lambda: month_load_service(main_user, TODAY))
 
     with quiet_build(main_user):
         for i in range(2, 4):
             _purchase(ACCOUNT, title=f"T{i}")
 
-    assert _queries(month_load_service, main_user, TODAY) == two
+    assert count_queries(lambda: month_load_service(main_user, TODAY)) == two
 
 
 @pytest.mark.parametrize("fee_source, end", [(ACCOUNT, 797), (INVESTMENT, 800)])
@@ -107,13 +100,15 @@ def test_forecast_query_count_does_not_grow(main_user):
     with quiet_build(main_user):
         for i in range(2):
             _purchase(ACCOUNT, title=f"T{i}")
-    two = _queries(forecast_load_service, main_user, FORECAST_TODAY)
+    two = count_queries(lambda: forecast_load_service(main_user, FORECAST_TODAY))
 
     with quiet_build(main_user):
         for i in range(2, 4):
             _purchase(ACCOUNT, title=f"T{i}")
 
-    assert _queries(forecast_load_service, main_user, FORECAST_TODAY) == two
+    assert (
+        count_queries(lambda: forecast_load_service(main_user, FORECAST_TODAY)) == two
+    )
 
 
 @pytest.fixture(name="savings_are_spending")
@@ -135,13 +130,18 @@ def test_no_incomes_spend_counts_account_fees_only(
 
 
 def test_no_incomes_query_count_does_not_grow(main_user, savings_are_spending):
+    def queries():
+        return count_queries(
+            lambda: no_incomes_load_service(main_user, 1999, NO_INCOMES_TODAY)
+        )
+
     with quiet_build(main_user):
         for i in range(2):
             _purchase(ACCOUNT, title=f"T{i}", day=date(1999, 5, 10))
-    two = _queries(no_incomes_load_service, main_user, 1999, NO_INCOMES_TODAY)
+    two = queries()
 
     with quiet_build(main_user):
         for i in range(2, 4):
             _purchase(ACCOUNT, title=f"T{i}", day=date(1999, 5, 10))
 
-    assert _queries(no_incomes_load_service, main_user, 1999, NO_INCOMES_TODAY) == two
+    assert queries() == two

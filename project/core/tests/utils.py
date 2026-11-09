@@ -69,10 +69,10 @@ def stat_card_tooltips(content):
     return TOOLTIP.findall(content)
 
 
-def count_queries(run):
+def count_queries(run, starting_with=""):
     with CaptureQueriesContext(connection) as queries:
         run()
-    return len(queries)
+    return sum(query["sql"].startswith(starting_with) for query in queries)
 
 
 def setup_view(view, request, *args, **kwargs):
