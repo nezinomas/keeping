@@ -1,4 +1,3 @@
-from datetime import date
 from functools import cached_property, partial
 from typing import cast
 from urllib.parse import urlencode
@@ -11,6 +10,7 @@ from ...core.lib.convert_price import PriceToFloatViewMixin
 from ...core.lib.overview_cards import Overview
 from ...core.lib.utils import add_fast_urls, get_action_buttons_html, int_or_zero
 from ...core.lib.year_boundary import YearBoundary
+from ...core.mixins.kwargs import TodayMixin
 from ...core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ...core.mixins.views import (
     CreateViewMixin,
@@ -34,16 +34,12 @@ from ..tabs import TABS
 LARGEST_TYPE_EXPLANATION = _("The expense type with the biggest share of this year")
 
 
-def month_filter(kwargs) -> MonthFilter:
-    return MonthFilter.parse(kwargs["month"], date.today())
-
-
 class SuccessUrlMixin:
     def get_success_url(self):
         return MonthFilter.at(self.object.date).url()
 
 
-class TabViewMixin(CoreTabViewMixin):
+class TabViewMixin(TodayMixin, CoreTabViewMixin):
     tabs = TABS
     default_tab = TABS["index"]
     app_title = _("Expenses")
@@ -55,7 +51,7 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
         overview = Overview.build(
             ExpenseModelService(self.request.user),
             "expense_type",
-            YearBoundary(self.request.user.selected_year(), date.today()),
+            YearBoundary(self.request.user.selected_year(), self.today),
             LARGEST_TYPE_EXPLANATION,
         )
 
@@ -70,7 +66,7 @@ class TabData(TabViewMixin, TemplateViewMixin):
     tab = TABS["data"]
 
     def get_context_data(self, **kwargs):
-        month = month_filter(self.kwargs)
+        month = MonthFilter.parse(self.kwargs["month"], self.today)
         search_text = self.request.GET.get("search", "")
         params = {"search": search_text}
         if page := self.request.GET.get("page"):
@@ -93,12 +89,12 @@ class TabData(TabViewMixin, TemplateViewMixin):
         }
 
 
-class Lists(ListViewMixin):
+class Lists(TodayMixin, ListViewMixin):
     template_name = "expenses/expense_list.html"
 
     @cached_property
     def month(self) -> MonthFilter:
-        return month_filter(self.kwargs)
+        return MonthFilter.parse(self.kwargs["month"], self.today)
 
     @cached_property
     def user(self) -> User:

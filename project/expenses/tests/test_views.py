@@ -10,6 +10,7 @@ from django.urls import reverse, reverse_lazy
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.helper import quiet_build
 from ...core.lib.utils import get_action_buttons_html
+from ...core.mixins import kwargs as core_kwargs
 from ...core.tests.utils import (
     clean_content,
     count_queries,
@@ -471,6 +472,25 @@ def test_expenses_list_filters_by_month(
         r'<td class="text-left main__date[^"]*">(\d{4}-\d\d-\d\d)</td>', content
     )
     assert sorted(listed) == [day.isoformat() for day in expected]
+
+
+def test_the_overview_and_duomenys_read_the_views_today(client_logged, mocker):
+    mocker.patch.object(
+        core_kwargs, "date", mocker.Mock(today=lambda: date(1999, 3, 8))
+    )
+    ExpenseFactory(date=date(1999, 3, 5), price=30_000)
+    ExpenseFactory(date=date(1999, 11, 5))
+
+    def page(name, **kwargs):
+        return client_logged.get(reverse(name, kwargs=kwargs)).content.decode()
+
+    listed = page("expenses:list", month="13")
+
+    assert ("Per mėnesį", "100", "3 mėnesiai") in stat_cards(page("expenses:tab_index"))
+    assert re.search(_open_month(3)[0], page("expenses:tab_data", month="13"))
+    assert re.findall(r'main__date[^"]*">(\d{4}-\d\d-\d\d)</td>', listed) == [
+        "1999-03-05"
+    ]
 
 
 @pytest.mark.parametrize(
