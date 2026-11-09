@@ -8,6 +8,7 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
+from ..lib.drinks_frequency import ProfilePoint
 from ..lib.drinks_risk import HEAVY_DAY_STDAV
 from .model_services import DrinkModelService
 from .profile_chart import ProfileLayer, profile_chart_dict, profile_chart_text
@@ -27,16 +28,11 @@ class MonthTotal:
 
 
 @dataclass(frozen=True)
-class MonthPoint:
+class MonthPoint(ProfilePoint):
     """One pooled month. ``calendar_days``, the rate's denominator, counts only the
     days of that month each pooled year has reached."""
 
     month: int  # 1 = January
-    calendar_days: int
-    drinking_days: int
-    stdav: float
-    drinking_day_share: float  # drinking_days / calendar_days
-    intensity: float  # stdav / drinking_days
 
 
 @dataclass(frozen=True)
@@ -71,7 +67,7 @@ class TypicalYearProfile:
             drinking_days[row.month - 1] += row.drinking_days
 
         points = [
-            cls._point(
+            MonthPoint(
                 month=month,
                 stdav=stdav[month - 1],
                 drinking_days=drinking_days[month - 1],
@@ -100,19 +96,6 @@ class TypicalYearProfile:
             return calendar.monthrange(year, month)[1]
 
         return end.day
-
-    @staticmethod
-    def _point(
-        month: int, calendar_days: int, drinking_days: int, stdav: float
-    ) -> MonthPoint:
-        return MonthPoint(
-            month=month,
-            calendar_days=calendar_days,
-            drinking_days=drinking_days,
-            stdav=stdav,
-            drinking_day_share=drinking_days / calendar_days if calendar_days else 0.0,
-            intensity=stdav / drinking_days if drinking_days else 0.0,
-        )
 
 
 @dataclass(frozen=True)
