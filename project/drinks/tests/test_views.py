@@ -982,6 +982,21 @@ def test_tab_history_has_unified_compare_panel(client_logged):
     assert "chart-compare-two" not in content
 
 
+@pytest.mark.parametrize(
+    "name, kwargs",
+    [
+        pytest.param("drinks:tab_history", {}, id="history"),
+        pytest.param("drinks:compare", {"qty": 2}, id="compare"),
+    ],
+)
+def test_the_compare_form_opens_on_the_selected_year(client_logged, name, kwargs):
+    DrinkFactory()
+
+    content = client_logged.get(reverse(name, kwargs=kwargs)).content.decode()
+
+    assert re.search(r'<input [^>]*name="year2" value="1999"', compare_form(content))
+
+
 def test_tab_history_chart_auto_loads_default_comparison(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(1988, 1, 1))
