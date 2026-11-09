@@ -1,6 +1,6 @@
 import calendar
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from itertools import takewhile
 
@@ -59,27 +59,28 @@ class TypicalYearProfile:
         years = sorted(
             {row.year for row in rows if YearBoundary(row.year, today).days_elapsed}
         )
-        stdav = [0.0] * MONTHS
-        drinking_days = [0] * MONTHS
-
-        for row in (row for row in rows if row.year in years):
-            stdav[row.month - 1] += row.stdav
-            drinking_days[row.month - 1] += row.drinking_days
-
-        points = [
-            MonthPoint(
+        by_month = {
+            month: MonthPoint(
                 month=month,
-                stdav=stdav[month - 1],
-                drinking_days=drinking_days[month - 1],
+                stdav=0.0,
+                drinking_days=0,
                 calendar_days=sum(
                     cls._days_reached(year, month, today) for year in years
                 ),
             )
             for month in range(1, MONTHS + 1)
-        ]
+        }
+
+        for row in (row for row in rows if row.year in years):
+            point = by_month[row.month]
+            by_month[row.month] = replace(
+                point,
+                stdav=point.stdav + row.stdav,
+                drinking_days=point.drinking_days + row.drinking_days,
+            )
 
         return cls(
-            points=points,
+            points=list(by_month.values()),
             year_from=years[0] if years else 0,
             year_to=years[-1] if years else 0,
         )

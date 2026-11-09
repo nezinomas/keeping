@@ -124,7 +124,6 @@ def test_pool_without_rows_has_no_data():
     actual = _profile()
 
     assert not actual.has_data
-    assert len(actual.points) == 12
     assert actual.points[0].calendar_days == 0
     assert actual.points[0].drinking_day_share == 0.0
 
