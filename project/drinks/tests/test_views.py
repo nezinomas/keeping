@@ -801,8 +801,12 @@ def test_every_figure_stops_at_the_views_today(client_logged, mocker):
     assert ("Blaivios dienos", "0", "1999-03-01") in stat_cards(index)
     assert len(chart_data(typical, "typical-year")["layers"][0]["intensity"]) == 3
     assert len(months) == 3
-    # 7.5 Std Av of beer over Jan 1 to Mar 1, the 60 days the view has reached
-    assert chart_data(history, "summary")["data_ml"][-1] == 25.0
+    summary = chart_data(history, "summary")
+    # 5 Std Av of beer, 1000 ml, over Jan 1 to Mar 1, the 60 days the view has reached
+    assert (summary["data_ml"][-1], summary["data_alcohol"][-1]) == (
+        pytest.approx(1000 / 60),
+        0.05,
+    )
 
 
 def test_tab_risk_heavy_panel_leaves_the_threshold_to_its_chart(client_logged):

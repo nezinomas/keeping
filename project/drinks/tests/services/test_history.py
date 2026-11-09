@@ -184,6 +184,16 @@ def test_records_count_two_years_or_none(today, records, main_user):
     assert history.load_service(main_user, 1999, "beer", today)["records"] == records
 
 
+def test_the_running_year_stops_at_today_and_a_coming_year_keeps_its_drinks(main_user):
+    DrinkFactory(date=date(1999, 3, 1), stdav=2.5)
+    DrinkFactory(date=date(1999, 4, 10), stdav=2.5)
+    DrinkFactory(date=date(2000, 2, 1), stdav=10)
+
+    chart = history.load_service(main_user, 2000, "stdav", date(1999, 3, 1))["chart"]
+
+    assert chart["data_alcohol"] == [0.025, 0.1]
+
+
 def test_a_coming_years_per_day_is_a_gap_and_its_total_stays():
     """Day 166 of 2026; 2027 has reached no day, so its average is Highcharts' gap."""
     qs = [
