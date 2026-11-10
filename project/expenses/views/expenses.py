@@ -73,14 +73,16 @@ class TabData(TabViewMixin, TemplateViewMixin):
 
         data_url = reverse("expenses:list", args=[month.value])
         tab_url = month.url()
+        items = month.items()
         if search_text:
             query = urlencode(params)
             data_url = f"{reverse('expenses:search')}?{query}"
             tab_url = f"{tab_url}?{query}"
+            items = MonthFilter(ALL).items()
 
         return super().get_context_data(**kwargs) | {
             "month": month,
-            "items": month.items(),
+            "items": items,
             "search": search_text,
             "data_url": data_url,
             # a save reloads the tab at the month and search it shows
