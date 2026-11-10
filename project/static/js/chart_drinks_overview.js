@@ -104,11 +104,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     y: -8,
                     crop: false,
                     overflow: "allow",
-                    formatter: function () {
-                        return this.y > 0
-                            ? Highcharts.numberFormat(this.y, consumption.decimals)
-                            : "";
-                    },
+                    formatter: paperFigure(consumption.decimals),
                 },
                 tooltip: {
                     // the series colour, not the point's: the zones colour the graph,

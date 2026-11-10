@@ -172,6 +172,7 @@ def test_overview_carries_the_chart_data(client_logged):
         "categories": [1999],
         "data": [{"y": 1, "target": 5}],
         "targets": [5],
+        "text": {"finished": "Perskaitytos", "goal": "Tikslas"},
     }
 
 

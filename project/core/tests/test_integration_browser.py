@@ -69,17 +69,31 @@ class Browser(StaticLiveServerTestCase):
             "Emulation.setDeviceMetricsOverride",
             {"width": width, "height": 900, "deviceScaleFactor": 1, "mobile": False},
         )
+        self.open(path)
+
+    def open(self, path: str):
         self.browser.get(f"{self.live_server_url}{path}")
         self.wait_until_idle()
 
-    def assert_overview_chart_redraws(self, path: str, container: str):
-        self.browser.get(f"{self.live_server_url}{path}")
+    def click_tab(self, name: str):
+        self.browser.find_element(By.ID, f"tab-{name}").click()
         self.wait_until_idle()
+
+    def read_chart(self, container: str, body: str, *args):
+        # `body` reads `c`, the chart in `container`; its own arguments start at [1]
+        return self.browser.execute_script(
+            "const c = Highcharts.charts.find(c => c"
+            "  && c.renderTo.id === arguments[0] && c.renderTo.isConnected);" + body,
+            container,
+            *args,
+        )
+
+    def assert_overview_chart_redraws(self, path: str, container: str):
+        self.open(path)
         assert self._chart_drawn_in(container), "no chart on load"
 
         for tab in ("data", "index"):
-            self.browser.find_element(By.ID, f"tab-{tab}").click()
-            self.wait_until_idle()
+            self.click_tab(tab)
 
         assert self._chart_drawn_in(container), "no chart after a tab swap"
 

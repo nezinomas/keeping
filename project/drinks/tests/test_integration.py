@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
@@ -18,8 +20,7 @@ class DrinksQuickAdd(Browser):
     def test_more_button_opens_the_modal_without_replacing_it(self):
         # htmx.ajax() has no source element, so it reads its swap off the target:
         # an "outer" swap replaces #mainModal and the Alpine scope every modal reads
-        self.browser.get(f"{self.live_server_url}/drinks/")
-        self.wait_until_idle()
+        self.open("/drinks/")
 
         self.browser.find_element(By.CSS_SELECTOR, ".quick-add__pill").click()
         more = WebDriverWait(self.browser, 10).until(
@@ -60,34 +61,37 @@ class DrinksChartAxisTitle(Browser):
 @pytest.mark.webtest
 class DrinksChartRuleLabel(Browser):
     def test_heavy_day_label_fits_inside_its_chart_at_each_width(self):
-        DrinkFactory(stdav=8)
-        for width, text in (
-            (1280, "Rizikingo vartojimo diena: > 6 Std Av"),
-            (360, "> 6 Std Av"),
+        # three heavy days in a month, or the Risk chart's axis stops below its rule
+        for day in (1, 2, 3):
+            DrinkFactory(date=date(1999, 1, day), stdav=8)
+        heavy_day = "Rizikingo vartojimo diena: > 6 Std Av"
+        for tab, scope, width, texts in (
+            ("habits", "#tab_content", 1280, [heavy_day, heavy_day]),
+            ("habits", "#tab_content", 360, ["> 6 Std Av", "> 6 Std Av"]),
+            ("risk", "#chart-heavy-container", 1280, ["Mažos rizikos riba: 3"]),
+            ("risk", "#chart-heavy-container", 360, ["3"]),
         ):
-            with self.subTest(width=width):
+            with self.subTest(tab=tab, width=width):
                 self.open_at("/drinks/", width)
-                self.browser.find_element(By.ID, "tab-habits").click()
-                self.wait_until_idle()
+                self.click_tab(tab)
                 labels = self.browser.execute_script(
                     "return [...document.querySelectorAll("
-                    "  '.highcharts-plot-line-label span')].map(s => {"
+                    "  arguments[0] + ' .highcharts-plot-line-label span')].map(s => {"
                     "  const r = s.getBoundingClientRect();"
                     "  const c = s.closest('.highcharts-container')"
                     "    .getBoundingClientRect();"
                     "  return [s.textContent, r.left >= c.left && r.right <= c.right];"
-                    "});"
+                    "});",
+                    scope,
                 )
 
-                assert labels == [[text, True], [text, True]]
+                assert labels == [[text, True] for text in texts]
 
     def test_rule_label_wears_its_rule_state(self):
         # a week past the high-risk threshold, or Highcharts drops both rules off the axis
         DrinkFactory(stdav=30)
-        self.browser.get(f"{self.live_server_url}/drinks/")
-        self.wait_until_idle()
-        self.browser.find_element(By.ID, "tab-risk").click()
-        self.wait_until_idle()
+        self.open("/drinks/")
+        self.click_tab("risk")
 
         labels = self.browser.execute_script(
             "return [...document.querySelectorAll("
@@ -102,6 +106,29 @@ class DrinksChartRuleLabel(Browser):
 
 
 @pytest.mark.webtest
+class DrinksHistoryDataLabels(Browser):
+    def test_data_labels_drop_where_a_year_is_too_narrow_for_them(self):
+        # ten years: about 23 px a year at 360, five times that at 1280
+        for year in range(1990, 2000):
+            DrinkFactory(date=date(year, 1, 1))
+        # the forecast's hollow bar prints no figure at any width
+        for width, enabled, drawn in (
+            (1280, [True, True, False], True),
+            (360, [False] * 3, False),
+        ):
+            with self.subTest(width=width):
+                self.open_at("/drinks/", width)
+                self.click_tab("history")
+                shown = self.read_chart(
+                    "chart-summary-container",
+                    "return [c.series.map(s => s.options.dataLabels.enabled),"
+                    "  !!c.container.querySelector('.highcharts-data-label')];",
+                )
+
+                assert shown == [enabled, drawn]
+
+
+@pytest.mark.webtest
 class DrinksTrendLimitRule(Browser):
     def test_limit_rule_is_drawn_only_with_a_drink_target(self):
         DrinkFactory()
@@ -109,10 +136,8 @@ class DrinksTrendLimitRule(Browser):
             with self.subTest(target=target):
                 if target:
                     DrinkTargetFactory()
-                self.browser.get(f"{self.live_server_url}/drinks/")
-                self.wait_until_idle()
-                self.browser.find_element(By.ID, "tab-trends").click()
-                self.wait_until_idle()
+                self.open("/drinks/")
+                self.click_tab("trends")
 
                 labels = self.browser.execute_script(
                     "return [...document.querySelectorAll("
@@ -127,17 +152,14 @@ class DrinksTrendLimitRule(Browser):
 class DrinksChartTooltip(Browser):
     def test_profile_tooltip_heads_with_the_day_at_the_tooltip_size(self):
         DrinkFactory()
-        self.browser.get(f"{self.live_server_url}/drinks/")
-        self.wait_until_idle()
-        self.browser.find_element(By.ID, "tab-habits").click()
-        self.wait_until_idle()
+        self.open("/drinks/")
+        self.click_tab("habits")
 
-        head = self.browser.execute_script(
-            "const c = Highcharts.charts.find("
-            "  c => c && c.renderTo.id === 'chart-weekday-container');"
+        head = self.read_chart(
+            "chart-weekday-container",
             "c.tooltip.refresh(c.series.map(s => s.points[0]));"
             "const t = c.tooltip.container.querySelector('.highcharts-tooltip span');"
-            "return [t.innerHTML.split('<br>')[0], getComputedStyle(t).fontSize];"
+            "return [t.innerHTML.split('<br>')[0], getComputedStyle(t).fontSize];",
         )
 
         assert head == ["Pirmadienis", "12px"]
@@ -147,8 +169,7 @@ class DrinksChartTooltip(Browser):
 class DrinksChartBarFigures(Browser):
     def test_bar_figure_is_muted(self):
         DrinkFactory()
-        self.browser.get(f"{self.live_server_url}/drinks/")
-        self.wait_until_idle()
+        self.open("/drinks/")
 
         fill = self.browser.execute_script(
             "const t = document.querySelector(arguments[0]);"
@@ -163,8 +184,7 @@ class DrinksChartBarFigures(Browser):
 class DrinksCalendarTooltip(Browser):
     def test_tooltip_shows_only_while_a_day_has_focus(self):
         DrinkFactory()
-        self.browser.get(f"{self.live_server_url}/drinks/")
-        self.wait_until_idle()
+        self.open("/drinks/")
         tooltip = self.browser.find_element(By.ID, "heat-tooltip")
         day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]")
         seen = [tooltip.is_displayed()]
@@ -178,8 +198,7 @@ class DrinksCalendarTooltip(Browser):
 
     def test_tooltip_reads_its_day_and_hides_off_every_day(self):
         DrinkFactory()
-        self.browser.get(f"{self.live_server_url}/drinks/")
-        self.wait_until_idle()
+        self.open("/drinks/")
         day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]:not(.l0)")
 
         seen = self.browser.execute_script(
@@ -209,8 +228,7 @@ class DrinksCalendarTooltip(Browser):
 
     def test_tooltip_wears_the_calendars_face(self):
         DrinkFactory()
-        self.browser.get(f"{self.live_server_url}/drinks/")
-        self.wait_until_idle()
+        self.open("/drinks/")
         day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]")
 
         shown, face, calendar_face = self.browser.execute_script(

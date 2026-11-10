@@ -27,12 +27,25 @@ var PAPER_CHART_HEIGHT = { standard: 350, large: 420 };
 // Read once, at the table headers' breakpoint: below it a chart's text is cut to fit.
 var PAPER_WIDE = window.matchMedia("(min-width: 768px)").matches;
 
+// A rule's text: its name and level on a wide chart, the level alone on a phone,
+// where the whole text would spill past the plot's left edge.
+function paperRuleText(name, level) {
+    return PAPER_WIDE ? `${name}: ${level}` : String(level);
+}
+
 // Every figure printed on a mark; each use adds only its colour.
 var PAPER_DATA_LABEL_STYLE = {
     ...PAPER_CHART_TEXT,
     fontWeight: "400",
     textOutline: "none",
 };
+
+// A figure on a mark, left off a mark of zero.
+function paperFigure(decimals) {
+    return function () {
+        return this.y > 0 ? Highcharts.numberFormat(this.y, decimals) : "";
+    };
+}
 
 // The first and last category sit a fixed distance in from the plot edge, so a
 // chart of 21 years and one of 12 months keep the same margins at any width.
@@ -73,12 +86,13 @@ var PAPER_PANE_TITLE_SPACE = { marginTop: PAPER_PANE_TITLE_RISE + PAPER_CHART_TE
 // The parts of a two-pane chart: a reading on top, bars below. Pieces, not one
 // config, because `Highcharts.merge` replaces arrays instead of merging them.
 function paperTwoPanes() {
-    const blue = "var(--skin-data)";
+    const dataHue = "var(--skin-data)";
     // the bottom pane takes what the top pane and the gap between them leave
     const topHeight = 68;
     const gap = 12;
 
     return {
+        dataHue: dataHue,
         base: {
             chart: Highcharts.merge(PAPER_PANE_TITLE_SPACE, {
                 height: PAPER_CHART_HEIGHT.large,
@@ -108,13 +122,13 @@ function paperTwoPanes() {
             top: `${topHeight + gap}%`,
             height: `${100 - topHeight - gap}%`,
             offset: 0,
-            labels: { style: { color: blue } },
-            title: Highcharts.merge(PAPER_PANE_TITLE, { style: { color: blue } }),
+            labels: { style: { color: dataHue } },
+            title: Highcharts.merge(PAPER_PANE_TITLE, { style: { color: dataHue } }),
         },
         bottomBars: {
             type: "column",
             yAxis: 1,
-            color: blue,
+            color: dataHue,
             grouping: false,
             maxPointWidth: 28,
             showInLegend: false,
@@ -124,9 +138,7 @@ function paperTwoPanes() {
                 overflow: "allow",
                 // the theme's `dataLabels.color` beats a `style.color`
                 color: "var(--skin-ink-muted)",
-                formatter: function () {
-                    return this.y > 0 ? Highcharts.numberFormat(this.y, 1) : "";
-                },
+                formatter: paperFigure(1),
             },
         },
     };
