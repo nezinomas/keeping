@@ -47,7 +47,7 @@ def test_barbora_line_19_ends_with_weight(receipt):
 def test_barbora_titles_have_no_ean_digits_or_ellipsis(receipt):
     for line in receipt.lines:
         assert "..." not in line.title
-        assert re.search(r"\d{5,}", line.title) is None
+        assert re.findall(r"\d{5,}", line.title) == []
 
 
 @pytest.mark.parametrize(

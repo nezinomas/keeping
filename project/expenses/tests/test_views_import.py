@@ -30,6 +30,8 @@ from .receipts.pdfs import (
 pytestmark = pytest.mark.django_db
 
 BARBORA = FIXTURES / "barbora.pdf"
+UPLOAD_DATE = date(1999, 1, 5)
+REVIEW_DATE = date(2026, 9, 18)
 
 
 def _upload(name, content, content_type="application/pdf"):
@@ -40,8 +42,12 @@ def _barbora_file():
     return _upload("barbora.pdf", BARBORA.read_bytes())
 
 
-def _upload_data(account, pdf, date="1999-01-05"):
-    return {"date": date, "account": account.pk, "pdf": pdf}
+def _upload_data(account, pdf, on):
+    return {"date": on.isoformat(), "account": account.pk, "pdf": pdf}
+
+
+def _post_upload(client, account, pdf, on=UPLOAD_DATE):
+    return client.post(reverse("expenses:import"), data=_upload_data(account, pdf, on))
 
 
 def _management_data(total):
@@ -69,9 +75,9 @@ def _row_data(index, **overrides):
     return data
 
 
-def _receipt_data(account, **overrides):
+def _receipt_data(account, on, **overrides):
     data = {
-        "date": "1999-01-05",
+        "date": on.isoformat(),
         "account": account.pk,
         "total": "500",
         "shop_money": "0",
@@ -81,11 +87,11 @@ def _receipt_data(account, **overrides):
     return data
 
 
-def _save_data(rows, account, **receipt_overrides):
+def _save_data(rows, account, on=UPLOAD_DATE, **receipt_overrides):
     data = _management_data(len(rows))
     for index, row in enumerate(rows):
         data |= _row_data(index, **row)
-    data |= _receipt_data(account, **receipt_overrides)
+    data |= _receipt_data(account, on, **receipt_overrides)
     return data
 
 
@@ -116,18 +122,48 @@ def _n_line_receipt(n):
     return Receipt(lines=lines, total=sum(line.price for line in lines))
 
 
-def _post_review(client, account, receipt):
+def _post_review(client, account, receipt, on=UPLOAD_DATE):
     with patch.object(ReceiptReader, "read", return_value=receipt):
-        response = client.post(
-            reverse("expenses:import"),
-            data=_upload_data(account, _barbora_file(), date="1999-01-05"),
-        )
+        response = _post_upload(client, account, _barbora_file(), on)
     return response.content.decode()
 
 
 @pytest.fixture(scope="module")
 def barbora_receipt():
     return ReceiptReader.read(BARBORA)
+
+
+@pytest.fixture
+def account():
+    return AccountFactory()
+
+
+@pytest.fixture
+def foreign_account(second_user):
+    # the factory gets or creates an account by title alone
+    return AccountFactory(title="Foreign account", journal=second_user.journal)
+
+
+@pytest.fixture
+def pieno():
+    return ExpenseNameFactory(title="Pieno produktai", parent=ExpenseTypeFactory())
+
+
+def _jogurt_row(name, **overrides):
+    return {
+        "title": "Naturalus jogurtas VILVI",
+        "price": "5,00",
+        "expense_type": name.parent.pk,
+        "expense_name": name.pk,
+        "keyword": "jogurt",
+    } | overrides
+
+
+def _post_save(client, rows, account, on=UPLOAD_DATE, **receipt_overrides):
+    return client.post(
+        reverse("expenses:import_save"),
+        data=_save_data(rows, account, on, **receipt_overrides),
+    )
 
 
 def test_import_get_anonymous_redirects_to_login(client):
@@ -147,32 +183,25 @@ def test_import_get_200_renders_upload_form(main_user, client_logged):
     assert 'name="pdf"' in response.content.decode()
 
 
-def test_import_post_non_pdf_file_error(main_user, client_logged):
-    a = AccountFactory()
-    url = reverse("expenses:import")
-
-    response = client_logged.post(
-        url,
-        data=_upload_data(a, _upload("lydrastis.txt", b"x", "text/plain")),
+def test_import_post_non_pdf_file_error(client_logged, account):
+    response = _post_upload(
+        client_logged, account, _upload("lydrastis.txt", b"x", "text/plain")
     )
 
     assert response.status_code == 200
     assert "Galima importuoti tik PDF failus." in response.content.decode()
 
 
-def test_import_post_unrecognised_pdf_error(main_user, client_logged, tmp_path):
-    a = AccountFactory()
+def test_import_post_unrecognised_pdf_error(client_logged, account, tmp_path):
     path = table_pdf(
         tmp_path / "unknown.pdf",
         text_above="UNKNOWN SHOP",
         header=("Item", "Qty", "Sum"),
         rows=[("Apple", "2 vnt.", "1,20")],
     )
-    url = reverse("expenses:import")
 
-    response = client_logged.post(
-        url,
-        data=_upload_data(a, _upload("unknown.pdf", path.read_bytes())),
+    response = _post_upload(
+        client_logged, account, _upload("unknown.pdf", path.read_bytes())
     )
 
     assert response.status_code == 200
@@ -181,88 +210,62 @@ def test_import_post_unrecognised_pdf_error(main_user, client_logged, tmp_path):
     assert "form-0-title" not in text
 
 
-def test_import_post_unreadable_receipt_error(main_user, client_logged):
-    a = AccountFactory()
-    url = reverse("expenses:import")
-
+def test_import_post_unreadable_receipt_error(client_logged, account):
     with patch.object(ReceiptReader, "read", side_effect=UnreadableReceiptTextError):
-        response = client_logged.post(
-            url,
-            data=_upload_data(a, _barbora_file(), date="1999-01-05"),
-        )
+        response = _post_upload(client_logged, account, _barbora_file())
 
     assert response.status_code == 200
     assert "Čekio nepavyko nuskaityti." in response.content.decode()
 
 
 def test_import_post_receipt_with_no_lines_error(
-    main_user, client_logged, tmp_path, monkeypatch
+    client_logged, account, tmp_path, monkeypatch
 ):
     monkeypatch.setattr(reader, "PARSERS", (TextReceiptParser(EMPTY_TEXT_LAYOUT),))
     path = empty_text_receipt_pdf(tmp_path / "empty.pdf")
-    url = reverse("expenses:import")
 
-    response = client_logged.post(
-        url,
-        data=_upload_data(AccountFactory(), _upload("empty.pdf", path.read_bytes())),
+    response = _post_upload(
+        client_logged, account, _upload("empty.pdf", path.read_bytes())
     )
 
     assert response.status_code == 200
     assert "Čekio nepavyko nuskaityti." in response.content.decode()
 
 
-def test_import_post_corrupt_pdf_error(main_user, client_logged):
-    a = AccountFactory()
-    url = reverse("expenses:import")
-
-    response = client_logged.post(
-        url, data=_upload_data(a, _upload("notes.pdf", b"hello, not a pdf"))
+def test_import_post_corrupt_pdf_error(client_logged, account):
+    response = _post_upload(
+        client_logged, account, _upload("notes.pdf", b"hello, not a pdf")
     )
 
     assert response.status_code == 200
     assert "Čekio nepavyko nuskaityti." in response.content.decode()
 
 
-def test_import_post_fixture_29_rows(main_user, client_logged):
-    a = AccountFactory()
-    url = reverse("expenses:import")
-
-    response = client_logged.post(
-        url,
-        data=_upload_data(a, _barbora_file(), date="2026-09-18"),
-    )
+def test_import_post_fixture_29_rows(client_logged, account):
+    response = _post_upload(client_logged, account, _barbora_file(), REVIEW_DATE)
 
     assert response.status_code == 200
     assert 'name="form-TOTAL_FORMS" value="29"' in response.content.decode()
 
 
-def test_import_post_kg_line_amount_is_one(main_user, client_logged, barbora_receipt):
-    a = AccountFactory()
-    url = reverse("expenses:import")
-
+def test_import_post_kg_line_amount_is_one(client_logged, account, barbora_receipt):
     kg_index = next(
         i
         for i, line in enumerate(barbora_receipt.lines)
         if line.amount == 1 and line.price == 280
     )
 
-    with patch.object(ReceiptReader, "read", return_value=barbora_receipt):
-        response = client_logged.post(
-            url,
-            data=_upload_data(a, _barbora_file(), date="2026-09-18"),
-        )
+    text = _post_review(client_logged, account, barbora_receipt, REVIEW_DATE)
 
-    text = response.content.decode()
     assert f'name="form-{kg_index}-amount" value="1"' in text
 
 
 def test_import_post_jogurt_keyword_prefills_row(
-    main_user, client_logged, barbora_receipt
+    main_user, client_logged, account, pieno, barbora_receipt
 ):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
-    ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt", expense_name=n)
+    ExpenseKeywordFactory(
+        journal=main_user.journal, keyword="jogurt", expense_name=pieno
+    )
 
     jogurt_index = next(
         i
@@ -270,30 +273,24 @@ def test_import_post_jogurt_keyword_prefills_row(
         if "jogurt" in line.title.casefold()
     )
 
-    url = reverse("expenses:import")
-    with patch.object(ReceiptReader, "read", return_value=barbora_receipt):
-        response = client_logged.post(
-            url,
-            data=_upload_data(a, _barbora_file(), date="2026-09-18"),
-        )
+    text = _post_review(client_logged, account, barbora_receipt, REVIEW_DATE)
 
-    text = response.content.decode()
     prefix = f"form-{jogurt_index}"
     expense_type = _select(text, f"{prefix}-expense_type")
     expense_name = _select(text, f"{prefix}-expense_name")
-    assert _is_selected(expense_type, t.pk)
-    assert _is_selected(expense_name, n.pk)
+    assert _is_selected(expense_type, pieno.parent.pk)
+    assert _is_selected(expense_name, pieno.pk)
     assert f'name="{prefix}-keyword" value="jogurt"' in text
 
 
-def test_import_post_unmatched_row_blank_option_selected(main_user, client_logged):
-    text = _post_review(client_logged, AccountFactory(), _receipt(total=500))
+def test_import_post_unmatched_row_blank_option_selected(client_logged, account):
+    text = _post_review(client_logged, account, _receipt(total=500))
 
     assert 'value="" selected' in text
 
 
-def test_import_post_every_skip_box_named_form_n_skip(main_user, client_logged):
-    text = _post_review(client_logged, AccountFactory(), _n_line_receipt(3))
+def test_import_post_every_skip_box_named_form_n_skip(client_logged, account):
+    text = _post_review(client_logged, account, _n_line_receipt(3))
 
     assert 'name="form-0-skip"' in text
     assert 'name="form-2-skip"' in text
@@ -315,35 +312,23 @@ def _is_selected(select, pk):
     return re.search(rf'<option value="{pk}"[^>]*\sselected\b', select) is not None
 
 
-def test_import_post_shop_money_radios_only_when_positive(main_user, client_logged):
-    text = _post_review(client_logged, AccountFactory(), _shop_money_receipt())
-
-    assert 'name="shop_money_line"' in text
-    assert 'name="form-0-shop_money_line"' not in text
-
-
-def test_import_post_shop_money_radios_are_drawn_as_form_checks(
-    main_user, client_logged
+@pytest.mark.parametrize(
+    "receipt, radios",
+    [
+        pytest.param(_shop_money_receipt(), 2, id="shop_money"),
+        pytest.param(_receipt(total=500, shop_money=0), 0, id="no_shop_money"),
+    ],
+)
+def test_import_post_shop_money_radios_only_when_positive(
+    client_logged, account, receipt, radios
 ):
-    receipt = _receipt(
-        lines=(ReceiptLine(title="A", amount=1, price=600, is_deposit=False),),
-        total=500,
-        shop_money=100,
-    )
-
-    text = _post_review(client_logged, AccountFactory(), receipt)
+    text = _post_review(client_logged, account, receipt)
 
     radio = '<input type="radio" class="form-check-input" name="shop_money_line"'
-    assert radio in text
-
-
-def test_import_post_no_shop_money_radios(main_user, client_logged):
-    receipt = _receipt(total=500, shop_money=0)
-
-    text = _post_review(client_logged, AccountFactory(), receipt)
-
+    assert text.count(radio) == radios
+    assert text.count('type="radio"') == radios
     assert 'name="shop_money_line"' in text
-    assert 'type="radio"' not in text
+    assert 'name="form-0-shop_money_line"' not in text
 
 
 @pytest.mark.parametrize(
@@ -353,78 +338,79 @@ def test_import_post_no_shop_money_radios(main_user, client_logged):
         pytest.param(500, '<p :hidden="!disagree" hidden>', id="agreeing"),
     ],
 )
-def test_import_post_totals_warning(main_user, client_logged, total, warning):
-    text = _post_review(client_logged, AccountFactory(), _receipt(total=total))
+def test_import_post_totals_warning(client_logged, account, total, warning):
+    text = _post_review(client_logged, account, _receipt(total=total))
 
     assert f"{warning}Sumos nesutampa" in text
 
 
+def _tfoot_rows(text):
+    tfoot = _section(text, "tfoot")
+    return re.findall(r"<tr class=\"main__total\">.*?</tr>", tfoot, re.DOTALL)
+
+
 @pytest.mark.parametrize(
-    "receipt, text_center_count",
+    "receipt, text_center_count, labels, colspan, row_count",
     [
-        pytest.param(_receipt(total=500), 1, id="without_shop_money"),
-        pytest.param(_shop_money_receipt(), 2, id="with_shop_money"),
+        pytest.param(
+            _receipt(total=500),
+            1,
+            ["Eilučių suma", "Čekio suma"],
+            'colspan="3"',
+            2,
+            id="without_shop_money",
+        ),
+        pytest.param(
+            _shop_money_receipt(),
+            2,
+            ["Eilučių suma", "Čekio suma", "Parduotuvės pinigai"],
+            'colspan="4"',
+            3,
+            id="with_shop_money",
+        ),
     ],
 )
-def test_import_review_thead_classes(
-    main_user, client_logged, receipt, text_center_count
+def test_import_review_table_follows_shop_money(
+    client_logged, account, receipt, text_center_count, labels, colspan, row_count
 ):
-    a = AccountFactory()
-
-    thead = _section(_post_review(client_logged, a, receipt), "thead")
+    text = _post_review(client_logged, account, receipt)
+    thead = _section(text, "thead")
+    tfoot = _section(text, "tfoot")
+    rows = _tfoot_rows(text)
 
     assert thead.count('class="text-left"') == 4
     assert thead.count('class="text-center"') == text_center_count
     assert "<th>Kiekis</th>" in thead
     assert "<th>Kaina</th>" in thead
-
-
-@pytest.mark.parametrize(
-    "receipt, labels",
-    [
-        pytest.param(
-            _receipt(total=500),
-            ["Eilučių suma", "Čekio suma"],
-            id="without_shop_money",
-        ),
-        pytest.param(
-            _shop_money_receipt(),
-            ["Eilučių suma", "Čekio suma", "Parduotuvės pinigai"],
-            id="with_shop_money",
-        ),
-    ],
-)
-def test_import_review_tfoot_rows(main_user, client_logged, receipt, labels):
-    a = AccountFactory()
-
-    tfoot = _section(_post_review(client_logged, a, receipt), "tfoot")
-
     assert (
         re.findall(r'<tr class="main__total">\s*<td colspan="3">(.*?)</td>', tfoot)
         == labels
     )
     assert "&middot;" not in tfoot
     assert "·" not in tfoot
+    assert len(rows) == row_count
+    for row in rows:
+        cells = re.findall(r"<td[^>]*>", row)
+        assert len(cells) == 3
+        assert cells[1] == '<td class="main__figure">'
+        assert colspan in cells[-1]
+    assert "<td></td>" not in tfoot
 
 
-def test_import_upload_row_wrapper_class(main_user, client_logged):
-    url = reverse("expenses:import")
-
-    response = client_logged.get(url)
+def test_import_upload_row_wrapper_class(client_logged):
+    response = client_logged.get(reverse("expenses:import"))
 
     assert 'class="import-upload"' in response.content.decode()
 
 
-def test_import_post_query_count_equal_for_2_and_6_lines(main_user, client_logged):
-    a = AccountFactory()
-    url = reverse("expenses:import")
-
+def test_import_post_query_count_equal_for_2_and_6_lines(client_logged, account):
     counts = {}
     for n in (2, 6):
-        upload_data = _upload_data(a, _barbora_file(), date="2026-09-18")
         with patch.object(ReceiptReader, "read", return_value=_n_line_receipt(n)):
             with CaptureQueriesContext(connection) as ctx:
-                response = client_logged.post(url, data=upload_data)
+                response = _post_upload(
+                    client_logged, account, _barbora_file(), REVIEW_DATE
+                )
 
         assert response.status_code == 200
         counts[n] = len(ctx.captured_queries)
@@ -433,160 +419,99 @@ def test_import_post_query_count_equal_for_2_and_6_lines(main_user, client_logge
 
 
 def test_import_save_valid_creates_expenses_and_redirects(
-    main_user, client_logged, mocker
+    main_user, client_logged, account, pieno, mocker
 ):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n1 = ExpenseNameFactory(title="Pieno produktai", parent=t)
-    n2 = ExpenseNameFactory(title="Duona", parent=t)
-
+    duona = ExpenseNameFactory(title="Duona", parent=pieno.parent)
     sync = mocker.patch(
         "project.bookkeeping.balance_sources.sync_accounts",
         wraps=balance_sources.sync_accounts,
     )
 
-    data = _save_data(
+    response = _post_save(
+        client_logged,
         [
-            {
-                "title": "Naturalus jogurtas VILVI",
-                "price": "5,00",
-                "expense_type": t.pk,
-                "expense_name": n1.pk,
-                "keyword": "jogurt",
-            },
-            {
-                "title": "Juoda duona",
-                "price": "3,00",
-                "expense_type": t.pk,
-                "expense_name": n2.pk,
-                "keyword": "duon",
-            },
+            _jogurt_row(pieno),
+            _jogurt_row(duona, title="Juoda duona", price="3,00", keyword="duon"),
         ],
-        a,
+        account,
         total="800",
-        date="1998-03-05",
+        on=date(1998, 3, 5),
     )
-
-    url = reverse("expenses:import_save")
-    response = client_logged.post(url, data=data)
 
     assert response.status_code == 200
     assert response["HX-Redirect"] == "/expenses/data/3/"
     assert [(e.expense_name, e.price) for e in Expense.objects.order_by("pk")] == [
-        (n1, 500),
-        (n2, 300),
+        (pieno, 500),
+        (duona, 300),
     ]
-    assert ExpenseKeyword.objects.filter(keyword="jogurt", expense_name=n1).exists()
-    assert ExpenseKeyword.objects.filter(keyword="duon", expense_name=n2).exists()
+    assert ExpenseKeyword.objects.filter(keyword="jogurt", expense_name=pieno).exists()
+    assert ExpenseKeyword.objects.filter(keyword="duon", expense_name=duona).exists()
     assert sync.call_count == 1
 
     main_user.journal.refresh_from_db()
     assert main_user.journal.first_record == date(1998, 3, 5)
 
 
-def test_import_save_edited_price_is_saved(main_user, client_logged):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
-
-    data = _save_data(
-        [
-            {
-                "price": "9,99",
-                "expense_type": t.pk,
-                "expense_name": n.pk,
-                "keyword": "jogurt",
-                "title": "Naturalus jogurtas VILVI",
-            }
-        ],
-        a,
-    )
-
-    url = reverse("expenses:import_save")
-    client_logged.post(url, data=data)
-
-    assert Expense.objects.get().price == 999
-
-
-def test_import_save_invalid_nothing_saved_names_intact(main_user, client_logged):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
-
-    data = _save_data(
-        [
-            {
-                "title": "",  # missing required field on a non-skipped row
-                "price": "5,00",
-                "expense_type": t.pk,
-                "expense_name": n.pk,
-                "keyword": "jogurt",
-            }
-        ],
-        a,
-    )
-
-    url = reverse("expenses:import_save")
-    response = client_logged.post(url, data=data)
+def test_import_save_invalid_nothing_saved_names_intact(client_logged, account, pieno):
+    # a missing required field on a non-skipped row
+    response = _post_save(client_logged, [_jogurt_row(pieno, title="")], account)
 
     assert response.status_code == 200
     assert Expense.objects.count() == 0
     text = response.content.decode()
-    assert _is_selected(_select(text, "form-0-expense_name"), n.pk)
+    assert _is_selected(_select(text, "form-0-expense_name"), pieno.pk)
     assert '<div class="invalid-feedback">' in _section(text, "tbody")
 
 
-def test_import_save_tampered_account_refused(main_user, second_user, client_logged):
-    a = AccountFactory(journal=second_user.journal)
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
+@pytest.mark.parametrize(
+    "tamper, feedback",
+    [
+        pytest.param("account", "Pasirinkite tinkamą reikšmę", id="account"),
+        pytest.param(
+            "shop_money_line",
+            "Parduotuvės pinigų eilutės šiame čekyje nėra.",
+            id="shop_money_line_out_of_range",
+        ),
+        pytest.param(
+            "expense_type",
+            "Pasirinkite tinkamą reikšmę. Parinkta reikšmė nėra galima.",
+            id="expense_type",
+        ),
+    ],
+)
+def test_import_save_tampered_input_is_refused(
+    client_logged, second_user, account, foreign_account, pieno, tamper, feedback
+):
+    foreign_type = ExpenseTypeFactory(title="Foreign type", journal=second_user.journal)
+    foreign_name = ExpenseNameFactory(title="Foreign name", parent=foreign_type)
+    posts = {
+        "account": ([_jogurt_row(pieno)], foreign_account, {}),
+        "shop_money_line": (
+            [_jogurt_row(pieno)],
+            account,
+            {"shop_money": "100", "shop_money_line": "5"},
+        ),
+        "expense_type": ([_jogurt_row(foreign_name)], account, {}),
+    }
+    rows, posted_account, overrides = posts[tamper]
 
-    data = _save_data(
-        [
-            {
-                "title": "Naturalus jogurtas VILVI",
-                "price": "5,00",
-                "expense_type": t.pk,
-                "expense_name": n.pk,
-                "keyword": "jogurt",
-            }
-        ],
-        a,
-    )
-
-    url = reverse("expenses:import_save")
-    response = client_logged.post(url, data=data)
+    response = _post_save(client_logged, rows, posted_account, **overrides)
 
     assert response.status_code == 200
     assert Expense.objects.count() == 0
-    text = response.content.decode()
-    assert '<div class="invalid-feedback">Pasirinkite tinkamą reikšmę' in text
+    assert f'<div class="invalid-feedback">{feedback}' in response.content.decode()
 
 
 def test_import_save_tampered_account_still_shows_shop_money_radios(
-    main_user, second_user, client_logged
+    client_logged, foreign_account, pieno
 ):
-    a = AccountFactory(journal=second_user.journal)
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
-
-    data = _save_data(
-        [
-            {
-                "title": "Naturalus jogurtas VILVI",
-                "price": "5,00",
-                "expense_type": t.pk,
-                "expense_name": n.pk,
-                "keyword": "jogurt",
-            }
-        ],
-        a,
+    response = _post_save(
+        client_logged,
+        [_jogurt_row(pieno)],
+        foreign_account,
         shop_money="100",
         shop_money_line="0",
     )
-
-    url = reverse("expenses:import_save")
-    response = client_logged.post(url, data=data)
 
     assert response.status_code == 200
     assert Expense.objects.count() == 0
@@ -596,96 +521,31 @@ def test_import_save_tampered_account_still_shows_shop_money_radios(
     assert re.search(r'name="shop_money_line" value="0"[^>]*\bchecked>', text)
 
 
-def test_import_save_tampered_shop_money_line_out_of_range_refused(
-    main_user, client_logged
-):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
-
-    data = _save_data(
-        [
-            {
-                "title": "Naturalus jogurtas VILVI",
-                "price": "5,00",
-                "expense_type": t.pk,
-                "expense_name": n.pk,
-                "keyword": "jogurt",
-            }
-        ],
-        a,
-        shop_money="100",
-        shop_money_line="5",
-    )
-
-    url = reverse("expenses:import_save")
-    response = client_logged.post(url, data=data)
-
-    assert response.status_code == 200
-    assert Expense.objects.count() == 0
-    text = response.content.decode()
-    assert (
-        '<div class="invalid-feedback">Parduotuvės pinigų eilutės šiame čekyje nėra.'
-        in text
-    )
-
-
-def test_import_save_tampered_expense_type_refused(
-    main_user, second_user, client_logged
-):
-    a = AccountFactory()
-    t = ExpenseTypeFactory(title="Foreign type", journal=second_user.journal)
-    n = ExpenseNameFactory(title="Foreign name", parent=t)
-
-    data = _save_data(
-        [
-            {
-                "title": "Naturalus jogurtas VILVI",
-                "price": "5,00",
-                "expense_type": t.pk,
-                "expense_name": n.pk,
-                "keyword": "jogurt",
-            }
-        ],
-        a,
-    )
-
-    url = reverse("expenses:import_save")
-    response = client_logged.post(url, data=data)
-
-    assert response.status_code == 200
-    assert Expense.objects.count() == 0
-
-
 def _n_rows(n, run, price="5,00"):
     rows = []
     for i in range(n):
         t = ExpenseTypeFactory(title=f"{run}-T{i}")
         name = ExpenseNameFactory(title=f"{run}-N{i}", parent=t)
         rows.append(
-            {
-                "title": f"Product {run}{i} kw{run}{i}",
-                "price": price,
-                "expense_type": t.pk,
-                "expense_name": name.pk,
-                "keyword": f"kw{run}{i}",
-            }
+            _jogurt_row(
+                name,
+                title=f"Product {run}{i} kw{run}{i}",
+                price=price,
+                keyword=f"kw{run}{i}",
+            )
         )
     return rows
 
 
 def test_import_save_invalid_query_count_equal_for_2_and_6_lines(
-    main_user, client_logged
+    client_logged, account
 ):
-    a = AccountFactory()
-    url = reverse("expenses:import_save")
-
     counts = {}
     for n in (2, 6):
-        data = _save_data(_n_rows(n, run=f"inv{n}", price="0"), a)
+        rows = _n_rows(n, run=f"inv{n}", price="0")
 
         with CaptureQueriesContext(connection) as ctx:
-            response = client_logged.post(url, data=data)
+            response = _post_save(client_logged, rows, account)
 
         assert response.status_code == 200
         assert Expense.objects.count() == 0
@@ -694,20 +554,15 @@ def test_import_save_invalid_query_count_equal_for_2_and_6_lines(
     assert counts[2] == counts[6]
 
 
-def test_import_save_valid_query_count_equal_for_2_and_6_lines(
-    main_user, client_logged
-):
-    a = AccountFactory()
-    url = reverse("expenses:import_save")
-
+def test_import_save_valid_query_count_equal_for_2_and_6_lines(client_logged, account):
     counts = {}
     expected_total = 0
     for n in (2, 6):
-        data = _save_data(_n_rows(n, run=f"val{n}"), a)
+        rows = _n_rows(n, run=f"val{n}")
         expected_total += n
 
         with CaptureQueriesContext(connection) as ctx:
-            response = client_logged.post(url, data=data)
+            response = _post_save(client_logged, rows, account)
 
         assert response.status_code == 200
         assert Expense.objects.count() == expected_total
@@ -716,57 +571,18 @@ def test_import_save_valid_query_count_equal_for_2_and_6_lines(
     assert counts[2] == counts[6]
 
 
-def test_import_upload_file_control_speaks_the_app_language(main_user, client_logged):
-    url = reverse("expenses:import")
-
-    text = client_logged.get(url).content.decode()
+def test_import_upload_file_control_speaks_the_app_language(client_logged):
+    text = client_logged.get(reverse("expenses:import")).content.decode()
 
     assert "Pasirinkti failą" in text
     assert 'data-empty="Failas nepasirinktas"' in text
     assert re.search(r'<input type="file" name="pdf"[^>]*class="visually-hidden"', text)
 
 
-def _tfoot_rows(text):
-    tfoot = _section(text, "tfoot")
-    return re.findall(r"<tr class=\"main__total\">.*?</tr>", tfoot, re.DOTALL)
-
-
-@pytest.mark.parametrize(
-    "receipt, count, colspan",
-    [
-        pytest.param(_receipt(total=500), 2, 'colspan="3"', id="without_shop_money"),
-        pytest.param(_shop_money_receipt(), 3, 'colspan="4"', id="with_shop_money"),
-    ],
-)
-def test_import_review_tfoot_cells_collapsed(
-    main_user, client_logged, receipt, count, colspan
-):
-    a = AccountFactory()
-
-    text = _post_review(client_logged, a, receipt)
-    rows = _tfoot_rows(text)
-
-    assert len(rows) == count
-    for row in rows:
-        cells = re.findall(r"<td[^>]*>", row)
-        assert len(cells) == 3
-        assert cells[1] == '<td class="main__figure">'
-        assert colspan in cells[-1]
-    assert "<td></td>" not in _section(text, "tfoot")
-
-
-def test_import_review_row_error_colspan_with_shop_money(main_user, client_logged):
-    a = AccountFactory()
-
-    data = _save_data(
-        [{"skip": "on"}],
-        a,
-        shop_money="100",
-        shop_money_line="0",
+def test_import_review_row_error_colspan_with_shop_money(client_logged, account):
+    response = _post_save(
+        client_logged, [{"skip": "on"}], account, shop_money="100", shop_money_line="0"
     )
-
-    url = reverse("expenses:import_save")
-    response = client_logged.post(url, data=data)
 
     text = response.content.decode()
     assert "Parduotuvės pinigų negalima priskirti praleistai eilutei." in text
@@ -779,23 +595,8 @@ def test_import_review_row_error_colspan_with_shop_money(main_user, client_logge
     assert match.group(1) == "8"
 
 
-def test_import_review_row_error_colspan_without_shop_money(main_user):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
-
-    data = _save_data(
-        [
-            {
-                "title": "Naturalus jogurtas VILVI",
-                "price": "5,00",
-                "expense_type": t.pk,
-                "expense_name": n.pk,
-                "keyword": "jogurt",
-            }
-        ],
-        a,
-    )
+def test_import_review_row_error_colspan_without_shop_money(main_user, account, pieno):
+    data = _save_data([_jogurt_row(pieno)], account)
 
     receipt_form = ReviewReceiptForm(user=main_user, data=data)
     assert receipt_form.is_valid()
