@@ -1,28 +1,39 @@
-import pytest
 from hypothesis import example, given
 from hypothesis import strategies as st
 
 from ...templatetags.cell_format import cell_state, cellformat, sign
 
 
-@pytest.mark.parametrize(
-    "value, expect",
-    [
-        (-12, "loss"),
-        (-12.2, "loss"),
-        ("-12.2", "loss"),
-        (0, "gain"),
-        (12, "gain"),
-        (12.2, "gain"),
-        ("12.2", "gain"),
-        ("abc", ""),
-        (None, ""),
-    ],
-)
-def test_sign(value, expect):
-    actual = sign(value)
+@st.composite
+def values_and_signs(draw):
+    """Below zero is a loss, zero and up a gain, as a number or its text; anything
+    that is no number has no sign."""
+    if draw(st.booleans()):
+        return draw(st.none() | st.text(alphabet="abcxyz ?!")), ""
 
-    assert actual == expect
+    below = st.integers(max_value=-1) | st.floats(max_value=-1e-9, min_value=-1e12)
+    from_zero = st.integers(min_value=0) | st.floats(min_value=0, max_value=1e12)
+    number, state = draw(
+        st.tuples(below, st.just("loss")) | st.tuples(from_zero, st.just("gain"))
+    )
+
+    return draw(st.sampled_from([number, str(number)])), state
+
+
+@given(values_and_signs())
+@example((-12, "loss"))
+@example((-12.2, "loss"))
+@example(("-12.2", "loss"))
+@example((0, "gain"))
+@example((12, "gain"))
+@example((12.2, "gain"))
+@example(("12.2", "gain"))
+@example(("abc", ""))
+@example((None, ""))
+def test_sign(case):
+    value, state = case
+
+    assert sign(value) == state
 
 
 def lt_money(cents: int) -> str:
@@ -85,19 +96,32 @@ def test_cellformat(case):
     assert cellformat(value, default) == expect
 
 
-@pytest.mark.parametrize(
-    "value, expect",
-    [
-        (None, "empty"),
-        (0, "empty"),
-        (0.0, "empty"),
-        ("", "empty"),
-        ([], "empty"),
-        (1, ""),
-        (-1, ""),
-        (0.5, ""),
-        ("abc", ""),
-    ],
-)
-def test_cell_state(value, expect):
-    assert cell_state(value) == expect
+@st.composite
+def values_and_cell_states(draw):
+    """An empty or zero value is an empty cell; any other is not."""
+    if draw(st.booleans()):
+        return draw(st.sampled_from([None, 0, 0.0, "", []])), "empty"
+
+    filled = (
+        st.integers().filter(bool)
+        | st.floats().filter(bool)
+        | st.text(min_size=1)
+        | st.lists(st.integers(), min_size=1)
+    )
+    return draw(filled), ""
+
+
+@given(values_and_cell_states())
+@example((None, "empty"))
+@example((0, "empty"))
+@example((0.0, "empty"))
+@example(("", "empty"))
+@example(([], "empty"))
+@example((1, ""))
+@example((-1, ""))
+@example((0.5, ""))
+@example(("abc", ""))
+def test_cell_state(case):
+    value, state = case
+
+    assert cell_state(value) == state

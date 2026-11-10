@@ -1,23 +1,46 @@
 import pytest
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ..validators import title_characters_in, validate_title_slug
 
 
-def test_title_slug_refuses_expanding_character():
-    with pytest.raises(ValidationError) as exc:
-        validate_title_slug("Pienas ½ l")
+def _refusal(title: str) -> tuple[str, list[str]]:
+    try:
+        validate_title_slug(title)
+    except ValidationError as error:
+        return error.code, error.messages
 
-    assert exc.value.messages == ["Pavadinime negali būti „½“."]
-    assert exc.value.code == "expanding_characters"
+    return "", []
 
 
-def test_title_slug_names_each_expanding_character_once_in_order():
-    with pytest.raises(ValidationError) as exc:
-        validate_title_slug("ﬃ ½ ﬃ x")
-
-    assert exc.value.messages == ["Pavadinime negali būti „ﬃ, ½“."]
+@pytest.mark.parametrize(
+    "title, code, messages",
+    [
+        pytest.param(
+            "Pienas ½ l",
+            "expanding_characters",
+            ["Pavadinime negali būti „½“."],
+            id="an_expanding_character",
+        ),
+        pytest.param(
+            "ﬃ ½ ﬃ x",
+            "expanding_characters",
+            ["Pavadinime negali būti „ﬃ, ½“."],
+            id="each_expanding_character_once_in_order",
+        ),
+        pytest.param(
+            "€€€",
+            "empty_slug",
+            ["Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."],
+            id="no_latin_letter_or_digit",
+        ),
+    ],
+)
+def test_title_slug_refuses(title, code, messages):
+    assert _refusal(title) == (code, messages)
 
 
 def test_title_slug_lets_no_expanding_character_through():
@@ -35,18 +58,22 @@ def test_title_slug_lets_no_expanding_character_through():
     assert expanding == []
 
 
-@pytest.mark.parametrize("title", ["Būstas", "Straße", "ąčęėįšųūž", "Druska & Cukrus"])
+@st.composite
+def plain_titles(draw):
+    """Lithuanian and Latin letters, digits, spaces and `&-.`, with one letter or
+    digit at least: no character slugify writes as several."""
+    rest = st.text(alphabet="aząčęėįšųūžAZĄŽß09 &-.", max_size=20)
+
+    return draw(rest) + draw(st.sampled_from("azĄž09")) + draw(rest)
+
+
+@given(plain_titles())
+@example("Būstas")
+@example("Straße")
+@example("ąčęėįšųūž")
+@example("Druska & Cukrus")
 def test_title_slug_accepts_titles_without_expanding_characters(title):
-    validate_title_slug(title)
-
-
-def test_title_slug_empty_slug_message_unchanged():
-    with pytest.raises(ValidationError) as exc:
-        validate_title_slug("€€€")
-
-    assert exc.value.messages == [
-        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
-    ]
+    assert _refusal(title) == ("", [])
 
 
 @pytest.mark.parametrize(

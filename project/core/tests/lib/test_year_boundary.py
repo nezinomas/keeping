@@ -1,7 +1,9 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 
 import pytest
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib.year_boundary import YearBoundary
 
@@ -57,31 +59,43 @@ def test_days_elapsed_counts_to_today_or_to_the_end_of_the_year(year, today, exp
     assert YearBoundary(year=year, today=today).days_elapsed == expect
 
 
-@pytest.mark.parametrize(
-    "year, today, expect",
-    [
-        pytest.param(2026, date(2026, 7, 31), 31, id="this_week_in_the_current_year"),
-        # 52, not the 53 an "is it leap / does it start on a Wednesday" rule gives
-        pytest.param(
-            2025, date(2026, 7, 31), 52, id="iso_week_count_of_a_finished_year"
-        ),
-        pytest.param(2020, date(2026, 7, 31), 53, id="53_in_a_year_with_53_weeks"),
-        # 2027-01-01 is week 53 of ISO year 2026: the raw number would divide by 53
-        pytest.param(
-            2027, date(2027, 1, 1), 1, id="one_in_a_january_iso_counts_as_last_year"
-        ),
-        # 2024-12-30 is week 1 of ISO year 2025, and 2024 has 52 weeks
-        pytest.param(
-            2024,
-            date(2024, 12, 30),
-            52,
-            id="full_count_in_a_december_iso_counts_as_next_year",
-        ),
-        pytest.param(2027, date(2026, 6, 15), 0, id="none_of_a_coming_year"),
-    ],
-)
-def test_weeks_elapsed_counts_iso_weeks_inside_the_year(year, today, expect):
-    assert YearBoundary(year=year, today=today).weeks_elapsed == expect
+def _weeks_reached(year: int, today: date) -> int:
+    """The ISO weeks of `year` its days up to today touch; a start inside last ISO
+    year's week counts as week one."""
+    last = min(today, date(year, 12, 31))
+    days = [
+        date(year, 1, 1) + timedelta(n)
+        for n in range((last - date(year, 1, 1)).days + 1)
+    ]
+    if not days:
+        return 0
+
+    weeks = {day.isocalendar().week for day in days if day.isocalendar().year == year}
+    return len(weeks) or 1
+
+
+@st.composite
+def years_and_days(draw):
+    today = draw(st.dates(min_value=date(2000, 1, 1), max_value=date(2040, 12, 31)))
+    year = today.year + draw(st.sampled_from([-2, -1, 0, 0, 0, 1]))
+
+    return year, today, _weeks_reached(year, today)
+
+
+@given(years_and_days())
+@example((2026, date(2026, 7, 31), 31))
+# 52, not the 53 an "is it leap / does it start on a Wednesday" rule gives
+@example((2025, date(2026, 7, 31), 52))
+@example((2020, date(2026, 7, 31), 53))
+# 2027-01-01 is week 53 of ISO year 2026: the raw number would divide by 53
+@example((2027, date(2027, 1, 1), 1))
+# 2024-12-30 is week 1 of ISO year 2025, and 2024 has 52 weeks
+@example((2024, date(2024, 12, 30), 52))
+@example((2027, date(2026, 6, 15), 0))
+def test_weeks_elapsed_counts_iso_weeks_inside_the_year(case):
+    year, today, weeks = case
+
+    assert YearBoundary(year=year, today=today).weeks_elapsed == weeks
 
 
 @pytest.mark.parametrize(
@@ -216,19 +230,23 @@ def test_this_years_day_matches_month_and_day(year, day, expect):
 
 
 @pytest.mark.parametrize(
-    "year, expect",
+    "year, span, previous_span",
     [
         pytest.param(
-            2026, (date(2026, 1, 1), date(2026, 8, 11)), id="new_year_to_today"
+            2026,
+            (date(2026, 1, 1), date(2026, 8, 11)),
+            (date(2025, 1, 1), date(2025, 8, 11)),
+            id="new_year_to_today_and_a_year_back",
         ),
-        pytest.param(2025, (date(2025, 1, 1), date(2025, 12, 31)), id="finished_year"),
+        pytest.param(
+            2025,
+            (date(2025, 1, 1), date(2025, 12, 31)),
+            (date(2024, 1, 1), date(2024, 12, 31)),
+            id="whole_finished_years",
+        ),
     ],
 )
-def test_span_ends_today_only_while_the_year_runs(year, expect):
-    assert YearBoundary(year=year, today=date(2026, 8, 11)).span == expect
+def test_spans_run_from_new_year_to_the_end_dates(year, span, previous_span):
+    boundary = YearBoundary(year=year, today=date(2026, 8, 11))
 
-
-def test_previous_span_stops_on_the_same_day_a_year_back():
-    boundary = YearBoundary(year=2026, today=date(2026, 8, 11))
-
-    assert boundary.previous_span == (date(2025, 1, 1), date(2025, 8, 11))
+    assert (boundary.span, boundary.previous_span) == (span, previous_span)

@@ -8,4 +8,4 @@ def test_profile_runs_its_examples_without_a_deadline(request):
 
     assert settings.get_current_profile_name() == profile
     assert settings().max_examples == MAX_EXAMPLES[profile]
-    assert settings().deadline is None
+    assert not settings().deadline

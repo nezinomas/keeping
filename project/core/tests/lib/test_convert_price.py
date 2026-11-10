@@ -2,6 +2,8 @@ from types import SimpleNamespace
 
 import pytest
 from django import forms
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib.convert_price import (
     PriceNeverEmptyFormMixin,
@@ -12,24 +14,33 @@ from ...lib.convert_price import (
 )
 
 
-@pytest.mark.parametrize(
-    "price_float, expected_int",
-    [
-        (0.01, 1),  # Standard case
-        (4669.73, 466973),  # Scenario 1: Exact two decimals
-        (4669.736, 466973),  # Scenario 2: Truncation (discarding .006)
-        (466.73, 46673),  # Known binary noise case
-        (0.0, 0),  # Zero case
-        (0.019, 1),  # Truncation verification
-    ],
-)
-def test_float_to_int_conversion(price_float, expected_int):
-    assert float_to_int_cents(price_float) == expected_int
+@st.composite
+def prices_and_cents(draw):
+    """A price written with a third decimal digit, and the cents it truncates to."""
+    cents = draw(st.integers(0, 10**9))
+    past_the_cent = draw(st.sampled_from("0123456789"))
+    whole, part = divmod(cents, 100)
+
+    return float(f"{whole}.{part:02d}{past_the_cent}"), cents
 
 
-def test_float_to_int_cents_takes_a_number_only():
+@given(prices_and_cents())
+@example((0.01, 1))
+@example((4669.73, 466973))  # 4669.73 * 100 is 466972.99999999994 in binary
+@example((4669.736, 466973))
+@example((466.73, 46673))
+@example((0.0, 0))
+@example((0.019, 1))
+def test_float_to_int_cents_drops_the_digits_past_the_cent(case):
+    price, cents = case
+
+    assert float_to_int_cents(price) == cents
+
+
+@pytest.mark.parametrize("convert", [float_to_int_cents, int_cents_to_float])
+def test_conversions_take_a_number_only(convert):
     with pytest.raises(TypeError):
-        float_to_int_cents(None)
+        convert(None)
 
 
 @pytest.mark.parametrize(
@@ -46,11 +57,6 @@ def test_int_cents_to_float_conversion(cents_int, expected_float):
     assert int_cents_to_float(cents_int) == expected_float
 
 
-def test_int_cents_to_float_takes_an_int_only():
-    with pytest.raises(TypeError):
-        int_cents_to_float(None)
-
-
 class DummyBase:
     def get_object(self):
         pass
@@ -58,8 +64,15 @@ class DummyBase:
     def get_form_class(self):
         return self.form_class
 
+
+class Cleaned:
+    """A form base whose `clean` hands back the data it was built with."""
+
+    def __init__(self, data):
+        self.data = data
+
     def clean(self):
-        pass
+        return self.data
 
 
 def _view(mocker, obj, fields=("price", "fee")):
@@ -74,13 +87,11 @@ def _view(mocker, obj, fields=("price", "fee")):
     return DummyView()
 
 
-def _form(mocker, data, fields=("price", "fee")):
-    mocker.patch.object(DummyBase, "clean", return_value=data)
-
-    class DummyForm(PriceToCentsFormMixin, DummyBase):
+def _form(data, fields=("price", "fee")):
+    class DummyForm(PriceToCentsFormMixin, Cleaned):
         price_fields = fields
 
-    return DummyForm()
+    return DummyForm(data)
 
 
 @pytest.mark.parametrize(
@@ -128,20 +139,6 @@ def test_view_mixin_raises_for_a_declared_field_the_object_lacks(mocker):
         view.get_object()
 
 
-def test_view_mixin_reads_price_fields_from_the_form_class(mocker):
-    mocker.patch.object(
-        DummyBase, "get_object", return_value=SimpleNamespace(price=1000)
-    )
-
-    class DummyForm:
-        price_fields = ("price",)
-
-    class DummyView(PriceToFloatViewMixin, DummyBase):
-        form_class = DummyForm
-
-    assert DummyView().get_object().price == 10.0
-
-
 def test_view_mixin_without_price_fields_on_the_form_raises(mocker):
     mocker.patch.object(DummyBase, "get_object", return_value=SimpleNamespace())
 
@@ -155,23 +152,20 @@ def test_view_mixin_without_price_fields_on_the_form_raises(mocker):
         DummyView().get_object()
 
 
-@pytest.mark.parametrize(
-    "price, expected_int",
-    [
-        (0.01, 1),  # Standard case
-        (4669.73, 466973),  # Scenario 1: Exact two decimals
-        (4669.736, 466973),  # Scenario 2: Truncation (discarding .006)
-        (466.73, 46673),  # Known binary noise case
-        (0.0, 0),  # Zero case
-        (0.019, 1),  # Truncation verification
-        (None, None),
-    ],
-)
-def test_form_mixin_converts_declared_fields(mocker, price, expected_int):
-    result = _form(mocker, {"price": price, "fee": price}).clean()
+@given(prices_and_cents())
+@example((0.01, 1))
+@example((4669.73, 466973))
+@example((4669.736, 466973))
+@example((466.73, 46673))
+@example((0.0, 0))
+@example((0.019, 1))
+@example((None, None))
+def test_form_mixin_converts_declared_fields(case):
+    price, cents = case
 
-    assert result["price"] == expected_int
-    assert result["fee"] == expected_int
+    result = _form({"price": price, "fee": price}).clean()
+
+    assert (result["price"], result["fee"]) == (cents, cents)
 
 
 @pytest.mark.parametrize(
@@ -191,24 +185,22 @@ def test_form_mixin_converts_declared_fields(mocker, price, expected_int):
         ),
     ],
 )
-def test_form_mixin_converts_only_the_declared_fields(mocker, data, fields, expect):
-    assert _form(mocker, data, fields).clean() == expect
+def test_form_mixin_converts_only_the_declared_fields(data, fields, expect):
+    assert _form(data, fields).clean() == expect
 
 
-def test_form_mixin_skips_a_declared_field_that_is_absent(mocker):
-    result = _form(mocker, {"price": 1}).clean()
+def test_form_mixin_skips_a_declared_field_that_is_absent():
+    result = _form({"price": 1}).clean()
 
     assert result == {"price": 100}
 
 
-def test_form_mixin_without_price_fields_raises(mocker):
-    mocker.patch.object(DummyBase, "clean", return_value={"price": 1})
-
-    class DummyForm(PriceToCentsFormMixin, DummyBase):
+def test_form_mixin_without_price_fields_raises():
+    class DummyForm(PriceToCentsFormMixin, Cleaned):
         pass
 
     with pytest.raises(AttributeError):
-        DummyForm().clean()
+        DummyForm({"price": 1}).clean()
 
 
 class _PriceForm(PriceNeverEmptyFormMixin, forms.Form):

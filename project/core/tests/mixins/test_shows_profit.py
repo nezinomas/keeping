@@ -21,51 +21,50 @@ SHAPES = [
 ]
 
 
-def _agree(model):
+@pytest.mark.parametrize(
+    "fund_factory, balance_factory, fund_field, model",
+    [
+        pytest.param(
+            SavingTypeFactory,
+            SavingBalanceFactory,
+            "saving_type",
+            SavingBalance,
+            id="savings",
+        ),
+        pytest.param(
+            PensionTypeFactory,
+            PensionBalanceFactory,
+            "pension_type",
+            PensionBalance,
+            id="pensions",
+        ),
+    ],
+)
+def test_balance_property_and_q_agree(fund_factory, balance_factory, fund_field, model):
+    # every fund first: saving one resyncs the balance rows already made
+    funds = [
+        fund_factory(title=f"F{i}", closed=closed)
+        for i, (*_, closed) in enumerate(SHAPES)
+    ]
+    for fund, (worth, since, sold, _closed) in zip(funds, SHAPES, strict=True):
+        balance_factory(
+            **{fund_field: fund},
+            year=1999,
+            market_value=worth,
+            sold_since_check=since,
+            sold=sold,
+        )
     rows = list(model.objects.all())
+    every = {row.pk for row in rows}
     shown = {row.pk for row in rows if row.shows_profit}
 
-    assert {row.pk for row in rows} - shown
     assert shown
+    assert every - shown
     assert (
         set(model.objects.filter(model.shows_profit_q()).values_list("pk", flat=True))
         == shown
     )
     assert (
         set(model.objects.exclude(model.shows_profit_q()).values_list("pk", flat=True))
-        == {row.pk for row in rows} - shown
+        == every - shown
     )
-
-
-def test_saving_balance_property_and_q_agree():
-    funds = [
-        SavingTypeFactory(title=f"F{i}", closed=closed)
-        for i, (*_, closed) in enumerate(SHAPES)
-    ]
-    for fund, (worth, since, sold, _closed) in zip(funds, SHAPES, strict=True):
-        SavingBalanceFactory(
-            saving_type=fund,
-            year=1999,
-            market_value=worth,
-            sold_since_check=since,
-            sold=sold,
-        )
-
-    _agree(SavingBalance)
-
-
-def test_pension_balance_property_and_q_agree():
-    funds = [
-        PensionTypeFactory(title=f"P{i}", closed=closed)
-        for i, (*_, closed) in enumerate(SHAPES)
-    ]
-    for fund, (worth, since, sold, _closed) in zip(funds, SHAPES, strict=True):
-        PensionBalanceFactory(
-            pension_type=fund,
-            year=1999,
-            market_value=worth,
-            sold_since_check=since,
-            sold=sold,
-        )
-
-    _agree(PensionBalance)
