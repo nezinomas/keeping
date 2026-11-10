@@ -57,12 +57,12 @@ def test_debt_return_list_with_data(client_logged, debt_type, other_factory, rem
     assert '">Sąskaita</th>' in content
     assert '">Pastaba</th>' in content
 
-    assert "1999-01-02" in content
+    assert '<td class="text-center">1999-01-02</td>' in content
     assert '<td class="text-right cell-padding">5.432,10</td>' in content
     assert '<td class="text-left cell-padding">Account1</td>' in content
-    assert remark in content
+    assert f'<td class="text-left">{remark}</td>' in content
 
-    assert "6.666,66" not in content
+    assert '<td class="text-right cell-padding">6.666,66</td>' not in content
 
 
 @pytest.mark.parametrize("url_name", ["debts:return_update", "debts:return_delete"])
