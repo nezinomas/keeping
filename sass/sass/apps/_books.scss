@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 
 // Books — the markup only this app renders; the rest comes from the skin.
@@ -19,8 +20,8 @@
     }
 
     // the dates are whole everywhere (the skin's .main__date); their headers only
-    // above 768px, where both fit
-    @media only screen and (min-width: 768px) {
+    // above a phone, where both fit
+    @include above-phone {
         .date-col {
             white-space: nowrap;
         }

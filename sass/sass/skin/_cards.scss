@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 @use "tokens";
 
@@ -16,7 +17,7 @@
         gap: 2rem var(--card-gap);
         padding: calc($gap * 1.2) calc($gap * 0.9) calc($gap * 1.1);
 
-        @media only screen and (min-width: 768px) {
+        @include above-phone {
             --cols: 3;
             --card-gap: 2rem;
         }
@@ -60,7 +61,7 @@
 
     // `justify-content` centres the tracks, not a short last row, so its Cards move
     // across half the room it leaves, counted in one breakpoint's columns
-    @media only screen and (max-width: 767px) {
+    @include phone {
         // two columns, one Card over: half a column across
         .stat-cards:has(.trend-card:nth-child(4)) {
             .trend-card:nth-child(2n + 1):last-child {
@@ -69,17 +70,19 @@
         }
     }
 
-    @media only screen and (min-width: 768px) and (max-width: 991px) {
-        .stat-cards:has(.trend-card:nth-child(4)) {
-            // three columns, one Card over: a whole column across
-            .trend-card:nth-child(3n + 1):last-child {
-                transform: translateX(calc(100% + var(--card-gap)));
-            }
+    @include above-phone {
+        @media only screen and (max-width: 991px) {
+            .stat-cards:has(.trend-card:nth-child(4)) {
+                // three columns, one Card over: a whole column across
+                .trend-card:nth-child(3n + 1):last-child {
+                    transform: translateX(calc(100% + var(--card-gap)));
+                }
 
-            // three columns, two Cards over: half a column, both of them
-            .trend-card:nth-child(3n + 1):nth-last-child(2),
-            .trend-card:nth-child(3n + 1):nth-last-child(2) ~ .trend-card {
-                transform: translateX(calc(50% + var(--card-gap) / 2));
+                // three columns, two Cards over: half a column, both of them
+                .trend-card:nth-child(3n + 1):nth-last-child(2),
+                .trend-card:nth-child(3n + 1):nth-last-child(2) ~ .trend-card {
+                    transform: translateX(calc(50% + var(--card-gap) / 2));
+                }
             }
         }
     }
@@ -98,7 +101,7 @@
 
             // a long word is wider than a phone's Card, and it overflows into the
             // label of the Card beside it rather than wrapping
-            @media only screen and (max-width: 767px) {
+            @include phone {
                 overflow-wrap: anywhere;
             }
         }
@@ -118,7 +121,7 @@
 
             // three Cards keep one row on a phone; 4% under Bahnschrift's fit, as
             // Barlow off Windows is that much wider, else the figure ellipsises
-            @media only screen and (max-width: 767px) {
+            @include phone {
                 &:is(
                     .stat-cards:has(.trend-card:nth-child(3)):not(:has(.trend-card:nth-child(4))) *
                 ) {

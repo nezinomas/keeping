@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 
 // Import receipt — the Open line highlight, the only colour on this page.
@@ -37,10 +38,8 @@
         grid-row: 2;
         align-self: start;
     }
-}
 
-@media only screen and (max-width: 767px) {
-    .import-upload {
+    @include phone {
         grid-auto-flow: row;
         grid-template-rows: none;
         grid-template-columns: 1fr;

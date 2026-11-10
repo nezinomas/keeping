@@ -1,4 +1,5 @@
 @use "sass:list";
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 
 .paper-skin {
@@ -155,7 +156,7 @@
         &__spacer {
             flex: 1;
 
-            @media only screen and (max-width: 767px) {
+            @include phone {
                 display: none;
             }
         }

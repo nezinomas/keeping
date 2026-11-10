@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 @use "tokens";
 
@@ -12,7 +13,7 @@
     border-collapse: separate;
     border-spacing: 0;
 
-    @media only screen and (min-width: 768px) {
+    @include above-phone {
         min-width: 72rem;
     }
 
@@ -23,7 +24,7 @@
         left: 0;
         z-index: 1;
 
-        @media only screen and (min-width: 768px) {
+        @include above-phone {
             width: 12rem;
         }
     }
