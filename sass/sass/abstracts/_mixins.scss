@@ -61,3 +61,13 @@ $phone-breakpoint: 768px;
         @content;
     }
 }
+
+
+// a wide screen is at least this
+$wide-breakpoint: 992px;
+
+@mixin wide {
+    @media only screen and (min-width: $wide-breakpoint) {
+        @content;
+    }
+}

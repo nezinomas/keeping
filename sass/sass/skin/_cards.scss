@@ -23,7 +23,7 @@
         }
 
         // six is the widest set any tab builds, and the tight gap fits it at 992px
-        @media only screen and (min-width: 992px) {
+        @include wide {
             --cols: 6;
             --card-gap: 1.25rem;
 
