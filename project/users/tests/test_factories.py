@@ -7,17 +7,13 @@ from .factories import UserFactory
 pytestmark = pytest.mark.django_db
 
 
-def test_user_factory_journal_takes_the_site_language():
+@pytest.mark.parametrize("language", ["lt", "en"])
+def test_user_factory_journal_takes_the_site_language(settings, language):
+    settings.LANGUAGE_CODE = language
+
     user = UserFactory(username="fresh", email="fresh@fresh.com")
 
-    assert user.journal.lang == "lt"
-
-
-@override_settings(LANGUAGE_CODE="en")
-def test_user_factory_journal_reads_language_code():
-    user = UserFactory(username="fresh", email="fresh@fresh.com")
-
-    assert user.journal.lang == "en"
+    assert user.journal.lang == language
 
 
 @override_settings(LANGUAGE_CODE="en")

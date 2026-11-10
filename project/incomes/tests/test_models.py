@@ -53,6 +53,11 @@ def test_income_type_unique_for_journals(main_user, second_user):
     IncomeType.objects.create(title="T", journal=main_user.journal)
     IncomeType.objects.create(title="T", journal=second_user.journal)
 
+    assert [
+        list(journal.income_types.values_list("title", flat=True))
+        for journal in (main_user.journal, second_user.journal)
+    ] == [["T"], ["T"]]
+
 
 def test_income_type_slug_unique_per_journal():
     obj1 = IncomeTypeFactory(title="Būstas")
