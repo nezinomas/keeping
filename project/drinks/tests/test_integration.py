@@ -276,3 +276,69 @@ class DrinksCalendarTooltip(Browser):
 
         # the skin lifts the tooltip 8px off its day
         assert placed == {"scrolled": 60, "off_centre": 0, "gap_above": 8}
+
+
+@pytest.mark.webtest
+class DrinksOverviewOnAPhone(Browser):
+    # the scrolling box around a table or the calendar's day columns
+    BOX = "document.querySelector(arguments[0]).parentElement"
+
+    def test_breakdown_scrolls_inside_its_panel_not_the_page(self):
+        # five-figure totals make the breakdown wider than a 360 panel
+        DrinkFactory(stdav=50_000)
+        self.open_at("/drinks/", 360)
+
+        overflow = self.browser.execute_script(
+            f"const box = {self.BOX};"
+            " const page = document.documentElement;"
+            " return {page_overflow: page.scrollWidth - page.clientWidth,"
+            "  box_scrolls: getComputedStyle(box).overflowX,"
+            "  table_wider: box.scrollWidth > box.clientWidth};",
+            "#breakdown table",
+        )
+
+        assert overflow == {
+            "page_overflow": 0,
+            "box_scrolls": "auto",
+            "table_wider": True,
+        }
+
+    def test_box_fades_its_edge_only_while_more_lies_past_it(self):
+        DrinkFactory(stdav=50_000)
+        for inside, width, scroll_to_end, fade in (
+            ("#breakdown table", 360, False, True),
+            ("#breakdown table", 360, True, False),
+            ("#breakdown table", 1500, False, False),
+            (".heat-daycol", 360, False, True),
+        ):
+            with self.subTest(inside=inside, width=width, scroll_to_end=scroll_to_end):
+                self.open_at("/drinks/", width)
+                faded = self.browser.execute_async_script(
+                    f"const box = {self.BOX};"
+                    " const [, toEnd, done] = arguments;"
+                    " if (toEnd) box.scrollLeft = box.scrollWidth;"
+                    " requestAnimationFrame(() => requestAnimationFrame(() =>"
+                    "  done(getComputedStyle(box).maskImage !== 'none')));",
+                    inside,
+                    scroll_to_end,
+                )
+
+                assert faded is fade
+
+
+@pytest.mark.webtest
+class DrinksDataOnAPhone(Browser):
+    def test_quantity_keeps_its_unit_on_its_line(self):
+        DrinkFactory()
+        self.open_at("/drinks/", 360)
+        self.click_tab("data")
+
+        lines = self.browser.execute_script(
+            "const range = document.createRange();"
+            " range.selectNodeContents("
+            "  document.querySelector('.main tbody tr').cells[2]);"
+            " const tops = [...range.getClientRects()].map(r => Math.round(r.top));"
+            " return [range.toString().trim(), new Set(tops).size];"
+        )
+
+        assert lines == ["0,4 vnt", 1]
