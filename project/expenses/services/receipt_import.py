@@ -3,8 +3,8 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 from django.db import transaction
+from django.db.models.signals import post_save
 
-from ...bookkeeping.signals import entry_saved_signal
 from ..keywords import normalise_keyword
 from ..models import DEFAULT_QUANTITY, Expense, ExpenseKeyword
 from ..receipts.receipt import ReceiptLine
@@ -102,7 +102,7 @@ class ReceiptImport:
             )
 
             if expenses:
-                entry_saved_signal(sender=Expense, instance=expenses[0])
+                post_save.send(sender=Expense, instance=expenses[0], created=True)
 
             cls._save_keywords(reviewed, journal)
 

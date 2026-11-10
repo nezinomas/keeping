@@ -3,6 +3,7 @@ from typing import NamedTuple
 
 import pytest
 from django.db import connection
+from django.db.models.signals import post_save
 from django.test.utils import CaptureQueriesContext
 
 from ....accounts.models import Account, AccountBalance
@@ -17,7 +18,10 @@ from ....bookkeeping.tests.helper import quiet_build
 from ....debts.models import Debt
 from ....debts.services.model_services import DebtModelService
 from ....debts.tests.factories import BorrowFactory, BorrowReturnFactory
-from ....expenses.tests.factories import ExpenseFactory
+from ....expenses.models import Expense
+from ....expenses.receipts.receipt import ReceiptLine
+from ....expenses.services.receipt_import import ReceiptImport, ReviewedLine
+from ....expenses.tests.factories import ExpenseFactory, ExpenseNameFactory
 from ....incomes.models import Income
 from ....incomes.tests.factories import IncomeFactory
 from ....journals.models import Journal
@@ -177,6 +181,40 @@ def test_deleting_a_debt_syncs_the_accounts_once_for_all_its_returns(listen):
     debt.delete()
 
     assert reached() == ["accounts"]
+
+
+def test_a_receipt_import_sends_one_expense_save_to_every_receiver(listen, main_user):
+    lines = tuple(
+        ReviewedLine(
+            line=ReceiptLine(title=title, amount=1, price=100, is_deposit=False),
+            expense_name=ExpenseNameFactory(title=title),
+            keyword=title,
+            carries_shop_money=False,
+        )
+        for title in ("Bread", "Milk")
+    )
+    account = AccountFactory()
+    sent = []
+
+    def probe(sender, instance, created, **kwargs):
+        sent.append(created)
+
+    post_save.connect(probe, sender=Expense)
+    reached = listen()
+
+    try:
+        ReceiptImport.save(
+            lines=lines,
+            shop_money=0,
+            date=EARLIER["date"],
+            account=account,
+            journal=main_user.journal,
+        )
+    finally:
+        post_save.disconnect(probe, sender=Expense)
+
+    assert sent == [True]
+    assert reached() == WIRING["Expense"].on_save
 
 
 def test_deleting_a_debt_costs_the_same_queries_for_2_and_6_returns():
