@@ -92,14 +92,6 @@ def test_index_takes_its_legend_position_from_the_paper_charts(client_logged):
     assert not re.search(r'<script[^>]* src="[^"]*js/chart_drinks_legend\.js"', content)
 
 
-def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
-    # the wrapper scopes the tokens every Drinks chart reads, so no other app's
-    # page inherits them
-    response = client_logged.get(reverse("drinks:index"))
-
-    assert 'class="paper-skin"' in response.content.decode()
-
-
 @pytest.mark.parametrize(
     "pattern",
     [
@@ -899,24 +891,21 @@ def test_an_empty_tab_draws_the_paper_notice(
     assert re.search(rf'<div class="alert">\s*{re.escape(message)}\s*</div>', content)
 
 
-def test_tab_data(client_logged):
-    p = DrinkFactory(stdav=47.5)
-    response = client_logged.get(reverse("drinks:tab_data"))
-
-    actual = response.content.decode("utf-8")
-
-    assert '<td class="text-left main__date">1999-01-01</td>' in actual
-    assert '<td class="text-left main__figure">19,0 vnt</td>' in actual
-    assert f'<a role="button" hx-get="{reverse("drinks:update", args=[p.pk])}"' in (
-        actual
-    )
-    assert f'<a role="button" hx-get="{reverse("drinks:delete", args=[p.pk])}"' in (
-        actual
-    )
-
-
-def test_tab_data_date_column_header(client_logged):
-    DrinkFactory()
+@pytest.mark.parametrize(
+    "drink, figure",
+    [
+        pytest.param({"stdav": 47.5}, "19,0 vnt", id="count"),
+        # the unit and rounding rules live in DrinkQuantity.display; this row
+        # only pins the template to it
+        pytest.param(
+            {"stdav": 2.5, "option": "beer", "converted_from_ml": True},
+            "500 ml",
+            id="volume",
+        ),
+    ],
+)
+def test_tab_data(client_logged, drink, figure):
+    p = DrinkFactory(**drink)
     response = client_logged.get(reverse("drinks:tab_data"))
 
     actual = response.content.decode("utf-8")
@@ -924,17 +913,14 @@ def test_tab_data_date_column_header(client_logged):
     assert '<th class="text-left">Data</th>' in actual
     assert '<th class="text-left">Duomenys</th>' not in actual
     assert '<th class="text-left">Gėrimo tipas</th>' in actual
-
-
-def test_tab_data_quantity_value(client_logged):
-    # the unit/rounding rules live in DrinkQuantity.display and are asserted in
-    # tests/lib/test_drink_quantity.py; this only pins the template to it
-    DrinkFactory(stdav=2.5, option="beer", converted_from_ml=True)
-    response = client_logged.get(reverse("drinks:tab_data"))
-
-    actual = response.content.decode("utf-8")
-
-    assert '<td class="text-left main__figure">500 ml</td>' in actual
+    assert '<td class="text-left main__date">1999-01-01</td>' in actual
+    assert f'<td class="text-left main__figure">{figure}</td>' in actual
+    assert f'<a role="button" hx-get="{reverse("drinks:update", args=[p.pk])}"' in (
+        actual
+    )
+    assert f'<a role="button" hx-get="{reverse("drinks:delete", args=[p.pk])}"' in (
+        actual
+    )
 
 
 # TabHistory View

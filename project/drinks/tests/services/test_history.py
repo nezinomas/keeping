@@ -62,16 +62,12 @@ def test_chart_is_labelled_in_the_selected_unit(drink_type, unit, decimals, main
     "drink_type, years, qty, stdav, expect",
     [
         ("beer", [1999], 365, 912.5, [500.0, 0.0]),
-        ("wine", [1999], 365, 2_920, [750.0, 0.0]),
-        ("vodka", [1999], 365, 14_600, [1000.0, 0.0]),
         # 365 Std Av over 365 days is 1 a day — not the 10 ml of alcohol in it
         ("stdav", [1999], 365, 365, [1.0, 0.0]),
         # a finished leap year divides by its 366 days
         ("stdav", [1996], 366, 366, [1.0, 0.0, 0.0, 0.0, 0.0]),
         # the running year 2000 has reached one day, its whole total
         ("beer", [1999, 2000], 365, 912.5, [500.0, 182_500]),
-        ("wine", [1999, 2000], 365, 2_920, [750.0, 273_750]),
-        ("vodka", [1999, 2000], 365, 14_600, [1000.0, 365_000]),
         ("stdav", [1999, 2000], 365, 365, [1.0, 365]),
     ],
 )

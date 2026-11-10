@@ -29,40 +29,17 @@ def test_resolve_falls_back_to_the_default_for_an_unknown_tab(raw, default):
     assert TABS.resolve(raw, default).name == default
 
 
-@pytest.mark.parametrize(
-    "name, expect",
-    [
-        ("index", "reloadIndex"),
-        ("data", "reloadData"),
-        ("history", "reloadHistory"),
-        ("trends", "reloadTrends"),
-        ("risk", "reloadRisk"),
-        ("habits", "reloadHabits"),
-    ],
-)
-def test_reload_trigger(name, expect):
-    assert TABS[name].reload_trigger == expect
+def test_each_tab_declares_its_trigger_url_and_title_in_nav_order():
+    actual = [(tab.name, tab.reload_trigger, tab.url, str(tab.title)) for tab in TABS]
 
-
-def test_every_tab_has_a_distinct_trigger():
-    triggers = [tab.reload_trigger for tab in TABS]
-
-    assert len(set(triggers)) == len(TABS)
-
-
-@pytest.mark.parametrize(
-    "name, expect",
-    [
-        ("index", "/drinks/index/"),
-        ("data", "/drinks/data/"),
-        ("history", "/drinks/history/"),
-        ("trends", "/drinks/trends/"),
-        ("risk", "/drinks/risk/"),
-        ("habits", "/drinks/habits/"),
-    ],
-)
-def test_url_resolves_for_every_tab(name, expect):
-    assert TABS[name].url == expect
+    assert actual == [
+        ("index", "reloadIndex", "/drinks/index/", "Apžvalga"),
+        ("trends", "reloadTrends", "/drinks/trends/", "Tendencijos"),
+        ("habits", "reloadHabits", "/drinks/habits/", "Įpročiai"),
+        ("risk", "reloadRisk", "/drinks/risk/", "Rizikos"),
+        ("history", "reloadHistory", "/drinks/history/", "Istorija"),
+        ("data", "reloadData", "/drinks/data/", "Duomenys"),
+    ]
 
 
 @pytest.mark.parametrize(
@@ -74,25 +51,6 @@ def test_url_resolves_for_every_tab(name, expect):
 )
 def test_form_url_carries_the_tab(url_name, expect):
     assert str(TABS["risk"].form_url(url_name)) == expect
-
-
-@pytest.mark.parametrize(
-    "name, expect",
-    [
-        ("index", "Apžvalga"),
-        ("trends", "Tendencijos"),
-        ("habits", "Įpročiai"),
-        ("risk", "Rizikos"),
-        ("history", "Istorija"),
-        ("data", "Duomenys"),
-    ],
-)
-def test_title_is_translated(name, expect):
-    assert str(TABS[name].title) == expect
-
-
-def test_the_tabs_are_declared_in_the_order_the_nav_draws_them():
-    assert NAMES == ("index", "trends", "habits", "risk", "history", "data")
 
 
 @pytest.mark.parametrize("name", ["index", "trends", "history"])
