@@ -1,0 +1,9 @@
+// `.button-secondary` is still shared, so the skin adjusts it here, the signal
+// that it is ready to fork.
+
+// Import's Nuskaityti and Išsaugoti at the height of the form-control inputs
+// beside them
+#upload .button-secondary,
+#review .button-secondary {
+    padding: 0.35rem 0.75rem;
+}

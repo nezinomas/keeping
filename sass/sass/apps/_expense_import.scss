@@ -60,13 +60,6 @@
     margin-bottom: 2rem;
 }
 
-// Nuskaityti and Išsaugoti at the height of the form-control inputs beside
-// them, without touching the shared button mixin
-#upload .button-secondary,
-#review .button-secondary {
-    padding: 0.35rem 0.75rem;
-}
-
 #review input[name$="-amount"],
 #review input[name$="-price"] {
     text-align: right;

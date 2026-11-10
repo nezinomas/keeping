@@ -28,6 +28,8 @@
 // 5. The skin — tokens first, so its mixins exist for the partials after them
 @use 'skin/tokens';
 @use 'skin/fonts';
+// as *: its default namespace would clash with components/buttons'
+@use 'skin/buttons' as *;
 @use 'skin/notice';
 @use 'skin/sheet';
 @use 'skin/panel';
