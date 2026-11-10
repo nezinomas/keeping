@@ -30,7 +30,6 @@ def _table(model):
     )
 
 
-# purchase -> account balance
 def test_fee_only_purchase_leaves_the_account_untouched():
     account = AccountFactory(title="SEB")
     IncomeFactory(account=account, price=1000)
@@ -76,7 +75,6 @@ def test_one_account_paying_two_saving_types_is_debited_both_prices():
     assert _account_balance(account).expenses == 800
 
 
-# profit, end to end
 def test_profit_subtracts_the_fee_once():
     saving_type = SavingTypeFactory(title="Fund")
     SavingFactory(saving_type=saving_type, price=200, fee=3)
@@ -133,7 +131,6 @@ def test_finbee_fee_only_rows_paid_from_two_accounts():
     assert saving.profit_proc == 0.0
 
 
-# switches, journals, types
 def test_switch_with_a_fee_touches_no_account():
     SavingChangeFactory(price=100, fee=5)
 
@@ -171,7 +168,6 @@ def test_saving_a_saving_type_leaves_every_balance_unchanged():
     assert _table(SavingBalance) == savings
 
 
-# fee charged to the account
 @pytest.mark.parametrize(
     "price, fee, expect",
     [
@@ -257,7 +253,6 @@ def test_switching_a_type_re_syncs_only_its_own_journal(main_user, second_user, 
     assert _account_balance(theirs).expenses == 1
 
 
-# a fresh re-sync agrees with signals
 def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
     seb = AccountFactory(title="SEB")
     ib = AccountFactory(title="IB")
@@ -280,7 +275,6 @@ def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
     assert _table(SavingBalance) == savings
 
 
-# query counts
 def _purchases_of_both_fee_sources(count):
     for i in range(count):
         fee_source = (

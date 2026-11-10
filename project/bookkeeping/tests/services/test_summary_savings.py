@@ -60,38 +60,35 @@ def test_chart_data_with_hypothesis(data):
     assert expected <= set(years)
 
 
-@pytest.mark.parametrize(
-    "today, sources, categories, invested, profit, total",
-    [
-        pytest.param(TODAY, [DATA1], [2000, 2001], [1, 2], [1, 2], [2, 4], id="one"),
-        pytest.param(
-            date(2000, 1, 1), [DATA1], [2000], [1], [1], [2], id="one_year_cut"
-        ),
-        pytest.param(
-            TODAY, [DATA1, DATA2], [2000, 2001], [5, 7], [5, 7], [10, 14], id="two"
-        ),
-        pytest.param(
-            date(2000, 1, 1), [DATA1, DATA2], [2000], [5], [5], [10], id="two_year_cut"
-        ),
-        pytest.param(
-            TODAY,
-            [DATA1, []],
-            [2000, 2001],
-            [1, 2],
-            [1, 2],
-            [2, 4],
-            id="empty_second",
-        ),
-        pytest.param(TODAY, [[]], [], [], [], [], id="no_data"),
-    ],
+@given(
+    sources=st.lists(data_stragety, min_size=1, max_size=3),
+    today=st.dates(date(1974, 1, 1), date(2050, 12, 31)),
 )
-def test_chart_data(today, sources, categories, invested, profit, total):
+@example(sources=[DATA1], today=TODAY)
+@example(sources=[DATA1], today=date(2000, 1, 1))
+@example(sources=[DATA1, DATA2], today=TODAY)
+@example(sources=[DATA1, DATA2], today=date(2000, 1, 1))
+@example(sources=[DATA1, []], today=TODAY)
+@example(sources=[[]], today=TODAY)
+def test_chart_data_sums_the_sources_by_year_up_to_today(sources, today):
+    rows = [row for source in sources for row in source]
+    by_year = {
+        year: {
+            key: sum(row[key] for row in rows if row["year"] == year)
+            for key in ("profit", "total")
+        }
+        for year in {row["year"] for row in rows if row["year"] <= today.year}
+    }
+    shown = sorted(year for year, sums in by_year.items() if any(sums.values()))
+
     actual = make_chart("x", *sources, today=today)
 
-    assert actual["categories"] == categories
-    assert actual["invested"] == invested
-    assert actual["profit"] == profit
-    assert actual["total"] == total
+    assert actual["categories"] == shown
+    assert actual["profit"] == [by_year[year]["profit"] for year in shown]
+    assert actual["total"] == [by_year[year]["total"] for year in shown]
+    assert actual["invested"] == [
+        by_year[year]["total"] - by_year[year]["profit"] for year in shown
+    ]
 
 
 def test_chart_keeps_a_year_whose_shown_rows_paid_nothing_in():

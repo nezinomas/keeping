@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
-from hypothesis import given
+from hypothesis import example, given
 from hypothesis import strategies as st
 
 from ...lib.no_incomes import NoIncomes
@@ -48,23 +48,22 @@ def fixture_data():
     )
 
 
-@pytest.mark.parametrize(
-    "savings, unnecessary, months, expect",
-    [
-        pytest.param({"sum": 2}, ["Z", "Taupymas"], 1, 9, id="cut-one-month"),
-        pytest.param({"sum": 2}, ["Z", "Taupymas"], 6, 1.5, id="cut-six-months"),
-        pytest.param({"sum": 2}, ["Taupymas"], 1, 9, id="no-expense-cut-one-month"),
-        pytest.param({"sum": 2}, ["Taupymas"], 6, 1.5, id="no-expense-cut-six-months"),
-        pytest.param({}, [], 1, 7, id="no-savings-one-month"),
-        pytest.param({}, [], 6, 1.17, id="no-savings-six-months"),
-    ],
-)
-def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_incomes_data):
-    no_incomes_data.savings = savings
-    no_incomes_data.unnecessary = unnecessary
-    obj = NoIncomes(no_incomes_data, months)
+@given(expenses=EXPENSES, savings=SAVINGS, unnecessary=UNNECESSARY, months=MONTHS)
+@example(expenses=XYZ, savings={"sum": 2}, unnecessary=["Z", "Taupymas"], months=1)
+@example(expenses=XYZ, savings={"sum": 2}, unnecessary=["Z", "Taupymas"], months=6)
+@example(expenses=XYZ, savings={"sum": 2}, unnecessary=["Taupymas"], months=1)
+@example(expenses=XYZ, savings={"sum": 2}, unnecessary=["Taupymas"], months=6)
+@example(expenses=XYZ, savings={}, unnecessary=[], months=1)
+@example(expenses=XYZ, savings={}, unnecessary=[], months=6)
+def test_avg_expenses_is_the_expenses_and_the_savings_over_the_months(
+    expenses, savings, unnecessary, months
+):
+    data = _data(expenses, savings, unnecessary)
 
-    assert round(obj.avg_expenses, 2) == expect
+    actual = NoIncomes(data, months).avg_expenses
+
+    spent = sum(expense["sum"] for expense in expenses) + savings.get("sum", 0)
+    assert actual == pytest.approx(spent / months)
 
 
 @given(expenses=EXPENSES, savings=SAVINGS, unnecessary=UNNECESSARY, months=MONTHS)

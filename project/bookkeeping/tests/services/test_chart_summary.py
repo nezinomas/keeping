@@ -196,13 +196,6 @@ def test_chart_incomes_types_context(incomes_types):
     }
 
 
-def test_chart_incomes_types_categories_no_data():
-    data = SimpleNamespace(incomes=[], salary=[], expenses=[], incomes_types=[])
-    actual = Charts(data).chart_incomes_types()
-
-    assert actual["categories"] == []
-
-
 def test_chart_incomes_types_categories(incomes_types):
     data = SimpleNamespace(
         incomes=[], salary=[], expenses=[], incomes_types=incomes_types
@@ -222,8 +215,8 @@ def test_chart_incomes_types_data(incomes_types):
     assert actual["data"][1] == {"name": "T2", "data": [0, 3, 4]}
 
 
-def test_chart_incomes_types_data_no_data():
+def test_chart_incomes_types_no_data():
     data = SimpleNamespace(incomes=[], salary=[], expenses=[], incomes_types=[])
     actual = Charts(data).chart_incomes_types()
 
-    assert actual["data"] == []
+    assert (actual["categories"], actual["data"]) == ([], [])

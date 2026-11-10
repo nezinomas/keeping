@@ -12,7 +12,7 @@ from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
-from ..helper import quiet_build, script_json
+from ..helper import quiet_build, row_cells, script_json, total_cells
 
 pytestmark = pytest.mark.django_db
 
@@ -136,12 +136,10 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     )
 
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
-    checked = re.findall(
-        r'<th[^>]*class="[^"]*\bcheck\b[^"]*"[^>]*>([^<]+)</th>', content
-    )
+    year_end = total_cells(content[content.index('id="table-balance"') :])[-1]
+    accounts_balance = total_cells(content[content.index('id="accounts"') :])[4]
 
-    assert len(checked) == 2
-    assert checked[0] == checked[1]
+    assert year_end == accounts_balance != ""
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
@@ -153,11 +151,9 @@ def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_s
     )
 
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
-    january = re.findall(
-        r'<td class="left-thick-border[^"]*"[^>]*>([^<]+)</td>', content
-    )
+    january = row_cells(content[content.index('id="table-balance"') :], "Sausis")
 
-    assert january[0] == "200,00"
+    assert january[3] == "200,00"
 
 
 def test_view_index_regenerate_buttons(client_logged):
@@ -199,4 +195,4 @@ def test_view_reload_anonymous(client):
     url = reverse("bookkeeping:reload_index")
     response = client.get(url)
 
-    assert response.status_code == 302
+    assert response.url == f"{reverse('users:login')}?next={url}"

@@ -1,8 +1,11 @@
 from datetime import date
+from itertools import accumulate
 from types import SimpleNamespace
 
 import polars as pl
 import pytest
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib.make_dataframe import YearMonths
 from ...lib.year_balance import YearBalance
@@ -174,26 +177,74 @@ def test_amount_balance(data, amount_start):
     assert actual == 165
 
 
-@pytest.mark.parametrize(
-    "series, column",
-    [
-        pytest.param(lambda b: b.income_data, "incomes", id="income_data"),
-        pytest.param(lambda b: b.expense_data, "expenses", id="expense_data"),
-        pytest.param(lambda b: b.borrow_data, "borrow", id="borrow_data"),
-        pytest.param(
-            lambda b: b.borrow_return_data, "borrow_return", id="borrow_return_data"
-        ),
-        pytest.param(lambda b: b.lend_data, "lend", id="lend_data"),
-        pytest.param(
-            lambda b: b.lend_return_data, "lend_return", id="lend_return_data"
-        ),
-        pytest.param(lambda b: b.money_flow, "money_flow", id="money_flow"),
-    ],
-)
-def test_balance_series_reads_its_column(data, amount_start, expect, series, column):
-    actual = series(YearBalance(data=data, amount_start=amount_start, today=TODAY))
+MONTHLY = [
+    "incomes",
+    "expenses",
+    "savings",
+    "savings_close",
+    "borrow",
+    "borrow_return",
+    "lend",
+    "lend_return",
+]
+YEAR = st.lists(st.integers(0, 1000), min_size=12, max_size=12)
+YEAR_OF_COLUMNS = st.fixed_dictionaries({column: YEAR for column in MONTHLY})
+FIXTURE_YEAR = {
+    "incomes": [55, 125] + [0] * 10,
+    "expenses": [15] + [0] * 11,
+    "savings": [1] + [0] * 11,
+    "savings_close": [5] + [0] * 11,
+    "borrow": [25] + [0] * 11,
+    "borrow_return": [15] + [0] * 11,
+    "lend": [10] + [0] * 11,
+    "lend_return": [5] + [0] * 11,
+}
 
-    assert actual == [x[column] for x in expect]
+
+@given(columns=YEAR_OF_COLUMNS, amount_start=st.integers(-1000, 1000))
+@example(columns=FIXTURE_YEAR, amount_start=1)
+def test_balance_series_read_their_column_and_money_flow_runs_from_the_start(
+    columns, amount_start
+):
+    frame = pl.DataFrame(
+        {"date": [date(1999, month, 1) for month in range(1, 13)]} | columns
+    )
+    balance = YearBalance(
+        data=SimpleNamespace(date_range=YearMonths(1999), data=frame),
+        amount_start=amount_start,
+        today=TODAY,
+    )
+    net = [
+        columns["incomes"][i]
+        - columns["expenses"][i]
+        + columns["savings_close"][i]
+        + columns["borrow"][i]
+        + columns["lend_return"][i]
+        - columns["savings"][i]
+        - columns["borrow_return"][i]
+        - columns["lend"][i]
+        for i in range(12)
+    ]
+
+    actual = {
+        "incomes": balance.income_data,
+        "expenses": balance.expense_data,
+        "borrow": balance.borrow_data,
+        "borrow_return": balance.borrow_return_data,
+        "lend": balance.lend_data,
+        "lend_return": balance.lend_return_data,
+        "money_flow": balance.money_flow,
+    }
+
+    assert actual == {
+        "incomes": columns["incomes"],
+        "expenses": columns["expenses"],
+        "borrow": columns["borrow"],
+        "borrow_return": columns["borrow_return"],
+        "lend": columns["lend"],
+        "lend_return": columns["lend_return"],
+        "money_flow": list(accumulate(net, initial=amount_start))[1:],
+    }
 
 
 @pytest.mark.parametrize(

@@ -211,19 +211,20 @@ def _titles(user):
 
 
 @pytest.mark.django_db
-def test_load_service_expense_types_by_type_title(main_user):
-    _expense("Zeta", "Alpha")
-    _expense("Beta", "Omega")
+@pytest.mark.parametrize(
+    "first, second, expect",
+    [
+        pytest.param("Zeta", "Beta", ["Beta", "Zeta"], id="by_type_title"),
+        pytest.param("Šildymas", "Zeta", ["Zeta", "Šildymas"], id="code_point_order"),
+    ],
+)
+def test_load_service_expense_types_by_title_in_code_point_order(
+    main_user, first, second, expect
+):
+    _expense(first, "Alpha")
+    _expense(second, "Omega")
 
-    assert _titles(main_user) == ["Beta", "Zeta"]
-
-
-@pytest.mark.django_db
-def test_load_service_expense_types_in_code_point_order(main_user):
-    _expense("Šildymas", "Alpha")
-    _expense("Zeta", "Omega")
-
-    assert _titles(main_user) == ["Zeta", "Šildymas"]
+    assert _titles(main_user) == expect
 
 
 @pytest.mark.django_db

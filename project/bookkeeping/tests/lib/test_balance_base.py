@@ -2,6 +2,8 @@ from datetime import date
 
 import polars as pl
 import pytest
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib.balance_base import BalanceBase
 
@@ -50,21 +52,56 @@ def test_balance_then_before_was_called_total_row(data, expected):
     assert obj.balance == expected
 
 
-@pytest.mark.parametrize(
-    "data, expected",
-    [
-        (None, {}),
-        (ARR, {"x": 11, "y": 21}),
-        (pl.DataFrame({"x": [11, 22]}), {"x": 16.5}),
-        (pl.DataFrame({"x": [0, 11, 0, 22]}), {"x": 16.5}),
-        (pl.DataFrame({"x": pl.Series([0, None], dtype=pl.Float32)}), {"x": 0}),
-        (pl.DataFrame({"t1": [11, 22], "t2": [0, 0]}), {"t1": 16.5, "t2": 0}),
-    ],
+def _frame(columns):
+    if not columns:
+        return pl.DataFrame()
+    days = len(next(iter(columns.values())))
+    return pl.DataFrame(
+        {"date": [date(1999, 1, 1)] * days}
+        | {name: pl.Series(values, dtype=pl.Int64) for name, values in columns.items()}
+    )
+
+
+def _mean_of_the_months_with_a_value(column):
+    values = [value for value in column if value]
+    return sum(values) / len(values) if values else 0
+
+
+COLUMNS = st.one_of(
+    st.none(),
+    st.integers(1, 12).flatmap(
+        lambda days: st.dictionaries(
+            st.sampled_from(["x", "y", "t1", "t2"]),
+            st.lists(
+                st.one_of(st.none(), st.integers(0, 1000)),
+                min_size=days,
+                max_size=days,
+            ),
+            max_size=4,
+        )
+    ),
 )
-def test_average(data, expected):
+
+
+@given(columns=COLUMNS)
+@example(columns=None)
+@example(columns={})
+@example(columns={"x": [11, 11, 0, 11], "y": [21, 21, 21, 0]})
+@example(columns={"x": [11, 22]})
+@example(columns={"x": [0, 11, 0, 22]})
+@example(columns={"x": [0, None]})
+@example(columns={"t1": [11, 22], "t2": [0, 0]})
+def test_average_is_the_mean_of_each_column_over_its_months_with_a_value(columns):
+    data = None if columns is None else _frame(columns)
+
     actual = BalanceBase(data).average
 
-    assert actual == expected
+    assert actual == pytest.approx(
+        {
+            name: _mean_of_the_months_with_a_value(column)
+            for name, column in (columns or {}).items()
+        }
+    )
 
 
 @pytest.mark.parametrize(

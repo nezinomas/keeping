@@ -11,6 +11,7 @@ from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ..factories import SavingWorthFactory
 from ..helper import (
+    closed_every_other,
     fund_with_a_sell,
     row_cells,
     switch_a_into_b,
@@ -174,7 +175,7 @@ def test_open_fund_with_no_worth_marks_its_empty_cells(client_logged):
 
 def test_savings_queries_do_not_grow_with_closed_funds(client_logged, main_user):
     def build(i):
-        fund_with_a_sell(f"Fund {i}", 100000, 60000, closed=1999 if i % 2 else None)
+        fund_with_a_sell(f"Fund {i}", 100000, 60000, closed=closed_every_other(i))
 
     queries = [
         view_queries(client_logged, main_user, "bookkeeping:savings", build, n)
