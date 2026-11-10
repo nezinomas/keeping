@@ -125,6 +125,18 @@ class BookkeepingIndex(TestCase, Browser):
             body,
         ]
 
+    def test_month_table_fades_its_edge_only_while_it_scrolls(self):
+        IncomeFactory()
+        for width, fade in ((360, True), (1500, False)):
+            with self.subTest(width=width):
+                self.open_at(reverse("bookkeeping:detailed"), width)
+                faded = self.browser.execute_script(
+                    "return getComputedStyle(document.querySelector('.month-table'))"
+                    "  .maskImage !== 'none';"
+                )
+
+                assert faded is fade
+
     def test_a_swap_beside_a_table_with_no_pin_library_throws_nothing(self):
         # the summary draws a .sticky-table and loads no sticky-table-headers.js
         self.browser.get(
