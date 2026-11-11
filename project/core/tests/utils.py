@@ -4,11 +4,27 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
 PICKER_SCRIPT = r'<script[^>]*src="[^"]*/js/([a-z]+-picker\.js)"'
+STICKY_HEADERS = r'<script nonce="[^"]*" src="/static/js/sticky-table-headers.js">'
 
 
 def edit_row_opening(url):
     """The start tag of a list row whose double-click opens `url` in the modal."""
     return f'<tr hx-get="{url}" hx-trigger="dblclick" hx-target="#mainModal"'
+
+
+ROW = re.compile(
+    r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"[^>]*>'
+    r"(.*?)</tr>",
+    re.DOTALL,
+)
+ROW_BUTTON = re.compile(
+    r'<td class="(edit-col|delete-col)">\s*<a role="button" hx-get="([^"]*)"'
+)
+
+
+def row_forms(content):
+    """(the url a double click opens, [(column, url) of each button]) of each row."""
+    return [(url, ROW_BUTTON.findall(cells)) for url, cells in ROW.findall(content)]
 
 
 def clean_content(rendered):

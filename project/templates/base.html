@@ -135,10 +135,7 @@
             pinnedTables = Array.from(document.querySelectorAll('.sticky-table'));
             if (pinnedTables.length) stickyThead.apply(pinnedTables);
         }
-        {# a legacy page keeps pinning only after a swap: its look is frozen #}
-        document.addEventListener('DOMContentLoaded', function () {
-            if (document.querySelector('.paper-skin')) pinTableHeads();
-        });
+        document.addEventListener('DOMContentLoaded', pinTableHeads);
         document.addEventListener('htmx:after:swap', pinTableHeads);
       </script>
     </footer>

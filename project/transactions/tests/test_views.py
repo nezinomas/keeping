@@ -11,10 +11,12 @@ from django.urls import reverse
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.helper import quiet_build
 from ...core.tests.utils import (
+    STICKY_HEADERS,
     clean_content,
     count_queries,
     nav_tabs,
     quick_add_pills,
+    row_forms,
     view_for,
 )
 from ...savings.models import SavingBalance, SavingType
@@ -30,7 +32,6 @@ pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 CHECKED_BOX = re.compile(r'<input type="checkbox" .*? checked>')
 OPTION = re.compile(r'<option value="(\d+)">([^<]*)</option>')
-STICKY_HEADERS = r'<script nonce="[^"]*" src="/static/js/sticky-table-headers.js">'
 
 
 TAB_TITLES = {
@@ -353,14 +354,6 @@ ROW_FORMS = {
         [("edit-col", "accounts:update")],
     ),
 }
-ROW = re.compile(
-    r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"[^>]*>'
-    r"(.*?)</tr>",
-    re.DOTALL,
-)
-ROW_BUTTON = re.compile(
-    r'<td class="(edit-col|delete-col)">\s*<a role="button" hx-get="([^"]*)"'
-)
 
 
 @pytest.mark.parametrize(
@@ -371,7 +364,7 @@ def test_a_row_opens_its_own_forms(client_logged, tab_url, factory, forms):
 
     content = _tab(client_logged, reverse(tab_url))
 
-    rows = [(url, ROW_BUTTON.findall(cells)) for url, cells in ROW.findall(content)]
+    rows = row_forms(content)
     buttons = [(column, reverse(name, args=[record.pk])) for column, name in forms]
     _, update = buttons[0]  # a double click opens what the edit button opens
     assert rows == [(update, buttons)]

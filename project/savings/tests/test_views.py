@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import date
 
@@ -6,28 +7,126 @@ import time_machine
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.utils import clean_content, edit_row_opening, view_for
-from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
+from ...core.tests.utils import (
+    STICKY_HEADERS,
+    clean_content,
+    count_queries,
+    quick_add_pills,
+    row_forms,
+    view_for,
+)
 from .. import models, views
 from ..services.model_services import SavingTypeModelService
+from ..tabs import TABS
 from .factories import Saving, SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 
 
-def test_index_renders_its_four_lists(client_logged):
-    SavingFactory(remark="saving remark")
-    SavingTypeFactory(title="Idle fund")
-    PensionFactory(remark="pension remark")
-    PensionTypeFactory(title="Idle plan")
+TAB_TITLES = {"savings": "Taupymas"}
 
-    response = client_logged.get(reverse("savings:index"))
-    actual = response.content.decode("utf-8")
 
-    assert "saving remark" in actual
-    assert "Idle fund" in actual
-    assert "pension remark" in actual
-    assert "Idle plan" in actual
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+@pytest.mark.parametrize(
+    "headers, whole",
+    [({}, True), ({"HX-Request": "true"}, False)],
+    ids=["page", "fragment"],
+)
+def test_a_tab_is_the_whole_paper_page_unless_htmx_asks(
+    client_logged, tab, headers, whole
+):
+    content = client_logged.get(tab.url, headers=headers).content.decode()
+
+    assert f"<title>Taupymas | {TAB_TITLES[tab.name]}</title>" in content
+    assert (
+        '<link rel="stylesheet" href="/static/css/paper.min.css">' in content
+    ) is whole
+    assert ('<nav class="subnav">' in content) is whole
+    assert bool(re.search(r'<div\b[^>]*class="quick-add\b', content)) is whole
+    assert bool(re.search(STICKY_HEADERS, content)) is whole
+    assert ('id="tab_content"' in content) is whole
+
+
+# each row in a Fund and from an Account of its own, so a read per owner grows
+A_ROW_OF_ITS_OWN = {
+    "savings": lambda i: SavingFactory(
+        saving_type=SavingTypeFactory(title=f"F{i}"),
+        account=AccountFactory(title=f"A{i}"),
+    ),
+}
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
+    a_row_of_its_own = A_ROW_OF_ITS_OWN[tab.name]
+
+    def tab_queries():
+        return count_queries(lambda: _tab(client_logged, tab.url))
+
+    for i in range(2):
+        a_row_of_its_own(i)
+    two = tab_queries()
+
+    for i in range(2, 6):
+        a_row_of_its_own(i)
+    six = tab_queries()
+
+    assert six == two
+
+
+def _tab(client, url):
+    return client.get(url, headers={"HX-Request": "true"}).content.decode()
+
+
+HEAD_CELL = re.compile(r'<th class="([^"]*)">([^<]*)</th>')
+SAVING_ROW = re.compile(
+    r'<tr [^>]*class="([^"]*)">\s*<td class="text-left main__date">([^<]*)</td>'
+    r'\s*<td class="text-left main__name">([^<]*)</td>'
+    r'\s*<td class="text-left main__fold">([^<]*)</td>'
+    r'\s*<td class="text-left main__fold">([^<]*)</td>'
+    r'\s*<td class="main__figure" data-cell="[^"]*">([^<]*)</td>'
+    r'\s*<td class="main__figure main__fold" data-cell="[^"]*">([^<]*)</td>'
+)
+
+
+@time_machine.travel("1999-12-1")
+def test_the_savings_tab_lists_the_years_savings_newest_first(
+    client_logged, second_user
+):
+    def saving(on, name, price, **owner):
+        SavingFactory(
+            date=date.fromisoformat(on),
+            saving_type=SavingTypeFactory(title=f"Fund {name}", **owner),
+            account=AccountFactory(title=f"Account {name}", **owner),
+            remark=f"remark {name}",
+            price=price,
+            fee=price // 10,
+        )
+
+    saving("1999-01-05", "C", 300)
+    saving("1999-03-09", "A", 100)
+    saving("1999-03-02", "B", 200)
+    saving("2000-01-01", "D", 400)
+    saving("1999-02-01", "E", 500, journal=second_user.journal)
+
+    content = _tab(client_logged, reverse("savings:index"))
+
+    assert HEAD_CELL.findall(content) == [
+        ("text-left", "Data"),
+        ("text-left main__name", "Fondas"),
+        ("text-left main__fold", "Iš sąskaitos"),
+        ("text-left main__fold", "Pastaba"),
+        ("price-col", "Suma"),
+        ("price-col main__fold", "Mokesčiai"),
+        ("edit-col", ""),
+        ("delete-col", ""),
+    ]
+    divider = "table-group-divider"
+    assert SAVING_ROW.findall(content) == [
+        ("", "1999-03-09", "Fund A", "Account A", "remark A", "1,00", "0,10"),
+        ("", "1999-03-02", "Fund B", "Account B", "remark B", "2,00", "0,20"),
+        (divider, "1999-01-05", "Fund C", "Account C", "remark C", "3,00", "0,30"),
+    ]
 
 
 @time_machine.travel("2000-01-01")
@@ -61,11 +160,9 @@ def test_saving_save(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert "1999-01-01" in actual
-    assert "1" in actual
-    assert "2" in actual
-    assert "Account1" in actual
-    assert "Savings" in actual
+    assert SAVING_ROW.findall(actual) == [
+        ("", "1999-01-01", "Savings", "Account1", "", "0,01", "2,00")
+    ]
 
 
 def test_saving_save_invalid_data(client_logged):
@@ -164,7 +261,8 @@ def test_saving_update_to_another_year(client_logged):
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert "2010-12-31" not in actual
+    assert not SAVING_ROW.findall(actual)
+    assert re.search(r'<div class="alert">\s*1999 metais įrašų nėra.\s*</div>', actual)
 
 
 @time_machine.travel("1999-12-31")
@@ -222,25 +320,10 @@ def test_savings_list_price_converted(
 ):
     SavingFactory(price=price, fee=fee)
 
-    url = reverse("savings:list")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+    actual = _tab(client_logged, reverse("savings:index"))
 
     assert shown_price in actual
     assert shown_fee in actual
-
-
-@time_machine.travel("1999-12-1")
-def test_savings_list_divides_each_month(client_logged):
-    for on in ("1999-01-15", "1999-02-15", "1999-02-20"):
-        SavingFactory(date=date.fromisoformat(on))
-
-    content = client_logged.get(reverse("savings:list")).content.decode("utf-8")
-
-    assert re.findall(
-        r'<tr hx-get="[^"]*"[^>]*class="([^"]*)">\s*<td class="text-left">([\d-]+)</td>',
-        content,
-    ) == [("", "1999-02-20"), ("", "1999-02-15"), ("table-group-divider", "1999-01-15")]
 
 
 @pytest.mark.parametrize(
@@ -250,9 +333,9 @@ def test_savings_list_divides_each_month(client_logged):
 def test_savings_list_names_its_empty_year(client_logged, records, shown):
     SavingFactory.create_batch(records)
 
-    actual = client_logged.get(reverse("savings:list")).content.decode("utf-8")
+    actual = _tab(client_logged, reverse("savings:index"))
 
-    notice = r'<div class="alert alert-warning">\s*1999 metais įrašų nėra\.\s*</div>'
+    notice = r'<div class="alert">\s*1999 metais įrašų nėra\.\s*</div>'
     assert bool(re.search(notice, actual)) == shown
 
 
@@ -482,7 +565,8 @@ def test_type_new_and_update_with_the_receiver_connected(client_logged):
     "call",
     [
         pytest.param(
-            lambda rf, u: view_for(rf, u, views.Lists).get_queryset(), id="list"
+            lambda rf, u: view_for(rf, u, views.TabSavings).get_queryset(),
+            id="tab",
         ),
         pytest.param(lambda rf, u: SavingTypeModelService(u).items(), id="types"),
     ],
@@ -494,10 +578,67 @@ def test_a_user_with_no_year_raises(rf, main_user, call):
         call(rf, main_user)
 
 
-def test_a_saving_row_opens_its_update_form(client_logged):
+def test_a_saving_row_opens_its_own_forms(client_logged):
     obj = SavingFactory()
 
-    content = client_logged.get(reverse("savings:list")).content.decode("utf-8")
+    content = _tab(client_logged, reverse("savings:index"))
 
     update = reverse("savings:update", kwargs={"pk": obj.pk})
-    assert edit_row_opening(update) in content
+    delete = reverse("savings:delete", kwargs={"pk": obj.pk})
+    assert row_forms(content) == [
+        (update, [("edit-col", update), ("delete-col", delete)])
+    ]
+
+
+def test_quick_add_offers_its_pill(client_logged):
+    content = client_logged.get(reverse("savings:index")).content.decode()
+
+    assert quick_add_pills(content) == [
+        ("button", "savings", 'hx-get="/savings/new/"', "Pridėti taupymą"),
+    ]
+
+
+def _saving_data(saving):
+    return {
+        "date": "1999-01-01",
+        "price": "1",
+        "fee": "0",
+        "account": saving.account.pk,
+        "saving_type": saving.saving_type.pk,
+    }
+
+
+SAVES = [
+    pytest.param(lambda saving: reverse("savings:new"), _saving_data, id="new"),
+    pytest.param(
+        lambda saving: reverse("savings:update", kwargs={"pk": saving.pk}),
+        _saving_data,
+        id="update",
+    ),
+]
+DELETE = pytest.param(
+    lambda saving: reverse("savings:delete", kwargs={"pk": saving.pk}),
+    lambda saving: {},
+    id="delete",
+)
+
+
+@pytest.mark.parametrize("url_of, data_of", [*SAVES, DELETE])
+def test_a_saving_form_fires_reload(client_logged, url_of, data_of):
+    saving = SavingFactory()
+
+    response = client_logged.post(
+        url_of(saving), data_of(saving), headers={"HX-Request": "true"}
+    )
+
+    assert json.loads(response.headers.get("HX-Trigger", "null")) == {"reload": {}}
+
+
+# a delete answers 204 either way
+@pytest.mark.parametrize("url_of, data_of", SAVES)
+def test_a_saving_save_without_htmx_lands_on_its_tab(client_logged, url_of, data_of):
+    saving = SavingFactory()
+
+    response = client_logged.post(url_of(saving), data_of(saving))
+
+    assert response.url == reverse("savings:index")

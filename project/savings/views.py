@@ -2,35 +2,27 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import PriceToFloatViewMixin
-from ..core.lib.utils import rendered_content
+from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
     ListViewMixin,
-    TemplateViewMixin,
     UpdateViewMixin,
 )
-from ..pensions import views as pension_views
 from . import forms
 from .services.model_services import SavingModelService, SavingTypeModelService
+from .tabs import TABS
 
 
-class Index(TemplateViewMixin):
-    template_name = "savings/index.html"
-
-    def get_context_data(self, **kwargs):
-        context = {
-            "saving": rendered_content(self.request, Lists),
-            "saving_type": rendered_content(self.request, TypeLists),
-            "pension": rendered_content(self.request, pension_views.Lists),
-            "pension_type": rendered_content(self.request, pension_views.TypeLists),
-        }
-
-        return {**super().get_context_data(**kwargs), **context}
+class TabViewMixin(CoreTabViewMixin):
+    tabs = TABS
+    default_tab = TABS["savings"]
+    app_title = _("Savings")
+    page_template = "savings/index.html"
 
 
-class Lists(ListViewMixin):
-    template_name = "savings/saving_list.html"
+class TabSavings(TabViewMixin, ListViewMixin):
+    tab = TABS["savings"]
 
     def get_queryset(self):
         user = self.request.user
@@ -39,8 +31,8 @@ class Lists(ListViewMixin):
 
 class New(CreateViewMixin):
     form_class = forms.SavingForm
-    hx_trigger_form = "reload"
-    success_url = reverse_lazy("savings:list")
+    hx_trigger_django = "reload"
+    success_url = reverse_lazy("savings:index")
     modal_form_title = _("Savings")
 
 
@@ -48,13 +40,13 @@ class Update(PriceToFloatViewMixin, UpdateViewMixin):
     service_class = SavingModelService
     form_class = forms.SavingForm
     hx_trigger_django = "reload"
-    success_url = reverse_lazy("savings:list")
+    success_url = reverse_lazy("savings:index")
     modal_form_title = _("Savings")
 
 
 class Delete(DeleteViewMixin):
     service_class = SavingModelService
-    success_url = reverse_lazy("savings:list")
+    success_url = reverse_lazy("savings:index")
     modal_form_title = _("Delete saving")
 
 

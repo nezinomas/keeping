@@ -4,52 +4,34 @@ from selenium.webdriver.support.ui import Select
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
-from .factories import SavingFactory, SavingTypeFactory
+from .factories import SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 
 
 @pytest.mark.webtest
 class Savings(Browser):
-    def test_add_savings_and_check_fields_not_zero(self):
-        a = AccountFactory()
-        t = SavingTypeFactory()
+    def test_a_saving_saved_lands_in_the_table_and_empties_the_form(self):
+        account = AccountFactory()
+        fund = SavingTypeFactory(title="Zeta fund")
 
-        self.browser.get(f"{self.live_server_url}/savings/")
+        self.open("/savings/")
+        self.browser.find_element(By.CSS_SELECTOR, ".quick-add__pill").click()
         self.wait_until_idle()
 
-        self.browser.find_element(
-            By.XPATH, '//button[normalize-space()="Įrašą"]'
-        ).click()
-
-        self.wait_until_idle()
-
-        # select saving type
-        elem = Select(self.browser.find_element(By.ID, "id_saving_type"))
-        elem.select_by_value(f"{t.id}")
-
-        # select Account
-        elem = Select(self.browser.find_element(By.ID, "id_account"))
-        elem.select_by_value(f"{a.id}")
-
-        # fill sum
+        Select(self.browser.find_element(By.ID, "id_saving_type")).select_by_value(
+            f"{fund.id}"
+        )
+        Select(self.browser.find_element(By.ID, "id_account")).select_by_value(
+            f"{account.id}"
+        )
         self.browser.find_element(By.ID, "id_price").send_keys("100")
-
-        # click 'Insert' button
         self.browser.find_element(By.ID, "_new").click()
         self.wait_until_idle()
 
+        assert self.browser.find_elements(
+            By.XPATH, '//*[@id="tab_content"]//td[normalize-space()="Zeta fund"]'
+        )
         # sum and fee fields should be empty, not 0.0 or 0
         assert self.browser.find_element(By.ID, "id_price").get_attribute("value") == ""
         assert self.browser.find_element(By.ID, "id_fee").get_attribute("value") == ""
-
-    def test_the_legacy_list_pins_no_table_head_on_load(self):
-        SavingFactory()
-
-        self.browser.get(f"{self.live_server_url}/savings/")
-        self.wait_until_idle()
-
-        assert self.browser.find_elements(By.CSS_SELECTOR, ".sticky-table")
-        assert not self.browser.find_elements(
-            By.CSS_SELECTOR, ".sticky-table thead.tableFloatingHeaderOriginal"
-        )

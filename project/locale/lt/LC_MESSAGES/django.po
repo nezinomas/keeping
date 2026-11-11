@@ -2503,6 +2503,9 @@ msgstr "Pridėti pajamas"
 msgid "Add transaction"
 msgstr "Pridėti pervedimą"
 
+msgid "Add saving"
+msgstr "Pridėti taupymą"
+
 msgid "Fund sales"
 msgstr "Fondų pardavimai"
 
