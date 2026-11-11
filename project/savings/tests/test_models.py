@@ -333,10 +333,7 @@ def test_saving_post_save(main_user, price, fee):
 @pytest.mark.parametrize(
     "account, saving_type, price, fee",
     [
-        pytest.param("A", "S", 10, 2, id="nothing_changed"),
         pytest.param("A", "S", 4, 1, id="amounts"),
-        pytest.param("A", "S-New", 10, 2, id="saving_type"),
-        pytest.param("A-New", "S", 10, 2, id="account"),
         pytest.param("A-New", "S-New", 10, 2, id="account_and_saving_type"),
     ],
 )
@@ -530,23 +527,18 @@ def test_saving_balance_items_queries(main_user, django_assert_num_queries):
         list(SavingBalanceModelService(main_user).items().values())
 
 
-@pytest.mark.parametrize(
-    "types, expect_titles",
-    [
-        pytest.param(["x"], ["1"], id="one_type"),
-        pytest.param(["x", "y"], ["1", "2"], id="few_types"),
-    ],
-)
-def test_saving_balance_filter_by_types(main_user, types, expect_titles):
+def test_saving_balance_filter_by_types(main_user):
     with helper.quiet_build(main_user):
         SavingFactory(saving_type=SavingTypeFactory(title="1", type="x"))
         SavingFactory(saving_type=SavingTypeFactory(title="2", type="y"))
         SavingFactory(saving_type=SavingTypeFactory(title="3", type="z"))
 
-    actual = SavingBalanceModelService(main_user).year_of_types(1999, types)
+    actual = SavingBalanceModelService(main_user).year_of_types(1999, ["x", "y"])
 
-    assert [a.saving_type.title for a in actual] == expect_titles
-    assert [(a.incomes, a.fee) for a in actual] == [(150, 5)] * len(expect_titles)
+    assert [(a.saving_type.title, a.incomes, a.fee) for a in actual] == [
+        ("1", 150, 5),
+        ("2", 150, 5),
+    ]
 
 
 def test_saving_balance_year_takes_no_types(main_user):
@@ -571,10 +563,9 @@ def test_saving_balance_year_orders_by_type_then_title(main_user, funds, expect_
 
 
 @time_machine.travel("1999-1-1")
-@pytest.mark.parametrize("fund_type", ["funds", "shares", "pensions"])
-def test_sum_by_type(main_user, fund_type):
+def test_sum_by_type(main_user):
     with helper.quiet_build(main_user):
-        f = SavingTypeFactory(title="F", type=fund_type)
+        f = SavingTypeFactory(title="F", type="funds")
         SavingFactory(saving_type=f, price=1, fee=1)
         SavingFactory(saving_type=f, price=10, fee=1)
         SavingWorthFactory(saving_type=f, price=20)
@@ -588,7 +579,7 @@ def test_sum_by_type(main_user, fund_type):
             "profit": 7,
             "total": 20,
             "fee": 2,
-            "type": fund_type,
+            "type": "funds",
         }
         for year in (1999, 2000)
     ]

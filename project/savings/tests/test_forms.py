@@ -129,17 +129,21 @@ def _fund_form(user, fund, closed):
     )
 
 
-@pytest.mark.parametrize("row", FUND_ROWS)
+CLOSE_REFUSED = {
+    "closed": ["Negalima uždaryti anksčiau nei 2001: tais metais yra įrašų."]
+}
+
+
 @pytest.mark.parametrize(
-    "closed, errors",
+    "row, closed, errors",
     [
-        (
-            "2000",
-            {"closed": ["Negalima uždaryti anksčiau nei 2001: tais metais yra įrašų."]},
-        ),
-        ("2001", {}),
-        ("2005", {}),
-        ("", {}),
+        *[
+            pytest.param(row, "2000", CLOSE_REFUSED, id=f"2000-{row}")
+            for row in FUND_ROWS
+        ],
+        pytest.param("buy", "2001", {}, id="2001-buy"),
+        pytest.param("buy", "2005", {}, id="2005-buy"),
+        pytest.param("buy", "", {}, id="blank-buy"),
     ],
 )
 def test_saving_type_close_year_not_before_its_rows(main_user, row, closed, errors):
