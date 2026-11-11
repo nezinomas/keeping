@@ -50,8 +50,8 @@
 }
 
 
-// a narrow page between two empty columns
-@mixin centred-column {
+// three columns, the middle one three times as wide as each side
+@mixin wide-middle-column {
     display: grid;
     grid-template-columns: 1fr 3fr 1fr;
     gap: $gap;
@@ -333,7 +333,7 @@
 
 
 .settings-grid {
-    @include centred-column;
+    @include wide-middle-column;
 
     .users-title {
         @include square-card;
@@ -355,7 +355,7 @@
 
 
 .user-grid {
-    @include centred-column;
+    @include wide-middle-column;
 
     height: 100vh;
     align-items: center;
