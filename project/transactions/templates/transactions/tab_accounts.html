@@ -1,7 +1,7 @@
-{% load i18n %}
+{% load i18n %}{% translate 'Account' as header %}
 
 {% if object_list %}
-<c-accounts-table :accounts="object_list" />
+<c-owner-table :rows="object_list" :header="header" url_name="accounts:update" />
 {% else %}
 {% include 'core/paper_no_records.html' %}
 {% endif %}
@@ -11,6 +11,6 @@
     <nav class="filter-line">
         <button type="button" class="filter-line__item" @click="shown = ! shown" :aria-current="shown ? 'true' : null">{% translate 'Closed accounts' %}</button>
     </nav>
-    <c-accounts-table :accounts="closed_accounts" closed x-show="shown" x-cloak />
+    <c-owner-table :rows="closed_accounts" closed :header="header" url_name="accounts:update" x-show="shown" x-cloak />
 </div>
 {% endif %}
