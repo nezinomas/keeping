@@ -100,8 +100,7 @@ class HistoryService:
 
 
 def load_service(user: User, year: int, drink_type: str, today: date) -> dict:
-    running = YearBoundary(today.year, today)
-    data = DrinkModelService(user).sum_by_year(running.last_day_reached)
+    data = DrinkModelService(user).sum_by_year(today)
     service = HistoryService(year, drink_type, data, today)
     years = service.years
 
