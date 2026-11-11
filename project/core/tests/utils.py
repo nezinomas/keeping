@@ -50,6 +50,55 @@ def quick_add_pills(content):
     )
 
 
+FOLD_PART = re.compile(
+    r'<table class="main striped hover sticky-table"(?P<attrs>[^>]*)>'
+    r"(?P<body>.*?)</table>"
+    r'|<div class="alert">\s*(?P<notice>[^<]*?)\s*</div>'
+    r'|(?P<scope><div x-data="\{ shown: false \}">\s*)?'
+    r'<nav class="filter-line"(?P<nav_attrs>[^>]*)>(?P<nav>.*?)</nav>',
+    re.DOTALL,
+)
+FOLDED = ' x-show="shown" x-cloak'
+FOLD_BUTTON = "the fold's button"
+OTHER_FILTER_LINE = "another filter line"
+
+
+def closed_fold(content, label):
+    """The tab's tables, notice and filter lines, in page order; `label` is the
+    button that unfolds the closed owners."""
+    button = re.compile(
+        r'\s*<button type="button" class="filter-line__item" @click="shown = ! shown"'
+        r""" :aria-current="shown \? 'true' : null">"""
+        + re.escape(label)
+        + r"</button>\s*"
+    )
+    parts = []
+    for part in FOLD_PART.finditer(content):
+        if part["notice"] is not None:
+            parts.append(part["notice"])
+        elif part["nav"] is not None:
+            scoped = part["scope"] and not part["nav_attrs"]
+            parts.append(
+                FOLD_BUTTON
+                if scoped and button.fullmatch(part["nav"])
+                else OTHER_FILTER_LINE
+            )
+        else:
+            parts.append(
+                (
+                    part["attrs"],
+                    re.findall(r'<th class="([^"]*)">([^<]*)</th>', part["body"]),
+                    re.findall(
+                        r'<tr hx-get="[^"]*" hx-trigger="dblclick"'
+                        r' hx-target="#mainModal">\s*'
+                        r'<td class="text-left main__name">(.*?)</td>',
+                        part["body"],
+                    ),
+                )
+            )
+    return parts
+
+
 # an empty Card's figure is its bare dash; stop at the next label, never pair Cards
 IN_CARD = r"(?:(?!trend-card__label).)*?"
 CARD = re.compile(

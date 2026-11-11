@@ -9,10 +9,9 @@
         </tr>
     </c-slot>
     {% for row in rows %}
-    {% url url_name row.pk as url_update %}
-    <c-edit-row :url="url_update">
+    <c-edit-row url="{% url url_name row.pk %}">
         <td class="text-left main__name">{% if closed %}<s>{{ row.title }}</s> <span class="main__closed">{% blocktranslate with year=row.closed %}closed {{ year }}{% endblocktranslate %}</span>{% else %}{{ row.title }}{% endif %}</td>
-        <c-td-edit :url="url_update" />
+        <c-td-edit url="{% url url_name row.pk %}" />
     </c-edit-row>
     {% endfor %}
 </c-paper-table>

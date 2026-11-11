@@ -7,4 +7,7 @@ class SavingTab(Tab):
     app = "savings"
 
 
-TABS = Tabs(SavingTab("savings", _("Savings")))
+TABS = Tabs(
+    SavingTab("savings", _("Savings")),
+    SavingTab("funds", _("Funds")),
+)

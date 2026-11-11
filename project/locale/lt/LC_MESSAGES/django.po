@@ -2527,6 +2527,12 @@ msgstr "Pridėti keitimą"
 msgid "Closed accounts"
 msgstr "Uždarytos sąskaitos"
 
+msgid "Closed funds"
+msgstr "Uždaryti fondai"
+
+msgid "Add fund"
+msgstr "Pridėti fondą"
+
 msgid "Add account"
 msgstr "Pridėti sąskaitą"
 

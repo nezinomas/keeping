@@ -29,6 +29,9 @@ YearRows = tuple[tuple[QuerySet, Combinable], ...]
 
 
 class SavingTypeModelService(BaseModelService):
+    # Fondai's two tables; NULL sorts first on SQLite and MariaDB, so never-closed lead
+    ORDER = ("closed", "type", "title")
+
     def get_queryset(self):
         return models.SavingType.objects.select_related("journal").filter(
             journal=self.user.journal
@@ -47,7 +50,7 @@ class SavingTypeModelService(BaseModelService):
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
     def closed_before(self, year: int):
-        return self.objects.filter(closed__lt=year).order_by("closed", "type", "title")
+        return self.objects.filter(closed__lt=year).order_by(*self.ORDER)
 
     def latest_row_year(self, fund: models.SavingType) -> int:
         if not fund.pk:

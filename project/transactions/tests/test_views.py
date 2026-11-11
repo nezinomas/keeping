@@ -11,8 +11,11 @@ from django.urls import reverse
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.helper import quiet_build
 from ...core.tests.utils import (
+    FOLD_BUTTON,
+    FOLDED,
     STICKY_HEADERS,
     clean_content,
+    closed_fold,
     count_queries,
     nav_tabs,
     quick_add_pills,
@@ -218,51 +221,11 @@ def test_a_move_tab_lists_the_years_moves_newest_first_marking_the_close(
 
 
 TAB_ACCOUNTS = "/transactions/accounts/"
-CLOSED_BUTTON = re.compile(
-    r'\s*<button type="button" class="filter-line__item" @click="shown = ! shown"'
-    r""" :aria-current="shown \? 'true' : null">Uždarytos sąskaitos</button>\s*"""
-)
-TAB_PART = re.compile(
-    r'<table class="main striped hover sticky-table"(?P<attrs>[^>]*)>'
-    r"(?P<body>.*?)</table>"
-    r'|<div class="alert">\s*(?P<notice>[^<]*?)\s*</div>'
-    r'|(?P<scope><div x-data="\{ shown: false \}">\s*)?'
-    r'<nav class="filter-line"(?P<nav_attrs>[^>]*)>(?P<nav>.*?)</nav>',
-    re.DOTALL,
-)
 HEADER = [("text-left main__name", "Sąskaita"), ("edit-col", "")]
-FOLDED = ' x-show="shown" x-cloak'
-BUTTON = "the closed accounts' button"
-OTHER_FILTER_LINE = "another filter line"
 
 
 def _accounts_tab(content):
-    """The tab's tables, notice and filter lines, in page order."""
-    parts = []
-    for part in TAB_PART.finditer(content):
-        if part["notice"] is not None:
-            parts.append(part["notice"])
-        elif part["nav"] is not None:
-            button = part["scope"] and not part["nav_attrs"]
-            parts.append(
-                BUTTON
-                if button and CLOSED_BUTTON.fullmatch(part["nav"])
-                else OTHER_FILTER_LINE
-            )
-        else:
-            parts.append(
-                (
-                    part["attrs"],
-                    re.findall(r'<th class="([^"]*)">([^<]*)</th>', part["body"]),
-                    re.findall(
-                        r'<tr hx-get="[^"]*" hx-trigger="dblclick"'
-                        r' hx-target="#mainModal">\s*'
-                        r'<td class="text-left main__name">(.*?)</td>',
-                        part["body"],
-                    ),
-                )
-            )
-    return parts
+    return closed_fold(content, "Uždarytos sąskaitos")
 
 
 @pytest.mark.parametrize(
@@ -272,7 +235,7 @@ def _accounts_tab(content):
             2022,
             [
                 ("", HEADER, ["Zeta", "Alpha", "Beta", "Edge"]),
-                BUTTON,
+                FOLD_BUTTON,
                 (
                     FOLDED,
                     HEADER,
@@ -324,7 +287,7 @@ def test_no_open_account_draws_the_notice_above_the_closed_ones(client_logged):
 
     assert _accounts_tab(content) == [
         "1999 metais įrašų nėra.",
-        BUTTON,
+        FOLD_BUTTON,
         (
             FOLDED,
             HEADER,

@@ -8,8 +8,11 @@ from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.utils import (
+    FOLD_BUTTON,
+    FOLDED,
     STICKY_HEADERS,
     clean_content,
+    closed_fold,
     count_queries,
     quick_add_pills,
     row_forms,
@@ -23,7 +26,7 @@ from .factories import Saving, SavingFactory, SavingTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-TAB_TITLES = {"savings": "Taupymas"}
+TAB_TITLES = {"savings": "Taupymas", "funds": "Fondai"}
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -52,6 +55,10 @@ A_ROW_OF_ITS_OWN = {
     "savings": lambda i: SavingFactory(
         saving_type=SavingTypeFactory(title=f"F{i}"),
         account=AccountFactory(title=f"A{i}"),
+    ),
+    "funds": lambda i: (
+        SavingTypeFactory(title=f"Open{i}"),
+        SavingTypeFactory(title=f"Closed{i}", closed=1990),
     ),
 }
 
@@ -401,37 +408,6 @@ def test_type_load_form(client_logged):
     assert url in actual
 
 
-def test_type_save(client_logged):
-    data = {
-        "title": "TTT",
-        "type": "funds",
-        "fee_source": "investment",
-    }
-
-    url = reverse("savings:type_new")
-
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
-
-    assert "TTT" in actual
-
-
-def test_type_save_with_closed(client_logged):
-    data = {
-        "title": "TTT",
-        "closed": "2000",
-        "type": "shares",
-        "fee_source": "investment",
-    }
-
-    url = reverse("savings:type_new")
-
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
-
-    assert "TTT" in actual
-
-
 def test_type_save_invalid_data(client_logged):
     data = {"title": ""}
 
@@ -455,52 +431,132 @@ def test_type_update_load_form(client_logged):
     assert url in actual
 
 
-def test_type_update(client_logged):
-    saving = SavingTypeFactory()
-
-    data = {
-        "title": "TTT",
-        "type": "funds",
-        "fee_source": "investment",
-    }
-    url = reverse("savings:type_update", kwargs={"pk": saving.pk})
-
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
-
-    assert "TTT" in actual
+TAB_FUNDS = "/savings/funds/"
+FUND_HEADER = [("text-left main__name", "Fondas"), ("edit-col", "")]
 
 
-def test_type_update_saves_fee_source(client_logged):
-    saving = SavingTypeFactory()
-
-    data = {"title": "TTT", "type": "funds", "fee_source": "account"}
-    url = reverse("savings:type_update", kwargs={"pk": saving.pk})
-
-    client_logged.post(url, data, follow=True)
-
-    saving.refresh_from_db()
-    assert saving.title == "TTT"
-    assert saving.fee_source == "account"
+def _funds_tab(content):
+    return closed_fold(content, "Uždaryti fondai")
 
 
-def test_type_update_return_list_with_closed(client_logged):
-    SavingTypeFactory(title="YYY", closed="1111")
-    saving = SavingTypeFactory(title="XXX")
+def _struck(title, year):
+    return f'<s>{title}</s> <span class="main__closed">uždaryta {year}</span>'
 
-    data = {
-        "title": "TTT",
-        "type": "funds",
-        "fee_source": "investment",
-    }
-    url = reverse("savings:type_update", kwargs={"pk": saving.pk})
 
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
+@pytest.mark.parametrize(
+    "year, parts",
+    [
+        pytest.param(
+            2022,
+            [
+                (
+                    "",
+                    FUND_HEADER,
+                    ["Delta", "Zeta", "Beta", "Alpha", "Edge", "Mid", "Late"],
+                ),
+                FOLD_BUTTON,
+                (
+                    FOLDED,
+                    FUND_HEADER,
+                    [
+                        _struck("Young", 2019),
+                        _struck("Old", 2021),
+                        _struck("Ancient", 2021),
+                    ],
+                ),
+            ],
+            id="closed_before",
+        ),
+        pytest.param(
+            2019,
+            [
+                (
+                    "",
+                    FUND_HEADER,
+                    [
+                        *["Delta", "Zeta", "Beta", "Alpha", "Young", "Old"],
+                        "Ancient",
+                        *["Edge", "Mid", "Late"],
+                    ],
+                )
+            ],
+            id="none_closed_before",
+        ),
+    ],
+)
+def test_the_funds_tab_lists_the_open_then_folds_the_closed(
+    client_logged, main_user, second_user, year, parts
+):
+    main_user.year = year
+    main_user.save()
+    SavingTypeFactory(title="Alpha", type="shares")
+    SavingTypeFactory(title="Zeta", type="funds")
+    SavingTypeFactory(title="Delta", type="funds")
+    SavingTypeFactory(title="Beta", type="pensions")
+    SavingTypeFactory(title="Late", type="funds", closed=2025)
+    SavingTypeFactory(title="Mid", type="shares", closed=2024)
+    SavingTypeFactory(title="Edge", type="pensions", closed=2022)
+    SavingTypeFactory(title="Ancient", type="shares", closed=2021)
+    SavingTypeFactory(title="Old", type="pensions", closed=2021)
+    SavingTypeFactory(title="Young", type="funds", closed=2019)
+    SavingTypeFactory(title="Foreign", journal=second_user.journal)
 
-    assert "TTT" in actual
-    assert "YYY" in actual
-    assert "XXX" not in actual
+    content = client_logged.get(TAB_FUNDS).content.decode()
+
+    assert _funds_tab(content) == parts
+
+
+# the update renames a fund of its own, so either save leaves one fund but YYY
+FUND_SAVES = [
+    pytest.param(lambda: reverse("savings:type_new"), id="new"),
+    pytest.param(
+        lambda: reverse(
+            "savings:type_update", kwargs={"pk": SavingTypeFactory(title="XXX").pk}
+        ),
+        id="update",
+    ),
+]
+
+
+@pytest.mark.parametrize("url_of", FUND_SAVES)
+@pytest.mark.parametrize(
+    "closed, stored, parts",
+    [
+        pytest.param(
+            "",
+            None,
+            [
+                ("", FUND_HEADER, ["TTT"]),
+                FOLD_BUTTON,
+                (FOLDED, FUND_HEADER, [_struck("YYY", 1111)]),
+            ],
+            id="open",
+        ),
+        pytest.param(
+            "1998",
+            1998,
+            [
+                "1999 metais įrašų nėra.",
+                FOLD_BUTTON,
+                (FOLDED, FUND_HEADER, [_struck("YYY", 1111), _struck("TTT", 1998)]),
+            ],
+            id="closed_before_the_year",
+        ),
+    ],
+)
+def test_a_fund_save_lands_on_the_funds_tab_drawing_it(
+    client_logged, url_of, closed, stored, parts
+):
+    SavingTypeFactory(title="YYY", closed=1111)
+    data = {"title": "TTT", "type": "pensions", "fee_source": "account"}
+
+    response = client_logged.post(url_of(), data | {"closed": closed}, follow=True)
+
+    assert response.redirect_chain == [(TAB_FUNDS, 302)]
+    assert models.SavingType.objects.exclude(title="YYY").values_list(
+        "title", "type", "fee_source", "closed"
+    ).get() == ("TTT", "pensions", "account", stored)
+    assert _funds_tab(response.content.decode()) == parts
 
 
 def test_saving_type_not_load_other_journal(client_logged, second_user):
@@ -513,36 +569,6 @@ def test_saving_type_not_load_other_journal(client_logged, second_user):
     actual = response.content.decode("utf-8")
 
     assert obj.title not in actual
-
-
-def test_type_update_with_closed(client_logged):
-    saving = SavingTypeFactory()
-
-    data = {
-        "title": "TTT",
-        "closed": "2000",
-        "type": "pensions",
-        "fee_source": "investment",
-    }
-    url = reverse("savings:type_update", kwargs={"pk": saving.pk})
-
-    response = client_logged.post(url, data, follow=True)
-
-    actual = response.content.decode("utf-8")
-
-    assert "TTT" in actual
-
-
-def test_type_list_view_has_all(client_logged):
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=1974)
-
-    url = reverse("savings:type_list")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "S1" in actual
-    assert "S2" in actual
 
 
 def test_type_new_and_update_with_the_receiver_connected(client_logged):
@@ -578,16 +604,36 @@ def test_a_user_with_no_year_raises(rf, main_user, call):
         call(rf, main_user)
 
 
-def test_a_saving_row_opens_its_own_forms(client_logged):
-    obj = SavingFactory()
+# each row's tab, what builds it, and the forms its buttons open, in column order
+ROW_FORMS = {
+    "saving": (
+        "savings:index",
+        SavingFactory,
+        [("edit-col", "savings:update"), ("delete-col", "savings:delete")],
+    ),
+    "fund": (
+        "savings:tab_funds",
+        SavingTypeFactory,
+        [("edit-col", "savings:type_update")],
+    ),
+    "closed_fund": (
+        "savings:tab_funds",
+        lambda: SavingTypeFactory(closed=1998),
+        [("edit-col", "savings:type_update")],
+    ),
+}
 
-    content = _tab(client_logged, reverse("savings:index"))
 
-    update = reverse("savings:update", kwargs={"pk": obj.pk})
-    delete = reverse("savings:delete", kwargs={"pk": obj.pk})
-    assert row_forms(content) == [
-        (update, [("edit-col", update), ("delete-col", delete)])
-    ]
+@pytest.mark.parametrize(
+    "tab_url, factory, forms", ROW_FORMS.values(), ids=ROW_FORMS.keys()
+)
+def test_a_row_opens_its_own_forms(client_logged, tab_url, factory, forms):
+    record = factory()
+
+    content = _tab(client_logged, reverse(tab_url))
+
+    urls = [(col, reverse(name, kwargs={"pk": record.pk})) for col, name in forms]
+    assert row_forms(content) == [(urls[0][1], urls)]
 
 
 def test_quick_add_offers_its_pill(client_logged):
@@ -595,6 +641,7 @@ def test_quick_add_offers_its_pill(client_logged):
 
     assert quick_add_pills(content) == [
         ("button", "savings", 'hx-get="/savings/new/"', "Pridėti taupymą"),
+        ("button", "funds", 'hx-get="/savings/type/new/"', "Pridėti fondą"),
     ]
 
 
@@ -623,8 +670,24 @@ DELETE = pytest.param(
 )
 
 
-@pytest.mark.parametrize("url_of, data_of", [*SAVES, DELETE])
-def test_a_saving_form_fires_reload(client_logged, url_of, data_of):
+def _fund_data(saving):
+    return {"title": "TTT", "type": "funds", "fee_source": "investment"}
+
+
+FUND_FORMS = [
+    pytest.param(lambda saving: reverse("savings:type_new"), _fund_data, id="fund_new"),
+    pytest.param(
+        lambda saving: reverse(
+            "savings:type_update", kwargs={"pk": saving.saving_type.pk}
+        ),
+        _fund_data,
+        id="fund_update",
+    ),
+]
+
+
+@pytest.mark.parametrize("url_of, data_of", [*SAVES, DELETE, *FUND_FORMS])
+def test_a_form_on_the_page_fires_reload(client_logged, url_of, data_of):
     saving = SavingFactory()
 
     response = client_logged.post(

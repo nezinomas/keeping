@@ -10,7 +10,7 @@ urlpatterns = [
     path("new/", views.New.as_view(), name="new"),
     path("update/<int:pk>/", views.Update.as_view(), name="update"),
     path("delete/<int:pk>/", views.Delete.as_view(), name="delete"),
-    path("type/", views.TypeLists.as_view(), name="type_list"),
+    path("funds/", views.TabFunds.as_view(), name="tab_funds"),
     path("type/new/", views.TypeNew.as_view(), name="type_new"),
     path("type/update/<int:pk>/", views.TypeUpdate.as_view(), name="type_update"),
 ]
