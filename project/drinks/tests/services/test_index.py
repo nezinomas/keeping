@@ -596,6 +596,23 @@ def test_chart_consumption_carries_the_limit_and_the_year_average(
     assert chart["decimals"] == decimals
 
 
+@pytest.mark.parametrize(
+    "year, expect",
+    [
+        pytest.param(1999, True, id="a_year_running"),
+        pytest.param(2000, False, id="a_coming_year"),
+    ],
+)
+def test_chart_consumption_draws_the_year_average_once_a_day_has_gone(
+    main_user, year, expect
+):
+    DrinkFactory(date=date(year, 1, 10), stdav=2.5)
+
+    chart = IndexTab.build(main_user, year, date(1999, 6, 1))["chart_consumption"]
+
+    assert chart.as_dict["has_avg"] is expect
+
+
 def test_index_tab_build_counts_days_dry_from_the_last_drink_not_after_today(
     main_user,
 ):
@@ -646,12 +663,9 @@ def test_card_std_drinks_of_a_coming_year_compares_with_last_year_to_today(main_
     [
         pytest.param(
             [date(2026, 1, 10)],
-            f"{_('Last year')} 1",
-            (
-                _("Calendar days with at least one Drink recorded."),
-                _("The arrow compares with last year, up to the same date."),
-            ),
-            id="against_last_year",
+            _("Calendar days with at least one Drink recorded."),
+            (_("Calendar days with at least one Drink recorded."),),
+            id="with_a_prior_year_no_arrow",
         ),
         pytest.param(
             [],

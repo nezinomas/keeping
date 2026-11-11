@@ -126,7 +126,7 @@ class FrequencyStats:
         return self._year_point.intensity
 
     def _compare(self, current: float, previous: float) -> YearOverYearReading:
-        if not self._past_daily_records:
+        if not self._past_daily_records or self._year.is_coming:
             return EmptyYearOverYear(current)
 
         return YearOverYear(current, previous)

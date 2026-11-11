@@ -190,42 +190,29 @@ def test_intensity_is_the_same_figure_under_every_drink_type(drink_type):
     assert stats.intensity == 5.0
 
 
-def test_compare_frequency_counts_both_years():
-    current = [_row(date(2026, 1, 5), 3), _row(date(2026, 1, 6), 3)]
-    past = [_row(date(2025, 1, 5), 3)]
+@pytest.mark.parametrize(
+    "year, current_days, past_days, expect",
+    [
+        pytest.param(2026, [5, 6], [5], (2, 1, True, False), id="counts_both_years"),
+        pytest.param(2026, [5], [5, 6], (1, 2, True, True), id="fewer_days_improving"),
+        pytest.param(2026, [5], [], (1, 0, False, False), id="no_prior_year_empty"),
+        pytest.param(2027, [5], [5], (1, 0, False, False), id="coming_year_empty"),
+    ],
+)
+def test_compare_frequency(year, current_days, past_days, expect):
+    current = [_row(date(year, 1, day), 3) for day in current_days]
+    past = [_row(date(year - 1, 1, day), 3) for day in past_days]
 
     actual = FrequencyStats(
-        current, past, year=2026, today=date(2026, 6, 15)
+        current, past, year=year, today=date(2026, 6, 15)
     ).compare_frequency()
 
-    assert actual.current == 2
-    assert actual.previous == 1
-    assert actual.has_past is True
-    assert actual.improving is False
-
-
-def test_compare_frequency_fewer_days_is_improving():
-    current = [_row(date(2026, 1, 5), 3)]
-    past = [_row(date(2025, 1, 5), 3), _row(date(2025, 1, 6), 3)]
-
-    actual = FrequencyStats(
-        current, past, year=2026, today=date(2026, 6, 15)
-    ).compare_frequency()
-
-    assert actual.improving is True
-
-
-def test_compare_frequency_without_a_prior_year_is_empty():
-    current = [_row(date(2026, 1, 5), 3)]
-
-    actual = FrequencyStats(
-        current, year=2026, today=date(2026, 6, 15)
-    ).compare_frequency()
-
-    assert actual.current == 1
-    assert actual.previous == 0
-    assert actual.has_past is False
-    assert actual.improving is False
+    assert (
+        actual.current,
+        actual.previous,
+        actual.has_past,
+        actual.improving,
+    ) == expect
 
 
 @pytest.mark.parametrize(

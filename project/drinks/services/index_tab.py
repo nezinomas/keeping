@@ -50,6 +50,7 @@ class ConsumptionChartViewModel(ChartViewModel):
     text: dict[str, str]
     limit: DailyLimit | NoDailyLimit
     avg: float
+    has_avg: bool
     decimals: int
 
 
@@ -164,6 +165,7 @@ class IndexBuilder:
             data=self._drink_stats.monthly.avg_daily_volume,
             limit=self._limit,
             avg=self._drink_stats.yearly.avg_daily_volume,
+            has_avg=not self._boundary.is_coming,
             decimals=self._converter.display_decimals,
             text={
                 "limit": _("Limit"),
@@ -226,14 +228,15 @@ class IndexBuilder:
 
         value = str(frequency.drinking_days)
         definition = _("Calendar days with at least one Drink recorded.")
-        explanation = (*self._share_of_year(frequency), definition)
+        share = self._share_of_year(frequency)
+        explanation = (share, definition) if share else (definition,)
         comparison = frequency.compare_frequency()
 
         if not comparison.has_past:
             return StatCard(
                 title=title,
                 value=value,
-                note=explanation[0],
+                note=share or definition,
                 explanation=explanation,
             )
 
@@ -246,17 +249,17 @@ class IndexBuilder:
         )
 
     @staticmethod
-    def _share_of_year(frequency: FrequencyStats) -> tuple[str, ...]:
+    def _share_of_year(frequency: FrequencyStats) -> str:
         """Nothing for a Coming year: a share of no days gone is no share."""
         if not frequency.days_elapsed:
-            return ()
+            return ""
 
         share = (
             _("%(share)s%% of the year so far")
             if frequency.is_current_year
             else _("%(share)s%% of the year")
         )
-        return (share % {"share": f"{frequency.drinking_day_share * 100:.0f}"},)
+        return share % {"share": f"{frequency.drinking_day_share * 100:.0f}"}
 
     def _card_std_drinks(self) -> Card:
         title = _("Std drinks")

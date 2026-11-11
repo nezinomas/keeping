@@ -31,6 +31,20 @@ function chartOverview(consumptionId, quantityId, containerId) {
         )
     }] : [];
 
+    const avgRule = consumption.has_avg ? [{
+        color: avgLineColor,
+        width: 1.5,
+        dashStyle: "Dot",
+        value: consumption.avg,
+        zIndex: 11,
+        label: Object.assign(
+            paperRuleLabel(
+                `Avg: ${consumption.avg.toFixed(consumption.decimals)}`
+            ),
+            { y: avgLabelY - 8 }
+        )
+    }] : [];
+
     // under the Limit is the baseline reading, so it is the data
     // hue; over it is the only part of the year that gets harm
     const dataZone = {
@@ -59,19 +73,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         zIndex: 10,
                     },
                     ...limitRule,
-                    {
-                        color: avgLineColor,
-                        width: 1.5,
-                        dashStyle: "Dot",
-                        value: consumption.avg,
-                        zIndex: 11,
-                        label: Object.assign(
-                            paperRuleLabel(
-                                `Avg: ${consumption.avg.toFixed(consumption.decimals)}`
-                            ),
-                            { y: avgLabelY - 8 }
-                        )
-                    }
+                    ...avgRule,
                 ],
             }),
             Highcharts.merge(paper.paneBottom, {
