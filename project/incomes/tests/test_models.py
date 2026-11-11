@@ -43,10 +43,16 @@ def test_income_type_items_journal_queries(main_user, django_assert_max_num_quer
         [t.journal for t in IncomeTypeModelService(main_user).items()]
 
 
-def test_income_type_unique_for_journal(main_user):
-    IncomeType.objects.create(title="T", journal=main_user.journal)
-    with pytest.raises(IntegrityError):
-        IncomeType.objects.create(title="T", journal=main_user.journal)
+@pytest.mark.parametrize(
+    "first, second",
+    [("T", "T"), ("Būstas", "Bustas")],
+    ids=["same_title", "same_slug"],
+)
+def test_income_type_slug_unique_per_journal(main_user, first, second):
+    IncomeType.objects.create(title=first, journal=main_user.journal)
+
+    with pytest.raises(IntegrityError, match=r"incomes_incometype\.slug"):
+        IncomeType.objects.create(title=second, journal=main_user.journal)
 
 
 def test_income_type_unique_for_journals(main_user, second_user):
@@ -59,65 +65,83 @@ def test_income_type_unique_for_journals(main_user, second_user):
     ] == [["T"], ["T"]]
 
 
-def test_income_type_slug_unique_per_journal():
-    obj1 = IncomeTypeFactory(title="Būstas")
-
-    with pytest.raises(IntegrityError):
-        IncomeTypeFactory(title="Bustas", journal=obj1.journal)
-
-
 def test_income_str():
     i = IncomeFactory.build()
 
     assert str(i) == "1999-01-01: Income Type"
 
 
-def test_sum_all_months(main_user, incomes):
-    expect = [
-        {"date": date(1999, 1, 1), "sum": 550, "title": "incomes"},
-        {"date": date(1999, 2, 1), "sum": 125, "title": "incomes"},
-    ]
+@pytest.mark.parametrize(
+    "month, expect",
+    [
+        pytest.param(
+            0,
+            [
+                {"date": date(1999, 1, 1), "sum": 550, "title": "incomes"},
+                {"date": date(1999, 2, 1), "sum": 125, "title": "incomes"},
+            ],
+            id="all_months",
+        ),
+        pytest.param(
+            1,
+            [{"date": date(1999, 1, 1), "sum": 550, "title": "incomes"}],
+            id="one_month",
+        ),
+    ],
+)
+def test_sum_by_month(main_user, incomes, month, expect):
+    actual = list(IncomeModelService(main_user).sum_by_month(1999, month))
 
-    actual = list(IncomeModelService(main_user).sum_by_month(1999))
-
-    assert expect == actual
-
-
-def test_sum_one_month(main_user, incomes):
-    expect = [{"date": date(1999, 1, 1), "sum": 550, "title": "incomes"}]
-
-    actual = list(IncomeModelService(main_user).sum_by_month(1999, 1))
-
-    assert expect == actual
+    assert actual == expect
 
 
 @factory.django.mute_signals(post_save)
 def test_incomes_items(main_user, second_user):
     income = IncomeFactory()
-    IncomeFactory(
-        account=AccountFactory(journal=second_user.journal),
+    foreign = IncomeFactory(
+        account=AccountFactory(title="Account2", journal=second_user.journal),
         income_type=IncomeTypeFactory(title="T2", journal=second_user.journal),
     )
 
+    assert foreign.account.journal == second_user.journal
     assert list(IncomeModelService(main_user).items()) == [income]
 
 
-def test_incomes_items_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        qs = IncomeModelService(main_user).items()
-        list([x["date"] for x in qs])
+def _incomes_each_on_its_own_account_and_type(journal, start, stop):
+    for i in range(start, stop):
+        IncomeFactory(
+            account=AccountFactory(title=f"A{i}", journal=journal),
+            income_type=IncomeTypeFactory(title=f"T{i}", journal=journal),
+        )
 
 
-def test_incomes_year_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        qs = IncomeModelService(main_user).year(1999)
-        list([x["date"] for x in qs])
+def _account_and_type(rows):
+    return [(row.account.title, row.income_type.title) for row in rows]
 
 
-def test_incomes_income_sum_query_count(main_user, django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        qs = IncomeModelService(main_user).sum_by_month(1999)
-        list([x["date"] for x in qs])
+@factory.django.mute_signals(post_save)
+@pytest.mark.parametrize(
+    "read",
+    [
+        pytest.param(lambda s: _account_and_type(s.items()), id="items"),
+        pytest.param(lambda s: _account_and_type(s.year(1999)), id="year"),
+        pytest.param(lambda s: list(s.sum_by_month(1999)), id="sum_by_month"),
+        pytest.param(lambda s: list(s.sum_by_year()), id="sum_by_year"),
+        pytest.param(
+            lambda s: list(s.sum_by_year(["salary"])), id="sum_by_year_of_types"
+        ),
+    ],
+)
+def test_incomes_query_count_does_not_grow(main_user, read):
+    journal = main_user.journal
+    service = IncomeModelService(main_user)
+
+    _incomes_each_on_its_own_account_and_type(journal, 0, 2)
+    two = count_queries(lambda: read(service))
+    _incomes_each_on_its_own_account_and_type(journal, 2, 6)
+    six = count_queries(lambda: read(service))
+
+    assert (two, six) == (1, 1)
 
 
 def test_balance(main_user, incomes):
@@ -298,7 +322,7 @@ def test_income_post_delete_with_update():
     assert actual.incomes == 1.0
     assert actual.balance == 1.0
 
-    assert Income.objects.all().count() == 1
+    assert list(Income.objects.values_list("price", flat=True)) == [1]
 
 
 def _new_income(income):
@@ -408,15 +432,6 @@ def test_income_years_sum(main_user):
     assert actual == [{"year": 1998, "sum": 8.0}, {"year": 1999, "sum": 10.0}]
 
 
-def test_income_year_sum_count_qs(main_user, django_assert_max_num_queries):
-    IncomeFactory()
-
-    with django_assert_max_num_queries(1):
-        actual = [x["year"] for x in IncomeModelService(main_user).sum_by_year()]
-
-    assert actual == [1999]
-
-
 @pytest.mark.parametrize(
     "types, expected",
     [(["x"], 10.0), (["x", "y"], 25.0)],
@@ -447,13 +462,6 @@ def test_income_year_sum_filter(main_user, types, expected):
     actual = list(IncomeModelService(main_user).sum_by_year(types))
 
     assert actual == [{"year": 1999, "sum": expected}]
-
-
-def test_income_year_sum_filter_count_qs(main_user, django_assert_max_num_queries):
-    IncomeFactory()
-
-    with django_assert_max_num_queries(1):
-        list([x["year"] for x in IncomeModelService(main_user).sum_by_year(["x"])])
 
 
 def test_income_journal_is_its_accounts(second_user):
