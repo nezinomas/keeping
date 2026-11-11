@@ -20,10 +20,16 @@ from django.db.models.functions import (
 )
 
 from ...core.lib.date import last_months_window
+from ...core.lib.utils import add_fast_urls
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService, DatedModelService
 from ...core.services.span_sums import SpanReadsMixin
 from .. import models
+
+
+def with_row_urls(rows: list[dict]) -> list[dict]:
+    """Expense rows with their update and delete links."""
+    return add_fast_urls(rows, update="expenses:update", delete="expenses:delete")
 
 
 class ExpenseTypeModelService(BaseModelService):

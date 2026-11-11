@@ -1,4 +1,4 @@
-from functools import cached_property, partial
+from functools import cached_property
 from typing import cast
 from urllib.parse import urlencode
 
@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import PriceToFloatViewMixin
 from ...core.lib.overview_cards import Overview
-from ...core.lib.utils import add_fast_urls, int_or_zero
+from ...core.lib.utils import int_or_zero
 from ...core.lib.year_boundary import YearBoundary
 from ...core.mixins.kwargs import TodayMixin
 from ...core.mixins.tabs import TabViewMixin as CoreTabViewMixin
@@ -26,6 +26,7 @@ from ..services import search
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
+    with_row_urls,
 )
 from ..services.month_filter import ALL, MonthFilter
 from ..tabs import TABS
@@ -107,7 +108,7 @@ class Lists(TodayMixin, ListViewMixin):
 
         data = service.expenses_list(qs)
 
-        return add_fast_urls(data, update="expenses:update", delete="expenses:delete")
+        return with_row_urls(data)
 
     def get_context_data(self, **kwargs):
         year = self.user.selected_year()
@@ -143,9 +144,7 @@ class Search(SearchViewMixin):
     template_name = "expenses/expense_list.html"
     search_method = staticmethod(search.search_expenses)
     search_totals = staticmethod(search.search_totals)
-    search_rows = staticmethod(
-        partial(add_fast_urls, update="expenses:update", delete="expenses:delete")
-    )
+    search_rows = staticmethod(with_row_urls)
 
     def get_context_data(self, **kwargs):
         # a page link of only a query lands on the Duomenys url the search was pushed to
