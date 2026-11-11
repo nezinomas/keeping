@@ -347,6 +347,11 @@ ROW_FORMS = {
         AccountFactory,
         [("edit-col", "accounts:update")],
     ),
+    "closed_account": (
+        "transactions:tab_accounts",
+        partial(AccountFactory, closed=1998),
+        [("edit-col", "accounts:update")],
+    ),
 }
 ROW = re.compile(
     r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"[^>]*>'
