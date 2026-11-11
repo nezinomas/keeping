@@ -831,6 +831,7 @@ def _other_journals_name(journal):
     "url_name, other_row",
     [
         pytest.param("expenses:update", _other_journals_expense, id="expense"),
+        pytest.param("expenses:delete", _other_journals_expense, id="expense_delete"),
         pytest.param("expenses:type_update", _other_journals_type, id="type"),
         pytest.param("expenses:name_update", _other_journals_name, id="name"),
     ],
@@ -930,20 +931,6 @@ def test_view_expenses_delete(client_logged):
     client_logged.post(url)
 
     assert models.Expense.objects.all().count() == 0
-
-
-def test_expenses_delete_other_journal_get_form(client_logged, second_user):
-    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
-    other_expense = ExpenseFactory(
-        expense_type=other_type,
-        account=AccountFactory(title="A2", journal=second_user.journal),
-        price=666,
-    )
-
-    url = reverse("expenses:delete", kwargs={"pk": other_expense.pk})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
 
 
 def test_expenses_delete_other_journal_post_form(client_logged, second_user):
