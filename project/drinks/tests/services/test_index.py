@@ -659,24 +659,14 @@ def test_card_std_drinks_of_a_coming_year_compares_with_last_year_to_today(main_
 
 
 @pytest.mark.parametrize(
-    "past, note, explanation",
+    "past",
     [
-        pytest.param(
-            [date(2026, 1, 10)],
-            _("Calendar days with at least one Drink recorded."),
-            (_("Calendar days with at least one Drink recorded."),),
-            id="with_a_prior_year_no_arrow",
-        ),
-        pytest.param(
-            [],
-            _("Calendar days with at least one Drink recorded."),
-            (_("Calendar days with at least one Drink recorded."),),
-            id="without_a_prior_year",
-        ),
+        pytest.param([date(2026, 1, 10)], id="with_a_prior_year"),
+        pytest.param([], id="without_a_prior_year"),
     ],
 )
-def test_card_drinking_days_of_a_coming_year_states_no_share(
-    main_user, past, note, explanation
+def test_card_drinking_days_of_a_coming_year_states_no_share_and_no_arrow(
+    main_user, past
 ):
     DrinkFactory(date=date(2027, 1, 2), stdav=12)
     for drink_date in past:
@@ -684,5 +674,10 @@ def test_card_drinking_days_of_a_coming_year_states_no_share(
 
     cards = IndexTab.build(main_user, 2027, date(2026, 11, 3))["cards"]
     card = next(card for card in cards if card.title == _("Drinking days"))
+    definition = _("Calendar days with at least one Drink recorded.")
 
-    assert (card.note, card.explanation) == (note, explanation)
+    assert (card.note, card.explanation, card.show_icon) == (
+        definition,
+        (definition,),
+        False,
+    )
