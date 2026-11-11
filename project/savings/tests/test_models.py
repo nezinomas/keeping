@@ -6,7 +6,7 @@ import pytest
 import time_machine
 from django.apps import apps
 from django.db import IntegrityError, connection
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_save
 from django.test.utils import CaptureQueriesContext
 
 from ...accounts.models import AccountBalance
@@ -238,7 +238,6 @@ def test_saving_read_query_count(
     assert actual == expect
 
 
-@factory.django.mute_signals(post_save, post_delete)
 @pytest.mark.parametrize(
     "sums, expect",
     [
