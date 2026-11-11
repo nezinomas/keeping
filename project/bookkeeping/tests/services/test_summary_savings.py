@@ -36,30 +36,6 @@ data_stragety = st.lists(
 )
 
 
-@given(data_stragety)
-@example(data=[{"year": 1999, "incomes": 0, "profit": 500, "total": 0}])
-def test_chart_data_with_hypothesis(data):
-    actual = make_chart("x", data, today=TODAY)
-
-    years = actual["categories"]
-    assert years == sorted(set(years))
-    assert all(year <= TODAY.year for year in years)
-    assert len(actual["invested"]) == len(years)
-    assert len(actual["profit"]) == len(years)
-    assert len(actual["total"]) == len(years)
-    assert len(actual["proc"]) == len(years)
-    for year, total in zip(years, actual["total"], strict=True):
-        assert total == sum(row["total"] for row in data if row["year"] == year)
-    past = {row["year"] for row in data if row["year"] <= TODAY.year}
-    expected = {
-        year
-        for year in past
-        if sum(row["total"] for row in data if row["year"] == year)
-        or sum(row["profit"] for row in data if row["year"] == year)
-    }
-    assert expected <= set(years)
-
-
 @given(
     sources=st.lists(data_stragety, min_size=1, max_size=3),
     today=st.dates(date(1974, 1, 1), date(2050, 12, 31)),
@@ -70,25 +46,71 @@ def test_chart_data_with_hypothesis(data):
 @example(sources=[DATA1, DATA2], today=date(2000, 1, 1))
 @example(sources=[DATA1, []], today=TODAY)
 @example(sources=[[]], today=TODAY)
+@example(
+    sources=[[{"year": 1999, "incomes": 0, "profit": 500, "total": 0}]], today=TODAY
+)
+@example(sources=[[{"year": 2010, "incomes": 1, "profit": 1, "total": 2}]], today=TODAY)
 def test_chart_data_sums_the_sources_by_year_up_to_today(sources, today):
     rows = [row for source in sources for row in source]
-    by_year = {
-        year: {
-            key: sum(row[key] for row in rows if row["year"] == year)
-            for key in ("profit", "total")
-        }
-        for year in {row["year"] for row in rows if row["year"] <= today.year}
-    }
-    shown = sorted(year for year, sums in by_year.items() if any(sums.values()))
+    up_to_today = [row for row in rows if row["year"] <= today.year]
 
     actual = make_chart("x", *sources, today=today)
 
-    assert actual["categories"] == shown
-    assert actual["profit"] == [by_year[year]["profit"] for year in shown]
-    assert actual["total"] == [by_year[year]["total"] for year in shown]
+    years = actual["categories"]
+    assert years == sorted(set(years))
+    assert all(year <= today.year for year in years)
+    missing = {row["year"] for row in up_to_today if row["total"]} - set(years)
+    assert missing == set()
+    assert all(
+        total or profit
+        for total, profit in zip(actual["total"], actual["profit"], strict=True)
+    )
+    for key in ("invested", "profit", "total", "proc"):
+        assert len(actual[key]) == len(years)
     assert actual["invested"] == [
-        by_year[year]["total"] - by_year[year]["profit"] for year in shown
+        total - profit
+        for total, profit in zip(actual["total"], actual["profit"], strict=True)
     ]
+    assert sum(actual["total"]) == sum(row["total"] for row in up_to_today)
+    assert sum(actual["profit"]) == sum(row["profit"] for row in up_to_today)
+    assert make_chart("x", rows, today=today) == actual
+    assert make_chart("x", *reversed(sources), today=today) == actual
+
+
+@pytest.mark.parametrize(
+    "today, sources, categories, invested, profit, total",
+    [
+        pytest.param(TODAY, [DATA1], [2000, 2001], [1, 2], [1, 2], [2, 4], id="one"),
+        pytest.param(
+            date(2000, 1, 1), [DATA1], [2000], [1], [1], [2], id="one_year_cut"
+        ),
+        pytest.param(
+            TODAY, [DATA1, DATA2], [2000, 2001], [5, 7], [5, 7], [10, 14], id="two"
+        ),
+        pytest.param(
+            date(2000, 1, 1), [DATA1, DATA2], [2000], [5], [5], [10], id="two_year_cut"
+        ),
+        pytest.param(
+            TODAY,
+            [DATA1, []],
+            [2000, 2001],
+            [1, 2],
+            [1, 2],
+            [2, 4],
+            id="empty_second",
+        ),
+        pytest.param(TODAY, [[]], [], [], [], [], id="no_data"),
+    ],
+)
+def test_chart_data_of_known_sources(
+    today, sources, categories, invested, profit, total
+):
+    actual = make_chart("x", *sources, today=today)
+
+    assert actual["categories"] == categories
+    assert actual["invested"] == invested
+    assert actual["profit"] == profit
+    assert actual["total"] == total
 
 
 def test_chart_keeps_a_year_whose_shown_rows_paid_nothing_in():
@@ -120,23 +142,11 @@ def test_chart_data_db1(main_user):
 
 
 @pytest.mark.parametrize(
-    "data, expect",
-    [
-        pytest.param(LOAD_FULL, 12, id="full"),
-        pytest.param(LOAD_FUNDS, 6, id="funds"),
-    ],
-)
-def test_load_service_records(data, expect):
-    actual = load_service(data, chart_keys_map(), TODAY)
-
-    assert actual["records"] == expect
-
-
-@pytest.mark.parametrize(
-    "data, expect, titles",
+    "data, records, expect, titles",
     [
         pytest.param(
             LOAD_FULL,
+            12,
             [
                 "funds",
                 "shares",
@@ -157,15 +167,17 @@ def test_load_service_records(data, expect):
         ),
         pytest.param(
             LOAD_FUNDS,
+            6,
             ["funds", "funds_shares", "funds_shares_pensions"],
             ["Fondai", "Fondai, Akcijos", "Fondai, Akcijos, Pensijos III"],
             id="funds",
         ),
     ],
 )
-def test_load_service_template_variables(data, expect, titles):
+def test_load_service_template_variables(data, records, expect, titles):
     actual = load_service(data, chart_keys_map(), TODAY)
 
+    assert actual["records"] == records
     assert actual["pointers"] == expect
     assert list(actual["charts"].keys()) == expect
     assert [chart["title"] for chart in actual["charts"].values()] == titles

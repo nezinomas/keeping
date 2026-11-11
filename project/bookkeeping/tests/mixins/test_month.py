@@ -8,10 +8,14 @@ from hypothesis import strategies as st
 from ....users.tests.factories import User, UserFactory
 from ...mixins.month import MonthMixin
 
+USER_MONTH = 7
+
 
 def _get_month(month):
     class Dummy(MonthMixin):
-        request = SimpleNamespace(GET={"month": month}, user=UserFactory.build())
+        request = SimpleNamespace(
+            GET={"month": month}, user=UserFactory.build(month=USER_MONTH)
+        )
 
     return Dummy().get_month()
 
@@ -35,7 +39,7 @@ def test_get_month_reads_a_month_from_one_to_twelve(month, as_text):
 @example(month="")
 @example(month=None)
 def test_get_month_falls_back_to_the_users_month(month):
-    assert _get_month(month) == 12
+    assert _get_month(month) == USER_MONTH
 
 
 @pytest.mark.django_db

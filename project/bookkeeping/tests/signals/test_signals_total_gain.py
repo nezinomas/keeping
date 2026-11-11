@@ -4,11 +4,11 @@ import pytest
 
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import PensionWorthFactory
-from ....bookkeeping.tests.helper import quiet_build, quiet_syncs
+from ....bookkeeping.tests.helper import quiet_build
 from ....core.tests.utils import count_queries
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
-from ....savings.models import SavingBalance, SavingType
+from ....savings.models import SavingBalance
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from .helpers import (
@@ -16,7 +16,6 @@ from .helpers import (
     balance,
     buy,
     sell,
-    switch_out,
     worth,
     worth_date,
 )
@@ -95,17 +94,6 @@ def test_fund_closed_without_a_sell_keeps_its_worth():
     worth(fund, 120000)
 
     actual = balance(fund)
-    assert actual.market_value == 120000
-    assert actual.profit_sum == 20000
-    assert actual.profit_proc == 20.0
-
-
-def test_closed_pension_keeps_its_worth():
-    pension = PensionTypeFactory(title="Pension", closed=YEAR)
-    PensionFactory(pension_type=pension, price=100000, fee=0, date=date(YEAR, 1, 1))
-    PensionWorthFactory(pension_type=pension, price=120000, date=worth_date())
-
-    actual = PensionBalance.objects.get(pension_type=pension, year=YEAR)
     assert actual.market_value == 120000
     assert actual.profit_sum == 20000
     assert actual.profit_proc == 20.0
@@ -191,32 +179,6 @@ def test_closing_a_pension_type_drops_its_later_rows():
 
 
 # ----------------------------------------------------------------------------
-#                                        deleting a move leaves an open fund open
-# ----------------------------------------------------------------------------
-MOVE_OUT = {
-    "sell": lambda fund, when: sell(fund, 10000, when=when),
-    "switch": lambda fund, when: switch_out(fund, 10000, when),
-}
-
-
-def _closed(fund):
-    return SavingType.objects.get(pk=fund.pk).closed
-
-
-@pytest.mark.parametrize("move", MOVE_OUT)
-def test_deleting_a_move_leaves_an_open_fund_open(move):
-    with quiet_syncs():
-        fund = SavingTypeFactory(title="Fund")
-        buy(fund, 100000)
-        MOVE_OUT[move](fund, date(YEAR, 6, 1))
-        later = MOVE_OUT[move](fund, date(YEAR + 1, 6, 1))
-
-        later.delete()
-
-    assert _closed(fund) is None
-
-
-# ----------------------------------------------------------------------------
 #                                        a row with nothing taken out is as before
 # ----------------------------------------------------------------------------
 def _no_worth():
@@ -273,14 +235,22 @@ def test_row_with_nothing_taken_out_reads_as_before(build):
         assert (actual.profit_sum, actual.profit_proc) == (profit_sum, profit_proc)
 
 
-def test_pension_reads_as_before():
-    pension = PensionTypeFactory(title="Pension")
-    PensionFactory(pension_type=pension, price=10000, fee=100, date=date(YEAR, 1, 1))
-    PensionWorthFactory(pension_type=pension, price=11000, date=worth_date())
+@pytest.mark.parametrize(
+    "closed, price, fee, worth_price, expected",
+    [
+        pytest.param(YEAR, 100000, 0, 120000, (120000, 20000, 20.0), id="closed"),
+        pytest.param(None, 10000, 100, 11000, (11000, 900, 9.0), id="open"),
+    ],
+)
+def test_pension_keeps_its_worth_open_or_closed(
+    closed, price, fee, worth_price, expected
+):
+    pension = PensionTypeFactory(title="Pension", closed=closed)
+    PensionFactory(pension_type=pension, price=price, fee=fee, date=date(YEAR, 1, 1))
+    PensionWorthFactory(pension_type=pension, price=worth_price, date=worth_date())
 
     actual = PensionBalance.objects.get(pension_type=pension, year=YEAR)
-    assert actual.profit_sum == 900
-    assert actual.profit_proc == 9.0
+    assert (actual.market_value, actual.profit_sum, actual.profit_proc) == expected
 
 
 def test_new_fund_before_its_first_worth_reads_no_percent():
@@ -327,18 +297,6 @@ def _save_queries(type_):
     return count_queries(type_.save)
 
 
-def test_saving_a_saving_type_query_count_does_not_grow_with_the_types(main_user):
-    with quiet_build(main_user):
-        funds = [_fund_with_worth(f"T{i}") for i in range(2)]
-    few = _save_queries(funds[0])
-
-    with quiet_build(main_user):
-        funds += [_fund_with_worth(f"T{i}") for i in range(2, 4)]
-    many = _save_queries(funds[0])
-
-    assert many == few
-
-
 def _pension_with_worth(title):
     pension = PensionTypeFactory(title=title)
     PensionFactory(pension_type=pension, price=10000, fee=0, date=date(YEAR, 1, 1))
@@ -346,14 +304,19 @@ def _pension_with_worth(title):
     return pension
 
 
-def test_saving_a_pension_type_query_count_does_not_grow_with_the_types(main_user):
+@pytest.mark.parametrize(
+    "build",
+    [_fund_with_worth, _pension_with_worth],
+    ids=["saving_type", "pension_type"],
+)
+def test_saving_a_type_query_count_does_not_grow_with_the_types(main_user, build):
     with quiet_build(main_user):
-        pensions = [_pension_with_worth(f"P{i}") for i in range(2)]
-    few = _save_queries(pensions[0])
+        types = [build(f"T{i}") for i in range(2)]
+    few = _save_queries(types[0])
 
     with quiet_build(main_user):
-        pensions += [_pension_with_worth(f"P{i}") for i in range(2, 4)]
-    many = _save_queries(pensions[0])
+        types += [build(f"T{i}") for i in range(2, 6)]
+    many = _save_queries(types[0])
 
     assert many == few
 

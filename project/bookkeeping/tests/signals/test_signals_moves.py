@@ -105,15 +105,25 @@ def test_deleting_the_closing_move_syncs_once_and_reopens_the_fund(
     assert savings.call_count == 1
 
 
-@pytest.mark.parametrize("move", FACTORIES)
-def test_move_saved_without_a_form_to_another_fund_follows_the_one_it_left(move):
+@pytest.fixture(name="moved_to_another_fund", params=FACTORIES)
+def fixture_moved_to_another_fund(request):
+    """A closed fund's only move, saved again on another fund: the fund it left and
+    the move."""
     first = SavingTypeFactory(title="First", closed=1999)
     second = SavingTypeFactory(title="Second")
-    FACTORIES[move](from_account=first, date="2000-06-01")
-    row = FACTORIES[move]._meta.model.objects.get()
+    FACTORIES[request.param](from_account=first, date="2000-06-01")
+    row = FACTORIES[request.param]._meta.model.objects.get()
 
     row.from_account = second
     row.save()
+
+    return first, row
+
+
+def test_move_saved_without_a_form_to_another_fund_follows_the_one_it_left(
+    moved_to_another_fund,
+):
+    first, _ = moved_to_another_fund
 
     first.refresh_from_db()
     assert first.closed == 1999
@@ -127,10 +137,12 @@ def test_move_saved_without_a_form_to_another_fund_follows_the_one_it_left(move)
         pytest.param(date(1999, 6, 1), 2001, 1, id="last"),
         # a move left on the closing day is the closing move now
         pytest.param(date(1999, 3, 1), 1999, 1, id="same_day_as_another"),
+        # an open fund stays open
+        pytest.param(date(1999, 6, 1), None, 1, id="open"),
     ],
 )
 @pytest.mark.parametrize("move", FACTORIES)
-def test_deleting_a_move_that_is_not_the_closing_one_keeps_the_close_year(
+def test_deleting_a_move_that_is_not_the_closing_one_leaves_closed_as_it_was(
     move, second_day, closed, deleted
 ):
     fund = SavingTypeFactory(title="Fund")
@@ -146,14 +158,10 @@ def test_deleting_a_move_that_is_not_the_closing_one_keeps_the_close_year(
     assert fund.closed == closed
 
 
-@pytest.mark.parametrize("move", FACTORIES)
-def test_move_saved_again_without_a_form_leaves_a_fund_it_left_alone(move):
-    first = SavingTypeFactory(title="First", closed=1999)
-    second = SavingTypeFactory(title="Second")
-    FACTORIES[move](from_account=first, date="2000-06-01")
-    row = FACTORIES[move]._meta.model.objects.get()
-    row.from_account = second
-    row.save()
+def test_move_saved_again_without_a_form_leaves_a_fund_it_left_alone(
+    moved_to_another_fund,
+):
+    first, row = moved_to_another_fund
     SavingType.objects.filter(pk=first.pk).update(closed=2005)
 
     row.save()

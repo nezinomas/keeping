@@ -12,9 +12,9 @@ WEEKDAYS = st.integers(0, 6)
     value=st.one_of(WEEKDAYS, WEEKDAYS.map(str), st.just("")),
     css_class=st.text(string.ascii_letters, min_size=1),
 )
-@example(value="0", css_class="X")  # saturday
+@example(value="0", css_class="X")  # sunday
 @example(value=0, css_class="X")
-@example(value="6", css_class="X")  # sunday
+@example(value="6", css_class="X")  # saturday
 @example(value=6, css_class="X")
 @example(value="1", css_class="X")
 @example(value=1, css_class="X")
