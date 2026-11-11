@@ -840,7 +840,7 @@ def test_closing_sell_removed_reopens_the_fund(
 
     edit(client_logged, sell, other)
 
-    assert fund in SavingTypeModelService(main_user).items(year=2024)
+    assert fund in SavingTypeModelService(main_user).items_in(2024)
     years = SavingBalance.objects.filter(saving_type=fund).values_list("year")
     assert {year for (year,) in years} == years_after
 

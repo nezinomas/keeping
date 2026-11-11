@@ -115,13 +115,17 @@ def test_savings_services_read_only_their_journal(
 
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
-    "kwargs", [{"year": 1999}, {}], ids=["given_year", "year_from_get_user"]
+    "read",
+    [
+        pytest.param(lambda service: service.items_in(1999), id="given_year"),
+        pytest.param(lambda service: service.items(), id="year_from_get_user"),
+    ],
 )
-def test_saving_type_items_filter_closed_in_future(main_user, kwargs):
+def test_saving_type_items_filter_closed_in_future(main_user, read):
     SavingTypeFactory(title="T1", closed=1998)
     SavingTypeFactory(title="T2", closed=2000)
 
-    actual = SavingTypeModelService(main_user).items(**kwargs)
+    actual = read(SavingTypeModelService(main_user))
 
     assert [row.title for row in actual] == ["T2"]
 
@@ -140,6 +144,28 @@ def test_saving_type_items_closed(main_user, user_year, expect):
     actual = SavingTypeModelService(main_user).items()
 
     assert actual.count() == expect
+
+
+@factory.django.mute_signals(post_save)
+def test_saving_type_closed_before_lists_by_close_year_kind_title(
+    main_user, second_user
+):
+    kinds = SavingType.Types
+    SavingTypeFactory(title="Open")
+    SavingTypeFactory(title="Shares 2019", type=kinds.SHARES, closed=2019)
+    SavingTypeFactory(title="Y pensions 2021", type=kinds.PENSIONS, closed=2021)
+    SavingTypeFactory(title="Z funds 2021", type=kinds.FUNDS, closed=2021)
+    SavingTypeFactory(title="Funds 2022", closed=2022)
+    SavingTypeFactory(title="Funds 2024", closed=2024)
+    SavingTypeFactory(title="Other journal", closed=2019, journal=second_user.journal)
+
+    actual = SavingTypeModelService(main_user).closed_before(2022)
+
+    assert [row.title for row in actual] == [
+        "Shares 2019",
+        "Z funds 2021",
+        "Y pensions 2021",
+    ]
 
 
 @pytest.mark.parametrize(

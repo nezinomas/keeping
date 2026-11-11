@@ -40,9 +40,14 @@ class SavingTypeModelService(BaseModelService):
     def none(self):
         return self.objects.none()
 
-    def items(self, year=None):
-        year = year or self.user.selected_year()
+    def items(self):
+        return self.items_in(self.user.selected_year())
+
+    def items_in(self, year: int):
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
+
+    def closed_before(self, year: int):
+        return self.objects.filter(closed__lt=year).order_by("closed", "type", "title")
 
     def latest_row_year(self, fund: models.SavingType) -> int:
         if not fund.pk:
