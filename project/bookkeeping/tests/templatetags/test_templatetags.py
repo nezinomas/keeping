@@ -73,3 +73,12 @@ def test_info_table_for_calculate_debt_remains(info_table):
     actual = info_table(ctx)
 
     assert "Liko grąžinti:0,02" in actual
+
+
+def test_info_table_empty_shows_a_dash_for_each_figure(info_table):
+    ctx = {"data": {"data": [1, 2], "title": ["x", "y"], "empty": True}}
+
+    actual = info_table(ctx)
+
+    assert actual.count("&mdash;") == 2
+    assert "0,01" not in actual

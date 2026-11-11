@@ -307,3 +307,16 @@ def test_balance_money_flow_subtracts_account_charged_savings_fees(data, amount_
 
     assert actual.money_flow == [flow - 4 for flow in without_fee]
     assert actual.amount_end == without_fee[-1] - 4
+
+
+@pytest.mark.parametrize(
+    "today, expect",
+    [
+        pytest.param(date(1998, 12, 1), True, id="coming"),
+        pytest.param(date(1999, 2, 1), False, id="current"),
+    ],
+)
+def test_year_balance_knows_a_coming_year(data, today, expect):
+    actual = YearBalance(data=data, amount_start=0, today=today).is_coming
+
+    assert actual is expect

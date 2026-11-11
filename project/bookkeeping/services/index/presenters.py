@@ -64,6 +64,7 @@ class IndexContextBuilder:
         return {
             "title": [_("Average incomes"), _("Average expenses")],
             "data": [self._balance.avg_incomes, self._balance.avg_expenses],
+            "empty": self._balance.is_coming,
         }
 
     def borrow_context(self) -> dict:
