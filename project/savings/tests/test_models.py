@@ -12,6 +12,7 @@ from django.test.utils import CaptureQueriesContext
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
 from ...accounts.tests.factories import AccountFactory
+from ...bookkeeping.tests import helper
 from ...bookkeeping.tests.factories import SavingWorthFactory
 from ...incomes.tests.factories import IncomeFactory
 from ...savings.tests.factories import (
@@ -265,7 +266,9 @@ def test_saving_read_query_count(
         ),
     ],
 )
-def test_saving_sums_of_the_fixture_savings(main_user, savings, sums, expect):
+def test_saving_sums_of_the_fixture_savings(
+    main_user, quiet_syncs, savings, sums, expect
+):
     actual = list(sums(SavingModelService(main_user)))
 
     assert expect == actual
@@ -339,8 +342,9 @@ def test_saving_post_save(main_user, price, fee):
     ],
 )
 def test_saving_post_save_update(account, saving_type, price, fee):
-    accounts = {t: AccountFactory(title=t) for t in ("A", "A-New")}
-    saving_types = {t: SavingTypeFactory(title=t) for t in ("S", "S-New")}
+    with helper.quiet_syncs():
+        accounts = {t: AccountFactory(title=t) for t in ("A", "A-New")}
+        saving_types = {t: SavingTypeFactory(title=t) for t in ("S", "S-New")}
     obj = SavingFactory(
         saving_type=saving_types["S"], account=accounts["A"], price=10, fee=2
     )
@@ -440,8 +444,7 @@ def test_saving_post_delete(main_user, prior_prices, account_rows, saving_rows):
     assert Saving.objects.count() == len(prior_prices)
 
 
-@factory.django.mute_signals(post_save, post_delete)
-def test_savings_incomes(main_user, savings):
+def test_savings_incomes(main_user, quiet_syncs, savings):
     SavingFactory(
         date=date(1999, 1, 1),
         price=225,
@@ -536,9 +539,10 @@ def test_saving_balance_items_queries(main_user, django_assert_num_queries):
     ],
 )
 def test_saving_balance_filter_by_types(main_user, types, expect_titles):
-    SavingFactory(saving_type=SavingTypeFactory(title="1", type="x"))
-    SavingFactory(saving_type=SavingTypeFactory(title="2", type="y"))
-    SavingFactory(saving_type=SavingTypeFactory(title="3", type="z"))
+    with helper.quiet_build(main_user):
+        SavingFactory(saving_type=SavingTypeFactory(title="1", type="x"))
+        SavingFactory(saving_type=SavingTypeFactory(title="2", type="y"))
+        SavingFactory(saving_type=SavingTypeFactory(title="3", type="z"))
 
     actual = SavingBalanceModelService(main_user).year_of_types(1999, types)
 
@@ -570,11 +574,11 @@ def test_saving_balance_year_orders_by_type_then_title(main_user, funds, expect_
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("fund_type", ["funds", "shares", "pensions"])
 def test_sum_by_type(main_user, fund_type):
-    f = SavingTypeFactory(title="F", type=fund_type)
-
-    SavingFactory(saving_type=f, price=1, fee=1)
-    SavingFactory(saving_type=f, price=10, fee=1)
-    SavingWorthFactory(saving_type=f, price=20)
+    with helper.quiet_build(main_user):
+        f = SavingTypeFactory(title="F", type=fund_type)
+        SavingFactory(saving_type=f, price=1, fee=1)
+        SavingFactory(saving_type=f, price=10, fee=1)
+        SavingWorthFactory(saving_type=f, price=20)
 
     actual = list(SavingBalanceModelService(main_user).sum_by_type())
 
