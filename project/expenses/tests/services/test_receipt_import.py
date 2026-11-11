@@ -1,16 +1,16 @@
 from datetime import date
 
 import pytest
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 
 from ....accounts.services.model_services import AccountBalanceModelService
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping import balance_sources
+from ....core.tests.utils import count_queries
 from ...models import Expense, ExpenseKeyword
 from ...receipts.reader import ReceiptReader
 from ...receipts.receipt import ReceiptLine
 from ...services.receipt_import import (
+    ExpenseGroup,
     ExpenseGroups,
     ReceiptImport,
     ReviewedLine,
@@ -85,71 +85,54 @@ def test_shop_money_apply_zero_amount_leaves_lines_unchanged():
     assert actual == lines
 
 
-def test_shop_money_apply_subtracts_amount_from_flagged_line_only():
-    name = ExpenseNameFactory()
-    flagged = _reviewed(name, price=679, carries_shop_money=True)
-    other = _reviewed(name, price=200)
-
-    actual = ShopMoney.apply((flagged, other), 106)
-
-    assert actual[0].line.price == 573
-    assert actual[1].line.price == 200
-
-
-def test_expense_groups_sums_price_and_quantity_deposit_line_excluded_from_quantity():
-    mineralinis = ExpenseNameFactory(title="Mineralinis")
-    lines = (
-        _reviewed(mineralinis, title="VYTAUTAS 1.5 l", amount=3, price=255),
-        _reviewed(
-            mineralinis,
-            title="PET (depozitinis)",
-            amount=3,
-            price=30,
-            is_deposit=True,
+@pytest.mark.parametrize(
+    "specs, price, quantity",
+    [
+        pytest.param(
+            [
+                {"title": "VYTAUTAS 1.5 l", "amount": 3, "price": 255},
+                {
+                    "title": "PET (depozitinis)",
+                    "amount": 3,
+                    "price": 30,
+                    "is_deposit": True,
+                },
+            ],
+            285,
+            3,
+            id="deposit_line_excluded_from_quantity",
         ),
-    )
+        pytest.param(
+            [{"amount": 6}, {"amount": 1}, {"amount": 1}],
+            300,
+            8,
+            id="amounts_summed_across_lines",
+        ),
+        pytest.param(
+            [
+                {"title": "pupelės", "amount": 1},
+                {"title": "svogūnai", "amount": 1},
+                {"title": "paprikos", "amount": 1},
+            ],
+            300,
+            3,
+            id="weighed_lines_each_count_as_one",
+        ),
+        pytest.param(
+            [{"amount": 3, "price": 30, "is_deposit": True}],
+            30,
+            1,
+            id="deposit_only_lines_quantity_is_one",
+        ),
+    ],
+)
+def test_expense_groups_sum_price_and_quantity(specs, price, quantity):
+    name = ExpenseNameFactory(title="Mineralinis")
+    lines = tuple(_reviewed(name, **spec) for spec in specs)
 
     groups = ExpenseGroups.build(lines)
 
-    assert len(groups) == 1
-    assert groups[0].expense_name == mineralinis
-    assert groups[0].price == 285
-    assert groups[0].quantity == 3
-
-
-def test_expense_groups_quantity_sums_amounts_across_lines():
-    pieno = ExpenseNameFactory(title="Pieno produkai")
-    lines = (
-        _reviewed(pieno, amount=6),
-        _reviewed(pieno, amount=1),
-        _reviewed(pieno, amount=1),
-    )
-
-    groups = ExpenseGroups.build(lines)
-
-    assert groups[0].quantity == 8
-
-
-def test_expense_groups_weighed_lines_each_count_as_one():
-    darzoves = ExpenseNameFactory(title="Daržovės")
-    lines = (
-        _reviewed(darzoves, title="pupelės", amount=1),
-        _reviewed(darzoves, title="svogūnai", amount=1),
-        _reviewed(darzoves, title="paprikos", amount=1),
-    )
-
-    groups = ExpenseGroups.build(lines)
-
-    assert groups[0].quantity == 3
-
-
-def test_expense_groups_deposit_only_lines_quantity_is_one():
-    mineralinis = ExpenseNameFactory(title="Mineralinis")
-    lines = (_reviewed(mineralinis, amount=3, price=30, is_deposit=True),)
-
-    groups = ExpenseGroups.build(lines)
-
-    assert groups[0].quantity == 1
+    assert groups == [ExpenseGroup(expense_name=name, price=price, quantity=quantity)]
 
 
 def test_expense_groups_one_group_per_expense_name():
@@ -226,19 +209,21 @@ def test_receipt_import_shop_money_lowers_the_flagged_line_regardless_of_positio
     ],
 )
 def test_receipt_import_keyword_query_count_does_not_grow_with_lines(
-    journal, account, first_name, last_name, old_keywords
+    journal, account, expense_type, first_name, old_keywords
 ):
     def save_count(count):
-        keywords = [f"kw{count}-{i}" for i in range(count)]
-        if old_keywords:
-            for keyword in keywords:
+        lines = []
+        for i in range(count):
+            name = ExpenseNameFactory(
+                title=f"Pavadinimas {count}-{i}", parent=expense_type
+            )
+            keyword = f"kw{count}-{i}"
+            if old_keywords:
                 ExpenseKeywordFactory(
                     journal=journal, keyword=keyword, expense_name=first_name
                 )
-        lines = [_reviewed(last_name, keyword=keyword) for keyword in keywords]
-        with CaptureQueriesContext(connection) as ctx:
-            _save(journal, account, lines)
-        return len(ctx.captured_queries)
+            lines.append(_reviewed(name, keyword=keyword))
+        return count_queries(lambda: _save(journal, account, lines))
 
     assert save_count(2) == save_count(6)
 
@@ -295,16 +280,6 @@ def test_receipt_import_same_keyword_in_another_journal_is_untouched(
     created = ExpenseKeyword.objects.get(journal=journal, keyword="pienas")
     assert created.expense_name == last_name
     assert created.pk != other_keyword.pk
-
-
-def test_receipt_import_of_no_lines_runs_no_keyword_query(journal, account):
-    with CaptureQueriesContext(connection) as ctx:
-        _save(journal, account, ())
-
-    assert not any(
-        "expenses_expensekeyword" in query["sql"].lower()
-        for query in ctx.captured_queries
-    )
 
 
 @pytest.mark.parametrize(

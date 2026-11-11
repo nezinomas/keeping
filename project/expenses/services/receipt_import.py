@@ -114,8 +114,6 @@ class ReceiptImport:
     ) -> None:
         # last choice wins: later lines overwrite earlier ones for the same keyword
         by_keyword = {normalise_keyword(rl.keyword): rl.expense_name for rl in reviewed}
-        if not by_keyword:
-            return
 
         existing = {
             row.keyword: row

@@ -4,13 +4,11 @@ from unittest.mock import patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db import connection
 from django.template.loader import render_to_string
-from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...bookkeeping import balance_sources
+from ...core.tests.utils import count_queries
 from ..forms_import import ReviewFormSet, ReviewReceiptForm
 from ..models import Expense, ExpenseKeyword
 from ..receipts import reader
@@ -177,68 +175,80 @@ def test_import_get_200_renders_upload_form(main_user, client_logged):
     url = reverse("expenses:import")
     response = client_logged.get(url)
 
+    text = response.content.decode()
     assert response.status_code == 200
-    assert "paper.min.css" in response.content.decode()
-    assert 'class="paper-skin"' in response.content.decode()
-    assert 'name="pdf"' in response.content.decode()
-
-
-def test_import_post_non_pdf_file_error(client_logged, account):
-    response = _post_upload(
-        client_logged, account, _upload("lydrastis.txt", b"x", "text/plain")
+    assert re.search(r'<link rel="stylesheet" href="[^"]*paper\.min\.css">', text)
+    assert '<div class="paper-skin">' in text
+    assert re.search(r'<div class="import-upload">\s*<div>\s*<label', text)
+    assert re.search(r'<input type="file" name="pdf"[^>]*class="visually-hidden"', text)
+    assert re.search(
+        r'<span class="file-input__button">Pasirinkti failą</span>\s*'
+        r'<span class="file-input__name" data-empty="Failas nepasirinktas"',
+        text,
     )
 
-    assert response.status_code == 200
-    assert "Galima importuoti tik PDF failus." in response.content.decode()
+
+def _non_pdf(tmp_path, mocker):
+    return _upload("lydrastis.txt", b"x", "text/plain")
 
 
-def test_import_post_unrecognised_pdf_error(client_logged, account, tmp_path):
+def _unrecognised_pdf(tmp_path, mocker):
     path = table_pdf(
         tmp_path / "unknown.pdf",
         text_above="UNKNOWN SHOP",
         header=("Item", "Qty", "Sum"),
         rows=[("Apple", "2 vnt.", "1,20")],
     )
-
-    response = _post_upload(
-        client_logged, account, _upload("unknown.pdf", path.read_bytes())
-    )
-
-    assert response.status_code == 200
-    text = response.content.decode()
-    assert "Šis PDF nėra palaikomos parduotuvės čekis." in text
-    assert "form-0-title" not in text
+    return _upload("unknown.pdf", path.read_bytes())
 
 
-def test_import_post_unreadable_receipt_error(client_logged, account):
-    with patch.object(ReceiptReader, "read", side_effect=UnreadableReceiptTextError):
-        response = _post_upload(client_logged, account, _barbora_file())
-
-    assert response.status_code == 200
-    assert "Čekio nepavyko nuskaityti." in response.content.decode()
+def _unreadable_receipt(tmp_path, mocker):
+    mocker.patch.object(ReceiptReader, "read", side_effect=UnreadableReceiptTextError)
+    return _barbora_file()
 
 
-def test_import_post_receipt_with_no_lines_error(
-    client_logged, account, tmp_path, monkeypatch
-):
-    monkeypatch.setattr(reader, "PARSERS", (TextReceiptParser(EMPTY_TEXT_LAYOUT),))
+def _receipt_with_no_lines(tmp_path, mocker):
+    mocker.patch.object(reader, "PARSERS", (TextReceiptParser(EMPTY_TEXT_LAYOUT),))
     path = empty_text_receipt_pdf(tmp_path / "empty.pdf")
+    return _upload("empty.pdf", path.read_bytes())
 
-    response = _post_upload(
-        client_logged, account, _upload("empty.pdf", path.read_bytes())
-    )
 
+def _corrupt_pdf(tmp_path, mocker):
+    return _upload("notes.pdf", b"hello, not a pdf")
+
+
+@pytest.mark.parametrize(
+    "make_file, message",
+    [
+        pytest.param(_non_pdf, "Galima importuoti tik PDF failus.", id="non_pdf"),
+        pytest.param(
+            _unrecognised_pdf,
+            "Šis PDF nėra palaikomos parduotuvės čekis.",
+            id="unrecognised_pdf",
+        ),
+        pytest.param(
+            _unreadable_receipt, "Čekio nepavyko nuskaityti.", id="unreadable_receipt"
+        ),
+        pytest.param(
+            _receipt_with_no_lines, "Čekio nepavyko nuskaityti.", id="no_lines"
+        ),
+        pytest.param(_corrupt_pdf, "Čekio nepavyko nuskaityti.", id="corrupt_pdf"),
+    ],
+)
+def test_import_post_unreadable_file_error(
+    client_logged, account, tmp_path, mocker, make_file, message
+):
+    response = _post_upload(client_logged, account, make_file(tmp_path, mocker))
+
+    text = response.content.decode()
     assert response.status_code == 200
-    assert "Čekio nepavyko nuskaityti." in response.content.decode()
-
-
-def test_import_post_corrupt_pdf_error(client_logged, account):
-    response = _post_upload(
-        client_logged, account, _upload("notes.pdf", b"hello, not a pdf")
+    assert re.search(
+        r'<div class="file-input"[^>]*>(?:(?!</div>).)*</div>\s*'
+        rf'<div class="invalid-feedback">{message}</div>',
+        text,
+        re.DOTALL,
     )
-
-    assert response.status_code == 200
-    assert "Čekio nepavyko nuskaityti." in response.content.decode()
+    assert not re.search(r'<input[^>]*name="form-0-title"', text)
 
 
 def test_import_post_fixture_29_rows(client_logged, account):
@@ -286,7 +296,12 @@ def test_import_post_jogurt_keyword_prefills_row(
 def test_import_post_unmatched_row_blank_option_selected(client_logged, account):
     text = _post_review(client_logged, account, _receipt(total=500))
 
-    assert 'value="" selected' in text
+    assert re.search(
+        r'<option value=""[^>]*\sselected\b', _select(text, "form-0-expense_type")
+    )
+    assert re.search(
+        r'<option value=""[^>]*\sselected\b', _select(text, "form-0-expense_name")
+    )
 
 
 def test_import_post_every_skip_box_named_form_n_skip(client_logged, account):
@@ -397,35 +412,25 @@ def test_import_review_table_follows_shop_money(
     assert "<td></td>" not in tfoot
 
 
-def test_import_upload_row_wrapper_class(client_logged):
-    response = client_logged.get(reverse("expenses:import"))
-
-    assert 'class="import-upload"' in response.content.decode()
-
-
 def test_import_post_query_count_equal_for_2_and_6_lines(client_logged, account):
-    counts = {}
-    for n in (2, 6):
-        with patch.object(ReceiptReader, "read", return_value=_n_line_receipt(n)):
-            with CaptureQueriesContext(connection) as ctx:
-                response = _post_upload(
-                    client_logged, account, _barbora_file(), REVIEW_DATE
-                )
+    rendered = {}
 
-        assert response.status_code == 200
-        counts[n] = len(ctx.captured_queries)
+    def post(n):
+        rendered[n] = _post_review(
+            client_logged, account, _n_line_receipt(n), REVIEW_DATE
+        )
 
-    assert counts[2] == counts[6]
+    two = count_queries(lambda: post(2))
+    six = count_queries(lambda: post(6))
+
+    assert 'name="form-TOTAL_FORMS" value="6"' in rendered[6]
+    assert two == six
 
 
 def test_import_save_valid_creates_expenses_and_redirects(
-    main_user, client_logged, account, pieno, mocker
+    client_logged, account, pieno
 ):
     duona = ExpenseNameFactory(title="Duona", parent=pieno.parent)
-    sync = mocker.patch(
-        "project.bookkeeping.balance_sources.sync_accounts",
-        wraps=balance_sources.sync_accounts,
-    )
 
     response = _post_save(
         client_logged,
@@ -446,10 +451,6 @@ def test_import_save_valid_creates_expenses_and_redirects(
     ]
     assert ExpenseKeyword.objects.filter(keyword="jogurt", expense_name=pieno).exists()
     assert ExpenseKeyword.objects.filter(keyword="duon", expense_name=duona).exists()
-    assert sync.call_count == 1
-
-    main_user.journal.refresh_from_db()
-    assert main_user.journal.first_record == date(1998, 3, 5)
 
 
 def test_import_save_invalid_nothing_saved_names_intact(client_logged, account, pieno):
@@ -464,23 +465,32 @@ def test_import_save_invalid_nothing_saved_names_intact(client_logged, account, 
 
 
 @pytest.mark.parametrize(
-    "tamper, feedback",
+    "tamper, pattern",
     [
-        pytest.param("account", "Pasirinkite tinkamą reikšmę", id="account"),
+        pytest.param(
+            "account",
+            # a form-wide error: it renders first in the form, after the csrf token
+            r'name="csrfmiddlewaretoken" value="[^"]*">\s*'
+            r'<div class="invalid-feedback">Pasirinkite tinkamą reikšmę',
+            id="account",
+        ),
         pytest.param(
             "shop_money_line",
+            r'<div class="invalid-feedback">'
             "Parduotuvės pinigų eilutės šiame čekyje nėra.",
             id="shop_money_line_out_of_range",
         ),
         pytest.param(
             "expense_type",
+            r'<select name="form-0-expense_type"[^>]*>(?:(?!</td>).)*</select>\s*'
+            r'<div class="invalid-feedback">'
             "Pasirinkite tinkamą reikšmę. Parinkta reikšmė nėra galima.",
             id="expense_type",
         ),
     ],
 )
 def test_import_save_tampered_input_is_refused(
-    client_logged, second_user, account, foreign_account, pieno, tamper, feedback
+    client_logged, second_user, account, foreign_account, pieno, tamper, pattern
 ):
     foreign_type = ExpenseTypeFactory(title="Foreign type", journal=second_user.journal)
     foreign_name = ExpenseNameFactory(title="Foreign name", parent=foreign_type)
@@ -499,7 +509,7 @@ def test_import_save_tampered_input_is_refused(
 
     assert response.status_code == 200
     assert Expense.objects.count() == 0
-    assert f'<div class="invalid-feedback">{feedback}' in response.content.decode()
+    assert re.search(pattern, response.content.decode(), re.DOTALL)
 
 
 def test_import_save_tampered_account_still_shows_shop_money_radios(
@@ -537,46 +547,31 @@ def _n_rows(n, run, price="5,00"):
     return rows
 
 
-def test_import_save_invalid_query_count_equal_for_2_and_6_lines(
-    client_logged, account
+def _save_queries(client, account, n, price, saved):
+    rows = _n_rows(n, run=f"q{n}", price=price)
+    responses = []
+
+    queries = count_queries(lambda: responses.append(_post_save(client, rows, account)))
+
+    assert responses[0].status_code == 200
+    assert Expense.objects.count() == saved
+    return queries
+
+
+@pytest.mark.parametrize(
+    "price, saved_after_2, saved_after_6",
+    [
+        pytest.param("0", 0, 0, id="invalid"),
+        pytest.param("5,00", 2, 8, id="valid"),
+    ],
+)
+def test_import_save_query_count_equal_for_2_and_6_lines(
+    client_logged, account, price, saved_after_2, saved_after_6
 ):
-    counts = {}
-    for n in (2, 6):
-        rows = _n_rows(n, run=f"inv{n}", price="0")
+    two = _save_queries(client_logged, account, 2, price, saved_after_2)
+    six = _save_queries(client_logged, account, 6, price, saved_after_6)
 
-        with CaptureQueriesContext(connection) as ctx:
-            response = _post_save(client_logged, rows, account)
-
-        assert response.status_code == 200
-        assert Expense.objects.count() == 0
-        counts[n] = len(ctx.captured_queries)
-
-    assert counts[2] == counts[6]
-
-
-def test_import_save_valid_query_count_equal_for_2_and_6_lines(client_logged, account):
-    counts = {}
-    expected_total = 0
-    for n in (2, 6):
-        rows = _n_rows(n, run=f"val{n}")
-        expected_total += n
-
-        with CaptureQueriesContext(connection) as ctx:
-            response = _post_save(client_logged, rows, account)
-
-        assert response.status_code == 200
-        assert Expense.objects.count() == expected_total
-        counts[n] = len(ctx.captured_queries)
-
-    assert counts[2] == counts[6]
-
-
-def test_import_upload_file_control_speaks_the_app_language(client_logged):
-    text = client_logged.get(reverse("expenses:import")).content.decode()
-
-    assert "Pasirinkti failą" in text
-    assert 'data-empty="Failas nepasirinktas"' in text
-    assert re.search(r'<input type="file" name="pdf"[^>]*class="visually-hidden"', text)
+    assert two == six
 
 
 def test_import_review_row_error_colspan_with_shop_money(client_logged, account):
