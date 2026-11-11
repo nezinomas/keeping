@@ -1,4 +1,3 @@
-from datetime import date
 from functools import cached_property
 from typing import cast
 
@@ -47,10 +46,6 @@ class UserMixin:
     @cached_property
     def selected_year(self) -> int:
         return self.user.selected_year()
-
-
-def build_compare_form(user: User, today: date) -> forms.DrinkCompareForm:
-    return forms.DrinkCompareForm(user=user, today=today)
 
 
 class TabViewMixin(UserMixin, TodayMixin, CoreTabViewMixin):
@@ -171,7 +166,7 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            "form": build_compare_form(self.user, self.today),
+            "form": forms.DrinkCompareForm(user=self.user, today=self.today),
             **services.history.load_service(
                 self.user,
                 self.selected_year,
@@ -192,7 +187,7 @@ class Compare(UserMixin, TodayMixin, TemplateViewMixin):
                 self.kwargs.get("qty", 0),
                 self.today,
             ),
-            "form": build_compare_form(self.user, self.today),
+            "form": forms.DrinkCompareForm(user=self.user, today=self.today),
         }
 
 
