@@ -72,13 +72,17 @@ class DrinkModelService(SumMixin, DatedModelService):
 
         return PastRecord(latest)
 
-    def sum_by_year(self) -> QuerySet:
-        """
+    def sum_by_year(self, running_year_until: date = date.max) -> QuerySet:
+        """The days after `running_year_until` in its own year are left out.
+
         Returns rows of: {'year': int, 'stdav': float, 'qty': float}
         """
-        return self.year_sum(
-            self.objects, sum_annotation="stdav", sum_column="stdav"
-        ).annotate(qty=F("stdav") * self.servings_per_stdav)
+        qs = self.objects.exclude(
+            date__gt=running_year_until, date__year=running_year_until.year
+        )
+        return self.year_sum(qs, sum_annotation="stdav", sum_column="stdav").annotate(
+            qty=F("stdav") * self.servings_per_stdav
+        )
 
     def sum_by_month(self, year: int) -> QuerySet:
         """

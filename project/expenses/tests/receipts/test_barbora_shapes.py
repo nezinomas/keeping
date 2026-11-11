@@ -1,7 +1,14 @@
+from functools import cache
+
 import pytest
 
 from ...receipts.reader import ReceiptReader
 from .pdfs import FIXTURES
+
+
+@cache
+def _read(name):
+    return ReceiptReader.read(FIXTURES / f"{name}.pdf")
 
 
 @pytest.mark.parametrize(
@@ -14,7 +21,7 @@ from .pdfs import FIXTURES
     ],
 )
 def test_barbora_shape_reads_its_lines_and_they_agree(name, count, total):
-    receipt = ReceiptReader.read(FIXTURES / f"{name}.pdf")
+    receipt = _read(name)
 
     assert len(receipt.lines) == count
     assert receipt.total == total
@@ -22,7 +29,7 @@ def test_barbora_shape_reads_its_lines_and_they_agree(name, count, total):
 
 
 def test_barbora_promotion_gives_the_price_to_the_row_below():
-    receipt = ReceiptReader.read(FIXTURES / "barbora_promotion.pdf")
+    receipt = _read("barbora_promotion")
 
     titles = [line.title for line in receipt.lines]
     line = next(
@@ -39,7 +46,7 @@ def test_barbora_promotion_gives_the_price_to_the_row_below():
 
 
 def test_barbora_substitute_drops_the_original_and_keeps_the_substitute():
-    receipt = ReceiptReader.read(FIXTURES / "barbora_substitute.pdf")
+    receipt = _read("barbora_substitute")
 
     titles = [line.title for line in receipt.lines]
     line = next(
@@ -52,7 +59,7 @@ def test_barbora_substitute_drops_the_original_and_keeps_the_substitute():
 
 
 def test_barbora_two_pages_continues_the_product_table_onto_the_second_page():
-    receipt = ReceiptReader.read(FIXTURES / "barbora_two_pages.pdf")
+    receipt = _read("barbora_two_pages")
 
     line = receipt.lines[39]
 
@@ -62,7 +69,7 @@ def test_barbora_two_pages_continues_the_product_table_onto_the_second_page():
 
 
 def test_barbora_watermark_stays_out_of_the_titles():
-    receipt = ReceiptReader.read(FIXTURES / "barbora_watermark.pdf")
+    receipt = _read("barbora_watermark")
 
     titles = [line.title for line in receipt.lines]
 

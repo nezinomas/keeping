@@ -15,14 +15,14 @@
     <tbody>
         {% for row in table.rows %}
         {% url 'incomes:type_update' row.pk as url_update %}
-        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
+        <c-edit-row :url="url_update">
             <td class="text-left">{{ row.title }}</td>
             <td class="main__figure">{{ row.this_year }}</td>
             <td class="main__figure">{{ row.last_year }}</td>
             <td class="main__figure">{{ row.share }}</td>
             <td>{{ row.last_date }}</td>
             <c-td-edit :url="url_update" />
-        </tr>
+        </c-edit-row>
         {% endfor %}
     </tbody>
     <tfoot>

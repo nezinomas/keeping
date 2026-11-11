@@ -58,6 +58,15 @@ def test_weekly_series_dense_from_first_week_to_current():
     assert series[-1].end == "2026-01-18"
 
 
+def test_a_coming_year_has_no_weekly_series_and_no_current_week():
+    stats = RiskStats(
+        current_daily=[_row(date(2027, 1, 2), 4)], year=2027, today=date(2026, 11, 3)
+    )
+
+    assert stats.weekly_series() == []
+    assert stats.current_week().has_data is False
+
+
 def test_weekly_series_sums_records_into_their_week():
     rows = [_row(date(2026, 1, 5), 4), _row(date(2026, 1, 7), 3)]
     series = RiskStats(

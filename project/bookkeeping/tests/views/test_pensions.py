@@ -9,6 +9,7 @@ from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ..factories import PensionWorthFactory
 from ..helper import (
+    closed_every_other,
     fund_with_a_sell,
     row_cells,
     switch_a_into_b,
@@ -122,7 +123,7 @@ def test_open_pension_type_with_no_worth_shows_dashes(client_logged, sold):
 
 def test_pensions_queries_do_not_grow_with_closed_types(client_logged, main_user):
     def build(i):
-        _pension_type_with_a_sell(f"Fund {i}", closed=1999 if i % 2 else None)
+        _pension_type_with_a_sell(f"Fund {i}", closed=closed_every_other(i))
         PensionFactory(pension_type=PensionTypeFactory(title=f"P {i}"))
 
     queries = [

@@ -196,6 +196,7 @@ def mock_year_balance(mocker):
     mock.expense_data = [10, 10, 10]
     mock.avg_incomes = 50
     mock.avg_expenses = 10
+    mock.is_coming = False
     return mock
 
 
@@ -215,3 +216,12 @@ def test_index_context_builder_averages_context(mock_year_balance):
 
     assert actual["data"] == [50, 10]
     assert actual["title"] == ["Vidutinės pajamos", "Vidutinės išlaidos"]
+    assert actual["empty"] is False
+
+
+def test_index_context_builder_averages_of_a_coming_year_are_empty(mock_year_balance):
+    mock_year_balance.is_coming = True
+
+    actual = IndexContextBuilder(balance=mock_year_balance, debts={}).averages_context()
+
+    assert actual["empty"] is True

@@ -12,7 +12,7 @@ from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
-from ..helper import quiet_build, script_json
+from ..helper import quiet_build, row_cells, script_json, total_cells
 
 pytestmark = pytest.mark.django_db
 
@@ -59,27 +59,30 @@ def fixture_index_content(client_logged):
     return client_logged.get(reverse("bookkeeping:index")).content.decode()
 
 
-@pytest.mark.parametrize(
-    "marker",
-    [
-        pytest.param("<th>1999</th>", id="year"),
-        pytest.param('<td data-sign="loss" data-cell="">-1,00</td>', id="balance"),
-        pytest.param("1999 pabaigoje", id="balance_short"),
-        pytest.param(
-            '<td class="left-thick-border" data-cell="">1,00</td>', id="expenses"
-        ),
-        pytest.param("Vidutinės pajamos", id="averages"),
-        pytest.param('data-tip="Liko grąžinti:  70,00"', id="borrow"),
-        pytest.param('data-tip="Liko grąžinti:  90,00"', id="lend"),
-        pytest.param(">Account1</span>", id="accounts"),
-        pytest.param("Pajamų dalis pervedama taupymui", id="savings"),
-        pytest.param(">PensionType</td>", id="pensions"),
-        pytest.param("Turtas", id="wealth"),
-        pytest.param("€ + F + P", id="no_incomes"),
-    ],
-)
-def test_view_index_renders_its_tables_and_panels(index_content, marker):
-    assert marker in index_content
+INDEX_MARKERS = {
+    "year": "<th>1999</th>",
+    "balance": '<td data-sign="loss" data-cell="">-1,00</td>',
+    "balance_short": r'<th class="text-nowrap long-price-col">\s*1999 pabaigoje\s*</th>',
+    "expenses": '<td class="left-thick-border" data-cell="">1,00</td>',
+    "averages": r"<th>\s*Vidutinės pajamos\s*</th>",
+    "borrow": r'<span class="tip bottom w100" data-tip="Liko grąžinti:  70,00">\s*70,00\s*</span>',
+    "lend": r'<span class="tip bottom w100" data-tip="Liko grąžinti:  90,00">\s*90,00\s*</span>',
+    "accounts": ">Account1</span>",
+    "savings": r'id="savings"[^>]*>\s*<div class="alert [^"]*">Pajamų dalis pervedama taupymui',
+    "pensions": ">PensionType</td>",
+    "wealth": r"<th>\s*Turtas\s*</th>",
+    "no_incomes": r'<th class="long-price-col">€ \+ F \+ P</th>',
+}
+
+
+def test_view_index_renders_its_tables_and_panels(index_content):
+    missing = [
+        name
+        for name, marker in INDEX_MARKERS.items()
+        if not re.search(marker, index_content)
+    ]
+
+    assert missing == []
 
 
 @pytest.mark.parametrize("url_name", ["bookkeeping:index", "bookkeeping:reload_index"])
@@ -133,12 +136,10 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     )
 
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
-    checked = re.findall(
-        r'<th[^>]*class="[^"]*\bcheck\b[^"]*"[^>]*>([^<]+)</th>', content
-    )
+    year_end = total_cells(content[content.index('id="table-balance"') :])[-1]
+    accounts_balance = total_cells(content[content.index('id="accounts"') :])[4]
 
-    assert len(checked) == 2
-    assert checked[0] == checked[1]
+    assert year_end == accounts_balance != ""
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
@@ -150,24 +151,23 @@ def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_s
     )
 
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
-    january = re.findall(
-        r'<td class="left-thick-border[^"]*"[^>]*>([^<]+)</td>', content
-    )
+    january = row_cells(content[content.index('id="table-balance"') :], "Sausis")
 
-    assert january[0] == "200,00"
+    assert january[3] == "200,00"
 
 
 def test_view_index_regenerate_buttons(client_logged):
     SavingFactory()
     PensionFactory()
 
-    response = client_logged.get(reverse("bookkeeping:index"))
-    content = response.content.decode("utf-8")
+    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
+    url = re.escape(reverse("bookkeeping:regenerate_balances"))
 
-    regenerate_url = reverse("bookkeeping:regenerate_balances")
+    tips = re.findall(
+        rf'<button[^>]*hx-get="{url}"[^>]*><span[^>]*data-tip="([^"]*)"', content
+    )
 
-    assert f'hx-get="{regenerate_url}"' in content
-    assert "Bus atnaujinti visų metų balansai." in content
+    assert tips == ["Bus atnaujinti visų metų balansai."]
 
 
 @pytest.mark.parametrize(
@@ -195,4 +195,4 @@ def test_view_reload_anonymous(client):
     url = reverse("bookkeeping:reload_index")
     response = client.get(url)
 
-    assert response.status_code == 302
+    assert response.url == f"{reverse('users:login')}?next={url}"

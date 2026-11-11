@@ -110,19 +110,9 @@ def test_drink_valid_data(mocker, main_user):
 @pytest.mark.parametrize(
     "ml, drink_type, expect_stdav, expect_converted_from_ml",
     [
+        # DrinkQuantity owns the rule; one row per branch the form forwards
         (1, "beer", 2.5, False),
-        (21, "beer", 0.1, True),
         (500, "beer", 2.5, True),
-        (1, "wine", 8, False),
-        (20, "wine", 160, False),
-        (21, "wine", 0.22, True),
-        (750, "wine", 8, True),
-        (1, "vodka", 40, False),
-        (20, "vodka", 800, False),
-        (21, "vodka", 0.84, True),
-        (1000, "vodka", 40, True),
-        (1, "stdav", 1, False),
-        (20, "stdav", 20, False),
         (21, "stdav", 21, False),
     ],
 )

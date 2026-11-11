@@ -43,6 +43,10 @@ class UserMixin:
     def user(self) -> User:
         return cast(User, self.request.user)
 
+    @cached_property
+    def selected_year(self) -> int:
+        return self.user.selected_year()
+
 
 class TabViewMixin(UserMixin, TodayMixin, CoreTabViewMixin):
     tabs = TABS
@@ -68,11 +72,9 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
     tab = TABS["index"]
 
     def get_context_data(self, **kwargs):
-        year = self.user.selected_year()
-
         return {
             **super().get_context_data(**kwargs),
-            **services.IndexTab.build(self.user, year, self.today),
+            **services.IndexTab.build(self.user, self.selected_year, self.today),
         }
 
 
@@ -80,11 +82,9 @@ class TabHabits(TabViewMixin, TemplateViewMixin):
     tab = TABS["habits"]
 
     def get_context_data(self, **kwargs):
-        year = self.user.selected_year()
-
         return {
             **super().get_context_data(**kwargs),
-            **services.HabitsTab.build(self.user, year, self.today),
+            **services.HabitsTab.build(self.user, self.selected_year, self.today),
         }
 
 
@@ -94,10 +94,11 @@ class TypicalYearChart(UserMixin, HtmxFormRetargetMixin, FormViewMixin):
     retarget = "#typical-year-form"
 
     def get(self, request, *args, **kwargs):
-        year = self.user.selected_year()
         pooled = services.NoPooledRange()
         if "qty" in self.kwargs:
-            pooled = services.PooledRange.resolve(year, self.kwargs["qty"])
+            pooled = services.PooledRange.resolve(
+                self.selected_year, self.kwargs["qty"]
+            )
 
         chart = self._chart(pooled)
 
@@ -112,9 +113,9 @@ class TypicalYearChart(UserMixin, HtmxFormRetargetMixin, FormViewMixin):
 
         return self._render(chart, form)
 
-    def _chart(self, pooled: services.PooledRange):
+    def _chart(self, pooled: services.PooledRange | services.NoPooledRange):
         return services.TypicalYear.build(
-            self.user, self.user.selected_year(), self.today, pooled
+            self.user, self.selected_year, self.today, pooled
         )
 
     @staticmethod
@@ -136,11 +137,9 @@ class TabTrends(TabViewMixin, TemplateViewMixin):
     tab = TABS["trends"]
 
     def get_context_data(self, **kwargs):
-        year = self.user.selected_year()
-
         return {
             **super().get_context_data(**kwargs),
-            **services.TrendsTab.build(self.user, year, self.today),
+            **services.TrendsTab.build(self.user, self.selected_year, self.today),
         }
 
 
@@ -148,11 +147,9 @@ class TabRisk(TabViewMixin, TemplateViewMixin):
     tab = TABS["risk"]
 
     def get_context_data(self, **kwargs):
-        year = self.user.selected_year()
-
         return {
             **super().get_context_data(**kwargs),
-            **services.RiskTab.build(self.user, year, self.today),
+            **services.RiskTab.build(self.user, self.selected_year, self.today),
         }
 
 
@@ -160,7 +157,7 @@ class TabData(TabViewMixin, ListViewMixin):
     tab = TABS["data"]
 
     def get_queryset(self):
-        return DrinkModelService(self.user).year(self.user.selected_year())
+        return DrinkModelService(self.user).year(self.selected_year)
 
 
 class TabHistory(TabViewMixin, TemplateViewMixin):
@@ -170,7 +167,12 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             "form": forms.DrinkCompareForm(user=self.user, today=self.today),
-            **services.history.load_service(self.user, self.today),
+            **services.history.load_service(
+                self.user,
+                self.selected_year,
+                self.user.drink_type,
+                self.today,
+            ),
         }
 
 
@@ -181,7 +183,7 @@ class Compare(UserMixin, TodayMixin, TemplateViewMixin):
         return {
             "chart": services.YearComparison.for_recent(
                 self.user,
-                self.user.selected_year(),
+                self.selected_year,
                 self.kwargs.get("qty", 0),
                 self.today,
             ),
@@ -259,9 +261,7 @@ class TargetUpdate(UpdateViewMixin):
 
     def get_object(self):
         obj = super().get_object()
-
-        if obj:
-            obj.quantity = obj.amount.value
+        obj.quantity = obj.amount.value
 
         return obj
 

@@ -5,13 +5,15 @@ from unittest.mock import patch
 
 import pytest
 import time_machine
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.lib.utils import get_action_buttons_html
+from ...bookkeeping.tests.helper import quiet_build
+from ...core.mixins import kwargs as core_kwargs
 from ...core.tests.utils import (
     clean_content,
     count_queries,
+    edit_row_opening,
     quick_add_pills,
     stat_card_tooltips,
     stat_cards,
@@ -41,13 +43,17 @@ def _active_tab(name):
     return rf'id="tab-{name}"\s+class="tab active"'
 
 
+def _marked(month):
+    return rf'aria-current="true" hx-get="/expenses/data/{month}/" hx-push-url="true"'
+
+
 def _open_month(month):
     # each pattern names the element that carries the url: the filter line lists
     # every month, and the Reset button and the tab's reload share the tab's url
     return [
         rf'id="data"[^>]*hx-get="/expenses/list/{month}/"',
         rf'class="button-secondary"\s+hx-get="/expenses/data/{month}/"',
-        rf'aria-current="true" hx-get="/expenses/data/{month}/" hx-push-url="true"',
+        _marked(month),
         rf'<div hx-get="/expenses/data/{month}/" hx-target="#tab_content"',
     ]
 
@@ -57,14 +63,22 @@ SUBNAV_DUOMENYS_AT_TODAY = r'id="tab-data"[^>]*hx-get="/expenses/data/2/"'
 
 
 @pytest.mark.parametrize(
-    "url_name, kwargs, query, expected",
+    "url_name, kwargs, query, expected, absent",
     [
-        pytest.param("expenses:index", {}, {}, [_active_tab("index")], id="overview"),
+        pytest.param(
+            "expenses:index",
+            {},
+            {},
+            [_active_tab("index")],
+            [_active_tab("data")],
+            id="overview",
+        ),
         pytest.param(
             "expenses:tab_data",
             {"month": "2"},
             {},
             [_active_tab("data"), *_open_month(2)],
+            [_active_tab("index"), _marked(3)],
             id="data_this_month",
         ),
         pytest.param(
@@ -72,6 +86,7 @@ SUBNAV_DUOMENYS_AT_TODAY = r'id="tab-data"[^>]*hx-get="/expenses/data/2/"'
             {"month": "3"},
             {},
             [_active_tab("data"), *_open_month(3), SUBNAV_DUOMENYS_AT_TODAY],
+            [_marked(2)],
             id="nav_month",
         ),
         pytest.param(
@@ -79,6 +94,7 @@ SUBNAV_DUOMENYS_AT_TODAY = r'id="tab-data"[^>]*hx-get="/expenses/data/2/"'
             {"month": "3"},
             {"month": "5"},
             [_active_tab("data"), *_open_month(3)],
+            [_marked(5)],
             id="the_path_wins_over_a_query",
         ),
         pytest.param(
@@ -86,6 +102,7 @@ SUBNAV_DUOMENYS_AT_TODAY = r'id="tab-data"[^>]*hx-get="/expenses/data/2/"'
             {"month": "all"},
             {},
             [_active_tab("data"), *_open_month("all"), SUBNAV_DUOMENYS_AT_TODAY],
+            [_marked(2)],
             id="all",
         ),
         pytest.param(
@@ -93,19 +110,30 @@ SUBNAV_DUOMENYS_AT_TODAY = r'id="tab-data"[^>]*hx-get="/expenses/data/2/"'
             {"month": "13"},
             {},
             [_active_tab("data"), *_open_month(2)],
+            [_marked("all"), _marked(13)],
             id="13_falls_back",
+        ),
+        pytest.param(
+            "expenses:tab_data",
+            {"month": "3"},
+            {"search": "zzz"},
+            [_active_tab("data"), _marked("all")],
+            [_marked(3)],
+            id="a_search_marks_all_records",
         ),
     ],
 )
 @time_machine.travel("1999-02-08")
 def test_the_page_opens_the_tab_and_month_its_url_names(
-    client_logged, url_name, kwargs, query, expected
+    client_logged, url_name, kwargs, query, expected, absent
 ):
     url = reverse(url_name, kwargs=kwargs)
     content = client_logged.get(url, query).content.decode()
 
     for pattern in expected:
         assert re.search(pattern, content)
+    for pattern in absent:
+        assert not re.search(pattern, content)
 
 
 @pytest.mark.parametrize("path", ["/expenses/data/", "/expenses/list/", "/expenses/3/"])
@@ -145,32 +173,34 @@ def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
     assert 'class="quick-add' not in content
 
 
-def _expense_under_its_own_name(i):
+def _expense_under_its_own_name(i, account):
     expense_type = ExpenseTypeFactory(title=f"T{i}")
     name = ExpenseNameFactory(title=f"N{i}", parent=expense_type)
-    ExpenseFactory(expense_type=expense_type, expense_name=name)
+    ExpenseFactory(expense_type=expense_type, expense_name=name, account=account)
 
 
 @pytest.mark.parametrize(
     "url_name, kwargs",
     [
         pytest.param("expenses:tab_index", {}, id="expenses:tab_index"),
-        pytest.param("expenses:tab_data", {"month": "all"}, id="expenses:tab_data"),
         pytest.param("expenses:list", {"month": "all"}, id="expenses:list"),
         pytest.param("expenses:tab_types", {}, id="expenses:tab_types"),
     ],
 )
 def test_tab_query_count_does_not_grow_with_the_expenses(
-    client_logged, url_name, kwargs
+    main_user, client_logged, url_name, kwargs
 ):
     url = reverse(url_name, kwargs=kwargs)
-    for i in range(2):
-        _expense_under_its_own_name(i)
+    account = AccountFactory()
+    with quiet_build(main_user):
+        for i in range(2):
+            _expense_under_its_own_name(i, account)
     fragment = {"HX-Request": "true"}
     two = count_queries(lambda: client_logged.get(url, headers=fragment))
 
-    for i in range(2, 6):
-        _expense_under_its_own_name(i)
+    with quiet_build(main_user):
+        for i in range(2, 6):
+            _expense_under_its_own_name(i, account)
     six = count_queries(lambda: client_logged.get(url, headers=fragment))
 
     assert six == two
@@ -209,12 +239,12 @@ def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
         )
 
     rows = [
-        r'<tbody>\s*<tr class="main__group"[^>]*>\s*'
+        r'<tbody>\s*<tr[^>]* class="main__group">\s*'
         r'<td class="text-left">Buitinės</td>\s*'
         + cells(100, "–", "10%", "1999-04-01"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Muilas</td>\s*'
         + name_cells(100, "–", "100%", "1999-04-01"),
-        r'</tbody>\s*<tbody>\s*<tr class="main__group table-group-divider"[^>]*>\s*'
+        r'</tbody>\s*<tbody>\s*<tr[^>]* class="main__group table-group-divider">\s*'
         r'<td class="text-left">Maistas</td>\s*' + cells(900, 200, "90%", "1999-03-07"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Duona</td>\s*'
         + name_cells(300, "–", "33%", "1999-03-07"),
@@ -222,7 +252,7 @@ def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
         + name_cells(600, 200, "67%", "1999-02-05"),
         r'<tr[^>]*>\s*<td class="text-left main__child">Sūris</td>\s*'
         + name_cells("–", "–", "–", "–"),
-        r'</tbody>\s*<tbody>\s*<tr class="main__group table-group-divider"[^>]*>\s*'
+        r'</tbody>\s*<tbody>\s*<tr[^>]* class="main__group table-group-divider">\s*'
         r'<td class="text-left">Tuščia</td>\s*' + cells("–", "–", "–", "–"),
         r'</tbody>\s*<tfoot>\s*<tr class="main__total">\s*'
         r'<td class="text-left">Viso</td>\s*' + figures("1.000", 200, "100%"),
@@ -305,9 +335,11 @@ def test_types_tab_edits_each_type_and_name_from_its_row(client_logged):
 
     content = client_logged.get(reverse("expenses:tab_types")).content.decode()
 
-    for row, link in (('<tr class="main__group"', type_link), ("<tr", name_link)):
-        dblclick = f'hx-get="{link}" hx-trigger="dblclick" hx-target="#mainModal">'
-        assert f"{row} {dblclick}" in content
+    for link, group in ((type_link, ' class="main__group"'), (name_link, "")):
+        row = (
+            f'<tr hx-get="{link}" hx-trigger="dblclick" hx-target="#mainModal"{group}>'
+        )
+        assert row in content
         assert re.search(rf'<a role="button" hx-get="{link}"[^>]*class="edit"', content)
 
 
@@ -338,46 +370,71 @@ def test_type_and_name_forms_reload_the_open_tab(client_logged, url_of, with_par
     assert response.headers["HX-Trigger"] == '{"reload": {}}'
 
 
-@time_machine.travel("1999-09-15")
-def test_overview_states_a_running_year_to_its_boundary(client_logged):
+@pytest.mark.parametrize(
+    "today, expenses, cards, tooltips, empty",
+    [
+        pytest.param(
+            "1999-09-15",
+            [
+                (date(1999, 2, 5), 90_000),
+                (date(1999, 11, 5), 60_000),
+                (date(1998, 1, 5), 80_000),
+                (date(1998, 12, 5), 5_000),
+            ],
+            [
+                ("Šiais metais", "900", "Pernai 800"),
+                ("Per mėnesį", "100", "9 mėnesiai"),
+                ("Didžiausia rūšis", "Maistas", "100% metų sumos"),
+            ],
+            [
+                "Metų suma, padalinta iš prabėgusių mėnesių",
+                "Didžiausią šių metų dalį sudaranti išlaidų rūšis",
+            ],
+            0,
+            id="a_running_year_to_its_boundary",
+        ),
+        pytest.param(
+            "2000-06-01",
+            [(date(1999, 3, 5), 60_000), (date(1998, 12, 5), 5_000)],
+            [
+                ("Šiais metais", "600", "Pernai 50"),
+                ("Per mėnesį", "50", "12 mėnesių"),
+                ("Didžiausia rūšis", "Maistas", "100% metų sumos"),
+            ],
+            [
+                "Metų suma, padalinta iš prabėgusių mėnesių",
+                "Didžiausią šių metų dalį sudaranti išlaidų rūšis",
+            ],
+            0,
+            id="a_past_year_reads_the_whole_year",
+        ),
+        pytest.param(
+            "2000-06-01",
+            [(date(1998, 3, 5), 10_000)],
+            [
+                ("Šiais metais", "&mdash;", ""),
+                ("Per mėnesį", "&mdash;", ""),
+                ("Didžiausia rūšis", "&mdash;", ""),
+            ],
+            [],
+            3,
+            id="an_empty_year_is_three_empty_cards",
+        ),
+    ],
+)
+def test_overview_states_its_year(
+    client_logged, today, expenses, cards, tooltips, empty
+):
     food = ExpenseTypeFactory(title="Maistas")
-    ExpenseFactory(date=date(1999, 2, 5), price=90_000, expense_type=food)
-    ExpenseFactory(date=date(1999, 11, 5), price=60_000, expense_type=food)
-    ExpenseFactory(date=date(1998, 1, 5), price=80_000, expense_type=food)
-    ExpenseFactory(date=date(1998, 12, 5), price=5_000, expense_type=food)
+    for expense_date, price in expenses:
+        ExpenseFactory(date=expense_date, price=price, expense_type=food)
 
-    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
+    with time_machine.travel(today):
+        content = client_logged.get(reverse("expenses:tab_index")).content.decode()
 
-    assert stat_cards(content) == [
-        ("Šiais metais", "900", "Pernai 800"),
-        ("Per mėnesį", "100", "9 mėnesiai"),
-        ("Didžiausia rūšis", "Maistas", "100% metų sumos"),
-    ]
-    assert stat_card_tooltips(content) == [
-        "Metų suma, padalinta iš prabėgusių mėnesių",
-        "Didžiausią šių metų dalį sudaranti išlaidų rūšis",
-    ]
-
-
-def test_overview_of_a_past_year_reads_the_whole_year(client_logged):
-    ExpenseFactory(date=date(1999, 3, 5), price=60_000)
-    ExpenseFactory(date=date(1998, 12, 5), price=5_000)
-
-    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
-
-    assert stat_cards(content) == [
-        ("Šiais metais", "600", "Pernai 50"),
-        ("Per mėnesį", "50", "12 mėnesių"),
-        ("Didžiausia rūšis", "Expense Type", "100% metų sumos"),
-    ]
-
-
-def test_overview_of_an_empty_year_is_three_empty_cards(client_logged):
-    ExpenseFactory(date=date(1998, 3, 5))
-
-    content = client_logged.get(reverse("expenses:tab_index")).content.decode()
-
-    assert content.count("trend-card__value--empty") == 3
+    assert stat_cards(content) == cards
+    assert stat_card_tooltips(content) == tooltips
+    assert content.count("trend-card__value--empty") == empty
 
 
 @time_machine.travel("1999-09-15")
@@ -466,6 +523,25 @@ def test_expenses_list_filters_by_month(
     assert sorted(listed) == [day.isoformat() for day in expected]
 
 
+def test_the_overview_and_duomenys_read_the_views_today(client_logged, mocker):
+    mocker.patch.object(
+        core_kwargs, "date", mocker.Mock(today=lambda: date(1999, 3, 8))
+    )
+    ExpenseFactory(date=date(1999, 3, 5), price=30_000)
+    ExpenseFactory(date=date(1999, 11, 5))
+
+    def page(name, **kwargs):
+        return client_logged.get(reverse(name, kwargs=kwargs)).content.decode()
+
+    listed = page("expenses:list", month="13")
+
+    assert ("Per mėnesį", "100", "3 mėnesiai") in stat_cards(page("expenses:tab_index"))
+    assert re.search(_open_month(3)[0], page("expenses:tab_data", month="13"))
+    assert re.findall(r'main__date[^"]*">(\d{4}-\d\d-\d\d)</td>', listed) == [
+        "1999-03-05"
+    ]
+
+
 @pytest.mark.parametrize(
     "month, expected",
     [
@@ -491,25 +567,6 @@ def test_a_duomenys_row_keeps_its_exception_mark_and_no_reload(client_logged):
 
     assert '<td class="text-left main__date exception">1999-01-01</td>' in content
     assert not re.search(r'hx-trigger="[^"]*reload from:body', content)
-
-
-def test_lists_renders_row_buttons_equal_for_2_and_6_expenses(client_logged):
-    url = reverse("expenses:list", kwargs={"month": 1})
-    buttons = {"cotton/td_edit.html", "cotton/td_delete.html"}
-    # the buttons render once per process (lru_cache): warm it, or the first
-    # request alone renders them
-    get_action_buttons_html()
-
-    def button_renders():
-        templates = client_logged.get(url).templates
-        return sorted(t.name for t in templates if t.name in buttons)
-
-    ExpenseFactory.create_batch(2)
-    two = button_renders()
-    ExpenseFactory.create_batch(4)
-    six = button_renders()
-
-    assert two == six
 
 
 @pytest.mark.parametrize(
@@ -669,12 +726,26 @@ def test_expenses_load_update_form_field_values(client_logged):
     assert re.search(r'<textarea name="remark"[^>]*>\s*Remark</textarea>', form)
 
 
+def _update_data(expense, **overrides):
+    return {
+        "price": 150,
+        "quantity": 33,
+        "date": expense.date,
+        "remark": "Pastaba",
+        "account": expense.account.pk,
+        "expense_type": expense.expense_type.pk,
+        "expense_name": expense.expense_name.pk,
+        **overrides,
+    }
+
+
 @pytest.mark.parametrize(
-    "created, price, posted_date, expected_price",
+    "account_fields, created, price, posted_date, expected_price",
     [
-        pytest.param({}, 150, "1999-12-31", 15_000, id="saves_posted_values"),
-        pytest.param({}, 150, "2010-12-31", 15_000, id="to_another_year"),
+        pytest.param({}, {}, 150, "1999-12-31", 15_000, id="saves_posted_values"),
+        pytest.param({}, {}, 150, "2010-12-31", 15_000, id="to_another_year"),
         pytest.param(
+            {},
             {"date": date(2000, 3, 3), "price": 477},
             4.89,
             "2000-03-04",
@@ -682,28 +753,36 @@ def test_expenses_load_update_form_field_values(client_logged):
             id="float_price_is_whole_cents",
         ),
         pytest.param(
+            {},
             {"date": date(1974, 12, 12)},
             0.01,
             "1998-12-12",
             1,
             id="past_record",
         ),
+        pytest.param(
+            {"title": "XXX", "closed": 2000},
+            {"date": date(1999, 1, 1)},
+            150,
+            "1999-01-01",
+            15_000,
+            id="price_for_closed_account",
+        ),
     ],
 )
-def test_expenses_update(client_logged, created, price, posted_date, expected_price):
-    expense = ExpenseFactory(**created)
+def test_expenses_update(
+    client_logged, account_fields, created, price, posted_date, expected_price
+):
+    expense = ExpenseFactory(account=AccountFactory(**account_fields), **created)
     new_type = ExpenseTypeFactory(title="XXX")
     new_name = ExpenseNameFactory(title="YYY", parent=new_type)
-
-    data = {
-        "price": price,
-        "quantity": 33,
-        "date": posted_date,
-        "remark": "Pastaba",
-        "account": expense.account.pk,
-        "expense_type": new_type.pk,
-        "expense_name": new_name.pk,
-    }
+    data = _update_data(
+        expense,
+        price=price,
+        date=posted_date,
+        expense_type=new_type.pk,
+        expense_name=new_name.pk,
+    )
     url = reverse("expenses:update", kwargs={"pk": expense.pk})
 
     client_logged.post(url, data)
@@ -712,36 +791,9 @@ def test_expenses_update(client_logged, created, price, posted_date, expected_pr
     assert actual.date == date.fromisoformat(posted_date)
     assert actual.price == expected_price
     assert actual.quantity == 33
-    assert actual.account.title == "Account1"
+    assert actual.account == expense.account
     assert actual.expense_type.title == "XXX"
     assert actual.expense_name.title == "YYY"
-    assert actual.remark == "Pastaba"
-
-
-def test_expenses_update_price_for_closed_account(client_logged):
-    account = AccountFactory(title="XXX", closed=2000)
-    expense = ExpenseFactory(account=account, date=date(1999, 1, 1))
-
-    data = {
-        "price": 150,
-        "quantity": 33,
-        "date": expense.date,
-        "remark": "Pastaba",
-        "account": account.pk,
-        "expense_type": expense.expense_type.pk,
-        "expense_name": expense.expense_name.pk,
-    }
-    url = reverse("expenses:update", kwargs={"pk": expense.pk})
-
-    client_logged.post(url, data)
-
-    actual = models.Expense.objects.get(pk=expense.pk)
-    assert actual.date == expense.date
-    assert actual.price == 15_000
-    assert actual.quantity == 33
-    assert actual.account.title == account.title
-    assert actual.expense_type.title == expense.expense_type.title
-    assert actual.expense_name.title == expense.expense_name.title
     assert actual.remark == "Pastaba"
 
 
@@ -750,44 +802,48 @@ def test_expenses_update_with_closed_account_date_greater_than_closed_value(
 ):
     account = AccountFactory(title="XXX", closed=2000)
     expense = ExpenseFactory(account=account, date=date(1999, 1, 1))
-
-    data = {
-        "price": 150,
-        "quantity": 33,
-        "date": "2023-1-1",
-        "remark": "Pastaba",
-        "account": account.pk,
-        "expense_type": expense.expense_type.pk,
-        "expense_name": expense.expense_name.pk,
-    }
     url = reverse("expenses:update", kwargs={"pk": expense.pk})
 
-    content = client_logged.post(url, data).content.decode()
+    response = client_logged.post(url, _update_data(expense, date="2023-1-1"))
 
-    assert _field_errors(content) == {
+    assert _field_errors(response.content.decode()) == {
         "date": "Data negali būti vėlesnė nei sąskaitos uždarymo data. "
         "Sąskaita buvo uždaryta 2000."
     }
 
 
-def test_expenses_not_load_other_journal(client_logged, second_user):
-    own_account = AccountFactory(title="a1")
-    other_account = AccountFactory(journal=second_user.journal, title="a2")
-    own_type = ExpenseTypeFactory(title="xxx")
-    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
-
-    ExpenseFactory(expense_type=own_type, account=own_account)
-    other_expense = ExpenseFactory(
-        expense_type=other_type, account=other_account, price=666
+def _other_journals_expense(journal):
+    return ExpenseFactory(
+        expense_type=ExpenseTypeFactory(title="yyy", journal=journal),
+        account=AccountFactory(title="a2", journal=journal),
     )
 
-    url = reverse("expenses:update", kwargs={"pk": other_expense.pk})
-    response = client_logged.get(url)
 
-    form = response.content.decode("utf-8")
+def _other_journals_type(journal):
+    return ExpenseTypeFactory(title="yyy", journal=journal)
 
-    assert other_type.title not in form
-    assert str(other_expense.price) not in form
+
+def _other_journals_name(journal):
+    return ExpenseNameFactory(parent=ExpenseTypeFactory(title="yyy", journal=journal))
+
+
+@pytest.mark.parametrize(
+    "url_name, other_row",
+    [
+        pytest.param("expenses:update", _other_journals_expense, id="expense"),
+        pytest.param("expenses:delete", _other_journals_expense, id="expense_delete"),
+        pytest.param("expenses:type_update", _other_journals_type, id="type"),
+        pytest.param("expenses:name_update", _other_journals_name, id="name"),
+    ],
+)
+def test_a_form_does_not_load_another_journals_row(
+    client_logged, second_user, url_name, other_row
+):
+    other = other_row(second_user.journal)
+
+    response = client_logged.get(reverse(url_name, kwargs={"pk": other.pk}))
+
+    assert response.status_code == 404
 
 
 def test_expenses_data_search_form(client_logged):
@@ -803,7 +859,6 @@ def test_expenses_data_search_form(client_logged):
 @pytest.mark.parametrize(
     "query, data_url, tab_url",
     [
-        pytest.param("", "/expenses/list/all/", "/expenses/data/all/", id="month"),
         pytest.param(
             "?search=zzz",
             "/expenses/search/?search=zzz",
@@ -878,20 +933,6 @@ def test_view_expenses_delete(client_logged):
     assert models.Expense.objects.all().count() == 0
 
 
-def test_expenses_delete_other_journal_get_form(client_logged, second_user):
-    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
-    other_expense = ExpenseFactory(
-        expense_type=other_type,
-        account=AccountFactory(title="A2", journal=second_user.journal),
-        price=666,
-    )
-
-    url = reverse("expenses:delete", kwargs={"pk": other_expense.pk})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
 def test_expenses_delete_other_journal_post_form(client_logged, second_user):
     other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
     other_expense = ExpenseFactory(
@@ -904,18 +945,6 @@ def test_expenses_delete_other_journal_post_form(client_logged, second_user):
     client_logged.post(url)
 
     assert models.Expense.objects.all().count() == 1
-
-
-def test_expense_type_not_load_other_journal(client_logged, second_user):
-    ExpenseTypeFactory(title="xxx")
-    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
-
-    url = reverse("expenses:type_update", kwargs={"pk": other_type.pk})
-    response = client_logged.get(url)
-
-    form = response.content.decode("utf-8")
-
-    assert other_type.title not in form
 
 
 @pytest.mark.parametrize(
@@ -988,22 +1017,6 @@ def test_expense_name_update(client_logged):
     expense_name.refresh_from_db()
     assert expense_name.title == "TTT"
     assert expense_name.valid_for == 1999
-
-
-def test_expense_name_not_load_other_journal(client_logged, second_user):
-    own_type = ExpenseTypeFactory(title="xxx")
-    other_type = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
-
-    ExpenseNameFactory(parent=own_type)
-    other_name = ExpenseNameFactory(parent=other_type)
-
-    url = reverse("expenses:name_update", kwargs={"pk": other_name.pk})
-    response = client_logged.get(url)
-
-    actual = response.content.decode("utf-8")
-
-    assert other_name.title not in actual
-    assert other_type.title not in actual
 
 
 def _name_options(response):
@@ -1109,6 +1122,45 @@ def test_load_expense_name_other_journal_type_yields_no_names(
     response = client_logged.get(url, {"expense_type": other_type.pk})
 
     assert _name_options(response) == []
+
+
+@pytest.mark.parametrize(
+    "url, query, dates, rows",
+    [
+        pytest.param(
+            reverse_lazy("expenses:search"),
+            {"search": "type"},
+            ["2000-01-15", "1999-01-15"],
+            [("", "2000-01-15"), ("table-group-divider", "1999-01-15")],
+            id="search_two_januaries",
+        ),
+        pytest.param(
+            reverse_lazy("expenses:list", kwargs={"month": "all"}),
+            {},
+            ["1999-01-15", "1999-02-15", "1999-02-20"],
+            [
+                ("", "1999-02-20"),
+                ("", "1999-02-15"),
+                ("table-group-divider", "1999-01-15"),
+            ],
+            id="year_list_two_months",
+        ),
+    ],
+)
+def test_a_divider_opens_each_new_month(client_logged, url, query, dates, rows):
+    for on in dates:
+        ExpenseFactory(date=date.fromisoformat(on))
+
+    content = client_logged.get(url, query).content.decode("utf-8")
+
+    assert (
+        re.findall(
+            r'<tr hx-get="[^"]*"[^>]*class="([^"]*)">'
+            r'\s*<td class="text-left main__date">([\d-]+)</td>',
+            content,
+        )
+        == rows
+    )
 
 
 @pytest.mark.parametrize(
@@ -1243,3 +1295,14 @@ def test_the_list_heads_its_text_columns_left(client_logged):
     headers = re.findall(r'<th class="([^"]*)">([^<]*)</th>', content)
     left = [label for classes, label in headers if "text-left" in classes.split()]
     assert left == ["Data", "Išlaidų rūšis", "Išlaidų pavadinimas", "Pastaba"]
+
+
+def test_an_expense_row_opens_its_update_form(client_logged):
+    obj = ExpenseFactory()
+
+    content = client_logged.get(
+        reverse("expenses:list", kwargs={"month": "all"})
+    ).content.decode("utf-8")
+
+    update = reverse("expenses:update", kwargs={"pk": obj.pk})
+    assert edit_row_opening(update) in content

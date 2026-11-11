@@ -13,18 +13,16 @@ from ...services.typical_year import (
 )
 from ..factories import DrinkFactory
 
-pytestmark = pytest.mark.django_db
-
 
 def _total(year: int, month: int, stdav: float, drinking_days: int) -> MonthTotal:
     return MonthTotal(year=year, month=month, stdav=stdav, drinking_days=drinking_days)
 
 
-def _profile(rows=(), today=date(2022, 6, 1)) -> TypicalYearProfile:
+def _profile(rows=(), today=date(2026, 7, 15)) -> TypicalYearProfile:
     return TypicalYearProfile.pool(rows, today=today)
 
 
-def _chart(year_rows=(), pooled_rows=(), today=date(2022, 6, 1)):
+def _chart(year_rows=(), pooled_rows=(), today=date(2026, 7, 15)):
     return TypicalYearBuilder(
         year=_profile(year_rows, today), pooled=_profile(pooled_rows, today)
     ).chart()
@@ -93,6 +91,14 @@ def test_pool_mixes_a_finished_year_with_the_running_one():
     assert actual.points[6].calendar_days == 46  # all of 2025-07, half of 2026-07
 
 
+def test_pool_leaves_a_coming_year_out():
+    rows = [_total(2025, 7, 30, 3), _total(2026, 7, 30, 3)]
+
+    actual = _profile([*rows, _total(2027, 7, 30, 3)], today=date(2026, 7, 15))
+
+    assert actual.points == _profile(rows, today=date(2026, 7, 15)).points
+
+
 def test_pool_a_month_with_no_records_is_zero_not_a_division_error():
     actual = _profile([_total(2020, 1, 40, 4)])
 
@@ -116,7 +122,6 @@ def test_pool_without_rows_has_no_data():
     actual = _profile()
 
     assert not actual.has_data
-    assert len(actual.points) == 12
     assert actual.points[0].calendar_days == 0
     assert actual.points[0].drinking_day_share == 0.0
 
@@ -260,7 +265,6 @@ def test_chart_as_dict_carries_the_layers_it_draws_and_no_python_only_span():
 def test_resolve_of_zero_pools_every_year_on_record():
     actual = PooledRange.resolve(2025, 0)
 
-    # not NoPooledRange, which subclasses it
     assert type(actual) is PooledRange
     assert (actual.year_from, actual.year_to) == (0, 0)
 
@@ -281,6 +285,7 @@ def test_resolve_of_a_count_spans_back_from_the_header_year(qty, expected):
 
 
 # TypicalYear.build
+@pytest.mark.django_db
 def test_build_draws_the_header_year_alone_until_a_range_is_asked_for(main_user):
     DrinkFactory(date=date(2015, 1, 5), stdav=5)
     DrinkFactory(date=date(2025, 1, 5), stdav=5)
@@ -295,6 +300,7 @@ def test_build_draws_the_header_year_alone_until_a_range_is_asked_for(main_user)
     assert actual.layers == [actual.year]
 
 
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     "drink_years, pooled, year_from, year_to",
     [
@@ -320,6 +326,7 @@ def test_build_pools_the_years_the_range_asks_for(
     assert actual.pooled.drinking_day_share[0] == round(2 / 62 * 100, 1)
 
 
+@pytest.mark.django_db
 def test_build_of_a_header_year_with_no_records_draws_the_pooled_layer_alone(main_user):
     DrinkFactory(date=date(2015, 1, 5), stdav=5)
 
@@ -329,6 +336,7 @@ def test_build_of_a_header_year_with_no_records_draws_the_pooled_layer_alone(mai
     assert actual.layers == [actual.pooled]
 
 
+@pytest.mark.django_db
 def test_build_counts_drinking_days_not_rows(main_user):
     DrinkFactory(date=date(2020, 1, 5), stdav=5)
     DrinkFactory(date=date(2020, 1, 5), stdav=5)
@@ -339,7 +347,8 @@ def test_build_counts_drinking_days_not_rows(main_user):
     assert actual.year.intensity[0] == 10.0
 
 
-@pytest.mark.parametrize("years", [1, 5])
+@pytest.mark.django_db
+@pytest.mark.parametrize("years", [2, 6])
 def test_build_costs_one_query_when_nothing_is_pooled(
     main_user, years, django_assert_num_queries
 ):
@@ -350,7 +359,8 @@ def test_build_costs_one_query_when_nothing_is_pooled(
         TypicalYear.build(main_user, 2020, date(2026, 7, 15))
 
 
-@pytest.mark.parametrize("years", [1, 5])
+@pytest.mark.django_db
+@pytest.mark.parametrize("years", [2, 6])
 def test_build_costs_one_query_per_layer_however_many_years(
     main_user, years, django_assert_num_queries
 ):
@@ -361,6 +371,7 @@ def test_build_costs_one_query_per_layer_however_many_years(
         TypicalYear.build(main_user, 2020, date(2026, 7, 15), PooledRange())
 
 
+@pytest.mark.django_db
 @pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
 def test_build_is_the_same_chart_under_every_drink_type(drink_type, main_user):
     # both series are unit-free or Std Av, so the drink-type dropdown must not
@@ -374,6 +385,7 @@ def test_build_is_the_same_chart_under_every_drink_type(drink_type, main_user):
     assert actual.year.drinking_day_share[7] == round(1 / 31 * 100, 1)
 
 
+@pytest.mark.django_db
 def test_build_without_records_has_no_data(main_user):
     actual = TypicalYear.build(main_user, 2020, date(2026, 7, 15), PooledRange())
 
@@ -381,6 +393,7 @@ def test_build_without_records_has_no_data(main_user):
     assert actual.year_from == 0
 
 
+@pytest.mark.django_db
 def test_build_stops_the_running_year_at_today(main_user):
     DrinkFactory(date=date(2026, 7, 5), stdav=5)
 

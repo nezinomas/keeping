@@ -7,6 +7,7 @@ import time_machine
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
+from ...bookkeeping.tests.helper import quiet_syncs
 from ...core.tests.utils import (
     count_queries,
     quick_add_pills,
@@ -55,7 +56,8 @@ def _update_data(income, on="1999-12-31"):
     ids=["new", "update"],
 )
 def test_income_load_form(client_logged, url_of, trigger, expected_of):
-    income = IncomeFactory(price=7777, remark="Pastaba")
+    with quiet_syncs():
+        income = IncomeFactory(price=7777, remark="Pastaba")
     url = url_of(income)
 
     actual = client_logged.get(url).content.decode("utf-8")
@@ -186,12 +188,15 @@ def test_another_journals_row_is_not_found(client_logged, second_user, request_o
     ids=["income_update", "type_new"],
 )
 def test_a_save_by_htmx_triggers_reload(client_logged, url_of, data):
-    income = IncomeFactory()
-    posted = data | {"account": income.account.pk, "income_type": income.income_type.pk}
-
-    response = client_logged.post(
-        url_of(income), posted, headers={"HX-Request": "true"}
-    )
+    with quiet_syncs():
+        income = IncomeFactory()
+        posted = data | {
+            "account": income.account.pk,
+            "income_type": income.income_type.pk,
+        }
+        response = client_logged.post(
+            url_of(income), posted, headers={"HX-Request": "true"}
+        )
 
     assert response.status_code == 204
     assert response.headers.get("HX-Trigger", "") == '{"reload": {}}'
@@ -207,11 +212,12 @@ def test_a_save_by_htmx_triggers_reload(client_logged, url_of, data):
     ids=["same_year", "another_year", "past_record"],
 )
 def test_income_update_stores_the_posted_row(client_logged, stored, posted, today):
-    income = IncomeFactory(date=stored)
-    url = reverse("incomes:update", kwargs={"pk": income.pk})
+    with quiet_syncs():
+        income = IncomeFactory(date=stored)
+        url = reverse("incomes:update", kwargs={"pk": income.pk})
 
-    with time_machine.travel(today):
-        client_logged.post(url, _update_data(income, posted), follow=True)
+        with time_machine.travel(today):
+            client_logged.post(url, _update_data(income, posted), follow=True)
 
     actual = models.Income.objects.get(pk=income.pk)
     assert actual.date == date.fromisoformat(posted)
@@ -226,8 +232,11 @@ def test_incomes_data_search_form(client_logged):
     response = client_logged.get(url).content.decode("utf-8")
 
     search = reverse("incomes:search")
-    assert '<input type="search" name="search"' in response
-    assert re.search(rf'id="search-form"\s+hx-get="{search}"', response)
+    assert re.search(
+        rf'id="search-form"\s+hx-get="{search}"[^>]*>\s*'
+        r'<input type="search" name="search"',
+        response,
+    )
 
 
 @pytest.mark.parametrize(
@@ -725,12 +734,14 @@ def _tab_queries(client, tab):
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
 def test_tab_query_count_does_not_grow_with_the_incomes(client_logged, tab):
-    for i in range(2):
-        IncomeFactory(income_type=IncomeTypeFactory(title=f"T{i}"))
+    with quiet_syncs():
+        for i in range(2):
+            IncomeFactory(income_type=IncomeTypeFactory(title=f"T{i}"))
     two = _tab_queries(client_logged, tab)
 
-    for i in range(2, 6):
-        IncomeFactory(income_type=IncomeTypeFactory(title=f"T{i}"))
+    with quiet_syncs():
+        for i in range(2, 6):
+            IncomeFactory(income_type=IncomeTypeFactory(title=f"T{i}"))
     six = _tab_queries(client_logged, tab)
 
     assert six == two

@@ -1,6 +1,8 @@
 import operator
 from dataclasses import dataclass, field
 
+from django.utils.translation import gettext as _
+
 from ...users.models import User
 from .model_services import BookModelService, BookTargetModelService
 
@@ -32,6 +34,7 @@ class ChartFinished:
             "categories": list(self._finished.keys()),
             "data": data,
             "targets": list(map(operator.itemgetter("target"), data)),
+            "text": {"finished": _("Finished"), "goal": _("Goal")},
         }
 
     def _make_series_data(self):

@@ -100,6 +100,13 @@ def test_drinking_days(rows, year, today, expected):
             0,
             id="never_negative",
         ),
+        pytest.param(
+            [_row(date(2027, 1, 2), 3)],
+            2027,
+            date(2026, 11, 3),
+            0,
+            id="a_coming_year_has_no_days_to_be_dry",
+        ),
     ],
 )
 def test_dry_days_count_the_days_elapsed(rows, year, today, expected):
@@ -183,42 +190,29 @@ def test_intensity_is_the_same_figure_under_every_drink_type(drink_type):
     assert stats.intensity == 5.0
 
 
-def test_compare_frequency_counts_both_years():
-    current = [_row(date(2026, 1, 5), 3), _row(date(2026, 1, 6), 3)]
-    past = [_row(date(2025, 1, 5), 3)]
+@pytest.mark.parametrize(
+    "year, current_days, past_days, expect",
+    [
+        pytest.param(2026, [5, 6], [5], (2, 1, True, False), id="counts_both_years"),
+        pytest.param(2026, [5], [5, 6], (1, 2, True, True), id="fewer_days_improving"),
+        pytest.param(2026, [5], [], (1, 0, False, False), id="no_prior_year_empty"),
+        pytest.param(2027, [5], [5], (1, 0, False, False), id="coming_year_empty"),
+    ],
+)
+def test_compare_frequency(year, current_days, past_days, expect):
+    current = [_row(date(year, 1, day), 3) for day in current_days]
+    past = [_row(date(year - 1, 1, day), 3) for day in past_days]
 
     actual = FrequencyStats(
-        current, past, year=2026, today=date(2026, 6, 15)
+        current, past, year=year, today=date(2026, 6, 15)
     ).compare_frequency()
 
-    assert actual.current == 2
-    assert actual.previous == 1
-    assert actual.has_past is True
-    assert actual.improving is False
-
-
-def test_compare_frequency_fewer_days_is_improving():
-    current = [_row(date(2026, 1, 5), 3)]
-    past = [_row(date(2025, 1, 5), 3), _row(date(2025, 1, 6), 3)]
-
-    actual = FrequencyStats(
-        current, past, year=2026, today=date(2026, 6, 15)
-    ).compare_frequency()
-
-    assert actual.improving is True
-
-
-def test_compare_frequency_without_a_prior_year_is_empty():
-    current = [_row(date(2026, 1, 5), 3)]
-
-    actual = FrequencyStats(
-        current, year=2026, today=date(2026, 6, 15)
-    ).compare_frequency()
-
-    assert actual.current == 1
-    assert actual.previous == 0
-    assert actual.has_past is False
-    assert actual.improving is False
+    assert (
+        actual.current,
+        actual.previous,
+        actual.has_past,
+        actual.improving,
+    ) == expect
 
 
 @pytest.mark.parametrize(
@@ -376,6 +370,15 @@ def test_weekday_profile_counts_only_the_weekdays_elapsed_in_a_running_year():
 
     assert actual[3].calendar_days == 3
     assert actual[4].calendar_days == 2
+
+
+def test_weekday_profile_of_a_coming_year_reaches_no_weekday():
+    actual = FrequencyStats(
+        [_row(date(2027, 1, 2), 5)], year=2027, today=date(2026, 11, 3)
+    ).weekday_profile()
+
+    assert [point.calendar_days for point in actual] == [0] * 7
+    assert actual[5].drinking_day_share == 0.0
 
 
 def test_weekday_profile_counts_every_occurrence_of_a_year_already_over():

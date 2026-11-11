@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 @use "tokens";
 
@@ -59,7 +60,7 @@
 
         // a table too wide for a phone folds a column rather than scrolling: the
         // pinned header (sticky-table-headers.js) follows the window, not a scroller
-        @media only screen and (max-width: 767px) {
+        @include phone {
             .main__fold {
                 display: none;
             }
@@ -82,6 +83,7 @@
         .main__figure {
             font-family: $figures;
             font-size: 0.86rem;
+            white-space: nowrap;
         }
 
         tbody tr.main__group td {
@@ -89,7 +91,7 @@
             padding-bottom: 0.5rem;
             font-weight: 600;
 
-            @media only screen and (max-width: 767px) {
+            @include phone {
                 padding-top: $gap;
             }
         }
@@ -97,7 +99,7 @@
         td.main__child {
             padding-left: 2 * $gap;
 
-            @media only screen and (max-width: 767px) {
+            @include phone {
                 padding-left: 1.5 * $gap;
             }
         }
@@ -228,5 +230,24 @@
         tbody:has(+ tbody > tr.table-group-divider:first-child) > tr:last-child > td {
             border-bottom-width: 0;
         }
+    }
+
+    // the right edge fades while more of the table lies past it; a box that fits
+    // has no scroll timeline to run on, so it draws no fade
+    .table-responsive,
+    .month-table {
+        animation: table-edge linear both;
+        animation-timeline: scroll(self inline);
+    }
+}
+
+@keyframes table-edge {
+    from,
+    96% {
+        mask-image: linear-gradient(to left, transparent, #000 2rem);
+    }
+
+    to {
+        mask-image: none;
     }
 }

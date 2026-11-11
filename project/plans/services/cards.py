@@ -48,13 +48,15 @@ def _month_card(total: int) -> Card:
 
 
 @dataclass(frozen=True)
-class IncomeCards:
+class PlanCards:
     data: DataDto
 
     @classmethod
     def build(cls, data: DataDto) -> list[Card]:
         return cls(data)._cards()
 
+
+class IncomeCards(PlanCards):
     def _cards(self) -> list[Card]:
         total = _sum(self.data.incomes)
 
@@ -70,14 +72,7 @@ class IncomeCards:
         return StatCard(title=title, value=_whole_euros(cents))
 
 
-@dataclass(frozen=True)
-class SavingCards:
-    data: DataDto
-
-    @classmethod
-    def build(cls, data: DataDto) -> list[Card]:
-        return cls(data)._cards()
-
+class SavingCards(PlanCards):
     def _cards(self) -> list[Card]:
         total = _sum(self.data.savings)
 
@@ -94,14 +89,7 @@ class SavingCards:
         )
 
 
-@dataclass(frozen=True)
-class ExpenseCards:
-    data: DataDto
-
-    @classmethod
-    def build(cls, data: DataDto) -> list[Card]:
-        return cls(data)._cards()
-
+class ExpenseCards(PlanCards):
     def _cards(self) -> list[Card]:
         regular = _sum(self.data.expenses_regular)
         necessary = _sum(self.data.expenses_necessary) + _sum(self.data.necessary)

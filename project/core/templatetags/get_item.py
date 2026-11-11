@@ -9,16 +9,6 @@ def get_item(dictionary, key):
 
 
 @register.filter
-def get_obj_attr(obj, attr):
-    value = attr
-    try:
-        value = getattr(obj, attr)
-    except (AttributeError, TypeError):
-        pass
-    return value
-
-
-@register.filter
 def get_list_val(arr: list, key: int):
     val = 0
     try:

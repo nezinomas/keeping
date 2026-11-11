@@ -338,3 +338,21 @@ def test_risk_tab_build_is_the_same_tab_under_every_drink_type(drink_type, main_
     assert _card(cards, _("Worst week")).state == "medium"
     assert _card(cards, _("Heavy days")).value == "1"
     assert _card(cards, _("Weeks over guideline")).value == "1"
+
+
+@pytest.mark.parametrize(
+    "title, value",
+    [
+        pytest.param(_("This week"), "", id="this_week_not_reached"),
+        pytest.param(_("Worst week"), "12.0", id="worst_week_a_total"),
+        pytest.param(_("Weeks over guideline"), "1", id="weeks_over_a_count"),
+        pytest.param(_("Heavy days"), "1", id="heavy_days_a_count"),
+    ],
+)
+def test_risk_tab_build_cards_of_a_coming_year(main_user, title, value):
+    DrinkFactory(date=date(2027, 1, 2), stdav=12)
+    DrinkFactory(date=date(2026, 1, 10), stdav=5)
+
+    card = _card(RiskTab.build(main_user, 2027, date(2026, 11, 3))["cards"], title)
+
+    assert card.value == value

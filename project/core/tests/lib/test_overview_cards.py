@@ -3,11 +3,12 @@ from datetime import date
 import pytest
 
 from ....core.lib.overview_cards import OverviewCards
-from ....core.lib.stat_card import EMPTY, NEUTRAL
+from ....core.lib.stat_card import EMPTY, NEUTRAL, EmptyStatCard
 from ....core.lib.year_boundary import YearBoundary
 
 RUNNING = YearBoundary(year=2026, today=date(2026, 9, 15))
 FINISHED = YearBoundary(year=2025, today=date(2026, 9, 15))
+COMING = YearBoundary(year=2027, today=date(2026, 9, 15))
 
 YEAR = [{"title": "Alga", "sum": 90_000}, {"title": "Kita", "sum": 30_000}]
 LAST_YEAR = [{"title": "Alga", "sum": 80_000}]
@@ -49,6 +50,13 @@ def test_per_month_divides_a_finished_year_by_twelve():
 
     assert card.value == "100"
     assert card.note == "12 mėnesių"
+
+
+def test_per_month_of_a_coming_year_is_empty_while_this_year_reads_the_total():
+    cards = _cards(boundary=COMING)
+
+    assert cards["Per mėnesį"] == EmptyStatCard("Per mėnesį")
+    assert cards["Šiais metais"].value == "1.200"
 
 
 @pytest.mark.parametrize(

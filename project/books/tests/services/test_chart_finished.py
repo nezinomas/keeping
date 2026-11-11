@@ -78,8 +78,9 @@ def test_chart_context():
                 {"y": 3, "target": 33},
             ],
         ),
+        ("text", {"finished": "Perskaitytos", "goal": "Tikslas"}),
     ],
-    ids=["categories", "targets", "data"],
+    ids=["categories", "targets", "data", "text"],
 )
 def test_chart_context_values(finished, targets, key, expected):
     data = SimpleNamespace(finished=finished, targets=targets)

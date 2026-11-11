@@ -1,39 +1,47 @@
 import pytest
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse
 from django.template import loader
+from django.test import RequestFactory
+from hypothesis import example, given
+from hypothesis import strategies as st
+
+
+def _render_info_table(ctx, request):
+    template = loader.get_template("cotton/info_table.html")
+
+    return (
+        HttpResponse(template.render(ctx, request))
+        .content.decode("utf-8")
+        .replace("\n", "")
+        .replace("\t", "")
+        .replace("  ", "")
+    )
 
 
 @pytest.fixture(name="info_table")
 def fixture_info_table(fake_request):
-    def _func(ctx):
-        template = loader.get_template("cotton/info_table.html")
-
-        return (
-            HttpResponse(template.render(ctx, fake_request))
-            .content.decode("utf-8")
-            .replace("\n", "")
-            .replace("\t", "")
-            .replace("  ", "")
-        )
-
-    return _func
+    return lambda ctx: _render_info_table(ctx, fake_request)
 
 
-@pytest.mark.parametrize(
-    "ctx",
-    [
-        ({"data": {}}),
-        ({}),
-        ({"data": {"xxx": "yyy"}}),
-        ({"data": {"data": "yyy"}}),
-        ({"data": {"title": "yyy"}}),
-        ({"data": {"title": "", "data": ""}}),
-    ],
-)
-def test_info_table_no_data(info_table, ctx):
-    actual = info_table(ctx)
+INFO_TABLE_DATA = st.dictionaries(
+    st.sampled_from(["data", "title", "xxx"]),
+    st.one_of(st.none(), st.just(""), st.just([]), st.just("yyy")),
+).filter(lambda data: not (data.get("title") and data.get("data")))
 
-    assert actual == ""
+
+@given(ctx=st.one_of(st.just({}), INFO_TABLE_DATA.map(lambda data: {"data": data})))
+@example(ctx={"data": {}})
+@example(ctx={})
+@example(ctx={"data": {"xxx": "yyy"}})
+@example(ctx={"data": {"data": "yyy"}})
+@example(ctx={"data": {"title": "yyy"}})
+@example(ctx={"data": {"title": "", "data": ""}})
+def test_info_table_without_a_title_or_without_data_renders_nothing(ctx):
+    request = RequestFactory().get("/fake/")
+    request.user = AnonymousUser()
+
+    assert _render_info_table(ctx, request) == ""
 
 
 def test_info_table_with_data_and_title(info_table):
@@ -65,3 +73,12 @@ def test_info_table_for_calculate_debt_remains(info_table):
     actual = info_table(ctx)
 
     assert "Liko grąžinti:0,02" in actual
+
+
+def test_info_table_empty_shows_a_dash_for_each_figure(info_table):
+    ctx = {"data": {"data": [1, 2], "title": ["x", "y"], "empty": True}}
+
+    actual = info_table(ctx)
+
+    assert actual.count("&mdash;") == 2
+    assert "0,01" not in actual

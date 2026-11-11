@@ -9,12 +9,13 @@ from ..factories import CountFactory, CountTypeFactory
 pytestmark = pytest.mark.django_db
 
 TODAY = date(1999, 7, 12)
+YEAR = TODAY.year
 
 
 def test_records_are_keyed_date_and_qty(main_user):
     CountFactory(date=date(1999, 1, 1), quantity=3)
 
-    life = CounterLife.read(main_user, "count-type", TODAY)
+    life = CounterLife.read(main_user, "count-type", YEAR, TODAY)
 
     assert life.records == [{"date": date(1999, 1, 1), "qty": 3.0}]
 
@@ -36,4 +37,4 @@ def test_earlier_is_the_last_record_before_the_year(dates, expect, main_user):
     for day in dates:
         CountFactory(date=day, quantity=1)
 
-    assert CounterLife.read(main_user, "count-type", TODAY).earlier == expect
+    assert CounterLife.read(main_user, "count-type", YEAR, TODAY).earlier == expect

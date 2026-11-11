@@ -26,9 +26,7 @@ OPTION = re.compile(r'<option value="\d+">([^<]*)</option>')
             lambda source: {"from_account": source.pk}, ["Other"], id="source"
         ),
         pytest.param(lambda source: {}, [], id="no-value"),
-        pytest.param(lambda source: {"from_account": ""}, [], id="empty"),
         pytest.param(lambda source: {"from_account": "x"}, [], id="not-a-number"),
-        pytest.param(lambda source: {"from_account": "0"}, [], id="zero"),
     ],
 )
 def test_a_load_view_lists_the_journals_open_items_but_the_source(

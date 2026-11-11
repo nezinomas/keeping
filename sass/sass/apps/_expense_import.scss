@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 
 // Import receipt — the Open line highlight, the only colour on this page.
@@ -37,10 +38,8 @@
         grid-row: 2;
         align-self: start;
     }
-}
 
-@media only screen and (max-width: 767px) {
-    .import-upload {
+    @include phone {
         grid-auto-flow: row;
         grid-template-rows: none;
         grid-template-columns: 1fr;
@@ -59,13 +58,6 @@
 
 #upload {
     margin-bottom: 2rem;
-}
-
-// Nuskaityti and Išsaugoti at the height of the form-control inputs beside
-// them, without touching the shared button mixin
-#upload .button-secondary,
-#review .button-secondary {
-    padding: 0.35rem 0.75rem;
 }
 
 #review input[name$="-amount"],

@@ -87,6 +87,19 @@ def test_monthly_stats_end_at_the_month_reached(today, months):
     assert len(stats.total_stdav) == months
 
 
+def test_monthly_stats_of_a_coming_year_reach_no_month():
+    data = [DataRow(date=date(2027, 1, 2), qty=1, stdav=2.5)]
+
+    stats = DrinkStats(
+        DrinkConverter("beer"), data, year=2027, today=date(2026, 11, 3)
+    ).monthly
+
+    assert stats.total_quantity == []
+    assert stats.total_volume == []
+    assert stats.avg_daily_volume == []
+    assert stats.total_stdav == []
+
+
 def test_monthly_stats_carry_the_std_av_they_summed():
     data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
 

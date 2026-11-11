@@ -2,7 +2,6 @@
 {% load i18n %}
 {% load math %}
 {% load cell_format %}
-{% load fast_rendering %}
 
 {% if object_list %}
 
@@ -30,7 +29,7 @@
 
             {% for object in object_list %}
 
-            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.date.year object.date.month %}{{ forloop.first|yesno:",table-group-divider" }}{% endifchanged %}">
                 <td class="text-left main__date{% if object.exception %} exception{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
                 <td class="text-left">{{ object.expense_type__title }}</td>
                 <td class="text-left">{{ object.expense_name__title }}</td>
@@ -42,13 +41,13 @@
                     {% if not object.is_pdf %}
                     <button type="button" class="button-secondary transparent button-xs" hx-get="{{ modal_image_url }}" hx-trigger="click" hx-target="#imgModal" data-url="{{ media_url }}{{ object.attachment }}">{% translate 'Image' %}</button>
                     {% else %}
-                    <a role="button" class="button-outline-primary transparent button-xs" href="{{ media_url }}{{ object.attachment }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
+                    <a role="button" class="button-secondary transparent button-xs" href="{{ media_url }}{{ object.attachment }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
                     {% endif %}
                     {% endif %}
                 </td>
                 <td>{{ object.account__title }}</td>
-                {{ edit_col|inject_url:object.url_update }}
-                {{ delete_col|inject_url:object.url_delete }}
+                <td class="edit-col"><a role="button" hx-get="{{ object.url_update }}" hx-target="#mainModal" class="edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a></td>
+                <td class="delete-col"><a role="button" hx-get="{{ object.url_delete }}" hx-target="#mainModal" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a></td>
             </tr>
             {% endfor %}
         </tbody>

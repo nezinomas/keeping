@@ -43,30 +43,34 @@ def test_row_labels_in_order():
 
 
 # make_data's first three months: January and February differ, March stands for the rest
-@pytest.mark.parametrize(
-    "label, values, over",
-    [
-        ("Pajamos", [450, 450, 450], []),
-        ("Būtinos išlaidos ir taupymas", [490, 620, 0], []),
-        ("Būtinos išlaidos", [300, 320, 0], []),
-        ("Papildomos būtinos išlaidos", [0, 100, 0], []),
-        ("Taupymas", [190, 200, 0], []),
-        ("Laisvi pinigai", [-40, -170, 450], []),
-        ("Suma dienai", [-1.29, -5.86, 14.52], []),
-        ("Dienos planas", [25, 26, 0], ["1", "2"]),
-        ("Likutis", [-815, -924, 450], []),
-        ("Kasdienės išlaidos pagal planą", [260, 280, 0], []),
-        ("Visos išlaidos", [750, 900, 0], []),
-        ("Lieka po išlaidų planų", [-300, -450, 450], []),
-    ],
-)
-def test_row_values_and_over_months(label, values, over):
-    row = {row.label: row for row in _rows(_blocks())}[label]
+def test_row_values_and_over_months():
+    expect = {
+        "Pajamos": ([450, 450, 450], []),
+        "Būtinos išlaidos ir taupymas": ([490, 620, 0], []),
+        "Būtinos išlaidos": ([300, 320, 0], []),
+        "Papildomos būtinos išlaidos": ([0, 100, 0], []),
+        "Taupymas": ([190, 200, 0], []),
+        "Laisvi pinigai": ([-40, -170, 450], []),
+        "Suma dienai": ([-1.29, -5.86, 14.52], []),
+        "Dienos planas": ([25, 26, 0], ["1", "2"]),
+        "Likutis": ([-815, -924, 450], []),
+        "Kasdienės išlaidos pagal planą": ([260, 280, 0], []),
+        "Visos išlaidos": ([750, 900, 0], []),
+        "Lieka po išlaidų planų": ([-300, -450, 450], []),
+    }
 
-    assert row.values[:3] == pytest.approx(values, abs=CENT)
-    assert [month for month, state in zip(MONTH_NUMS, row.states) if state == OVER] == (
-        over
-    )
+    actual = {
+        row.label: (
+            row.values[:3],
+            [m for m, state in zip(MONTH_NUMS, row.states) if state == OVER],
+        )
+        for row in _rows(_blocks())
+    }
+
+    assert actual.keys() == expect.keys()
+    for label, (values, over) in expect.items():
+        assert actual[label][0] == pytest.approx(values, abs=CENT), label
+        assert actual[label][1] == over, label
 
 
 def test_part_is_true_for_exactly_three_rows():

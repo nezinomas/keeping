@@ -1,3 +1,5 @@
+import pytest
+
 from ...keywords import normalise_keyword
 from ...services.keyword_match import KeywordMatcher, Match, NoMatch
 from ..factories import ExpenseNameFactory, ExpenseTypeFactory
@@ -47,28 +49,29 @@ def test_keyword_matches_substring_ignoring_case():
     assert match.expense_name == "Pieno produktai"
 
 
-def test_longest_keyword_wins():
-    keywords = [
-        FakeKeyword("varšk", "A"),
-        FakeKeyword("varškės užtep", "B"),
-    ]
+@pytest.mark.parametrize(
+    "title, keywords, expected",
+    [
+        pytest.param(
+            "Varškės užtepėlė su ...",
+            [FakeKeyword("varšk", "A"), FakeKeyword("varškės užtep", "B")],
+            "varškės užtep",
+            id="longest_keyword_wins",
+        ),
+        pytest.param(
+            "Natūralus VILVI jogurtas VILVI, 6 % rieb., 350 g",
+            [FakeKeyword("jogur", "A"), FakeKeyword("vilvi", "B")],
+            "vilvi",
+            id="equal_length_earliest_in_title_wins",
+        ),
+    ],
+)
+def test_best_keyword_is_the_longest_then_the_earliest_in_the_title(
+    title, keywords, expected
+):
+    match = KeywordMatcher.match(title, keywords)
 
-    match = KeywordMatcher.match("Varškės užtepėlė su ...", keywords)
-
-    assert match.keyword == "varškės užtep"
-
-
-def test_equal_length_earliest_in_title_wins():
-    keywords = [
-        FakeKeyword("jogur", "A"),
-        FakeKeyword("vilvi", "B"),
-    ]
-
-    match = KeywordMatcher.match(
-        "Natūralus VILVI jogurtas VILVI, 6 % rieb., 350 g", keywords
-    )
-
-    assert match.keyword == "vilvi"
+    assert match.keyword == expected
 
 
 def test_diacritics_must_agree():

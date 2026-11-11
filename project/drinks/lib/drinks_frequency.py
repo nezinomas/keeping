@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import date
 from functools import cached_property
 
-from ...core.lib.year_boundary import YearBoundary
+from ...core.lib.year_boundary import WEEKDAYS, YearBoundary
 from .drinks_stats import (
     DataRow,
     EmptyYearOverYear,
@@ -11,24 +11,36 @@ from .drinks_stats import (
     YearOverYearReading,
 )
 
-WEEKDAYS = 7
+
+@dataclass(frozen=True)
+class ProfilePoint:
+    """A run of calendar days, as both a frequency and a severity.
+
+    The two are independent and a total answers neither: days can be drunk on
+    rarely and heavily, or often and lightly, and only the pair distinguishes them.
+    """
+
+    calendar_days: int  # the days of the run the calendar has reached
+    drinking_days: int
+    stdav: float
+
+    @property
+    def drinking_day_share(self) -> float:
+        return self.share_of(self.drinking_days)
+
+    @property
+    def intensity(self) -> float:
+        return self.stdav / self.drinking_days if self.drinking_days else 0.0
+
+    def share_of(self, days: int) -> float:
+        return days / self.calendar_days if self.calendar_days else 0.0
 
 
 @dataclass(frozen=True)
-class WeekdayPoint:
-    """One day of the week, as both a frequency and a severity.
-
-    The two are independent and a year total answers neither: a weekday can be
-    drunk on rarely and heavily, or often and lightly, and only the pair
-    distinguishes them.
-    """
+class WeekdayPoint(ProfilePoint):
+    """One day of the week; its calendar days are how many the year has reached."""
 
     weekday: int  # 0 = Monday, matching date.weekday()
-    calendar_days: int  # how many of that weekday the year has reached
-    drinking_days: int
-    stdav: float
-    drinking_day_share: float  # drinking_days / calendar_days
-    intensity: float  # stdav / drinking_days
 
 
 class FrequencyStats:
@@ -55,25 +67,41 @@ class FrequencyStats:
         is a share of the days elapsed and not of all 365."""
         return self._year.is_current
 
+    @property
+    def days_elapsed(self) -> int:
+        return self._year.days_elapsed
+
     @staticmethod
     def _count_drinking_days(records: Iterable[DataRow]) -> int:
         """Calendar days carrying a Drink, not rows: a day can hold several."""
         return len({row.date for row in records})
 
-    @staticmethod
-    def _intensity(records: Sequence[DataRow]) -> float:
-        days = FrequencyStats._count_drinking_days(records)
-        return sum(row.stdav for row in records) / days if days else 0.0
+    def _point(self, records: Sequence[DataRow]) -> ProfilePoint:
+        return ProfilePoint(
+            calendar_days=self.days_elapsed,
+            drinking_days=self._count_drinking_days(records),
+            stdav=sum(row.stdav for row in records),
+        )
 
     @cached_property
+    def _year_point(self) -> ProfilePoint:
+        return self._point(self._current_daily_records)
+
+    @cached_property
+    def _past_point(self) -> ProfilePoint:
+        """Previous-year rows up to the same month and day as the year end: the
+        same days a year back."""
+        return self._point(self._year.clip(self._past_daily_records))
+
+    @property
     def drinking_days(self) -> int:
-        return self._count_drinking_days(self._current_daily_records)
+        return self._year_point.drinking_days
 
     @cached_property
     def dry_days(self) -> int:
         """Days of the year reached with no Drink on them — so today for the
         year running, Dec 31 for one already over."""
-        return max(self._year.days_elapsed - self.drinking_days, 0)
+        return max(self.days_elapsed - self.drinking_days, 0)
 
     @cached_property
     def drinking_day_share(self) -> float:
@@ -89,43 +117,25 @@ class FrequencyStats:
         if not self._current_daily_records:
             return 0.0
 
-        elapsed = self._year.days_elapsed
-        return days / elapsed if elapsed else 0.0
+        return self._year_point.share_of(days)
 
-    @cached_property
+    @property
     def intensity(self) -> float:
         """Std Av per Drinking day — a year's total spread over the days it was
         actually drunk on, not over the days in the year."""
-        return self._intensity(self._current_daily_records)
-
-    @cached_property
-    def _past_clipped_records(self) -> list[DataRow]:
-        """Previous-year rows up to the same month and day as the year end."""
-        return self._year.clip(self._past_daily_records)
+        return self._year_point.intensity
 
     def _compare(self, current: float, previous: float) -> YearOverYearReading:
-        if not self._past_daily_records:
+        if not self._past_daily_records or self._year.is_coming:
             return EmptyYearOverYear(current)
 
         return YearOverYear(current, previous)
 
     def compare_frequency(self) -> YearOverYearReading:
-        return self._compare(
-            self.drinking_days, self._count_drinking_days(self._past_clipped_records)
-        )
+        return self._compare(self.drinking_days, self._past_point.drinking_days)
 
     def compare_intensity(self) -> YearOverYearReading:
-        return self._compare(
-            self.intensity, self._intensity(self._past_clipped_records)
-        )
-
-    def _calendar_days_of(self, weekday: int) -> int:
-        """How many of one weekday the year has reached — counting all 52 in a
-        running year would report a rate that has not happened yet."""
-        elapsed = self._year.days_elapsed
-        offset = (weekday - date(self._year.year, 1, 1).weekday()) % 7
-
-        return (elapsed - offset - 1) // WEEKDAYS + 1 if offset < elapsed else 0
+        return self._compare(self.intensity, self._past_point.intensity)
 
     def weekday_profile(self) -> list[WeekdayPoint]:
         """Always seven points, Monday first: a weekday nobody drank on is a finding."""
@@ -139,15 +149,9 @@ class FrequencyStats:
         ]
 
     def _weekday_point(self, weekday: int, rows: Sequence[DataRow]) -> WeekdayPoint:
-        calendar_days = self._calendar_days_of(weekday)
-        drinking_days = self._count_drinking_days(rows)
-        stdav = sum(row.stdav for row in rows)
-
         return WeekdayPoint(
             weekday=weekday,
-            calendar_days=calendar_days,
-            drinking_days=drinking_days,
-            stdav=stdav,
-            drinking_day_share=drinking_days / calendar_days if calendar_days else 0.0,
-            intensity=stdav / drinking_days if drinking_days else 0.0,
+            calendar_days=self._year.weekdays_reached(weekday),
+            drinking_days=self._count_drinking_days(rows),
+            stdav=sum(row.stdav for row in rows),
         )

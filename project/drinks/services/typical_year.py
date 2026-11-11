@@ -1,6 +1,6 @@
 import calendar
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from itertools import takewhile
 
@@ -8,6 +8,7 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
+from ..lib.drinks_frequency import ProfilePoint
 from ..lib.drinks_risk import HEAVY_DAY_STDAV
 from .model_services import DrinkModelService
 from .profile_chart import ProfileLayer, profile_chart_dict, profile_chart_text
@@ -27,16 +28,11 @@ class MonthTotal:
 
 
 @dataclass(frozen=True)
-class MonthPoint:
+class MonthPoint(ProfilePoint):
     """One pooled month. ``calendar_days``, the rate's denominator, counts only the
     days of that month each pooled year has reached."""
 
     month: int  # 1 = January
-    calendar_days: int
-    drinking_days: int
-    stdav: float
-    drinking_day_share: float  # drinking_days / calendar_days
-    intensity: float  # stdav / drinking_days
 
 
 @dataclass(frozen=True)
@@ -58,29 +54,33 @@ class TypicalYearProfile:
 
     @classmethod
     def pool(cls, rows: Sequence[MonthTotal], today: date) -> "TypicalYearProfile":
-        """Only years carrying a Drink add days: an unlogged year is not abstinence."""
-        years = sorted({row.year for row in rows})
-        stdav = [0.0] * MONTHS
-        drinking_days = [0] * MONTHS
-
-        for row in rows:
-            stdav[row.month - 1] += row.stdav
-            drinking_days[row.month - 1] += row.drinking_days
-
-        points = [
-            cls._point(
+        """Only years carrying a Drink add days: an unlogged year is not abstinence,
+        and a Coming year has no days to add yet."""
+        years = sorted(
+            {row.year for row in rows if YearBoundary(row.year, today).days_elapsed}
+        )
+        by_month = {
+            month: MonthPoint(
                 month=month,
-                stdav=stdav[month - 1],
-                drinking_days=drinking_days[month - 1],
+                stdav=0.0,
+                drinking_days=0,
                 calendar_days=sum(
                     cls._days_reached(year, month, today) for year in years
                 ),
             )
             for month in range(1, MONTHS + 1)
-        ]
+        }
+
+        for row in (row for row in rows if row.year in years):
+            point = by_month[row.month]
+            by_month[row.month] = replace(
+                point,
+                stdav=point.stdav + row.stdav,
+                drinking_days=point.drinking_days + row.drinking_days,
+            )
 
         return cls(
-            points=points,
+            points=list(by_month.values()),
             year_from=years[0] if years else 0,
             year_to=years[-1] if years else 0,
         )
@@ -97,19 +97,6 @@ class TypicalYearProfile:
             return calendar.monthrange(year, month)[1]
 
         return end.day
-
-    @staticmethod
-    def _point(
-        month: int, calendar_days: int, drinking_days: int, stdav: float
-    ) -> MonthPoint:
-        return MonthPoint(
-            month=month,
-            calendar_days=calendar_days,
-            drinking_days=drinking_days,
-            stdav=stdav,
-            drinking_day_share=drinking_days / calendar_days if calendar_days else 0.0,
-            intensity=stdav / drinking_days if drinking_days else 0.0,
-        )
 
 
 @dataclass(frozen=True)
@@ -137,7 +124,8 @@ class PooledRange:
         return TypicalYearProfile.pool(rows, today)
 
 
-class NoPooledRange(PooledRange):
+@dataclass(frozen=True)
+class NoPooledRange:
     """Nothing pooled: the chart opens on the header year alone, at no query.
     Pooling a decade behind the year is a reading to ask for, not to be given."""
 
@@ -178,7 +166,11 @@ class TypicalYear:
 
     @classmethod
     def build(
-        cls, user, year: int, today: date, pooled: PooledRange = NoPooledRange()
+        cls,
+        user,
+        year: int,
+        today: date,
+        pooled: PooledRange | NoPooledRange = NoPooledRange(),
     ) -> TypicalYearChartViewModel:
         """The header year, and the pooled range behind it if one was asked for.
         A query a layer: the range may not contain the header year."""

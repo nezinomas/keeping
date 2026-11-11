@@ -1,12 +1,11 @@
-from datetime import date
 from functools import cached_property
 
 from django.db.models import Min
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
-from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
+from ..core.mixins.kwargs import TodayMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -16,6 +15,7 @@ from ..core.mixins.views import (
     TemplateViewMixin,
     UpdateViewMixin,
 )
+from ..core.tabs import Tab
 from . import services
 from .forms import CountForm, CountTypeForm
 from .lib.views_helper import CountUrlMixin
@@ -38,7 +38,7 @@ class Empty(TemplateViewMixin):
     template_name = "counts/empty.html"
 
 
-class TabViewMixin(CoreTabViewMixin):
+class TabViewMixin(TodayMixin, CoreTabViewMixin):
     tabs = TABS
     default_tab = TABS["index"]
     page_template = "counts/index.html"
@@ -56,22 +56,25 @@ class TabViewMixin(CoreTabViewMixin):
 
         return super().dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        # a Counter's tab url needs its slug, so core's slug-less one is replaced
-        return {
-            **super().get_context_data(**kwargs),
-            "tab_url": self.tab.url(self.kwargs["slug"]),
-        }
+    # every counts route belongs to one Counter, so a tab's url needs its slug
+    def tab_url_of(self, tab: Tab) -> str:
+        return reverse(tab.url_name, kwargs={"slug": self.kwargs["slug"]})
+
+    # core's page title names the app; a Counter's page names the Counter
+    @property
+    def app_title(self) -> str:
+        return self.object.title
 
     def page_context(self) -> dict:
-        return {
-            "page_title": format_lazy("{} | {}", self.object.title, self.tab.title),
-            "tabs": [(tab, tab.url(self.object.slug)) for tab in self.tabs],
-            "object": self.object,
-        }
+        return {**super().page_context(), "object": self.object}
 
     def _life(self) -> CounterLife:
-        return CounterLife.read(self.request.user, self.object.slug, date.today())
+        return CounterLife.read(
+            self.request.user,
+            self.object.slug,
+            self.request.user.selected_year(),
+            self.today,
+        )
 
 
 class TabIndex(TabViewMixin, TemplateViewMixin):

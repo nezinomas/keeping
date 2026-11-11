@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 
 .plans-table__over {
@@ -9,6 +10,10 @@
         display: none;
         font-size: 0.72rem;
         color: $ink-muted;
+
+        @include above-phone {
+            display: block;
+        }
     }
 
     tr.calculations-table__part td {
@@ -17,16 +22,8 @@
 
     tr.calculations-table__part td:first-child {
         padding-left: calc($gap + 0.75rem);
-    }
-}
 
-@media only screen and (min-width: 768px) {
-    .paper-skin .month-table .calculations-table {
-        .calculations-table__words {
-            display: block;
-        }
-
-        tr.calculations-table__part td:first-child {
+        @include above-phone {
             padding-left: calc($gap + 1.5rem);
         }
     }

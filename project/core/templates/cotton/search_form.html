@@ -15,15 +15,14 @@
             class="form-control"
             placeholder="{% translate 'Search' %}..."
             aria-label="{% translate 'Search' %}"
-            x-model="search_str"
-            {% if hightlight_tab %}@keyup.enter="openTab = '13'"{% endif %}>
+            x-model="search_str">
 
         <button type="submit" class="button-secondary">{% translate 'Search' %}</button>
         <button type="button"
             class="button-secondary"
             hx-get="{{ reset_url }}"
             hx-target="{{ target }}"
-            @click="search_str = ''; {% if hightlight_tab %}openTab = '{{hightlight_tab}}';{% endif %}">
+            @click="search_str = '';">
             {% translate 'Reset' %}
         </button>
 </form>

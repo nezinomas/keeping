@@ -40,3 +40,18 @@ class Incomes(Browser):
         self.wait_until_idle()
 
         assert [income["remark"] for income in self.listed_rows(COLUMNS)] == ["xxxx"]
+
+    def test_reset_empties_the_search_box(self):
+        # the reset swaps only #data, so the box outside it is emptied by its click
+        self.browser.get(f"{self.live_server_url}{reverse('incomes:tab_data')}")
+        self.wait_until_idle()
+        search = self.browser.find_element(By.ID, "id_search")
+        search.send_keys("xxxx")
+        search.send_keys(Keys.RETURN)
+        self.wait_until_idle()
+
+        reset = f"#search-form button[hx-get='{reverse('incomes:list')}']"
+        self.browser.find_element(By.CSS_SELECTOR, reset).click()
+        self.wait_until_idle()
+
+        assert search.get_attribute("value") == ""

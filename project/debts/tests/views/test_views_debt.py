@@ -7,6 +7,7 @@ from django.test import Client
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
+from ....core.tests.utils import count_queries, edit_row_opening
 from ... import models
 from ...services.model_services import DebtModelService
 from .. import factories
@@ -55,8 +56,7 @@ def test_debt_list_empty(client_logged, debt_type, other_factory):
     ],
 )
 def test_debt_list_with_data(client_logged, debt_type, other_factory, label, remark):
-    # both named: the assertions match substrings, and Faker cannot promise two
-    # distinguishable names
+    # both named: Faker cannot promise two different names
     obj1 = DEBT_FACTORIES[debt_type](
         name="Own name", closed=True, price=777_777, returned=543_210
     )
@@ -67,23 +67,23 @@ def test_debt_list_with_data(client_logged, debt_type, other_factory, label, rem
     content = response.content.decode("utf-8")
 
     assert '">Data</th>' in content
-    assert label in content
+    assert re.search(rf'<th class="text-left cell-padding">\s*{label}\s*</th>', content)
     assert '">Suma</th>' in content
     assert '">Gražinta</th>' in content
     assert '">Sąskaita</th>' in content
     assert '">Pastaba</th>' in content
     assert '">Uždaryta</th>' in content
 
-    assert "1999-01-01" in content
-    assert obj1.name in content
-    assert "7.777,77" in content
-    assert "5.432,10" in content
+    assert '<td class="text-center">1999-01-01</td>' in content
+    assert f'<td class="text-left cell-padding">{obj1.name}</td>' in content
+    assert '<td class="cell-padding">7.777,77</td>' in content
+    assert re.search(r"<span[^>]*>\s*5\.432,10\s*</span>", content)
     assert '<td class="text-left cell-padding">Account1</td>' in content
-    assert remark in content
+    assert f'<td class="text-left">{remark}</td>' in content
     assert '<i class="bi bi-check-circle-fill"></i>' in content
 
-    assert obj2.name not in content
-    assert "6.666,66" not in content
+    assert f'<td class="text-left cell-padding">{obj2.name}</td>' not in content
+    assert '<td class="cell-padding">6.666,66</td>' not in content
 
 
 @pytest.mark.parametrize("url_name", ["debts:update", "debts:delete"])
@@ -98,6 +98,36 @@ def test_debt_list_links_each_row_button(client_logged, debt_type, url_name):
     link = reverse(url_name, kwargs={"pk": obj.pk, "debt_type": debt_type})
 
     assert f'<a role="button" hx-get="{link}"' in content
+
+
+@pytest.mark.parametrize(
+    "url_name, debt_type, factory",
+    [
+        pytest.param("debts:list", "borrow", factories.BorrowFactory, id="borrow"),
+        pytest.param("debts:list", "lend", factories.LendFactory, id="lend"),
+        # each return gets its own debt, so the rows' debt reads grow too
+        pytest.param(
+            "debts:return_list",
+            "borrow",
+            factories.BorrowReturnFactory,
+            id="borrow-return",
+        ),
+        pytest.param(
+            "debts:return_list", "lend", factories.LendReturnFactory, id="lend-return"
+        ),
+    ],
+)
+def test_list_query_count_does_not_grow_with_the_rows(
+    client_logged, url_name, debt_type, factory
+):
+    url = reverse(url_name, kwargs={"debt_type": debt_type})
+    factory.create_batch(2)
+    two = count_queries(lambda: client_logged.get(url))
+
+    factory.create_batch(4)
+    six = count_queries(lambda: client_logged.get(url))
+
+    assert six == two
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
@@ -283,3 +313,14 @@ def test_debt_delete(client_logged, debt_type):
 
     assert response.status_code == 204
     assert not models.Debt.objects.filter(pk=p.pk).exists()
+
+
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_a_debt_row_opens_its_update_form(client_logged, debt_type):
+    obj = DEBT_FACTORIES[debt_type]()
+
+    url = reverse("debts:list", kwargs={"debt_type": debt_type})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    update = reverse("debts:update", kwargs={"pk": obj.pk, "debt_type": debt_type})
+    assert edit_row_opening(update) in content

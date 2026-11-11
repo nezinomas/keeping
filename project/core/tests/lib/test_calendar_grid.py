@@ -242,13 +242,18 @@ def test_legend_carries_what_it_is_handed(kwargs):
     assert {name: getattr(grid.legend, name) for name in kwargs} == kwargs
 
 
-@pytest.mark.parametrize(
-    "year", [pytest.param(1998, id="other_year"), pytest.param(2000, id="not_started")]
-)
-def test_a_year_other_than_the_running_one_has_no_future_days(year):
-    grid = CalendarGrid.build(YearBoundary(year, date(1999, 6, 15)), daily_data=[])
+def test_a_finished_year_has_no_future_days():
+    grid = CalendarGrid.build(YearBoundary(1998, date(1999, 6, 15)), daily_data=[])
 
     assert all(not d.is_future for m in grid.months for d in m.days)
+
+
+def test_a_coming_years_days_are_future_and_carry_no_dry_day_label():
+    grid = CalendarGrid.build(
+        YearBoundary(2000, date(1999, 6, 15)), daily_data=[], empty_title="No drink"
+    )
+
+    assert {(d.is_future, d.label) for m in grid.months for d in m.days} == {(True, "")}
 
 
 @pytest.mark.parametrize(

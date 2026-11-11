@@ -54,6 +54,11 @@ def fund_with_a_sell(title, bought, sold, *, fee=0, kind="funds", closed=None):
     return fund
 
 
+def closed_every_other(i):
+    """The close year of the i-th type of a guard that mixes closed and open ones."""
+    return 1999 if i % 2 else None
+
+
 def row_cells(content, title):
     row = re.search(rf"<tr>\s*<td[^>]*>{title}</td>(.*?)</tr>", content, re.S)
     return [c.strip() for c in re.findall(r"<td[^>]*>(.*?)</td>", row.group(1), re.S)]

@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 
 .paper-skin {
@@ -45,7 +46,7 @@
 
             // a phone fits four month names at a readable size, not twelve, so two
             // in three go rather than the type; only a shown name may spill over
-            @media only screen and (max-width: 767px) {
+            @include phone {
                 &:nth-child(3n + 1) {
                     overflow: visible;
                 }

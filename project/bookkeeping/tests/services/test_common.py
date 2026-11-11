@@ -23,6 +23,12 @@ from ...services import common
             [1, 6],
             id="average_past_and_current_year",
         ),
+        pytest.param(
+            [{"year": 2001, "sum": 12}],
+            date(2000, 2, 5),
+            [None],
+            id="average_coming_year",
+        ),
     ],
 )
 def test_average_of_a_year_by_months_it_has_had(qs, today, expect):

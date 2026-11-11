@@ -5,7 +5,7 @@ import pytest
 import time_machine
 from django.urls import reverse
 
-from ...core.tests.utils import clean_content, view_for
+from ...core.tests.utils import clean_content, edit_row_opening, view_for
 from .. import models, views
 from .factories import Pension, PensionFactory, PensionTypeFactory
 
@@ -316,3 +316,12 @@ def test_a_user_with_no_year_raises(rf, main_user):
 
     with pytest.raises(ValueError, match="has no year"):
         view_for(rf, main_user, views.Lists).get_queryset()
+
+
+def test_a_pension_row_opens_its_update_form(client_logged):
+    obj = PensionFactory()
+
+    content = client_logged.get(reverse("pensions:list")).content.decode("utf-8")
+
+    update = reverse("pensions:update", kwargs={"pk": obj.pk})
+    assert edit_row_opening(update) in content

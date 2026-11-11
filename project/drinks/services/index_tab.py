@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import date as dt_date
+from functools import cached_property
 
 from django.template.defaultfilters import floatformat
 from django.urls import reverse
@@ -49,6 +50,7 @@ class ConsumptionChartViewModel(ChartViewModel):
     text: dict[str, str]
     limit: DailyLimit | NoDailyLimit
     avg: float
+    has_avg: bool
     decimals: int
 
 
@@ -163,6 +165,7 @@ class IndexBuilder:
             data=self._drink_stats.monthly.avg_daily_volume,
             limit=self._limit,
             avg=self._drink_stats.yearly.avg_daily_volume,
+            has_avg=not self._boundary.is_coming,
             decimals=self._converter.display_decimals,
             text={
                 "limit": _("Limit"),
@@ -224,21 +227,17 @@ class IndexBuilder:
             return EmptyStatCard(title, _("No data"))
 
         value = str(frequency.drinking_days)
-        share = (
-            _("%(share)s%% of the year so far")
-            if frequency.is_current_year
-            else _("%(share)s%% of the year")
-        )
-        share = share % {"share": f"{frequency.drinking_day_share * 100:.0f}"}
         definition = _("Calendar days with at least one Drink recorded.")
+        share = self._share_of_year(frequency)
+        explanation = (share, definition) if share else (definition,)
         comparison = frequency.compare_frequency()
 
         if not comparison.has_past:
             return StatCard(
                 title=title,
                 value=value,
-                note=share,
-                explanation=(share, definition),
+                note=share or definition,
+                explanation=explanation,
             )
 
         return ComparisonStatCard(
@@ -246,8 +245,21 @@ class IndexBuilder:
             improving=comparison.improving,
             value=value,
             note=self._last_year(f"{comparison.previous:.0f}"),
-            explanation=(share, definition, self._arrow_note()),
+            explanation=(*explanation, self._arrow_note()),
         )
+
+    @staticmethod
+    def _share_of_year(frequency: FrequencyStats) -> str:
+        """Nothing for a Coming year: a share of no days gone is no share."""
+        if not frequency.days_elapsed:
+            return ""
+
+        share = (
+            _("%(share)s%% of the year so far")
+            if frequency.is_current_year
+            else _("%(share)s%% of the year")
+        )
+        return share % {"share": f"{frequency.drinking_day_share * 100:.0f}"}
 
     def _card_std_drinks(self) -> Card:
         title = _("Std drinks")
@@ -273,7 +285,10 @@ class IndexBuilder:
     def _card_avg_per_day(self) -> Card:
         title = _("Avg per day")
 
-        if not self._drink_stats.yearly.total_quantity:
+        if (
+            not self._drink_stats.yearly.total_quantity
+            or not self._boundary.days_elapsed
+        ):
             return EmptyStatCard(title, _("No data"))
 
         avg = self._avg_daily(self._drink_stats)
@@ -391,18 +406,15 @@ class IndexBuilder:
 
     def tbl_std_av(self) -> StdAvViewModel:
         return StdAvViewModel(
-            items=self._build_conversion_rows(
-                self._drink_stats.year, self._drink_stats.yearly.total_quantity
-            )
+            items=self._build_conversion_rows(self._drink_stats.yearly.total_quantity)
         )
 
-    def _build_conversion_rows(
-        self, year: int, qty: float
-    ) -> list[ConversionRowViewModel]:
-        if not qty:
+    def _build_conversion_rows(self, qty: float) -> list[ConversionRowViewModel]:
+        if not qty or not self._boundary.days_elapsed:
             return []
 
-        day, week, month = self._get_period_counts(year)
+        day, week, month = self._get_period_counts()
+
         base = (qty, qty / day, qty / week, qty / month)
 
         return [self._create_conversion_row(t, base) for t in DrinkType]
@@ -431,11 +443,13 @@ class IndexBuilder:
             is_total=converter.is_canonical,
         )
 
-    def _get_period_counts(self, year: int) -> tuple[int, int, int]:
-        boundary = YearBoundary(year, self._today)
+    @cached_property
+    def _boundary(self) -> YearBoundary:
+        return YearBoundary(self._drink_stats.year, self._today)
 
+    def _get_period_counts(self) -> tuple[int, int, int]:
         return (
-            boundary.days_elapsed,
-            boundary.weeks_elapsed,
-            boundary.end_date.month,
+            self._boundary.days_elapsed,
+            self._boundary.weeks_elapsed,
+            self._boundary.months_elapsed,
         )

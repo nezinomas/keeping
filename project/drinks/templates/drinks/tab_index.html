@@ -17,7 +17,9 @@
     </c-panel>
 
     <c-panel table id="breakdown" title="{% translate 'Converted' %}, {% translate 'pcs' %}" subtitle="{% translate 'The same amount of alcohol, converted to different drink types.' %}">
-        {% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}
+        <div class="table-responsive">
+            {% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}
+        </div>
 
         <details class="stdav-info">
             <summary><i class="bi bi-info-circle" aria-hidden="true"></i> {% translate 'What is a standard unit?' %}</summary>

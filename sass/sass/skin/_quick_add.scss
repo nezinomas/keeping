@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 @use "sheet";
 @use "tokens";
@@ -85,13 +86,13 @@ body:has(.paper-skin) {
         margin-bottom: 0.5rem;
 
         // wide: count left, pills centred whatever the count's width
-        @media only screen and (min-width: 768px) {
+        @include above-phone {
             display: grid;
             grid-template-columns: 1fr auto 1fr;
         }
 
         // narrow: the count on its own line, the pills two equal columns beneath
-        @media only screen and (max-width: 767px) {
+        @include phone {
             flex-direction: column;
             align-items: stretch;
             gap: 0.25rem;
@@ -118,7 +119,7 @@ body:has(.paper-skin) {
             gap: 0 1rem;
             min-width: 0;
 
-            @media only screen and (max-width: 767px) {
+            @include phone {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 align-items: stretch;
@@ -129,7 +130,7 @@ body:has(.paper-skin) {
         .dropdown {
             position: relative;
 
-            @media only screen and (max-width: 767px) {
+            @include phone {
                 width: 100%;
             }
         }
@@ -141,7 +142,7 @@ body:has(.paper-skin) {
             min-width: 9.5rem;
             padding-right: 0.5rem;
 
-            @media only screen and (max-width: 767px) {
+            @include phone {
                 width: 100%;
                 min-width: 0;
             }

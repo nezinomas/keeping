@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load get_item %}
 {% load math %}
 {% load cell_format %}
 
@@ -8,8 +7,8 @@
     <thead>
         <tr>
             <th class="text-left right-thin-border title-col" rowspan="2"><c-regenerate-balances :type=type />{{ title }}</th>
-            <th rowspan="2" colspan="2" class="text-center right-thin-border">{% blocktranslate with year=request.user.year %}Start of {{ year }}{% endblocktranslate %}</th>
-            <th colspan="2" class="text-center left-thin-border right-thin-border">{{ request.user.year }}</th>
+            <th rowspan="2" colspan="2" class="text-center right-thin-border">{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
+            <th colspan="2" class="text-center left-thin-border right-thin-border">{{ request.user.selected_year }}</th>
             <th colspan="4" class="text-center">{% translate 'Total' %}</th>
             <th rowspan="2" colspan="2" class="left-thin-border right-thick-border text-center">{% translate 'Market value' %}</th>
             <th colspan="2" rowspan="2" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
@@ -38,8 +37,7 @@
     <tbody>
         {% for item in object_list %}
         <tr>
-            {% if item.saving_type_id %}{% firstof 'saving_type' as obj_type %}{% else %}{% firstof 'pension_type' as obj_type %}{% endif %}
-            <td class="text-left right-thin-border">{{ item|get_obj_attr:obj_type }}</td>
+            <td class="text-left right-thin-border">{% if item.saving_type_id %}{{ item.saving_type }}{% else %}{{ item.pension_type }}{% endif %}</td>
             <td data-cell="{{item.past_amount|cell_state}}">{{item.past_amount|price|cellformat}}</td>
             <td class="right-thin-border" data-cell="{{item.past_fee|cell_state}}">{{item.past_fee|price|cellformat}}</td>
             <td data-cell="{{item.per_year_incomes|cell_state}}">{{item.per_year_incomes|price|cellformat}}</td>

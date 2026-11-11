@@ -38,33 +38,7 @@ def _data(expenses, savings, unnecessary):
 
 @pytest.fixture(name="no_incomes_data")
 def fixture_data():
-    return SimpleNamespace(
-        account_sum=4,
-        fund_sum=2,
-        pension_sum=1,
-        expenses=XYZ,
-        savings={},
-        unnecessary=[],
-    )
-
-
-@pytest.mark.parametrize(
-    "savings, unnecessary, months, expect",
-    [
-        pytest.param({"sum": 2}, ["Z", "Taupymas"], 1, 9, id="cut-one-month"),
-        pytest.param({"sum": 2}, ["Z", "Taupymas"], 6, 1.5, id="cut-six-months"),
-        pytest.param({"sum": 2}, ["Taupymas"], 1, 9, id="no-expense-cut-one-month"),
-        pytest.param({"sum": 2}, ["Taupymas"], 6, 1.5, id="no-expense-cut-six-months"),
-        pytest.param({}, [], 1, 7, id="no-savings-one-month"),
-        pytest.param({}, [], 6, 1.17, id="no-savings-six-months"),
-    ],
-)
-def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_incomes_data):
-    no_incomes_data.savings = savings
-    no_incomes_data.unnecessary = unnecessary
-    obj = NoIncomes(no_incomes_data, months)
-
-    assert round(obj.avg_expenses, 2) == expect
+    return _data(XYZ, {}, [])
 
 
 @given(expenses=EXPENSES, savings=SAVINGS, unnecessary=UNNECESSARY, months=MONTHS)
@@ -85,24 +59,6 @@ def test_avg_expenses_ignores_what_is_unnecessary(
     actual = NoIncomes(_data(expenses, savings, unnecessary), months).avg_expenses
 
     assert actual == NoIncomes(_data(expenses, savings, []), months).avg_expenses
-
-
-@pytest.mark.parametrize(
-    "savings, unnecessary, months, expect",
-    [
-        ({"sum": 2}, ["Z", "Taupymas"], 1, 6),
-        ({"sum": 2}, ["Z", "Taupymas"], 6, 1),
-        ({"sum": 2}, ["Taupymas"], 1, 2),
-        ({"sum": 2}, ["Taupymas"], 6, 0.33),
-        ({"sum": 0}, [], 1, 0),
-    ],
-)
-def test_no_incomes_cut_sum(savings, unnecessary, months, expect, no_incomes_data):
-    no_incomes_data.savings = savings
-    no_incomes_data.unnecessary = unnecessary
-    obj = NoIncomes(no_incomes_data, months)
-
-    assert round(obj.cut_sum, 2) == expect
 
 
 def test_no_incomes_summary(no_incomes_data):
@@ -154,6 +110,19 @@ def test_no_incomes_summary(no_incomes_data):
             id="unnecessary-title-matches-no-expense",
         ),
         pytest.param(XYZ, {}, ["Z"], 1, 7, 4, id="empty-savings-leave-expenses-alone"),
+        pytest.param(XYZ, {"sum": 2}, ["Z", "Taupymas"], 1, 9, 6, id="cut-one-month"),
+        pytest.param(
+            XYZ, {"sum": 2}, ["Z", "Taupymas"], 6, 9 / 6, 6 / 6, id="cut-six-months"
+        ),
+        pytest.param(
+            XYZ, {"sum": 2}, ["Taupymas"], 1, 9, 2, id="no-expense-cut-one-month"
+        ),
+        pytest.param(
+            XYZ, {"sum": 2}, ["Taupymas"], 6, 9 / 6, 2 / 6, id="no-expense-cut-six"
+        ),
+        pytest.param(XYZ, {"sum": 0}, [], 1, 7, 0, id="zero-savings-one-month"),
+        pytest.param(XYZ, {}, [], 1, 7, 0, id="no-savings-one-month"),
+        pytest.param(XYZ, {}, [], 6, 7 / 6, 0, id="no-savings-six-months"),
     ],
 )
 def test_no_incomes_avg_and_cut_of_other_expenses(

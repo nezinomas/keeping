@@ -34,6 +34,10 @@ class YearBalance(BalanceBase):
         return super().total_row.get("balance", 0)
 
     @property
+    def is_coming(self) -> bool:
+        return YearBoundary(self.year, self._today).is_coming
+
+    @property
     def avg_incomes(self) -> float:
         return super().average.get("incomes", 0)
 

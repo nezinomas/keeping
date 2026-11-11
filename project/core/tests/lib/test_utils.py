@@ -3,67 +3,62 @@ from types import SimpleNamespace
 import pytest
 from django.test import override_settings
 from django.urls import Resolver404
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib import utils
 
 _PROFIT_FIELDS = ["incomes", "fee", "market_value", "profit_sum", "profit_proc"]
 
 
-def test_total_row_objects():
-    data = [
-        SimpleNamespace(x=111, A=1, B=2),
-        SimpleNamespace(x=222, A=1, B=2),
-    ]
-    actual = utils.total_row(data, fields=["A", "B"])
-
-    assert actual == {
-        "A": 2,
-        "B": 4,
-    }
-
-
-def test_total_row_no_data():
-    actual = utils.total_row([], fields=["A", "B"])
-
-    assert actual == {
-        "A": 0,
-        "B": 0,
-    }
-
-
-def test_total_row_with_sold():
-    data = [
-        SimpleNamespace(incomes=100, sold=0, profit_sum=200),
-        SimpleNamespace(incomes=50, sold=100, profit_sum=100),
-    ]
-
-    actual = utils.total_row(data, fields=["incomes", "profit_sum", "sold"])
-
-    assert actual == {"incomes": 150, "profit_sum": 300, "sold": 100}
+@pytest.mark.parametrize(
+    "data, fields, expect",
+    [
+        pytest.param(
+            [SimpleNamespace(x=111, A=1, B=2), SimpleNamespace(x=222, A=1, B=2)],
+            ["A", "B"],
+            {"A": 2, "B": 4},
+            id="sums_only_the_named_fields",
+        ),
+        pytest.param([], ["A", "B"], {"A": 0, "B": 0}, id="zero_without_rows"),
+        pytest.param(
+            [
+                SimpleNamespace(incomes=100, sold=0, profit_sum=200),
+                SimpleNamespace(incomes=50, sold=100, profit_sum=100),
+            ],
+            ["incomes", "profit_sum", "sold"],
+            {"incomes": 150, "profit_sum": 300, "sold": 100},
+            id="a_zero_adds_nothing",
+        ),
+    ],
+)
+def test_total_row_sums_each_field(data, fields, expect):
+    assert utils.total_row(data, fields=fields) == expect
 
 
-def test_get_safe_redirect_no_url(rf):
-    """Should return fallback if URL is None/empty."""
-    request = rf.get("/")
-    assert utils.get_safe_redirect(request, None) == "/"
+@pytest.mark.parametrize(
+    "fallback, expect",
+    [
+        pytest.param({}, "/", id="the_root"),
+        pytest.param({"fallback": "/dashboard"}, "/dashboard", id="the_given_one"),
+    ],
+)
+def test_get_safe_redirect_without_url_returns_the_fallback(rf, fallback, expect):
+    assert utils.get_safe_redirect(rf.get("/"), None, **fallback) == expect
 
 
 @override_settings(ALLOWED_HOSTS=["mysite.com"])
 def test_get_safe_redirect_unsafe_host(rf):
-    """Should return fallback if the host is not allowed."""
     request = rf.get("/", HTTP_HOST="mysite.com")
-    # Malicious external domain
     unsafe_url = "https://evil.com/dashboard"
     assert utils.get_safe_redirect(request, unsafe_url) == "/"
 
 
 @override_settings(ALLOWED_HOSTS=["mysite.com"])
 def test_get_safe_redirect_invalid_path(rf, mocker):
-    """Should return fallback if path does not exist in URLconf."""
     request = rf.get("/", HTTP_HOST="mysite.com")
     safe_host_url = "https://mysite.com/fake-page"
 
-    # Mock resolve to raise Resolver404
     mocker.patch("project.core.lib.utils.resolve", side_effect=Resolver404)
 
     assert utils.get_safe_redirect(request, safe_host_url) == "/"
@@ -71,70 +66,55 @@ def test_get_safe_redirect_invalid_path(rf, mocker):
 
 @override_settings(ALLOWED_HOSTS=["mysite.com"])
 def test_get_safe_redirect_success(rf, mocker):
-    """Should return path if URL is safe and exists."""
     request = rf.get("/", HTTP_HOST="mysite.com")
     valid_url = "https://mysite.com/settings/year"
 
-    # Mock resolve to succeed (return any truthy object)
     mocker.patch("project.core.lib.utils.resolve", return_value=True)
 
     assert utils.get_safe_redirect(request, valid_url) == "/settings/year"
 
 
-def test_get_safe_redirect_custom_fallback(rf):
-    """Should return custom fallback if validation fails."""
-    request = rf.get("/")
-    assert utils.get_safe_redirect(request, None, fallback="/dashboard") == "/dashboard"
+@pytest.mark.parametrize(
+    "rows, pk_key, expected",
+    [
+        pytest.param(
+            [{"id": 1, "title": "Coffee"}, {"id": 99, "title": "Laptop"}],
+            "id",
+            [
+                ("/v0/app/update/1/", "/v0/app/delete/1/"),
+                ("/v0/app/update/99/", "/v0/app/delete/99/"),
+            ],
+            id="id",
+        ),
+        pytest.param(
+            [{"custom_pk": 42}],
+            "custom_pk",
+            [("/v0/app/update/42/", "/v0/app/delete/42/")],
+            id="custom_pk",
+        ),
+    ],
+)
+def test_add_fast_urls_fills_only_the_pk_of_each_url(mocker, rows, pk_key, expected):
+    # a 0 outside the pk's place stays: the urls are reversed with a pk of 0
+    mocker.patch(
+        "project.core.lib.utils.reverse",
+        side_effect=lambda name, args: f"/v0/{name.replace(':', '/')}/{args[0]}/",
+    )
 
+    actual = utils.add_fast_urls(
+        rows, update="app:update", delete="app:delete", pk_key=pk_key
+    )
 
-def test_add_fast_urls_basic(mocker):
-    # Patch the reference inside your specific utils file!
-    mock_reverse = mocker.patch("project.core.lib.utils.reverse")
-
-    def side_effect(viewname, args):
-        app_action = viewname.replace(":", "/")
-        return f"/{app_action}/{args[0]}/"
-
-    mock_reverse.side_effect = side_effect
-
-    raw_data = [
-        {"id": 1, "title": "Coffee"},
-        {"id": 99, "title": "Laptop"},
-    ]
-
-    actual = utils.add_fast_urls(data=raw_data, app_name="expenses")
-
-    assert len(actual) == 2
-    assert actual[0]["url_update"] == "/expenses/update/1/"
-    assert actual[0]["url_delete"] == "/expenses/delete/1/"
-    assert actual[1]["url_update"] == "/expenses/update/99/"
-    assert actual[1]["url_delete"] == "/expenses/delete/99/"
-
-
-def test_add_fast_urls_custom_pk_key(mocker):
-    # Patch the reference inside your specific utils file!
-    mock_reverse = mocker.patch("project.core.lib.utils.reverse")
-
-    # Use side_effect here too, since reverse is called twice (update & delete)
-    def side_effect(viewname, args):
-        app_action = viewname.replace(":", "/")
-        return f"/{app_action}/{args[0]}/"
-
-    mock_reverse.side_effect = side_effect
-
-    raw_data = [{"custom_pk": 42}]
-
-    actual = utils.add_fast_urls(data=raw_data, app_name="app", pk_key="custom_pk")
-
-    assert actual[0]["url_update"] == "/app/update/42/"
-    assert actual[0]["url_delete"] == "/app/delete/42/"
+    assert [(row["url_update"], row["url_delete"]) for row in actual] == expected
 
 
 def test_add_fast_urls_raises_on_a_row_without_the_pk(mocker):
     mocker.patch("project.core.lib.utils.reverse", return_value="/app/update/0/")
 
     with pytest.raises(KeyError, match="id"):
-        utils.add_fast_urls(data=[{"title": "no id"}], app_name="app")
+        utils.add_fast_urls(
+            [{"title": "no id"}], update="app:update", delete="app:delete"
+        )
 
 
 def test_http_htmx_response_trigger_detail_is_an_object():
@@ -151,12 +131,31 @@ def test_http_htmx_response_without_trigger():
     assert "HX-Trigger" not in response.headers
 
 
-@pytest.mark.parametrize(
-    "value, expected",
-    [("7", 7), (7, 7), ("-3", -3), (None, 0), ("", 0), ("abc", 0), ("1.5", 0)],
-)
-def test_int_or_zero(value, expected):
-    assert utils.int_or_zero(value) == expected
+@st.composite
+def values_and_ints(draw):
+    """An int or its text, read as itself; anything else, read as 0."""
+    if draw(st.booleans()):
+        number = draw(st.integers())
+        return draw(st.sampled_from([number, str(number)])), number
+
+    not_an_int = st.none() | st.text(alphabet="12-x.,").filter(
+        lambda text: not text.lstrip("-").isdigit()
+    )
+    return draw(not_an_int), 0
+
+
+@given(values_and_ints())
+@example(("7", 7))
+@example((7, 7))
+@example(("-3", -3))
+@example((None, 0))
+@example(("", 0))
+@example(("abc", 0))
+@example(("1.5", 0))
+def test_int_or_zero(case):
+    value, number = case
+
+    assert utils.int_or_zero(value) == number
 
 
 def _fund_row(shows_profit, **values):

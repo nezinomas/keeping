@@ -7,11 +7,7 @@ from .. import models
 
 class CountModelService(SumMixin, DatedModelService):
     def get_queryset(self):
-        return (
-            models.Count.objects.select_related("user")
-            .filter(user=self.user)
-            .order_by("-date")
-        )
+        return models.Count.objects.filter(user=self.user).order_by("-date")
 
     def year(self, year, count_type=None):
         qs = self.objects
@@ -42,7 +38,7 @@ class CountModelService(SumMixin, DatedModelService):
 
 class CountTypeModelService(BaseModelService):
     def get_queryset(self):
-        return models.CountType.objects.select_related("user").filter(user=self.user)
+        return models.CountType.objects.filter(user=self.user)
 
     def items(self):
         return self.objects

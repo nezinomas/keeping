@@ -8,7 +8,7 @@ from .. import models
 
 class BookModelService(SumMixin, DatedModelService):
     def get_queryset(self):
-        return models.Book.objects.select_related("user").filter(user=self.user)
+        return models.Book.objects.filter(user=self.user)
 
     def year(self, year):
         return self.objects.filter(Q(ended__year=year) | Q(ended__isnull=True)).filter(
@@ -47,7 +47,7 @@ class BookModelService(SumMixin, DatedModelService):
 
 class BookTargetModelService(DatedModelService):
     def get_queryset(self):
-        return models.BookTarget.objects.select_related("user").filter(user=self.user)
+        return models.BookTarget.objects.filter(user=self.user)
 
     def year(self, year):
         return self.objects.filter(year=year)

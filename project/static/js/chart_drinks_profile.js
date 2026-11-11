@@ -17,9 +17,7 @@ function chartDrinksProfile(idData, idContainer) {
     // the stat card above prints the whole sentence; a phone's chart fits only the level
     const threshold = chartData.heavy_threshold.toFixed(0);
     const heavyRule = `> ${threshold} ${chartData.text.intensity_unit}`;
-    const heavyRuleText = PAPER_WIDE
-        ? `${chartData.text.threshold_label}: ${heavyRule}`
-        : heavyRule;
+    const heavyRuleText = paperRuleText(chartData.text.threshold_label, heavyRule);
 
     const layers = chartData.layers;
     const series = [];
@@ -55,7 +53,7 @@ function chartDrinksProfile(idData, idContainer) {
             layerLabel: layer.label,
             // the axis colour: a 10%-alpha backdrop fill is invisible as a bullet
             dotColor: rateColor,
-            valueColor: rateColor,
+            valueClass: "chart-tip--data",
         });
 
         series.push({
@@ -178,12 +176,8 @@ function chartDrinksProfile(idData, idContainer) {
                     }
                     group.points.forEach(function (point) {
                         const options = point.series.userOptions;
-                        let value = `style="color: ${options.valueColor}"`;
-                        if (options.valueClass) {
-                            value = `class="${options.valueClass}"`;
-                        }
                         out += `<br/><span style="color: ${options.dotColor}">●</span> `
-                            + `${options.metric}: <span ${value}>`
+                            + `${options.metric}: <span class="${options.valueClass}">`
                             + `<b>${point.y} ${options.unit}</b></span>`;
                     });
                 });

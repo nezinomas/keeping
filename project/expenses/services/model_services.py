@@ -20,10 +20,16 @@ from django.db.models.functions import (
 )
 
 from ...core.lib.date import last_months_window
+from ...core.lib.utils import add_fast_urls
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService, DatedModelService
 from ...core.services.span_sums import SpanReadsMixin
 from .. import models
+
+
+def with_row_urls(rows: list[dict]) -> list[dict]:
+    """Expense rows with their update and delete links."""
+    return add_fast_urls(rows, update="expenses:update", delete="expenses:delete")
 
 
 class ExpenseTypeModelService(BaseModelService):
@@ -205,7 +211,6 @@ class ExpenseModelService(SpanReadsMixin, SumMixin, DatedModelService):
                     default=Value(False),
                     output_field=BooleanField(),
                 ),
-                month_group=TruncMonth("date"),
             )
             .order_by("-date", "expense_type__title", F("expense_name__title").asc())
             .values(
@@ -221,7 +226,6 @@ class ExpenseModelService(SpanReadsMixin, SumMixin, DatedModelService):
                 "exception",
                 "price_str",
                 "is_pdf",
-                "month_group",
             )
         )
 

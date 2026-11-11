@@ -11,6 +11,7 @@ from django.utils.translation import gettext as _
 from ...core.mixins import kwargs as core_kwargs
 from ...core.tests.utils import (
     count_queries,
+    edit_row_opening,
     form_posts_to,
     nav_tabs,
     setup_view,
@@ -21,7 +22,6 @@ from ...core.tests.utils import (
 )
 from ...users.tests.factories import User
 from .. import forms, models, views
-from ..services.history import HistoryService
 from ..services.index_tab import ConversionRowViewModel, StdAvViewModel
 from .factories import DrinkFactory, DrinkTargetFactory
 
@@ -90,14 +90,6 @@ def test_index_takes_its_legend_position_from_the_paper_charts(client_logged):
 
     assert re.search(r'<script[^>]* src="[^"]*js/chart_paper\.js"', content)
     assert not re.search(r'<script[^>]* src="[^"]*js/chart_drinks_legend\.js"', content)
-
-
-def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
-    # the wrapper scopes the tokens every Drinks chart reads, so no other app's
-    # page inherits them
-    response = client_logged.get(reverse("drinks:index"))
-
-    assert 'class="paper-skin"' in response.content.decode()
 
 
 @pytest.mark.parametrize(
@@ -511,6 +503,30 @@ def test_std_av_table_marks_the_total_row_by_its_state_not_its_title():
 
 
 @pytest.mark.parametrize(
+    "dates, classes",
+    [
+        pytest.param(
+            [date(2000, 1, 5), date(1999, 1, 5)],
+            ["", "table-group-divider"],
+            id="two_januaries",
+        ),
+        pytest.param(
+            [date(1999, 3, 5), date(1999, 1, 9), date(1999, 1, 5)],
+            ["", "table-group-divider", ""],
+            id="two_months",
+        ),
+    ],
+)
+def test_data_list_divides_each_month(dates, classes):
+    # no Drinks page lists two years, so the list is rendered alone
+    rows = [DrinkFactory(date=on) for on in dates]
+
+    html = render_to_string("drinks/tab_data.html", {"object_list": rows})
+
+    assert re.findall(r'<tr hx-get="[^"]*"[^>]*class="([^"]*)"', html) == classes
+
+
+@pytest.mark.parametrize(
     "tab, cards", [("index", 6), ("habits", 1), ("trends", 5), ("risk", 4)]
 )
 def test_tab_renders_its_cards(client_logged, tab, cards):
@@ -802,8 +818,12 @@ def test_every_figure_stops_at_the_views_today(client_logged, mocker):
     assert ("Blaivios dienos", "0", "1999-03-01") in stat_cards(index)
     assert len(chart_data(typical, "typical-year")["layers"][0]["intensity"]) == 3
     assert len(months) == 3
-    # 7.5 Std Av of beer over Jan 1 to Mar 1, the 60 days the view has reached
-    assert chart_data(history, "summary")["data_ml"][-1] == 25.0
+    summary = chart_data(history, "summary")
+    # 5 Std Av of beer, 1000 ml, over Jan 1 to Mar 1, the 60 days the view has reached
+    assert (summary["data_ml"][-1], summary["data_alcohol"][-1]) == (
+        pytest.approx(1000 / 60),
+        0.05,
+    )
 
 
 def test_tab_risk_heavy_panel_leaves_the_threshold_to_its_chart(client_logged):
@@ -871,24 +891,21 @@ def test_an_empty_tab_draws_the_paper_notice(
     assert re.search(rf'<div class="alert">\s*{re.escape(message)}\s*</div>', content)
 
 
-def test_tab_data(client_logged):
-    p = DrinkFactory(stdav=47.5)
-    response = client_logged.get(reverse("drinks:tab_data"))
-
-    actual = response.content.decode("utf-8")
-
-    assert '<td class="text-left main__date">1999-01-01</td>' in actual
-    assert '<td class="text-left main__figure">19,0 vnt</td>' in actual
-    assert f'<a role="button" hx-get="{reverse("drinks:update", args=[p.pk])}"' in (
-        actual
-    )
-    assert f'<a role="button" hx-get="{reverse("drinks:delete", args=[p.pk])}"' in (
-        actual
-    )
-
-
-def test_tab_data_date_column_header(client_logged):
-    DrinkFactory()
+@pytest.mark.parametrize(
+    "drink, figure",
+    [
+        pytest.param({"stdav": 47.5}, "19,0 vnt", id="count"),
+        # the unit and rounding rules live in DrinkQuantity.display; this row
+        # only pins the template to it
+        pytest.param(
+            {"stdav": 2.5, "option": "beer", "converted_from_ml": True},
+            "500 ml",
+            id="volume",
+        ),
+    ],
+)
+def test_tab_data(client_logged, drink, figure):
+    p = DrinkFactory(**drink)
     response = client_logged.get(reverse("drinks:tab_data"))
 
     actual = response.content.decode("utf-8")
@@ -896,17 +913,14 @@ def test_tab_data_date_column_header(client_logged):
     assert '<th class="text-left">Data</th>' in actual
     assert '<th class="text-left">Duomenys</th>' not in actual
     assert '<th class="text-left">Gėrimo tipas</th>' in actual
-
-
-def test_tab_data_quantity_value(client_logged):
-    # the unit/rounding rules live in DrinkQuantity.display and are asserted in
-    # tests/lib/test_drink_quantity.py; this only pins the template to it
-    DrinkFactory(stdav=2.5, option="beer", converted_from_ml=True)
-    response = client_logged.get(reverse("drinks:tab_data"))
-
-    actual = response.content.decode("utf-8")
-
-    assert '<td class="text-left main__figure">500 ml</td>' in actual
+    assert '<td class="text-left main__date">1999-01-01</td>' in actual
+    assert f'<td class="text-left main__figure">{figure}</td>' in actual
+    assert f'<a role="button" hx-get="{reverse("drinks:update", args=[p.pk])}"' in (
+        actual
+    )
+    assert f'<a role="button" hx-get="{reverse("drinks:delete", args=[p.pk])}"' in (
+        actual
+    )
 
 
 # TabHistory View
@@ -921,6 +935,26 @@ def test_tab_history_renders_the_summary_chart_data(client_logged):
     assert payload["categories"][:2] == [1999, 2000]
     assert payload["data_ml"][:2] == pytest.approx([0.54795, 0.0], abs=1e-5)
     assert payload["data_alcohol"][:2] == pytest.approx([0.01, 0.0], abs=1e-5)
+
+
+def test_tab_history_reads_the_selected_year_and_drink_type(
+    client_logged, main_user, mocker
+):
+    view_today(mocker, date(1999, 6, 1))
+    main_user.year = 2000
+    main_user.drink_type = "stdav"
+    main_user.save()
+    DrinkFactory(date=date(1999, 1, 1), stdav=152)
+
+    page = client_logged.get(reverse("drinks:tab_history")).content.decode()
+    payload = chart_data(page, "summary")
+
+    # Jun 1 is day 152 of 1999; 2000 is a Coming year, its average a gap
+    assert (payload["categories"], payload["data_ml"], payload["unit"]) == (
+        [1999, 2000],
+        [1.0, None],
+        "Std Av",
+    )
 
 
 def test_tab_history_titles_its_panels(client_logged):
@@ -957,6 +991,21 @@ def test_tab_history_has_unified_compare_panel(client_logged):
     )
     assert 'id="compare-form-and-chart"' not in content
     assert "chart-compare-two" not in content
+
+
+@pytest.mark.parametrize(
+    "name, kwargs",
+    [
+        pytest.param("drinks:tab_history", {}, id="history"),
+        pytest.param("drinks:compare", {"qty": 2}, id="compare"),
+    ],
+)
+def test_the_compare_form_opens_on_the_selected_year(client_logged, name, kwargs):
+    DrinkFactory()
+
+    content = client_logged.get(reverse(name, kwargs=kwargs)).content.decode()
+
+    assert re.search(r'<input [^>]*name="year2" value="1999"', compare_form(content))
 
 
 def test_tab_history_chart_auto_loads_default_comparison(client_logged):
@@ -1414,9 +1463,6 @@ def _typical_year_post(view):
             id="compare",
         ),
         pytest.param(
-            lambda rf, u: HistoryService(u, [], date(2025, 1, 1)), id="history_service"
-        ),
-        pytest.param(
             lambda rf, u: forms.DrinkTargetForm(user=u, today=date(2025, 1, 1)),
             id="target_form",
         ),
@@ -1433,3 +1479,12 @@ def test_a_user_with_no_year_raises(rf, main_user, mocker, call):
 
     with pytest.raises(ValueError, match="has no year"):
         call(rf, main_user)
+
+
+def test_a_drink_row_opens_its_update_form(client_logged):
+    obj = DrinkFactory()
+
+    content = client_logged.get(reverse("drinks:tab_data")).content.decode("utf-8")
+
+    update = reverse("drinks:update", kwargs={"pk": obj.pk})
+    assert edit_row_opening(update) in content

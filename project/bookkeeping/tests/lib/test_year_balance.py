@@ -90,7 +90,6 @@ def fixture_expect():
         },
     ]
 
-    # same dictionaries for march - december
     for i in range(3, 13):
         item = {
             "date": date(1999, i, 1),
@@ -135,7 +134,7 @@ def test_months_balance_total_row(data, amount_start):
 
 
 def test_months_balance_average(data, amount_start):
-    actual = YearBalance(data=data, amount_start=amount_start, today=TODAY).average
+    balance = YearBalance(data=data, amount_start=amount_start, today=TODAY)
 
     expect = {
         "incomes": 90,
@@ -150,7 +149,8 @@ def test_months_balance_average(data, amount_start):
         "money_flow": 164.58,
     }
 
-    assert expect == pytest.approx(actual, rel=1e-2)
+    assert expect == pytest.approx(balance.average, rel=1e-2)
+    assert (balance.avg_incomes, balance.avg_expenses) == (90, 15)
 
 
 def test_amount_end(data, amount_start):
@@ -174,39 +174,94 @@ def test_amount_balance(data, amount_start):
     assert actual == 165
 
 
+MONTHLY = [
+    "incomes",
+    "expenses",
+    "savings",
+    "savings_close",
+    "borrow",
+    "borrow_return",
+    "lend",
+    "lend_return",
+]
+
+
+def _year_of(*months):
+    """1999 with its first months as given, every other cell zero."""
+    given_months = [*months] + [{}] * (12 - len(months))
+    return pl.DataFrame(
+        [
+            {"date": date(1999, month, 1)} | dict.fromkeys(MONTHLY, 0) | cells
+            for month, cells in enumerate(given_months, 1)
+        ]
+    )
+
+
 @pytest.mark.parametrize(
-    "series, column",
+    "amount_start, months, expect",
     [
-        pytest.param(lambda b: b.income_data, "incomes", id="income_data"),
-        pytest.param(lambda b: b.expense_data, "expenses", id="expense_data"),
-        pytest.param(lambda b: b.borrow_data, "borrow", id="borrow_data"),
         pytest.param(
-            lambda b: b.borrow_return_data, "borrow_return", id="borrow_return_data"
+            -3,
+            [
+                {
+                    "incomes": 100,
+                    "expenses": 1,
+                    "savings": 2,
+                    "savings_close": 4,
+                    "borrow": 8,
+                    "borrow_return": 16,
+                    "lend": 32,
+                    "lend_return": 64,
+                },
+                {"incomes": 10},
+            ],
+            {
+                "incomes": [100, 10] + [0] * 10,
+                "expenses": [1] + [0] * 11,
+                "borrow": [8] + [0] * 11,
+                "borrow_return": [16] + [0] * 11,
+                "lend": [32] + [0] * 11,
+                "lend_return": [64] + [0] * 11,
+                "money_flow": [122] + [132] * 11,
+            },
+            id="every-column-a-different-value",
         ),
-        pytest.param(lambda b: b.lend_data, "lend", id="lend_data"),
         pytest.param(
-            lambda b: b.lend_return_data, "lend_return", id="lend_return_data"
+            0,
+            [{"expenses": 7}, {"incomes": 3}, {"lend": 1}],
+            {
+                "incomes": [0, 3] + [0] * 10,
+                "expenses": [7] + [0] * 11,
+                "borrow": [0] * 12,
+                "borrow_return": [0] * 12,
+                "lend": [0, 0, 1] + [0] * 9,
+                "lend_return": [0] * 12,
+                "money_flow": [-7, -4] + [-5] * 10,
+            },
+            id="a-flow-below-zero",
         ),
-        pytest.param(lambda b: b.money_flow, "money_flow", id="money_flow"),
     ],
 )
-def test_balance_series_reads_its_column(data, amount_start, expect, series, column):
-    actual = series(YearBalance(data=data, amount_start=amount_start, today=TODAY))
+def test_balance_series_read_their_column_and_money_flow_runs_from_the_start(
+    amount_start, months, expect
+):
+    balance = YearBalance(
+        data=SimpleNamespace(date_range=YearMonths(1999), data=_year_of(*months)),
+        amount_start=amount_start,
+        today=TODAY,
+    )
 
-    assert actual == [x[column] for x in expect]
+    actual = {
+        "incomes": balance.income_data,
+        "expenses": balance.expense_data,
+        "borrow": balance.borrow_data,
+        "borrow_return": balance.borrow_return_data,
+        "lend": balance.lend_data,
+        "lend_return": balance.lend_return_data,
+        "money_flow": balance.money_flow,
+    }
 
-
-@pytest.mark.parametrize(
-    "average, mean",
-    [
-        pytest.param(lambda b: b.avg_incomes, 90, id="avg_incomes"),
-        pytest.param(lambda b: b.avg_expenses, 15, id="avg_expenses"),
-    ],
-)
-def test_avg_is_the_mean_over_months_with_data(data, average, mean):
-    actual = average(YearBalance(data=data, amount_start=0, today=TODAY))
-
-    assert actual == mean
+    assert actual == expect
 
 
 @pytest.mark.parametrize(
@@ -252,3 +307,16 @@ def test_balance_money_flow_subtracts_account_charged_savings_fees(data, amount_
 
     assert actual.money_flow == [flow - 4 for flow in without_fee]
     assert actual.amount_end == without_fee[-1] - 4
+
+
+@pytest.mark.parametrize(
+    "today, expect",
+    [
+        pytest.param(date(1998, 12, 1), True, id="coming"),
+        pytest.param(date(1999, 2, 1), False, id="current"),
+    ],
+)
+def test_year_balance_knows_a_coming_year(data, today, expect):
+    actual = YearBalance(data=data, amount_start=0, today=today).is_coming
+
+    assert actual is expect

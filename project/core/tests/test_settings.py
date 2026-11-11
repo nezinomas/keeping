@@ -44,8 +44,12 @@ def test_production_templates_cache_the_loaders(import_production):
     assert import_production().TEMPLATES == expected
 
 
-def test_production_templates_build_an_engine(import_production):
+def test_production_templates_build_an_engine_that_caches(import_production):
     params = {**import_production().TEMPLATES[0], "NAME": "production"}
     del params["BACKEND"]
 
-    DjangoTemplates(params)
+    engine = DjangoTemplates(params)
+
+    first, again = (engine.get_template("empty.html").template for _ in range(2))
+
+    assert first is again

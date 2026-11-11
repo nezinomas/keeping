@@ -3,9 +3,7 @@ from datetime import date
 from django.db.models import F
 from django.utils.translation import gettext as _
 
-from ...core.lib.utils import add_fast_urls, get_action_buttons_html
-from ...expenses.apps import App_name as Expenses_app_name
-from ...expenses.services.model_services import ExpenseModelService
+from ...expenses.services.model_services import ExpenseModelService, with_row_urls
 from ...users.models import User
 
 
@@ -25,11 +23,11 @@ class ExpandDayService:
 
         data = service.expenses_list(qs)
 
-        return add_fast_urls(data=data, app_name=Expenses_app_name)
+        return with_row_urls(data)
 
     def context(self) -> dict:
         return {
             "day": self.date.day,
             "object_list": self.data,
             "notice": _("No records on day %(day)s") % ({"day": f"{self.date:%F}"}),
-        } | get_action_buttons_html()
+        }

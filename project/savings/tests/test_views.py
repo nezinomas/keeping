@@ -6,7 +6,7 @@ import time_machine
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.utils import clean_content, view_for
+from ...core.tests.utils import clean_content, edit_row_opening, view_for
 from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
 from .. import models, views
 from ..services.model_services import SavingTypeModelService
@@ -228,6 +228,19 @@ def test_savings_list_price_converted(
 
     assert shown_price in actual
     assert shown_fee in actual
+
+
+@time_machine.travel("1999-12-1")
+def test_savings_list_divides_each_month(client_logged):
+    for on in ("1999-01-15", "1999-02-15", "1999-02-20"):
+        SavingFactory(date=date.fromisoformat(on))
+
+    content = client_logged.get(reverse("savings:list")).content.decode("utf-8")
+
+    assert re.findall(
+        r'<tr hx-get="[^"]*"[^>]*class="([^"]*)">\s*<td class="text-left">([\d-]+)</td>',
+        content,
+    ) == [("", "1999-02-20"), ("", "1999-02-15"), ("table-group-divider", "1999-01-15")]
 
 
 @pytest.mark.parametrize(
@@ -479,3 +492,12 @@ def test_a_user_with_no_year_raises(rf, main_user, call):
 
     with pytest.raises(ValueError, match="has no year"):
         call(rf, main_user)
+
+
+def test_a_saving_row_opens_its_update_form(client_logged):
+    obj = SavingFactory()
+
+    content = client_logged.get(reverse("savings:list")).content.decode("utf-8")
+
+    update = reverse("savings:update", kwargs={"pk": obj.pk})
+    assert edit_row_opening(update) in content
