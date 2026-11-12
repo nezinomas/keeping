@@ -884,10 +884,6 @@ msgstr "Trūksta duomenų."
 msgid "Data are missing. At least two years of data is required."
 msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 
-#: .\project\core\templates\cotton\accordion.html:13
-msgid "closed"
-msgstr "uždaryta"
-
 #: .\project\transactions\templates\transactions\tab_accounts.html:18
 #, python-format
 msgid "closed %(year)s"

@@ -52,8 +52,14 @@ def _update_data(income, on="1999-12-31"):
                 "Pastaba</textarea>",
             ],
         ),
+        (lambda i: reverse("incomes:type_new"), "", lambda i: []),
+        (
+            lambda i: reverse("incomes:type_update", kwargs={"pk": i.income_type.pk}),
+            "",
+            lambda i: [],
+        ),
     ],
-    ids=["new", "update"],
+    ids=["new", "update", "type_new", "type_update"],
 )
 def test_income_load_form(client_logged, url_of, trigger, expected_of):
     with quiet_syncs():
@@ -318,23 +324,6 @@ def test_view_incomes_delete(client_logged):
 
 
 @pytest.mark.parametrize(
-    "name, with_pk",
-    [("incomes:type_new", False), ("incomes:type_update", True)],
-    ids=["new", "update"],
-)
-def test_type_load_form(client_logged, name, with_pk):
-    kwargs = {"pk": IncomeTypeFactory().pk} if with_pk else {}
-    url = reverse(name, kwargs=kwargs)
-
-    response = client_logged.get(url)
-    actual = response.content.decode()
-
-    assert re.search(
-        rf'id="generic-form"[^>]*hx-post="{url}"[^>]*data-hx-trigger-form=""', actual
-    )
-
-
-@pytest.mark.parametrize(
     "search, shown",
     [
         ("xxx", r'<div class="alert">\s*Nieko nerasta\s*</div>'),
@@ -540,25 +529,18 @@ def _types_tab_of_alga_and_kita(client):
             r'<td class="main__figure">–</td>\s*<td class="main__figure">–</td>\s*'
             r"<td>–</td>"
         ),
+        (
+            r'<tr class="main__total">\s*<td class="text-left">Viso</td>\s*'
+            r'<td class="main__figure">900</td>\s*<td class="main__figure">700</td>\s*'
+            r'<td class="main__figure">100%</td>'
+        ),
     ],
-    ids=["with_incomes", "no_incomes"],
+    ids=["with_incomes", "no_incomes", "total"],
 )
 def test_types_tab_states_each_type_in_a_row(client_logged, row):
     content = _types_tab_of_alga_and_kita(client_logged)
 
     assert re.search(row, content)
-
-
-@time_machine.travel("1999-09-15")
-def test_types_tab_totals_every_type(client_logged):
-    content = _types_tab_of_alga_and_kita(client_logged)
-
-    assert re.search(
-        r'<tr class="main__total">\s*<td class="text-left">Viso</td>\s*'
-        r'<td class="main__figure">900</td>\s*<td class="main__figure">700</td>\s*'
-        r'<td class="main__figure">100%</td>',
-        content,
-    )
 
 
 @time_machine.travel("2000-09-15")
@@ -667,11 +649,10 @@ def _type_rows(content):
     )
 
 
-def test_types_tab_draws_no_group_dividers_and_no_accordion(client_logged):
+def test_types_tab_draws_no_group_dividers(client_logged):
     content = _types_tab_of_two_kinds(client_logged)
 
     assert _type_rows(content) == [("", "Alga"), ("", "Kita")]
-    assert not re.search(r'<ul\b[^>]*class="accordion\b', content)
 
 
 @time_machine.travel("1999-09-15")
