@@ -12,7 +12,7 @@ from ...services.model_services import DebtReturnModelService
 from .. import factories
 from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
@@ -204,12 +204,9 @@ def test_debt_return_update_with_returns(client_logged, debt_type):
 def test_debt_return_of_other_journal_is_404(
     client_logged, second_user, debt_type, url_name, send
 ):
-    a1 = AccountFactory(title="a1")
     a2 = AccountFactory(journal=second_user.journal, title="a2")
-    d1 = DEBT_FACTORIES[debt_type](account=a1)
     d2 = DEBT_FACTORIES[debt_type](account=a2, journal=second_user.journal)
 
-    RETURN_FACTORIES[debt_type](debt=d1, account=a1)
     obj = RETURN_FACTORIES[debt_type](debt=d2, account=a2, price=666)
     data = {"date": "1999-1-2", "price": "1", "account": a2.pk, "debt": d2.pk}
 

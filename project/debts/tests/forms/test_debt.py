@@ -10,7 +10,7 @@ from .. import factories
 
 TODAY = date(2000, 2, 2)
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
 def test_debt_init_fields(main_user):

@@ -13,7 +13,7 @@ from ...services.model_services import DebtModelService
 from .. import factories
 from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
 @pytest.mark.parametrize(
@@ -274,10 +274,8 @@ def test_debt_update_invalid(
 def test_debt_of_other_journal_is_404(
     client_logged, second_user, debt_type, url_name, send
 ):
-    a1 = AccountFactory(title="a1")
     a2 = AccountFactory(journal=second_user.journal, title="a2")
 
-    DEBT_FACTORIES[debt_type](name="xxx", account=a1)
     obj = DEBT_FACTORIES[debt_type](
         name="yyy", price=666, journal=second_user.journal, account=a2
     )

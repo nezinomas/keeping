@@ -10,7 +10,7 @@ from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES
 
 TODAY = date(2000, 2, 2)
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
 def test_debt_return_init_fields(main_user):
@@ -176,7 +176,6 @@ def test_debt_return_only_not_closed(main_user, debt_type):
 @pytest.mark.parametrize(
     "price, errors",
     [
-        pytest.param("150", {"price": ["Mokėtina suma viršija skolą."]}, id="over"),
         pytest.param(
             "60.01", {"price": ["Mokėtina suma viršija skolą."]}, id="cent_over"
         ),

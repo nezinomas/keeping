@@ -7,7 +7,7 @@ from django.urls import resolve, reverse
 from ...models import Debt
 from .. import factories
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
 def test_debts_index_not_logged(client):

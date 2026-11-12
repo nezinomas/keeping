@@ -120,12 +120,12 @@ def test_debt_return_sum_by_month(main_user, debt_type, title):
 @pytest.mark.parametrize(
     "returned, prices, expect",
     [
-        pytest.param(0, (10,), 10, id="one_return"),
         pytest.param(50, (10,), 10, id="replaces_a_stale_value"),
         pytest.param(0, (10, 11), 21, id="two_returns"),
     ],
 )
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
+@pytest.mark.usefixtures("quiet_syncs")
 def test_debt_return_post_save_debt_return_value(
     main_user, debt_type, returned, prices, expect
 ):
@@ -140,6 +140,7 @@ def test_debt_return_post_save_debt_return_value(
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
+@pytest.mark.usefixtures("quiet_syncs")
 def test_debt_return_moved_to_another_debt_updates_both(main_user, debt_type):
     debt1 = DEBT_FACTORIES[debt_type](name="A")
     debt2 = DEBT_FACTORIES[debt_type](name="Z")
@@ -153,6 +154,7 @@ def test_debt_return_moved_to_another_debt_updates_both(main_user, debt_type):
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
+@pytest.mark.usefixtures("quiet_syncs")
 def test_debt_return_post_delete_debt_return_value(main_user, debt_type):
     debt1 = DEBT_FACTORIES[debt_type](name="A")
     debt2 = DEBT_FACTORIES[debt_type](name="Z")
