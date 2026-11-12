@@ -2070,13 +2070,6 @@ msgstr "Nieko nerasta."
 msgid "Daily"
 msgstr "Dienai"
 
-#: .\project\plans\templates\plans\index.html:8
-#: .\project\savings\templates\savings\index.html:13
-#: .\project\transactions\templates\transactions\index.html:13
-msgctxt "record button"
-msgid "Record"
-msgstr "Įrašą"
-
 #: .\project\plans\templates\plans\index.html:16 .\project\plans\views.py:266
 msgid "Copy plans"
 msgstr "Kopijuoti planus"
@@ -2126,11 +2119,6 @@ msgstr "Pridėti II pakopos fondą"
 msgctxt "fund button"
 msgid "Fund"
 msgstr "Fondą"
-
-#: .\project\savings\templates\savings\index.html:41
-msgctxt "pension button"
-msgid "Pension"
-msgstr "Pensiją"
 
 #: .\project\savings\views.py:60
 msgid "Delete saving"

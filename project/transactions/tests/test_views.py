@@ -20,6 +20,7 @@ from ...core.tests.utils import (
     nav_tabs,
     quick_add_pills,
     row_forms,
+    tab_fragment,
     view_for,
 )
 from ...savings.models import SavingBalance, SavingType
@@ -88,7 +89,7 @@ def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
     a_move_out_of = A_MOVE_OUT_OF[tab.name]
 
     def tab_queries():
-        return count_queries(lambda: _tab(client_logged, tab.url))
+        return count_queries(lambda: tab_fragment(client_logged, tab.url))
 
     for i in range(2):
         a_move_out_of(i)
@@ -99,10 +100,6 @@ def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
     six = tab_queries()
 
     assert six == two
-
-
-def _tab(client, url):
-    return client.get(url, headers={"HX-Request": "true"}).content.decode()
 
 
 def _transactions(second_user):
@@ -213,7 +210,7 @@ def test_a_move_tab_lists_the_years_moves_newest_first_marking_the_close(
 ):
     scene(second_user)
 
-    content = _tab(client_logged, reverse(url_name))
+    content = tab_fragment(client_logged, reverse(url_name))
 
     assert '<table class="main striped hover sticky-table">' in content
     assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == head
@@ -283,7 +280,7 @@ def test_the_accounts_tab_lists_the_open_then_folds_the_closed(
 def test_no_open_account_draws_the_notice_above_the_closed_ones(client_logged):
     AccountFactory(title="Old", closed=1998)
 
-    content = _tab(client_logged, TAB_ACCOUNTS)
+    content = tab_fragment(client_logged, TAB_ACCOUNTS)
 
     assert _accounts_tab(content) == [
         "1999 metais įrašų nėra.",
@@ -325,7 +322,7 @@ ROW_FORMS = {
 def test_a_row_opens_its_own_forms(client_logged, tab_url, factory, forms):
     record = factory()
 
-    content = _tab(client_logged, reverse(tab_url))
+    content = tab_fragment(client_logged, reverse(tab_url))
 
     rows = row_forms(content)
     buttons = [(column, reverse(name, args=[record.pk])) for column, name in forms]
@@ -337,7 +334,7 @@ def test_a_row_opens_its_own_forms(client_logged, tab_url, factory, forms):
 def test_a_tab_on_an_empty_year_draws_the_paper_notice(client_logged, kind):
     kind.factory(date=date(2000, 1, 1))
 
-    content = _tab(client_logged, reverse(kind.tab_url))
+    content = tab_fragment(client_logged, reverse(kind.tab_url))
 
     assert re.search(r'<div class="alert">\s*1999 metais įrašų nėra.\s*</div>', content)
 

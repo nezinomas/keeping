@@ -31,6 +31,11 @@ def clean_content(rendered):
     return str(rendered).replace("\n", "").replace("\t", "").replace("  ", "")
 
 
+def tab_fragment(client, url):
+    """A tab's fragment, as htmx asks for it."""
+    return client.get(url, headers={"HX-Request": "true"}).content.decode()
+
+
 def form_posts_to(content, form_id, url):
     form = rf'<form method="POST" id="{form_id}"[^>]* hx-post="{re.escape(url)}"'
     return bool(re.search(form, content))

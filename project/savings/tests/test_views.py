@@ -16,6 +16,7 @@ from ...core.tests.utils import (
     count_queries,
     quick_add_pills,
     row_forms,
+    tab_fragment,
     view_for,
 )
 from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
@@ -78,7 +79,7 @@ def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
     a_row_of_its_own = A_ROW_OF_ITS_OWN[tab.name]
 
     def tab_queries():
-        return count_queries(lambda: _tab(client_logged, tab.url))
+        return count_queries(lambda: tab_fragment(client_logged, tab.url))
 
     for i in range(2):
         a_row_of_its_own(i)
@@ -89,10 +90,6 @@ def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
     six = tab_queries()
 
     assert six == two
-
-
-def _tab(client, url):
-    return client.get(url, headers={"HX-Request": "true"}).content.decode()
 
 
 HEAD_CELL = re.compile(r'<th class="([^"]*)">([^<]*)</th>')
@@ -126,7 +123,7 @@ def test_the_savings_tab_lists_the_years_savings_newest_first(
     saving("2000-01-01", "D", 400)
     saving("1999-02-01", "E", 500, journal=second_user.journal)
 
-    content = _tab(client_logged, reverse("savings:index"))
+    content = tab_fragment(client_logged, reverse("savings:index"))
 
     assert HEAD_CELL.findall(content) == [
         ("text-left", "Data"),
@@ -174,7 +171,7 @@ def test_the_pensions_tab_lists_the_years_pensions_newest_first(
     pension("2000-01-01", "D", 400)
     pension("1999-02-01", "E", 500, journal=second_user.journal)
 
-    content = _tab(client_logged, TAB_PENSIONS)
+    content = tab_fragment(client_logged, TAB_PENSIONS)
 
     assert HEAD_CELL.findall(content) == [
         ("text-left", "Data"),
@@ -392,7 +389,7 @@ def test_a_dated_tab_shows_prices_converted(
 ):
     factory(price=price, fee=fee)
 
-    actual = _tab(client_logged, tab_url)
+    actual = tab_fragment(client_logged, tab_url)
 
     assert shown_price in actual
     assert shown_fee in actual
@@ -407,7 +404,7 @@ def test_a_dated_tab_names_its_empty_year(client_logged, tab_url, factory, rows,
     for _ in range(rows):
         factory()
 
-    actual = _tab(client_logged, tab_url)
+    actual = tab_fragment(client_logged, tab_url)
 
     notice = r'<div class="alert">\s*1999 metais įrašų nėra\.\s*</div>'
     assert bool(re.search(notice, actual)) == shown
@@ -735,7 +732,7 @@ ROW_FORMS = {
 def test_a_row_opens_its_own_forms(client_logged, tab_url, factory, forms):
     record = factory()
 
-    content = _tab(client_logged, reverse(tab_url))
+    content = tab_fragment(client_logged, reverse(tab_url))
 
     urls = [(col, reverse(name, kwargs={"pk": record.pk})) for col, name in forms]
     assert row_forms(content) == [(urls[0][1], urls)]
