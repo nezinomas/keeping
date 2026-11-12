@@ -102,6 +102,7 @@ TEMPLATES = [
                 "project.core.context.context_months",
                 "project.core.context.nav_active",
                 "project.counts.context.counts_menu",
+                "project.bookkeeping.context.nav_tab_menus",
                 "project.core.context.csp_nonce",
             ],
         },
