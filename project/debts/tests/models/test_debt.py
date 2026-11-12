@@ -4,6 +4,7 @@ import factory
 import pytest
 from django.db import IntegrityError, transaction
 from django.db.models.signals import post_save
+from factory.random import reseed_random
 
 from ....accounts.services.model_services import AccountBalanceModelService
 from ....accounts.tests.factories import AccountBalance, AccountFactory
@@ -31,6 +32,17 @@ def test_debt_str():
 def test_debt_returned_is_never_null():
     with pytest.raises(IntegrityError), transaction.atomic():
         LendFactory(returned=None)
+
+
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_debt_factory_name_is_always_valid(debt_type):
+    seed = 8118
+    reseed_random(seed)
+    first_name = factory.build(dict, name=factory.Faker("first_name"))["name"]
+    assert len(first_name) < 3, "the seed no longer draws a name under the floor of 3"
+    reseed_random(seed)
+
+    DEBT_FACTORIES[debt_type]().full_clean()
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
