@@ -477,15 +477,6 @@ def test_savings_delete_other_journal_post_form(client_logged, second_user):
     assert Saving.objects.all().count() == 1
 
 
-def test_type_load_form(client_logged):
-    url = reverse("savings:type_new")
-
-    response = client_logged.get(url)
-    actual = response.content.decode()
-
-    assert url in actual
-
-
 def test_type_save_invalid_data(client_logged):
     data = {"title": ""}
 
@@ -496,17 +487,6 @@ def test_type_save_invalid_data(client_logged):
     actual = response.context["form"]
 
     assert not actual.is_valid()
-
-
-def test_type_update_load_form(client_logged):
-    saving = SavingTypeFactory()
-
-    url = reverse("savings:type_update", kwargs={"pk": saving.pk})
-
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert url in actual
 
 
 TAB_FUNDS = "/savings/funds/"
@@ -594,6 +574,15 @@ FUND_SAVES = [
         id="update",
     ),
 ]
+
+
+@pytest.mark.parametrize("url_of", FUND_SAVES)
+def test_a_fund_form_loads(client_logged, url_of):
+    url = url_of()
+
+    actual = client_logged.get(url).content.decode()
+
+    assert url in actual
 
 
 @pytest.mark.parametrize("url_of", FUND_SAVES)
