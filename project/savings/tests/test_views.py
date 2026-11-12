@@ -103,46 +103,6 @@ SAVING_ROW = re.compile(
 )
 
 
-@time_machine.travel("1999-12-1")
-def test_the_savings_tab_lists_the_years_savings_newest_first(
-    client_logged, second_user
-):
-    def saving(on, name, price, **owner):
-        SavingFactory(
-            date=date.fromisoformat(on),
-            saving_type=SavingTypeFactory(title=f"Fund {name}", **owner),
-            account=AccountFactory(title=f"Account {name}", **owner),
-            remark=f"remark {name}",
-            price=price,
-            fee=price // 10,
-        )
-
-    saving("1999-01-05", "C", 300)
-    saving("1999-03-09", "A", 100)
-    saving("1999-03-02", "B", 200)
-    saving("2000-01-01", "D", 400)
-    saving("1999-02-01", "E", 500, journal=second_user.journal)
-
-    content = tab_fragment(client_logged, reverse("savings:index"))
-
-    assert HEAD_CELL.findall(content) == [
-        ("text-left", "Data"),
-        ("text-left main__name", "Fondas"),
-        ("text-left main__fold", "Iš sąskaitos"),
-        ("text-left main__fold", "Pastaba"),
-        ("price-col", "Suma"),
-        ("price-col main__fold", "Mokesčiai"),
-        ("edit-col", ""),
-        ("delete-col", ""),
-    ]
-    divider = "table-group-divider"
-    assert SAVING_ROW.findall(content) == [
-        ("", "1999-03-09", "Fund A", "Account A", "remark A", "1,00", "0,10"),
-        ("", "1999-03-02", "Fund B", "Account B", "remark B", "2,00", "0,20"),
-        (divider, "1999-01-05", "Fund C", "Account C", "remark C", "3,00", "0,30"),
-    ]
-
-
 TAB_PENSIONS = "/savings/pensions/"
 PENSION_ROW = re.compile(
     r'<tr [^>]*class="([^"]*)">\s*<td class="text-left main__date">([^<]*)</td>'
@@ -153,41 +113,101 @@ PENSION_ROW = re.compile(
 )
 
 
-def test_the_pensions_tab_lists_the_years_pensions_newest_first(
-    client_logged, second_user
+# each tab of Savings or Pensions, what builds one of its rows, and the row it draws
+DATED_TABS = {
+    "savings": ("/savings/", SavingFactory, SAVING_ROW),
+    "pensions": (TAB_PENSIONS, PensionFactory, PENSION_ROW),
+}
+DIVIDER = "table-group-divider"
+
+
+def _saving(on, name, price, **owner):
+    SavingFactory(
+        date=date.fromisoformat(on),
+        saving_type=SavingTypeFactory(title=f"Fund {name}", **owner),
+        account=AccountFactory(title=f"Account {name}", **owner),
+        remark=f"remark {name}",
+        price=price,
+        fee=price // 10,
+    )
+
+
+def _pension(on, name, price, **owner):
+    PensionFactory(
+        date=date.fromisoformat(on),
+        pension_type=PensionTypeFactory(title=f"Fund {name}", **owner),
+        remark=f"remark {name}",
+        price=price,
+        fee=price // 10,
+    )
+
+
+@pytest.mark.parametrize(
+    "tab, build, head, rows",
+    [
+        pytest.param(
+            "savings",
+            _saving,
+            [
+                ("text-left", "Data"),
+                ("text-left main__name", "Fondas"),
+                ("text-left main__fold", "Iš sąskaitos"),
+                ("text-left main__fold", "Pastaba"),
+                ("price-col", "Suma"),
+                ("price-col main__fold", "Mokesčiai"),
+                ("edit-col", ""),
+                ("delete-col", ""),
+            ],
+            [
+                ("", "1999-03-09", "Fund A", "Account A", "remark A", "1,00", "0,10"),
+                ("", "1999-03-02", "Fund B", "Account B", "remark B", "2,00", "0,20"),
+                (
+                    DIVIDER,
+                    "1999-01-05",
+                    "Fund C",
+                    "Account C",
+                    "remark C",
+                    "3,00",
+                    "0,30",
+                ),
+            ],
+            id="savings",
+        ),
+        pytest.param(
+            "pensions",
+            _pension,
+            [
+                ("text-left", "Data"),
+                ("text-left main__name", "Fondas"),
+                ("text-left main__fold", "Pastaba"),
+                ("price-col", "Suma"),
+                ("price-col main__fold", "Mokesčiai"),
+                ("edit-col", ""),
+                ("delete-col", ""),
+            ],
+            [
+                ("", "1999-03-09", "Fund A", "remark A", "1,00", "0,10"),
+                ("", "1999-03-02", "Fund B", "remark B", "2,00", "0,20"),
+                (DIVIDER, "1999-01-05", "Fund C", "remark C", "3,00", "0,30"),
+            ],
+            id="pensions",
+        ),
+    ],
+)
+def test_a_dated_tab_lists_the_years_rows_newest_first(
+    client_logged, second_user, tab, build, head, rows
 ):
-    def pension(on, name, price, **owner):
-        PensionFactory(
-            date=date.fromisoformat(on),
-            pension_type=PensionTypeFactory(title=f"Fund {name}", **owner),
-            remark=f"remark {name}",
-            price=price,
-            fee=price // 10,
-        )
+    build("1999-01-05", "C", 300)
+    build("1999-03-09", "A", 100)
+    build("1999-03-02", "B", 200)
+    build("2000-01-01", "D", 400)
+    build("1999-02-01", "E", 500, journal=second_user.journal)
+    tab_url, _, row = DATED_TABS[tab]
 
-    pension("1999-01-05", "C", 300)
-    pension("1999-03-09", "A", 100)
-    pension("1999-03-02", "B", 200)
-    pension("2000-01-01", "D", 400)
-    pension("1999-02-01", "E", 500, journal=second_user.journal)
+    content = tab_fragment(client_logged, tab_url)
 
-    content = tab_fragment(client_logged, TAB_PENSIONS)
-
-    assert HEAD_CELL.findall(content) == [
-        ("text-left", "Data"),
-        ("text-left main__name", "Fondas"),
-        ("text-left main__fold", "Pastaba"),
-        ("price-col", "Suma"),
-        ("price-col main__fold", "Mokesčiai"),
-        ("edit-col", ""),
-        ("delete-col", ""),
-    ]
-    divider = "table-group-divider"
-    assert PENSION_ROW.findall(content) == [
-        ("", "1999-03-09", "Fund A", "remark A", "1,00", "0,10"),
-        ("", "1999-03-02", "Fund B", "remark B", "2,00", "0,20"),
-        (divider, "1999-01-05", "Fund C", "remark C", "3,00", "0,30"),
-    ]
+    assert HEAD_CELL.findall(content) == head
+    assert row.findall(content) == rows
 
 
 @time_machine.travel("2000-01-01")
@@ -368,13 +388,6 @@ def test_savings_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-# each tab of Savings or Pensions, and what builds one of its rows
-DATED_TABS = {
-    "savings": ("/savings/", SavingFactory),
-    "pensions": (TAB_PENSIONS, PensionFactory),
-}
-
-
 @pytest.mark.parametrize(
     "price, fee, shown_price, shown_fee",
     [
@@ -382,20 +395,21 @@ DATED_TABS = {
         pytest.param(100_000_000, 100_000, "1.000.000,00", "1.000,00", id="thousands"),
     ],
 )
-@pytest.mark.parametrize("tab_url, factory", DATED_TABS.values(), ids=DATED_TABS)
+@pytest.mark.parametrize("tab_url, factory, row", DATED_TABS.values(), ids=DATED_TABS)
 @time_machine.travel("1999-1-1")
 def test_a_dated_tab_shows_prices_converted(
-    client_logged, tab_url, factory, price, fee, shown_price, shown_fee
+    client_logged, tab_url, factory, row, price, fee, shown_price, shown_fee
 ):
     factory(price=price, fee=fee)
 
-    actual = tab_fragment(client_logged, tab_url)
+    (cells,) = row.findall(tab_fragment(client_logged, tab_url))
 
-    assert shown_price in actual
-    assert shown_fee in actual
+    assert cells[-2:] == (shown_price, shown_fee)
 
 
-@pytest.mark.parametrize("tab_url, factory", DATED_TABS.values(), ids=DATED_TABS)
+@pytest.mark.parametrize(
+    "tab_url, factory", [tab[:2] for tab in DATED_TABS.values()], ids=DATED_TABS
+)
 @pytest.mark.parametrize(
     "rows, shown",
     [pytest.param(0, True, id="empty"), pytest.param(1, False, id="listed")],
