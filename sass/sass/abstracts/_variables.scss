@@ -69,7 +69,6 @@ $table-current-day: color.adjust($secondary, $lightness: 43%, $space: hsl);
 $table-current-day-border-color: $secondary;
 
 $table-weekend: color.adjust($primary, $lightness: 71%, $space: hsl);
-$table-weekend-color: $black-muted;
 
 $table-hover-bg: color.adjust($secondary, $lightness: 40%, $space: hsl);
 
