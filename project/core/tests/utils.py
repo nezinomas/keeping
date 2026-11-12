@@ -12,8 +12,16 @@ def edit_row_opening(url):
     return f'<tr hx-get="{url}" hx-trigger="dblclick" hx-target="#mainModal"'
 
 
-ROW_START = r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
-ROW = re.compile(ROW_START + r"[^>]*>(.*?)</tr>", re.DOTALL)
+ANY_URL = r'([^"]*)'
+
+
+def row_start(url=r'[^"]*'):
+    """The pattern of a list row's start tag whose double-click opens `url` in the
+    modal; pass `ANY_URL` to capture the url."""
+    return rf'<tr hx-get="{url}" hx-trigger="dblclick" hx-target="#mainModal"'
+
+
+ROW = re.compile(row_start(ANY_URL) + r"[^>]*>(.*?)</tr>", re.DOTALL)
 ROW_BUTTON = re.compile(
     r'<td class="(edit-col|delete-col)">\s*<a role="button" hx-get="([^"]*)"'
 )
@@ -91,8 +99,7 @@ def closed_fold(content, label):
                     part["attrs"],
                     re.findall(r'<th class="([^"]*)">([^<]*)</th>', part["body"]),
                     re.findall(
-                        r'<tr hx-get="[^"]*" hx-trigger="dblclick"'
-                        r' hx-target="#mainModal">\s*'
+                        row_start() + r">\s*"
                         r'<td class="text-left main__name">(.*?)</td>',
                         part["body"],
                     ),

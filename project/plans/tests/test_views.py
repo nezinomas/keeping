@@ -12,11 +12,12 @@ from django.urls import reverse
 from django.utils.html import escape
 
 from ...core.tests.utils import (
-    ROW_START,
+    ANY_URL,
     count_queries,
     form_posts_to,
     nav_tabs,
     quick_add_pills,
+    row_start,
     view_for,
 )
 from ...expenses.tests.factories import ExpenseTypeFactory
@@ -426,7 +427,7 @@ def test_a_plan_row_opens_its_update_form_and_links_its_edit_and_delete(
     content = client_logged.get(reverse(kind.tab)).content.decode("utf-8")
 
     rows = re.findall(
-        rf"{ROW_START}>"
+        rf"{row_start(ANY_URL)}>"
         r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
         r'.*?<td class="delete-col">\s*<a role="button" hx-get="([^"]*)"',
         content,

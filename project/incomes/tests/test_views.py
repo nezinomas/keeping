@@ -9,9 +9,11 @@ from django.urls import reverse
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.helper import quiet_syncs
 from ...core.tests.utils import (
+    ANY_URL,
     count_queries,
     edit_row_opening,
     quick_add_pills,
+    row_start,
     stat_card_tooltips,
     stat_cards,
     view_for,
@@ -386,8 +388,8 @@ def test_an_income_row_opens_its_own_forms(client_logged):
     actual = client_logged.get(reverse("incomes:list")).content.decode("utf-8")
 
     rows = re.findall(
-        r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
-        r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
+        row_start(ANY_URL)
+        + r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
         r'.*?<td class="delete-col">\s*<a role="button" hx-get="([^"]*)"',
         actual,
         re.DOTALL,
@@ -426,8 +428,8 @@ def test_a_divider_opens_each_new_month(client_logged, url, query, dates, rows):
 
     assert (
         re.findall(
-            r'<tr hx-get="[^"]*" hx-trigger="dblclick" hx-target="#mainModal"'
-            r' class="([^"]*)">\s*<td class="text-left main__date">([\d-]+)</td>',
+            row_start()
+            + r' class="([^"]*)">\s*<td class="text-left main__date">([\d-]+)</td>',
             content,
         )
         == rows
@@ -644,8 +646,7 @@ def _types_tab_of_two_kinds(client):
 def _type_rows(content):
     """(the row's attributes after its htmx ones, the type's title) of each row."""
     return re.findall(
-        r'<tr hx-get="[^"]*" hx-trigger="dblclick" hx-target="#mainModal"([^>]*)>'
-        r'\s*<td class="text-left">(\w+)</td>',
+        row_start() + r'([^>]*)>\s*<td class="text-left">(\w+)</td>',
         content,
     )
 
