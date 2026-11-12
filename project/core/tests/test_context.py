@@ -70,7 +70,7 @@ def test_context_months_are_the_users_year(main_user, rf):
         pytest.param("/incomes/", {"incomes"}, id="incomes"),
         pytest.param("/incomes/data/", set(), id="incomes_tab_exact_path"),
         pytest.param("/transactions/", {"transactions"}, id="transactions"),
-        pytest.param("/savings/type/", {"savings"}, id="savings_page"),
+        pytest.param("/savings/funds/", {"savings"}, id="savings_page"),
         pytest.param("/summary/savings/", {"charts"}, id="charts_not_savings"),
         pytest.param("/plans/savings/", {"plans"}, id="plans_not_savings"),
         pytest.param("/detailed/savings/", {"detailed"}, id="detailed_not_savings"),

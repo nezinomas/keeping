@@ -52,6 +52,21 @@ holds the columns, the pk-keyed figures, the cells and the total; `TypeOrder` ta
 app's last-date key (`last_income`, `last_expense`), and the app adds its own rows.
 _Avoid_: category table, summary table
 
+**Owner table**:
+A Tab's list of owners (Accounts, Funds, Pension funds) by name, each row opening its own edit form:
+`<c-owner-table>` takes the rows, a header and the url name of the edit form, which must
+reverse; a closed row is struck through, captioned *uždaryta* and its year.
+_Avoid_: accounts table, list
+
+**Closed fold**:
+An Owner table of the owners open in the viewed year, or the shared notice when none is,
+above a button that unfolds a second Owner table of those closed before it, the button
+drawn only when one is (Sąskaitos, Fondai; II pakopos fondai passes no closed rows, so
+it never draws one). [`core/closed_fold.html`](templates/core/closed_fold.html)
+takes `rows`, `closed_rows`, `header`, `url_name` and the button's `label`;
+`ClosedFoldTabMixin` (`core/mixins/tabs.py`) reads both lists for a tab.
+_Avoid_: accordion, scope, show closed, archive
+
 ### Time
 
 **Selected year**:

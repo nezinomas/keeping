@@ -2,7 +2,6 @@
 
 // --- 1. Typography ---
 $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
-$font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
 $font-size: 0.7rem;
 
 
@@ -14,7 +13,6 @@ $modal-border-color: rgba(0, 0, 0, 0.175);
 $modal-backdrop-bg: rgba(232, 234, 237, 0.75);
 $modal-text-color: #373c44;
 $transition: 280ms all 50ms ease-out;
-$accordion-transition: all 0.25s ease-in-out;
 
 
 // --- 3. Core Palette ---
@@ -71,7 +69,6 @@ $table-current-day: color.adjust($secondary, $lightness: 43%, $space: hsl);
 $table-current-day-border-color: $secondary;
 
 $table-weekend: color.adjust($primary, $lightness: 71%, $space: hsl);
-$table-weekend-color: $black-muted;
 
 $table-hover-bg: color.adjust($secondary, $lightness: 40%, $space: hsl);
 

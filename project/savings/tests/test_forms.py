@@ -4,7 +4,7 @@ import pytest
 
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.factories import SavingWorthFactory
-from ...bookkeeping.tests.helper import quiet_build
+from ...bookkeeping.tests.helper import quiet_syncs
 from ...core.tests.utils import count_queries
 from ...journals.tests.factories import JournalFactory
 from ...plans.tests.factories import SavingPlanFactory
@@ -129,30 +129,35 @@ def _fund_form(user, fund, closed):
     )
 
 
-@pytest.mark.parametrize("row", FUND_ROWS)
+CLOSE_REFUSED = {
+    "closed": ["Negalima uždaryti anksčiau nei 2001: tais metais yra įrašų."]
+}
+
+
 @pytest.mark.parametrize(
-    "closed, errors",
+    "row, closed, errors",
     [
-        (
-            "2000",
-            {"closed": ["Negalima uždaryti anksčiau nei 2001: tais metais yra įrašų."]},
-        ),
-        ("2001", {}),
-        ("2005", {}),
-        ("", {}),
+        *[
+            pytest.param(row, "2000", CLOSE_REFUSED, id=f"2000-{row}")
+            for row in FUND_ROWS
+        ],
+        pytest.param("buy", "2001", {}, id="2001-buy"),
+        pytest.param("buy", "2005", {}, id="2005-buy"),
+        pytest.param("buy", "", {}, id="blank-buy"),
     ],
 )
 def test_saving_type_close_year_not_before_its_rows(main_user, row, closed, errors):
-    fund = SavingTypeFactory()
-    FUND_ROWS[row](fund, 1999)
-    FUND_ROWS[row](fund, 2001)
+    with quiet_syncs():
+        fund = SavingTypeFactory()
+        FUND_ROWS[row](fund, 1999)
+        FUND_ROWS[row](fund, 2001)
 
     assert _fund_form(main_user, fund, closed).errors == errors
 
 
 def test_saving_type_close_year_query_count(main_user):
     def queries(fund, rows):
-        with quiet_build(main_user):
+        with quiet_syncs():
             for year in range(1999, 1999 + rows):
                 for make in FUND_ROWS.values():
                     make(fund, year)

@@ -31,6 +31,7 @@ def _nav(client, path: str) -> str:
         ("/transactions/", "transactions:index"),
         ("/transactions/sales/", "transactions:index"),
         ("/savings/", "savings:index"),
+        ("/savings/pension-funds/", "savings:index"),
         ("/debts/", "debts:index"),
         ("/books/", "books:index"),
         ("/drinks/", "drinks:index"),
@@ -62,10 +63,33 @@ def test_the_navbar_menus_carry_no_flag(client_logged):
     assert set(re.findall(r'<div class="(dropdown(?: [^"]*)?)"', nav)) == {"dropdown"}
 
 
-def test_the_transactions_menu_names_its_tabs_in_order(client_logged):
+@pytest.mark.parametrize(
+    "item_url, tabs",
+    [
+        (
+            "/transactions/",
+            [
+                ("transactions:tab_transactions", "Pervedimai"),
+                ("transactions:tab_sales", "Fondų pardavimai"),
+                ("transactions:tab_switches", "Fondų keitimai"),
+                ("transactions:tab_accounts", "Sąskaitos"),
+            ],
+        ),
+        (
+            "/savings/",
+            [
+                ("savings:tab_savings", "Taupymas"),
+                ("savings:tab_funds", "Fondai"),
+                ("savings:tab_pensions", "II pakopa"),
+                ("savings:tab_pension_funds", "II pakopos fondai"),
+            ],
+        ),
+    ],
+)
+def test_the_tab_menus_name_their_tabs_in_order(client_logged, item_url, tabs):
     nav = _nav(client_logged, "/")
     menus = re.findall(
-        r'<a href="/transactions/">[^<]*</a>\s*<div class="dropdown">'
+        rf'<a href="{item_url}">[^<]*</a>\s*<div class="dropdown">'
         r'\s*<button class="dropdown__btn"></button>'
         r'\s*<div class="dropdown__menu">(.*?)</div>',
         nav,
@@ -73,12 +97,7 @@ def test_the_transactions_menu_names_its_tabs_in_order(client_logged):
     )
 
     assert [re.findall(r'<a href="([^"]+)">([^<]+)</a>', menu) for menu in menus] == [
-        [
-            (reverse("transactions:tab_transactions"), "Pervedimai"),
-            (reverse("transactions:tab_sales"), "Fondų pardavimai"),
-            (reverse("transactions:tab_switches"), "Fondų keitimai"),
-            (reverse("transactions:tab_accounts"), "Sąskaitos"),
-        ]
+        [(reverse(url_name), label) for url_name, label in tabs]
     ]
 
 

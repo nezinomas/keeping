@@ -336,10 +336,7 @@ def test_types_tab_edits_each_type_and_name_from_its_row(client_logged):
     content = client_logged.get(reverse("expenses:tab_types")).content.decode()
 
     for link, group in ((type_link, ' class="main__group"'), (name_link, "")):
-        row = (
-            f'<tr hx-get="{link}" hx-trigger="dblclick" hx-target="#mainModal"{group}>'
-        )
-        assert row in content
+        assert f"{edit_row_opening(link)}{group}>" in content
         assert re.search(rf'<a role="button" hx-get="{link}"[^>]*class="edit"', content)
 
 

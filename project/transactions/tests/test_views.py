@@ -11,10 +11,16 @@ from django.urls import reverse
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.helper import quiet_build
 from ...core.tests.utils import (
+    FOLD_BUTTON,
+    FOLDED,
+    STICKY_HEADERS,
     clean_content,
+    closed_fold,
     count_queries,
     nav_tabs,
     quick_add_pills,
+    row_forms,
+    tab_fragment,
     view_for,
 )
 from ...savings.models import SavingBalance, SavingType
@@ -30,7 +36,6 @@ pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 CHECKED_BOX = re.compile(r'<input type="checkbox" .*? checked>')
 OPTION = re.compile(r'<option value="(\d+)">([^<]*)</option>')
-STICKY_HEADERS = r'<script nonce="[^"]*" src="/static/js/sticky-table-headers.js">'
 
 
 TAB_TITLES = {
@@ -84,7 +89,7 @@ def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
     a_move_out_of = A_MOVE_OUT_OF[tab.name]
 
     def tab_queries():
-        return count_queries(lambda: _tab(client_logged, tab.url))
+        return count_queries(lambda: tab_fragment(client_logged, tab.url))
 
     for i in range(2):
         a_move_out_of(i)
@@ -95,10 +100,6 @@ def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
     six = tab_queries()
 
     assert six == two
-
-
-def _tab(client, url):
-    return client.get(url, headers={"HX-Request": "true"}).content.decode()
 
 
 def _transactions(second_user):
@@ -209,7 +210,7 @@ def test_a_move_tab_lists_the_years_moves_newest_first_marking_the_close(
 ):
     scene(second_user)
 
-    content = _tab(client_logged, reverse(url_name))
+    content = tab_fragment(client_logged, reverse(url_name))
 
     assert '<table class="main striped hover sticky-table">' in content
     assert re.findall(r'<th class="([^"]*)">([^<]*)</th>', content) == head
@@ -217,51 +218,11 @@ def test_a_move_tab_lists_the_years_moves_newest_first_marking_the_close(
 
 
 TAB_ACCOUNTS = "/transactions/accounts/"
-CLOSED_BUTTON = re.compile(
-    r'\s*<button type="button" class="filter-line__item" @click="shown = ! shown"'
-    r""" :aria-current="shown \? 'true' : null">Uždarytos sąskaitos</button>\s*"""
-)
-TAB_PART = re.compile(
-    r'<table class="main striped hover sticky-table"(?P<attrs>[^>]*)>'
-    r"(?P<body>.*?)</table>"
-    r'|<div class="alert">\s*(?P<notice>[^<]*?)\s*</div>'
-    r'|(?P<scope><div x-data="\{ shown: false \}">\s*)?'
-    r'<nav class="filter-line"(?P<nav_attrs>[^>]*)>(?P<nav>.*?)</nav>',
-    re.DOTALL,
-)
 HEADER = [("text-left main__name", "Sąskaita"), ("edit-col", "")]
-FOLDED = ' x-show="shown" x-cloak'
-BUTTON = "the closed accounts' button"
-OTHER_FILTER_LINE = "another filter line"
 
 
 def _accounts_tab(content):
-    """The tab's tables, notice and filter lines, in page order."""
-    parts = []
-    for part in TAB_PART.finditer(content):
-        if part["notice"] is not None:
-            parts.append(part["notice"])
-        elif part["nav"] is not None:
-            button = part["scope"] and not part["nav_attrs"]
-            parts.append(
-                BUTTON
-                if button and CLOSED_BUTTON.fullmatch(part["nav"])
-                else OTHER_FILTER_LINE
-            )
-        else:
-            parts.append(
-                (
-                    part["attrs"],
-                    re.findall(r'<th class="([^"]*)">([^<]*)</th>', part["body"]),
-                    re.findall(
-                        r'<tr hx-get="[^"]*" hx-trigger="dblclick"'
-                        r' hx-target="#mainModal">\s*'
-                        r'<td class="text-left main__name">(.*?)</td>',
-                        part["body"],
-                    ),
-                )
-            )
-    return parts
+    return closed_fold(content, "Uždarytos sąskaitos")
 
 
 @pytest.mark.parametrize(
@@ -271,7 +232,7 @@ def _accounts_tab(content):
             2022,
             [
                 ("", HEADER, ["Zeta", "Alpha", "Beta", "Edge"]),
-                BUTTON,
+                FOLD_BUTTON,
                 (
                     FOLDED,
                     HEADER,
@@ -319,11 +280,11 @@ def test_the_accounts_tab_lists_the_open_then_folds_the_closed(
 def test_no_open_account_draws_the_notice_above_the_closed_ones(client_logged):
     AccountFactory(title="Old", closed=1998)
 
-    content = _tab(client_logged, TAB_ACCOUNTS)
+    content = tab_fragment(client_logged, TAB_ACCOUNTS)
 
     assert _accounts_tab(content) == [
         "1999 metais įrašų nėra.",
-        BUTTON,
+        FOLD_BUTTON,
         (
             FOLDED,
             HEADER,
@@ -347,15 +308,12 @@ ROW_FORMS = {
         AccountFactory,
         [("edit-col", "accounts:update")],
     ),
+    "closed_account": (
+        "transactions:tab_accounts",
+        partial(AccountFactory, closed=1998),
+        [("edit-col", "accounts:update")],
+    ),
 }
-ROW = re.compile(
-    r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"[^>]*>'
-    r"(.*?)</tr>",
-    re.DOTALL,
-)
-ROW_BUTTON = re.compile(
-    r'<td class="(edit-col|delete-col)">\s*<a role="button" hx-get="([^"]*)"'
-)
 
 
 @pytest.mark.parametrize(
@@ -364,9 +322,9 @@ ROW_BUTTON = re.compile(
 def test_a_row_opens_its_own_forms(client_logged, tab_url, factory, forms):
     record = factory()
 
-    content = _tab(client_logged, reverse(tab_url))
+    content = tab_fragment(client_logged, reverse(tab_url))
 
-    rows = [(url, ROW_BUTTON.findall(cells)) for url, cells in ROW.findall(content)]
+    rows = row_forms(content)
     buttons = [(column, reverse(name, args=[record.pk])) for column, name in forms]
     _, update = buttons[0]  # a double click opens what the edit button opens
     assert rows == [(update, buttons)]
@@ -376,7 +334,7 @@ def test_a_row_opens_its_own_forms(client_logged, tab_url, factory, forms):
 def test_a_tab_on_an_empty_year_draws_the_paper_notice(client_logged, kind):
     kind.factory(date=date(2000, 1, 1))
 
-    content = _tab(client_logged, reverse(kind.tab_url))
+    content = tab_fragment(client_logged, reverse(kind.tab_url))
 
     assert re.search(r'<div class="alert">\s*1999 metais įrašų nėra.\s*</div>', content)
 
@@ -835,7 +793,7 @@ def test_closing_sell_removed_reopens_the_fund(
 
     edit(client_logged, sell, other)
 
-    assert fund in SavingTypeModelService(main_user).items(year=2024)
+    assert fund in SavingTypeModelService(main_user).items_in(2024)
     years = SavingBalance.objects.filter(saving_type=fund).values_list("year")
     assert {year for (year,) in years} == years_after
 

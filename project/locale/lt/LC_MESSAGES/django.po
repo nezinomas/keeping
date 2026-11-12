@@ -884,10 +884,6 @@ msgstr "Trūksta duomenų."
 msgid "Data are missing. At least two years of data is required."
 msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 
-#: .\project\core\templates\cotton\accordion.html:13
-msgid "closed"
-msgstr "uždaryta"
-
 #: .\project\transactions\templates\transactions\tab_accounts.html:18
 #, python-format
 msgid "closed %(year)s"
@@ -2074,13 +2070,6 @@ msgstr "Nieko nerasta."
 msgid "Daily"
 msgstr "Dienai"
 
-#: .\project\plans\templates\plans\index.html:8
-#: .\project\savings\templates\savings\index.html:13
-#: .\project\transactions\templates\transactions\index.html:13
-msgctxt "record button"
-msgid "Record"
-msgstr "Įrašą"
-
 #: .\project\plans\templates\plans\index.html:16 .\project\plans\views.py:266
 msgid "Copy plans"
 msgstr "Kopijuoti planus"
@@ -2113,16 +2102,23 @@ msgstr "Iš sąskaitos"
 msgid "II stage"
 msgstr "II pakopa"
 
+msgid "II stage funds"
+msgstr "II pakopos fondai"
+
+msgid "II stage fund"
+msgstr "II pakopos fondas"
+
+msgid "Add pension"
+msgstr "Pridėti įmoką"
+
+msgid "Add II stage fund"
+msgstr "Pridėti II pakopos fondą"
+
 #: .\project\savings\templates\savings\index.html:35
 #: .\project\templates\base.html:155
 msgctxt "fund button"
 msgid "Fund"
 msgstr "Fondą"
-
-#: .\project\savings\templates\savings\index.html:41
-msgctxt "pension button"
-msgid "Pension"
-msgstr "Pensiją"
 
 #: .\project\savings\views.py:60
 msgid "Delete saving"
@@ -2503,6 +2499,9 @@ msgstr "Pridėti pajamas"
 msgid "Add transaction"
 msgstr "Pridėti pervedimą"
 
+msgid "Add saving"
+msgstr "Pridėti taupymą"
+
 msgid "Fund sales"
 msgstr "Fondų pardavimai"
 
@@ -2523,6 +2522,12 @@ msgstr "Pridėti keitimą"
 
 msgid "Closed accounts"
 msgstr "Uždarytos sąskaitos"
+
+msgid "Closed funds"
+msgstr "Uždaryti fondai"
+
+msgid "Add fund"
+msgstr "Pridėti fondą"
 
 msgid "Add account"
 msgstr "Pridėti sąskaitą"

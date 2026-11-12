@@ -1,23 +1,14 @@
-import re
 from datetime import date
 
 import pytest
 import time_machine
 from django.urls import reverse
 
-from ...core.tests.utils import clean_content, edit_row_opening, view_for
-from .. import models, views
+from ...core.tests.utils import clean_content, closed_fold
+from .. import models
 from .factories import Pension, PensionFactory, PensionTypeFactory
 
 pytestmark = pytest.mark.django_db
-
-
-def test_types_list_shows_the_title(client_logged):
-    PensionTypeFactory(title="Fondas")
-
-    response = client_logged.get(reverse("pensions:type_list"))
-
-    assert "Fondas" in response.content.decode("utf-8")
 
 
 @time_machine.travel("2000-03-04")
@@ -166,41 +157,6 @@ def test_pensions_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-@time_machine.travel("1999-1-1")
-@pytest.mark.parametrize(
-    "price, fee, shown_price, shown_fee",
-    [
-        (7777, 8888, "77,77", "88,88"),
-        (100_000_000, 100_000, "1.000.000,00", "1.000,00"),
-    ],
-    ids=["converted", "with_thousands"],
-)
-def test_pensions_list_price_converted(
-    client_logged, price, fee, shown_price, shown_fee
-):
-    PensionFactory(price=price, fee=fee)
-
-    url = reverse("pensions:list")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert shown_price in actual
-    assert shown_fee in actual
-
-
-@pytest.mark.parametrize(
-    "records, shown",
-    [pytest.param(0, True, id="empty"), pytest.param(1, False, id="listed")],
-)
-def test_pensions_list_names_its_empty_year(client_logged, records, shown):
-    PensionFactory.create_batch(records)
-
-    actual = client_logged.get(reverse("pensions:list")).content.decode("utf-8")
-
-    notice = r'<div class="alert alert-warning">\s*1999 metais įrašų nėra\.\s*</div>'
-    assert bool(re.search(notice, actual)) == shown
-
-
 def test_view_pensions_delete_load_form(client_logged):
     p = PensionFactory()
 
@@ -244,23 +200,47 @@ def test_pensions_delete_other_journal_post_form(client_logged, second_user):
     assert Pension.objects.all().count() == 1
 
 
-def test_type_save(client_logged):
-    data = {"title": "TTT"}
-    url = reverse("pensions:type_new")
+# the update renames a fund of its own, so either save leaves one fund
+PENSION_FUND_SAVES = [
+    pytest.param(lambda: reverse("pensions:type_new"), id="new"),
+    pytest.param(
+        lambda: reverse(
+            "pensions:type_update", kwargs={"pk": PensionTypeFactory(title="XXX").pk}
+        ),
+        id="update",
+    ),
+]
 
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
 
-    assert "TTT" in actual
+@pytest.mark.parametrize("url_of", PENSION_FUND_SAVES)
+def test_a_pension_fund_save_lands_on_its_tab_drawing_it(client_logged, url_of):
+    response = client_logged.post(url_of(), {"title": "TTT"}, follow=True)
+
+    assert response.redirect_chain == [("/savings/pension-funds/", 302)]
+    assert closed_fold(response.content.decode(), "Uždaryti fondai") == [
+        ("", [("text-left main__name", "Fondas"), ("edit-col", "")], ["TTT"])
+    ]
 
 
-def test_type_new_load_form(client_logged):
-    url = reverse("pensions:type_new")
+@pytest.mark.parametrize(
+    "url_of",
+    [
+        pytest.param(lambda: reverse("pensions:type_new"), id="new"),
+        pytest.param(
+            lambda: reverse(
+                "pensions:type_update", kwargs={"pk": PensionTypeFactory().pk}
+            ),
+            id="update",
+        ),
+    ],
+)
+def test_a_pension_fund_form_names_a_pension_fund(client_logged, url_of):
+    url = url_of()
 
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+    actual = client_logged.get(url).content.decode("utf-8")
 
     assert f'hx-post="{url}"' in actual
+    assert '<h5 class="modal-title">II pakopos fondas</h5>' in actual
 
 
 def test_type_save_invalid_data(client_logged):
@@ -275,32 +255,6 @@ def test_type_save_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-def test_type_update_load_form(client_logged):
-    pension = PensionTypeFactory()
-
-    url = reverse("pensions:type_update", kwargs={"pk": pension.pk})
-
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-
-
-def test_type_update(client_logged):
-    pension = PensionTypeFactory()
-
-    data = {"title": "TTT"}
-    url = reverse("pensions:type_update", kwargs={"pk": pension.pk})
-
-    response = client_logged.post(url, data, follow=True)
-
-    assert response.status_code == 200
-
-    actual = response.content.decode("utf-8")
-
-    assert "TTT" in actual
-
-
 def test_pension_type_not_load_other_journal(client_logged, second_user):
     PensionTypeFactory(title="xxx")
     obj = PensionTypeFactory(title="yyy", journal=second_user.journal)
@@ -309,19 +263,3 @@ def test_pension_type_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
-
-
-def test_a_user_with_no_year_raises(rf, main_user):
-    main_user.year = None
-
-    with pytest.raises(ValueError, match="has no year"):
-        view_for(rf, main_user, views.Lists).get_queryset()
-
-
-def test_a_pension_row_opens_its_update_form(client_logged):
-    obj = PensionFactory()
-
-    content = client_logged.get(reverse("pensions:list")).content.decode("utf-8")
-
-    update = reverse("pensions:update", kwargs={"pk": obj.pk})
-    assert edit_row_opening(update) in content

@@ -7,6 +7,7 @@ from django.db.backends.signals import connection_created
 from django.utils import translation
 
 from .accounts.tests.factories import AccountFactory
+from .bookkeeping.tests.helper import quiet_syncs
 from .expenses.tests.factories import ExpenseFactory
 from .incomes.tests.factories import IncomeFactory
 from .pensions.tests.factories import PensionFactory, PensionTypeFactory
@@ -208,3 +209,12 @@ def pensions():
         date=date(1999, 1, 1),
         pension_type=p,
     )
+
+
+@pytest.fixture(name="quiet_syncs")
+def fixture_quiet_syncs(request):
+    if request.node.get_closest_marker("syncs"):
+        yield
+        return
+    with quiet_syncs():
+        yield

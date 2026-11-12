@@ -1,47 +1,22 @@
-{% extends 'base.html' %}
+{% extends 'core/paper_page.html' %}
 
 {% load static %}
 {% load i18n %}
 
-{% block head %}
-<script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
-{% endblock head %}
+
+{% block head_scripts %}
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
+{% endblock head_scripts %}
 
 
-{% block content %}
+{% block page_name %}{% translate 'Savings' %}{% endblock page_name %}
 
-{% translate 'Record' context 'record button' as record_button_title %}
 
-<main class="grid-70-30">
-    <div>
-        <!-- Funds -->
-        <div class="button-row">
-            <h6>{% translate 'Funds' %}</h6>
-            <c-new-button url="{% url 'savings:new' %}" title="{{ record_button_title }}" css_class="flex-right" />
-        </div>
-        <div id="saving_list" class="margin-bottom" hx-get="{% url 'savings:list' %}" hx-trigger="reload from:body, afterType from:body" hx-target="this" hx-indicator:inherited="#indicator">{{saving}}</div>
-
-        <!-- Pensions -->
-        <div class="button-row">
-            <h6>{% translate 'Pension' %}, {% translate 'II stage' %}</h6>
-            <c-new-button url="{% url 'pensions:new' %}" title="{{ record_button_title }}" css_class="flex-right" />
-        </div>
-        <div id="pensions_list" class="margin-bottom" hx-get="{% url 'pensions:list' %}" hx-trigger="afterPension from:body, afterPensionType from:body" hx-target="this">{{pension}}</div>
-    </div>
-
-    <div>
-        <!-- Funds Types -->
-        <div class="button-row">
-            <c-new-button url="{% url 'savings:type_new' %}" title="{% translate 'Fund' context 'fund button' %}" css_class="flex-right" />
-        </div>
-        <div id="savintype_list" class="margin-bottom" hx-get="{% url 'savings:type_list' %}" hx-trigger="afterType from:body" hx-target="this">{{saving_type}}</div>
-
-        <!-- Pension Types -->
-        <div class="button-row">
-            <c-new-button url="{% url 'pensions:type_new' %}" title="{% translate 'Pension' context 'pension button' %}" css_class="flex-right" />
-        </div>
-        <div id="pensiontype_list" hx-get="{% url 'pensions:type_list' %}" hx-trigger="afterPensionType from:body" hx-target="this">{{pension_type}}</div>
-    </div>
-</main>
-
-{% endblock content %}
+{% block quick_add %}
+<c-quick-add>
+    <c-quick-add.pill url="{% url 'savings:new' %}" tab="savings">{% translate 'Add saving' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'savings:type_new' %}" tab="funds">{% translate 'Add fund' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'pensions:new' %}" tab="pensions">{% translate 'Add pension' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'pensions:type_new' %}" tab="pension_funds">{% translate 'Add II stage fund' %}</c-quick-add.pill>
+</c-quick-add>
+{% endblock quick_add %}

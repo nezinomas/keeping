@@ -626,7 +626,7 @@ def test_form_edit_with_close_unticked_reopens_the_fund(
 
     _saved_move(main_user, move, fund, receiver, "1999-01-01", False, row)
 
-    assert fund in SavingTypeModelService(main_user).items(year=2000)
+    assert fund in SavingTypeModelService(main_user).items_in(2000)
 
 
 @pytest.mark.parametrize("move", FUND_MOVES)
@@ -704,7 +704,7 @@ def test_form_closing_move_moved_to_another_fund_reopens_the_first(
 
     _saved_move(main_user, move, second, receiver, "1999-12-01", True, row)
 
-    assert first in SavingTypeModelService(main_user).items(year=2000)
+    assert first in SavingTypeModelService(main_user).items_in(2000)
     second.refresh_from_db()
     assert second.closed == 1999
 
@@ -727,7 +727,7 @@ def test_form_closing_move_moved_away_unticked_reopens_the_first(
 
     _saved_move(main_user, move, second, receiver, "2000-12-01", False, row)
 
-    assert first in SavingTypeModelService(main_user).items(year=2001)
+    assert first in SavingTypeModelService(main_user).items_in(2001)
     second.refresh_from_db()
     assert second.closed == second_closed
 

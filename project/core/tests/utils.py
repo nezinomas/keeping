@@ -4,6 +4,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
 PICKER_SCRIPT = r'<script[^>]*src="[^"]*/js/([a-z]+-picker\.js)"'
+STICKY_HEADERS = r'<script nonce="[^"]*" src="/static/js/sticky-table-headers.js">'
 
 
 def edit_row_opening(url):
@@ -11,8 +12,33 @@ def edit_row_opening(url):
     return f'<tr hx-get="{url}" hx-trigger="dblclick" hx-target="#mainModal"'
 
 
+ANY_URL = r'([^"]*)'
+
+
+def row_start(url=r'[^"]*'):
+    """The pattern of a list row's start tag whose double-click opens `url` in the
+    modal; pass `ANY_URL` to capture the url."""
+    return rf'<tr hx-get="{url}" hx-trigger="dblclick" hx-target="#mainModal"'
+
+
+ROW = re.compile(row_start(ANY_URL) + r"[^>]*>(.*?)</tr>", re.DOTALL)
+ROW_BUTTON = re.compile(
+    r'<td class="(edit-col|delete-col)">\s*<a role="button" hx-get="([^"]*)"'
+)
+
+
+def row_forms(content):
+    """(the url a double click opens, [(column, url) of each button]) of each row."""
+    return [(url, ROW_BUTTON.findall(cells)) for url, cells in ROW.findall(content)]
+
+
 def clean_content(rendered):
     return str(rendered).replace("\n", "").replace("\t", "").replace("  ", "")
+
+
+def tab_fragment(client, url):
+    """A tab's fragment, as htmx asks for it."""
+    return client.get(url, headers={"HX-Request": "true"}).content.decode()
 
 
 def form_posts_to(content, form_id, url):
@@ -32,6 +58,54 @@ def quick_add_pills(content):
         r' class="quick-add__pill" ((?:href|hx-get)="[^"]*")[^>]*>([^<]*)</\1>',
         content,
     )
+
+
+FOLD_PART = re.compile(
+    r'<table class="main striped hover sticky-table"(?P<attrs>[^>]*)>'
+    r"(?P<body>.*?)</table>"
+    r'|<div class="alert">\s*(?P<notice>[^<]*?)\s*</div>'
+    r'|(?P<scope><div x-data="\{ shown: false \}">\s*)?'
+    r'<nav class="filter-line"(?P<nav_attrs>[^>]*)>(?P<nav>.*?)</nav>',
+    re.DOTALL,
+)
+FOLDED = ' x-show="shown" x-cloak'
+FOLD_BUTTON = "the fold's button"
+OTHER_FILTER_LINE = "another filter line"
+
+
+def closed_fold(content, label):
+    """The tab's tables, notice and filter lines, in page order; `label` is the
+    button that unfolds the closed owners."""
+    button = re.compile(
+        r'\s*<button type="button" class="filter-line__item" @click="shown = ! shown"'
+        r""" :aria-current="shown \? 'true' : null">"""
+        + re.escape(label)
+        + r"</button>\s*"
+    )
+    parts = []
+    for part in FOLD_PART.finditer(content):
+        if part["notice"] is not None:
+            parts.append(part["notice"])
+        elif part["nav"] is not None:
+            scoped = part["scope"] and not part["nav_attrs"]
+            parts.append(
+                FOLD_BUTTON
+                if scoped and button.fullmatch(part["nav"])
+                else OTHER_FILTER_LINE
+            )
+        else:
+            parts.append(
+                (
+                    part["attrs"],
+                    re.findall(r'<th class="([^"]*)">([^<]*)</th>', part["body"]),
+                    re.findall(
+                        row_start() + r">\s*"
+                        r'<td class="text-left main__name">(.*?)</td>',
+                        part["body"],
+                    ),
+                )
+            )
+    return parts
 
 
 # an empty Card's figure is its bare dash; stop at the next label, never pair Cards

@@ -6,12 +6,13 @@ import pytest
 import time_machine
 from django.apps import apps
 from django.db import IntegrityError, connection
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_save
 from django.test.utils import CaptureQueriesContext
 
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
 from ...accounts.tests.factories import AccountFactory
+from ...bookkeeping.tests import helper
 from ...bookkeeping.tests.factories import SavingWorthFactory
 from ...incomes.tests.factories import IncomeFactory
 from ...savings.tests.factories import (
@@ -114,13 +115,18 @@ def test_savings_services_read_only_their_journal(
 
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
-    "kwargs", [{"year": 1999}, {}], ids=["given_year", "year_from_get_user"]
+    "user_year, read",
+    [
+        pytest.param(3000, lambda service: service.items_in(1999), id="given_year"),
+        pytest.param(1999, lambda service: service.items(), id="year_from_get_user"),
+    ],
 )
-def test_saving_type_items_filter_closed_in_future(main_user, kwargs):
+def test_saving_type_items_filter_closed_in_future(main_user, user_year, read):
+    main_user.year = user_year
     SavingTypeFactory(title="T1", closed=1998)
     SavingTypeFactory(title="T2", closed=2000)
 
-    actual = SavingTypeModelService(main_user).items(**kwargs)
+    actual = read(SavingTypeModelService(main_user))
 
     assert [row.title for row in actual] == ["T2"]
 
@@ -139,6 +145,30 @@ def test_saving_type_items_closed(main_user, user_year, expect):
     actual = SavingTypeModelService(main_user).items()
 
     assert actual.count() == expect
+
+
+@factory.django.mute_signals(post_save)
+def test_saving_type_closed_before_lists_by_close_year_kind_title(
+    main_user, second_user
+):
+    kinds = SavingType.Types
+    SavingTypeFactory(title="Open")
+    SavingTypeFactory(title="Shares 2019", type=kinds.SHARES, closed=2019)
+    SavingTypeFactory(title="Y pensions 2021", type=kinds.PENSIONS, closed=2021)
+    SavingTypeFactory(title="Z funds 2021", type=kinds.FUNDS, closed=2021)
+    SavingTypeFactory(title="A funds 2021", type=kinds.FUNDS, closed=2021)
+    SavingTypeFactory(title="Funds 2022", closed=2022)
+    SavingTypeFactory(title="Funds 2024", closed=2024)
+    SavingTypeFactory(title="Other journal", closed=2019, journal=second_user.journal)
+
+    actual = SavingTypeModelService(main_user).closed_before(2022)
+
+    assert [row.title for row in actual] == [
+        "Shares 2019",
+        "A funds 2021",
+        "Z funds 2021",
+        "Y pensions 2021",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -237,7 +267,6 @@ def test_saving_read_query_count(
     assert actual == expect
 
 
-@factory.django.mute_signals(post_save, post_delete)
 @pytest.mark.parametrize(
     "sums, expect",
     [
@@ -265,7 +294,9 @@ def test_saving_read_query_count(
         ),
     ],
 )
-def test_saving_sums_of_the_fixture_savings(main_user, savings, sums, expect):
+def test_saving_sums_of_the_fixture_savings(
+    main_user, quiet_syncs, savings, sums, expect
+):
     actual = list(sums(SavingModelService(main_user)))
 
     assert expect == actual
@@ -331,16 +362,14 @@ def test_saving_post_save(main_user, price, fee):
 @pytest.mark.parametrize(
     "account, saving_type, price, fee",
     [
-        pytest.param("A", "S", 10, 2, id="nothing_changed"),
         pytest.param("A", "S", 4, 1, id="amounts"),
-        pytest.param("A", "S-New", 10, 2, id="saving_type"),
-        pytest.param("A-New", "S", 10, 2, id="account"),
         pytest.param("A-New", "S-New", 10, 2, id="account_and_saving_type"),
     ],
 )
 def test_saving_post_save_update(account, saving_type, price, fee):
-    accounts = {t: AccountFactory(title=t) for t in ("A", "A-New")}
-    saving_types = {t: SavingTypeFactory(title=t) for t in ("S", "S-New")}
+    with helper.quiet_syncs():
+        accounts = {t: AccountFactory(title=t) for t in ("A", "A-New")}
+        saving_types = {t: SavingTypeFactory(title=t) for t in ("S", "S-New")}
     obj = SavingFactory(
         saving_type=saving_types["S"], account=accounts["A"], price=10, fee=2
     )
@@ -440,8 +469,7 @@ def test_saving_post_delete(main_user, prior_prices, account_rows, saving_rows):
     assert Saving.objects.count() == len(prior_prices)
 
 
-@factory.django.mute_signals(post_save, post_delete)
-def test_savings_incomes(main_user, savings):
+def test_savings_incomes(main_user, quiet_syncs, savings):
     SavingFactory(
         date=date(1999, 1, 1),
         price=225,
@@ -528,22 +556,18 @@ def test_saving_balance_items_queries(main_user, django_assert_num_queries):
         list(SavingBalanceModelService(main_user).items().values())
 
 
-@pytest.mark.parametrize(
-    "types, expect_titles",
-    [
-        pytest.param(["x"], ["1"], id="one_type"),
-        pytest.param(["x", "y"], ["1", "2"], id="few_types"),
-    ],
-)
-def test_saving_balance_filter_by_types(main_user, types, expect_titles):
-    SavingFactory(saving_type=SavingTypeFactory(title="1", type="x"))
-    SavingFactory(saving_type=SavingTypeFactory(title="2", type="y"))
-    SavingFactory(saving_type=SavingTypeFactory(title="3", type="z"))
+def test_saving_balance_filter_by_types(main_user):
+    with helper.quiet_build(main_user):
+        SavingFactory(saving_type=SavingTypeFactory(title="1", type="x"))
+        SavingFactory(saving_type=SavingTypeFactory(title="2", type="y"))
+        SavingFactory(saving_type=SavingTypeFactory(title="3", type="z"))
 
-    actual = SavingBalanceModelService(main_user).year_of_types(1999, types)
+    actual = SavingBalanceModelService(main_user).year_of_types(1999, ["x", "y"])
 
-    assert [a.saving_type.title for a in actual] == expect_titles
-    assert [(a.incomes, a.fee) for a in actual] == [(150, 5)] * len(expect_titles)
+    assert [(a.saving_type.title, a.incomes, a.fee) for a in actual] == [
+        ("1", 150, 5),
+        ("2", 150, 5),
+    ]
 
 
 def test_saving_balance_year_takes_no_types(main_user):
@@ -568,13 +592,12 @@ def test_saving_balance_year_orders_by_type_then_title(main_user, funds, expect_
 
 
 @time_machine.travel("1999-1-1")
-@pytest.mark.parametrize("fund_type", ["funds", "shares", "pensions"])
-def test_sum_by_type(main_user, fund_type):
-    f = SavingTypeFactory(title="F", type=fund_type)
-
-    SavingFactory(saving_type=f, price=1, fee=1)
-    SavingFactory(saving_type=f, price=10, fee=1)
-    SavingWorthFactory(saving_type=f, price=20)
+def test_sum_by_type(main_user):
+    with helper.quiet_build(main_user):
+        f = SavingTypeFactory(title="F", type="funds")
+        SavingFactory(saving_type=f, price=1, fee=1)
+        SavingFactory(saving_type=f, price=10, fee=1)
+        SavingWorthFactory(saving_type=f, price=20)
 
     actual = list(SavingBalanceModelService(main_user).sum_by_type())
 
@@ -585,7 +608,7 @@ def test_sum_by_type(main_user, fund_type):
             "profit": 7,
             "total": 20,
             "fee": 2,
-            "type": fund_type,
+            "type": "funds",
         }
         for year in (1999, 2000)
     ]

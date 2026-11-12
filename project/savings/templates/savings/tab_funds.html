@@ -1,0 +1,3 @@
+{% load i18n %}{% translate 'Fund' as header %}{% translate 'Closed funds' as label %}
+
+{% include 'core/closed_fold.html' with rows=object_list closed_rows=closed_funds header=header url_name='savings:type_update' label=label %}

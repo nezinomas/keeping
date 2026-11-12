@@ -8,9 +8,7 @@ from .. import models
 
 class PensionTypeModelService(BaseModelService):
     def get_queryset(self):
-        return models.PensionType.objects.select_related("journal").filter(
-            journal=self.user.journal
-        )
+        return models.PensionType.objects.filter(journal=self.user.journal)
 
     def items(self):
         return self.objects.all()

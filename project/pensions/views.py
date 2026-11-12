@@ -5,60 +5,46 @@ from ..core.lib.convert_price import PriceToFloatViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
-    ListViewMixin,
     UpdateViewMixin,
 )
 from . import forms
 from .services.model_services import PensionModelService, PensionTypeModelService
 
 
-class Lists(ListViewMixin):
-    template_name = "pensions/pension_list.html"
-
-    def get_queryset(self):
-        user = self.request.user
-        return PensionModelService(user).year(user.selected_year())
-
-
 class New(CreateViewMixin):
     form_class = forms.PensionForm
-    hx_trigger_form = "afterPension"
-    success_url = reverse_lazy("pensions:list")
+    hx_trigger_django = "reload"
+    success_url = reverse_lazy("savings:tab_pensions")
     modal_form_title = _("Pension")
 
 
 class Update(PriceToFloatViewMixin, UpdateViewMixin):
     service_class = PensionModelService
     form_class = forms.PensionForm
-    hx_trigger_django = "afterPension"
-    success_url = reverse_lazy("pensions:list")
+    hx_trigger_django = "reload"
+    success_url = reverse_lazy("savings:tab_pensions")
     modal_form_title = _("Pension")
 
 
 class Delete(DeleteViewMixin):
     service_class = PensionModelService
-    hx_trigger_django = "afterPension"
-    success_url = reverse_lazy("pensions:list")
+    hx_trigger_django = "reload"
+    success_url = reverse_lazy("savings:tab_pensions")
     modal_form_title = _("Delete pension")
-
-
-class TypeLists(ListViewMixin):
-    template_name = "pensions/pensiontype_list.html"
-    service_class = PensionTypeModelService
 
 
 class TypeNew(CreateViewMixin):
     form_class = forms.PensionTypeForm
-    hx_trigger_django = "afterPensionType"
-    modal_form_title = _("Pension")
+    hx_trigger_django = "reload"
+    modal_form_title = _("II stage fund")
     url_name = "type_new"
-    success_url = reverse_lazy("pensions:type_list")
+    success_url = reverse_lazy("savings:tab_pension_funds")
 
 
 class TypeUpdate(UpdateViewMixin):
     service_class = PensionTypeModelService
     form_class = forms.PensionTypeForm
-    hx_trigger_django = "afterPensionType"
-    modal_form_title = _("Pension")
+    hx_trigger_django = "reload"
+    modal_form_title = _("II stage fund")
     url_name = "type_update"
-    success_url = reverse_lazy("pensions:type_list")
+    success_url = reverse_lazy("savings:tab_pension_funds")

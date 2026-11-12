@@ -1,10 +1,9 @@
-from functools import cached_property
-
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import PriceToFloatViewMixin
+from ..core.mixins.tabs import ClosedFoldTabMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -68,25 +67,11 @@ class TabSwitches(TabFundMoves):
     service_class = SavingChangeModelService
 
 
-class TabAccounts(TabViewMixin, ListViewMixin):
+class TabAccounts(TabViewMixin, ClosedFoldTabMixin, ListViewMixin):
     tab = TABS["accounts"]
-
-    @cached_property
-    def service(self) -> AccountModelService:
-        return AccountModelService(self.request.user)
-
-    @cached_property
-    def year(self) -> int:
-        return self.request.user.selected_year()
-
-    def get_queryset(self):
-        return self.service.items_in(self.year)
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "closed_accounts": self.service.closed_before(self.year),
-        }
+    service_class = AccountModelService
+    closed_key = "closed_accounts"
+    order = ("order", "title")
 
 
 class LoadSavingType(LoadToAccountViewMixin):
