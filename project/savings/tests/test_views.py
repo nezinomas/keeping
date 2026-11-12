@@ -14,6 +14,7 @@ from ...core.tests.utils import (
     clean_content,
     closed_fold,
     count_queries,
+    form_posts_to,
     quick_add_pills,
     row_forms,
     tab_fragment,
@@ -582,7 +583,7 @@ def test_a_fund_form_loads(client_logged, url_of):
 
     actual = client_logged.get(url).content.decode()
 
-    assert url in actual
+    assert form_posts_to(actual, "generic-form", url)
 
 
 @pytest.mark.parametrize("url_of", FUND_SAVES)
