@@ -8,6 +8,7 @@ from vanilla import CreateView
 
 from ...mixins.formset import FormsetMixin
 from ...mixins.queryset import GetQuerysetMixin
+from ...mixins.tabs import ClosedFoldTabMixin
 from ...mixins.views import LoadToAccountViewMixin
 
 
@@ -98,6 +99,7 @@ SERVICE_CLASS_READERS = {
     "GetQuerysetMixin.get_queryset": _get_queryset_reads,
     "FormsetMixin": lambda view: issubclass(view, FormsetMixin),
     "LoadToAccountViewMixin.get": lambda view: issubclass(view, LoadToAccountViewMixin),
+    "ClosedFoldTabMixin": lambda view: issubclass(view, ClosedFoldTabMixin),
     # by path: core's tests import no app
     "PlanQuerySetMixin": lambda view: issubclass(
         view, import_string("project.plans.mixins.views.PlanQuerySetMixin")

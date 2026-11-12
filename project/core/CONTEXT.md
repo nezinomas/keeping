@@ -62,7 +62,8 @@ _Avoid_: accounts table, list
 An Owner table of the owners open in the viewed year, or the shared notice when none is,
 above a button that unfolds a second Owner table of those closed before it, the button
 drawn only when one is (Sąskaitos, Fondai). [`core/closed_fold.html`](templates/core/closed_fold.html)
-takes `rows`, `closed_rows`, `header`, `url_name` and the button's `label`.
+takes `rows`, `closed_rows`, `header`, `url_name` and the button's `label`;
+`ClosedFoldTabMixin` (`core/mixins/tabs.py`) reads both lists for a tab.
 _Avoid_: accordion, scope, show closed, archive
 
 ### Time

@@ -1,8 +1,8 @@
 from django.urls import reverse_lazy
-from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import PriceToFloatViewMixin
+from ..core.mixins.tabs import ClosedFoldTabMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -51,25 +51,11 @@ class Delete(DeleteViewMixin):
     modal_form_title = _("Delete saving")
 
 
-class TabFunds(TabViewMixin, ListViewMixin):
+class TabFunds(TabViewMixin, ClosedFoldTabMixin, ListViewMixin):
     tab = TABS["funds"]
-
-    @cached_property
-    def service(self) -> SavingTypeModelService:
-        return SavingTypeModelService(self.request.user)
-
-    @cached_property
-    def year(self) -> int:
-        return self.request.user.selected_year()
-
-    def get_queryset(self):
-        return self.service.items_in(self.year).order_by(*self.service.ORDER)
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "closed_funds": self.service.closed_before(self.year),
-        }
+    service_class = SavingTypeModelService
+    closed_key = "closed_funds"
+    order = SavingTypeModelService.ORDER
 
 
 class TypeNew(CreateViewMixin):

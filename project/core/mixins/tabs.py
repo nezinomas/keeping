@@ -1,3 +1,4 @@
+from functools import cached_property
 from urllib.parse import urlencode
 
 from django.shortcuts import render
@@ -53,3 +54,29 @@ class TabViewMixin:
 
     def tab_url_of(self, tab: Tab) -> str:
         return tab.url
+
+
+class ClosedFoldTabMixin:
+    """A Closed fold's tab: the owners open in the viewed year, then those closed
+    before it under `closed_key`."""
+
+    service_class: type
+    closed_key: str
+    order: tuple[str, ...]
+
+    @cached_property
+    def service(self):
+        return self.service_class(self.request.user)
+
+    @cached_property
+    def year(self) -> int:
+        return self.request.user.selected_year()
+
+    def get_queryset(self):
+        return self.service.items_in(self.year).order_by(*self.order)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            self.closed_key: self.service.closed_before(self.year),
+        }
