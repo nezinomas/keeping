@@ -18,6 +18,7 @@ from ...core.tests.utils import (
     row_forms,
     view_for,
 )
+from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
 from .. import models, views
 from ..services.model_services import SavingTypeModelService
 from ..tabs import TABS
@@ -26,7 +27,12 @@ from .factories import Saving, SavingFactory, SavingTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-TAB_TITLES = {"savings": "Taupymas", "funds": "Fondai"}
+TAB_TITLES = {
+    "savings": "Taupymas",
+    "funds": "Fondai",
+    "pensions": "II pakopa",
+    "pension_funds": "II pakopos fondai",
+}
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -60,6 +66,10 @@ A_ROW_OF_ITS_OWN = {
         SavingTypeFactory(title=f"Open{i}"),
         SavingTypeFactory(title=f"Closed{i}", closed=1990),
     ),
+    "pensions": lambda i: PensionFactory(
+        pension_type=PensionTypeFactory(title=f"P{i}")
+    ),
+    "pension_funds": lambda i: PensionTypeFactory(title=f"P{i}"),
 }
 
 
@@ -133,6 +143,53 @@ def test_the_savings_tab_lists_the_years_savings_newest_first(
         ("", "1999-03-09", "Fund A", "Account A", "remark A", "1,00", "0,10"),
         ("", "1999-03-02", "Fund B", "Account B", "remark B", "2,00", "0,20"),
         (divider, "1999-01-05", "Fund C", "Account C", "remark C", "3,00", "0,30"),
+    ]
+
+
+TAB_PENSIONS = "/savings/pensions/"
+PENSION_ROW = re.compile(
+    r'<tr [^>]*class="([^"]*)">\s*<td class="text-left main__date">([^<]*)</td>'
+    r'\s*<td class="text-left main__name">([^<]*)</td>'
+    r'\s*<td class="text-left main__fold">([^<]*)</td>'
+    r'\s*<td class="main__figure" data-cell="[^"]*">([^<]*)</td>'
+    r'\s*<td class="main__figure main__fold" data-cell="[^"]*">([^<]*)</td>'
+)
+
+
+def test_the_pensions_tab_lists_the_years_pensions_newest_first(
+    client_logged, second_user
+):
+    def pension(on, name, price, **owner):
+        PensionFactory(
+            date=date.fromisoformat(on),
+            pension_type=PensionTypeFactory(title=f"Fund {name}", **owner),
+            remark=f"remark {name}",
+            price=price,
+            fee=price // 10,
+        )
+
+    pension("1999-01-05", "C", 300)
+    pension("1999-03-09", "A", 100)
+    pension("1999-03-02", "B", 200)
+    pension("2000-01-01", "D", 400)
+    pension("1999-02-01", "E", 500, journal=second_user.journal)
+
+    content = _tab(client_logged, TAB_PENSIONS)
+
+    assert HEAD_CELL.findall(content) == [
+        ("text-left", "Data"),
+        ("text-left main__name", "Fondas"),
+        ("text-left main__fold", "Pastaba"),
+        ("price-col", "Suma"),
+        ("price-col main__fold", "Mokesčiai"),
+        ("edit-col", ""),
+        ("delete-col", ""),
+    ]
+    divider = "table-group-divider"
+    assert PENSION_ROW.findall(content) == [
+        ("", "1999-03-09", "Fund A", "remark A", "1,00", "0,10"),
+        ("", "1999-03-02", "Fund B", "remark B", "2,00", "0,20"),
+        (divider, "1999-01-05", "Fund C", "remark C", "3,00", "0,30"),
     ]
 
 
@@ -314,6 +371,13 @@ def test_savings_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
+# each tab of Savings or Pensions, and what builds one of its rows
+DATED_TABS = {
+    "savings": ("/savings/", SavingFactory),
+    "pensions": (TAB_PENSIONS, PensionFactory),
+}
+
+
 @pytest.mark.parametrize(
     "price, fee, shown_price, shown_fee",
     [
@@ -321,26 +385,29 @@ def test_savings_not_load_other_journal(client_logged, second_user):
         pytest.param(100_000_000, 100_000, "1.000.000,00", "1.000,00", id="thousands"),
     ],
 )
+@pytest.mark.parametrize("tab_url, factory", DATED_TABS.values(), ids=DATED_TABS)
 @time_machine.travel("1999-1-1")
-def test_savings_list_price_converted(
-    client_logged, price, fee, shown_price, shown_fee
+def test_a_dated_tab_shows_prices_converted(
+    client_logged, tab_url, factory, price, fee, shown_price, shown_fee
 ):
-    SavingFactory(price=price, fee=fee)
+    factory(price=price, fee=fee)
 
-    actual = _tab(client_logged, reverse("savings:index"))
+    actual = _tab(client_logged, tab_url)
 
     assert shown_price in actual
     assert shown_fee in actual
 
 
+@pytest.mark.parametrize("tab_url, factory", DATED_TABS.values(), ids=DATED_TABS)
 @pytest.mark.parametrize(
-    "records, shown",
+    "rows, shown",
     [pytest.param(0, True, id="empty"), pytest.param(1, False, id="listed")],
 )
-def test_savings_list_names_its_empty_year(client_logged, records, shown):
-    SavingFactory.create_batch(records)
+def test_a_dated_tab_names_its_empty_year(client_logged, tab_url, factory, rows, shown):
+    for _ in range(rows):
+        factory()
 
-    actual = _tab(client_logged, reverse("savings:index"))
+    actual = _tab(client_logged, tab_url)
 
     notice = r'<div class="alert">\s*1999 metais įrašų nėra\.\s*</div>'
     assert bool(re.search(notice, actual)) == shown
@@ -559,6 +626,30 @@ def test_a_fund_save_lands_on_the_funds_tab_drawing_it(
     assert _funds_tab(response.content.decode()) == parts
 
 
+TAB_PENSION_FUNDS = "/savings/pension-funds/"
+
+
+@pytest.mark.parametrize(
+    "titles, parts",
+    [
+        pytest.param(
+            ["Beta", "Alpha"], [("", FUND_HEADER, ["Alpha", "Beta"])], id="listed"
+        ),
+        pytest.param([], ["1999 metais įrašų nėra."], id="none"),
+    ],
+)
+def test_the_pension_funds_tab_lists_every_fund_by_title(
+    client_logged, second_user, titles, parts
+):
+    for title in titles:
+        PensionTypeFactory(title=title)
+    PensionTypeFactory(title="Foreign", journal=second_user.journal)
+
+    content = client_logged.get(TAB_PENSION_FUNDS).content.decode()
+
+    assert _funds_tab(content) == parts
+
+
 def test_saving_type_not_load_other_journal(client_logged, second_user):
     SavingTypeFactory(title="xxx")
     obj = SavingTypeFactory(title="yyy", journal=second_user.journal)
@@ -595,6 +686,10 @@ def test_type_new_and_update_with_the_receiver_connected(client_logged):
             id="tab",
         ),
         pytest.param(lambda rf, u: SavingTypeModelService(u).items(), id="types"),
+        pytest.param(
+            lambda rf, u: view_for(rf, u, views.TabPensions).get_queryset(),
+            id="pension_tab",
+        ),
     ],
 )
 def test_a_user_with_no_year_raises(rf, main_user, call):
@@ -621,6 +716,16 @@ ROW_FORMS = {
         lambda: SavingTypeFactory(closed=1998),
         [("edit-col", "savings:type_update")],
     ),
+    "pension": (
+        "savings:tab_pensions",
+        PensionFactory,
+        [("edit-col", "pensions:update"), ("delete-col", "pensions:delete")],
+    ),
+    "pension_fund": (
+        "savings:tab_pension_funds",
+        PensionTypeFactory,
+        [("edit-col", "pensions:type_update")],
+    ),
 }
 
 
@@ -642,6 +747,13 @@ def test_quick_add_offers_its_pill(client_logged):
     assert quick_add_pills(content) == [
         ("button", "savings", 'hx-get="/savings/new/"', "Pridėti taupymą"),
         ("button", "funds", 'hx-get="/savings/type/new/"', "Pridėti fondą"),
+        ("button", "pensions", 'hx-get="/pensions/new/"', "Pridėti įmoką"),
+        (
+            "button",
+            "pension_funds",
+            'hx-get="/pensions/type/new/"',
+            "Pridėti II pakopos fondą",
+        ),
     ]
 
 
@@ -686,7 +798,49 @@ FUND_FORMS = [
 ]
 
 
-@pytest.mark.parametrize("url_of, data_of", [*SAVES, DELETE, *FUND_FORMS])
+def _pension_data(saving):
+    return {"date": "1999-01-01", "price": "1", "pension_type": PensionTypeFactory().pk}
+
+
+def _pension_fund_data(saving):
+    return {"title": "TTT"}
+
+
+PENSION_SAVES = [
+    pytest.param(
+        lambda saving: reverse("pensions:new"), _pension_data, id="pension_new"
+    ),
+    pytest.param(
+        lambda saving: reverse("pensions:update", kwargs={"pk": PensionFactory().pk}),
+        _pension_data,
+        id="pension_update",
+    ),
+]
+PENSION_FORMS = [
+    *PENSION_SAVES,
+    pytest.param(
+        lambda saving: reverse("pensions:delete", kwargs={"pk": PensionFactory().pk}),
+        lambda saving: {},
+        id="pension_delete",
+    ),
+    pytest.param(
+        lambda saving: reverse("pensions:type_new"),
+        _pension_fund_data,
+        id="pension_fund_new",
+    ),
+    pytest.param(
+        lambda saving: reverse(
+            "pensions:type_update", kwargs={"pk": PensionTypeFactory().pk}
+        ),
+        _pension_fund_data,
+        id="pension_fund_update",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "url_of, data_of", [*SAVES, DELETE, *FUND_FORMS, *PENSION_FORMS]
+)
 def test_a_form_on_the_page_fires_reload(client_logged, url_of, data_of):
     saving = SavingFactory()
 
@@ -697,11 +851,20 @@ def test_a_form_on_the_page_fires_reload(client_logged, url_of, data_of):
     assert json.loads(response.headers.get("HX-Trigger", "null")) == {"reload": {}}
 
 
+def _landing(saves, tab_url):
+    return [pytest.param(*save.values, tab_url, id=save.id) for save in saves]
+
+
 # a delete answers 204 either way
-@pytest.mark.parametrize("url_of, data_of", SAVES)
-def test_a_saving_save_without_htmx_lands_on_its_tab(client_logged, url_of, data_of):
+@pytest.mark.parametrize(
+    "url_of, data_of, tab_url",
+    [*_landing(SAVES, "/savings/"), *_landing(PENSION_SAVES, TAB_PENSIONS)],
+)
+def test_a_saving_or_pension_save_without_htmx_lands_on_its_tab(
+    client_logged, url_of, data_of, tab_url
+):
     saving = SavingFactory()
 
     response = client_logged.post(url_of(saving), data_of(saving))
 
-    assert response.url == reverse("savings:index")
+    assert response.url == tab_url

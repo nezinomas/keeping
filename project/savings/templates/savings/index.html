@@ -16,5 +16,7 @@
 <c-quick-add>
     <c-quick-add.pill url="{% url 'savings:new' %}" tab="savings">{% translate 'Add saving' %}</c-quick-add.pill>
     <c-quick-add.pill url="{% url 'savings:type_new' %}" tab="funds">{% translate 'Add fund' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'pensions:new' %}" tab="pensions">{% translate 'Add pension' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'pensions:type_new' %}" tab="pension_funds">{% translate 'Add II stage fund' %}</c-quick-add.pill>
 </c-quick-add>
 {% endblock quick_add %}

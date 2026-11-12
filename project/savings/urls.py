@@ -13,4 +13,6 @@ urlpatterns = [
     path("funds/", views.TabFunds.as_view(), name="tab_funds"),
     path("type/new/", views.TypeNew.as_view(), name="type_new"),
     path("type/update/<int:pk>/", views.TypeUpdate.as_view(), name="type_update"),
+    path("pensions/", views.TabPensions.as_view(), name="tab_pensions"),
+    path("pension-funds/", views.TabPensionFunds.as_view(), name="tab_pension_funds"),
 ]

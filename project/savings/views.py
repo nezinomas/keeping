@@ -10,6 +10,10 @@ from ..core.mixins.views import (
     ListViewMixin,
     UpdateViewMixin,
 )
+from ..pensions.services.model_services import (
+    PensionModelService,
+    PensionTypeModelService,
+)
 from . import forms
 from .services.model_services import SavingModelService, SavingTypeModelService
 from .tabs import TABS
@@ -73,3 +77,18 @@ class TypeUpdate(UpdateViewMixin):
     hx_trigger_django = "reload"
     modal_form_title = _("Fund")
     success_url = reverse_lazy("savings:tab_funds")
+
+
+class TabPensions(TabViewMixin, ListViewMixin):
+    tab = TABS["pensions"]
+
+    def get_queryset(self):
+        user = self.request.user
+        return PensionModelService(user).year(user.selected_year())
+
+
+class TabPensionFunds(TabViewMixin, ListViewMixin):
+    tab = TABS["pension_funds"]
+
+    def get_queryset(self):
+        return PensionTypeModelService(self.request.user).items()

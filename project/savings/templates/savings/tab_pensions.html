@@ -1,0 +1,38 @@
+{% load i18n %}
+{% load math %}
+{% load cell_format %}
+
+{% if object_list %}
+
+<c-paper-table>
+    <c-slot name="head">
+        <tr>
+            <th class="text-left">{% translate 'Date' %}</th>
+            <th class="text-left main__name">{% translate 'Fund' %}</th>
+            <th class="text-left main__fold">{% translate 'Remark' %}</th>
+            <th class="price-col">{% translate 'Sum' %}</th>
+            <th class="price-col main__fold">{% translate 'Fees' %}</th>
+            <th class="edit-col"></th>
+            <th class="delete-col"></th>
+        </tr>
+    </c-slot>
+    {% for object in object_list %}
+    {% url 'pensions:update' object.id as url_update %}
+    {% url 'pensions:delete' object.id as url_delete %}
+    <c-edit-row :url="url_update" class="{% ifchanged object.date.year object.date.month %}{{ forloop.first|yesno:",table-group-divider" }}{% endifchanged %}">
+        <td class="text-left main__date">{{ object.date|date:"Y-m-d" }}</td>
+        <td class="text-left main__name">{{ object.pension_type }}</td>
+        <td class="text-left main__fold">{{ object.remark }}</td>
+        <td class="main__figure" data-cell="{{ object.price|cell_state }}">{{ object.price|price|cellformat }}</td>
+        <td class="main__figure main__fold" data-cell="{{ object.fee|cell_state }}">{{ object.fee|price|cellformat }}</td>
+        <c-td-edit :url="url_update" />
+        <c-td-delete :url="url_delete" />
+    </c-edit-row>
+    {% endfor %}
+</c-paper-table>
+
+{% else %}
+
+{% include 'core/paper_no_records.html' %}
+
+{% endif %}

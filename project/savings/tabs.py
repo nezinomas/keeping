@@ -10,4 +10,6 @@ class SavingTab(Tab):
 TABS = Tabs(
     SavingTab("savings", _("Savings")),
     SavingTab("funds", _("Funds")),
+    SavingTab("pensions", _("II stage")),
+    SavingTab("pension_funds", _("II stage funds")),
 )

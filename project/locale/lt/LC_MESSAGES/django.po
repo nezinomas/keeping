@@ -2113,6 +2113,18 @@ msgstr "Iš sąskaitos"
 msgid "II stage"
 msgstr "II pakopa"
 
+msgid "II stage funds"
+msgstr "II pakopos fondai"
+
+msgid "II stage fund"
+msgstr "II pakopos fondas"
+
+msgid "Add pension"
+msgstr "Pridėti įmoką"
+
+msgid "Add II stage fund"
+msgstr "Pridėti II pakopos fondą"
+
 #: .\project\savings\templates\savings\index.html:35
 #: .\project\templates\base.html:155
 msgctxt "fund button"
