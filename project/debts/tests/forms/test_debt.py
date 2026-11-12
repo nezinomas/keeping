@@ -266,7 +266,7 @@ def test_debt_cant_close(main_user):
     assert not form.is_valid()
     assert len(form.errors) == 1
     assert "closed" in form.errors
-    assert form.errors["closed"] == ["Negalite uždaryti dar negražintos skolos."]
+    assert form.errors["closed"] == ["Negalite uždaryti dar negrąžintos skolos."]
 
 
 @pytest.mark.parametrize("closed", [False, True], ids=["open", "closed"])

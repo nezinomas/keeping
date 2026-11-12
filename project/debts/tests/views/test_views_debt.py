@@ -69,7 +69,7 @@ def test_debt_list_with_data(client_logged, debt_type, other_factory, label, rem
     assert '">Data</th>' in content
     assert re.search(rf'<th class="text-left cell-padding">\s*{label}\s*</th>', content)
     assert '">Suma</th>' in content
-    assert '">Gražinta</th>' in content
+    assert '">Grąžinta</th>' in content
     assert '">Sąskaita</th>' in content
     assert '">Pastaba</th>' in content
     assert '">Uždaryta</th>' in content
@@ -234,7 +234,7 @@ def test_debt_update(main_user, client_logged, debt_type, existing):
             True,
             (),
             "closed",
-            "Negalite uždaryti dar negražintos skolos.",
+            "Negalite uždaryti dar negrąžintos skolos.",
             id="cant_close",
         ),
     ],

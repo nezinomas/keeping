@@ -85,9 +85,11 @@ def test_debt_return_load_form(client_logged, debt_type):
     url = reverse("debts:return_new", kwargs={"debt_type": debt_type})
     response = client_logged.get(url)
     actual = response.context["form"].as_p()
+    content = response.content.decode()
 
     assert '<input type="text" name="date" value="1999-01-01"' in actual
-    assert f'hx-post="{url}"' in response.content.decode()
+    assert f'hx-post="{url}"' in content
+    assert '<h5 class="modal-title">Skolos grąžinimas</h5>' in content
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
@@ -228,6 +230,7 @@ def test_debt_return_delete_load_form(client_logged, debt_type):
     assert '<form method="POST"' in actual
     assert f'hx-post="{url}"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
+    assert '<h5 class="modal-title">Trinti skolos grąžinimą</h5>' in actual
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
