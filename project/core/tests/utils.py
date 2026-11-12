@@ -12,11 +12,8 @@ def edit_row_opening(url):
     return f'<tr hx-get="{url}" hx-trigger="dblclick" hx-target="#mainModal"'
 
 
-ROW = re.compile(
-    r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"[^>]*>'
-    r"(.*?)</tr>",
-    re.DOTALL,
-)
+ROW_START = r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal"'
+ROW = re.compile(ROW_START + r"[^>]*>(.*?)</tr>", re.DOTALL)
 ROW_BUTTON = re.compile(
     r'<td class="(edit-col|delete-col)">\s*<a role="button" hx-get="([^"]*)"'
 )

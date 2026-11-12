@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.utils.html import escape
 
 from ...core.tests.utils import (
+    ROW_START,
     count_queries,
     form_posts_to,
     nav_tabs,
@@ -425,7 +426,7 @@ def test_a_plan_row_opens_its_update_form_and_links_its_edit_and_delete(
     content = client_logged.get(reverse(kind.tab)).content.decode("utf-8")
 
     rows = re.findall(
-        r'<tr hx-get="([^"]*)" hx-trigger="dblclick" hx-target="#mainModal">'
+        rf"{ROW_START}>"
         r'.*?<td class="edit-col">\s*<a role="button" hx-get="([^"]*)"'
         r'.*?<td class="delete-col">\s*<a role="button" hx-get="([^"]*)"',
         content,

@@ -10,6 +10,7 @@ from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.helper import quiet_syncs
 from ...core.tests.utils import (
     count_queries,
+    edit_row_opening,
     quick_add_pills,
     stat_card_tooltips,
     stat_cards,
@@ -563,7 +564,7 @@ def test_types_tab_edits_each_type_from_its_row(client_logged):
 
     content = client_logged.get(reverse("incomes:tab_types")).content.decode()
 
-    assert f'<tr hx-get="{link}" hx-trigger="dblclick"' in content
+    assert edit_row_opening(link) in content
     assert f'hx-get="{link}" hx-target="#mainModal" class="edit"' in content
 
 
