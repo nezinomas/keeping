@@ -14,13 +14,6 @@ from .services.model_services import DebtModelService, DebtReturnModelService
 CANT_CLOSE = gettext_lazy("You can't close a debt that hasn't been returned.")
 
 
-def _other_party_label(debt_type):
-    return {
-        models.Debt.DebtType.LEND: _("Borrower"),
-        models.Debt.DebtType.BORROW: _("Lender"),
-    }[debt_type]
-
-
 class DebtFormMixin(
     UserTodayMixin, ClosedYearMixin, PriceToCentsFormMixin, YearBetweenMixin
 ):
@@ -73,7 +66,7 @@ class DebtForm(DebtFormMixin, forms.ModelForm):
 
     def translations(self):
         self.fields["date"].label = _("Date")
-        self.fields["name"].label = _other_party_label(self.debt_type)
+        self.fields["name"].label = models.OTHER_PARTY[self.debt_type]
         self.fields["account"].label = _("Account")
         self.fields["price"].label = _("Sum")
         self.fields["remark"].label = _("Remark")
@@ -148,7 +141,7 @@ class DebtReturnForm(DebtFormMixin, forms.ModelForm):
     def translations(self):
         self.fields["date"].label = _("Date")
         self.fields["account"].label = _("Account")
-        self.fields["debt"].label = _other_party_label(self.debt_type)
+        self.fields["debt"].label = models.OTHER_PARTY[self.debt_type]
         self.fields["price"].label = _("Sum")
         self.fields["remark"].label = _("Remark")
 

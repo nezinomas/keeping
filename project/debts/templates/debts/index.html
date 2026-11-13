@@ -1,53 +1,20 @@
-{% extends 'base.html' %}
+{% extends 'core/paper_page.html' %}
 
+{% load static %}
 {% load i18n %}
 
-{% block head %}{% endblock head %}
+
+{% block head_scripts %}
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
+{% endblock head_scripts %}
 
 
-{% block content %}
+{% block page_name %}{% translate 'Debts' %}{% endblock page_name %}
 
 
-<main class="debts-grid" class="rows">
-    <!-- Borrow -->
-    <div id="borrow-container">
-        <div class="button-row">
-            <h6>{% translate 'Borrow' %}</h6>
-            <c-new-button url="{% url 'debts:new' 'borrow' %}" title="{% translate 'Debt' context 'debt button' %}" css_class="flex-right"  />
-        </div>
-
-        <div id="borrow" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:list' 'borrow' %}" hx-target="this">{{borrow}}</div>
-    </div>
-
-    <!-- Lend -->
-    <div id="lend-container">
-        <div class="button-row">
-            <h6>{% translate 'Lend' %}</h6>
-            <c-new-button url="{% url 'debts:new' 'lend' %}" title="{% translate 'Debt' context 'debt button' %}" css_class="flex-right" />
-        </div>
-
-        <div id="lend" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:list' 'lend' %}" hx-target="this">{{lend}}</div>
-    </div>
-
-    <!-- Borrow Return -->
-    <div id="borrow-return-container">
-        <div class="button-row">
-            <h6>{% translate 'Borrow return' %}</h6>
-            <c-new-button url="{% url 'debts:return_new' 'borrow' %}" title="{% translate 'Sum' context 'sum button' %}" css_class="flex-right" />
-        </div>
-
-        <div id="borrow_return" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:return_list' 'borrow' %}" hx-target="this">{{borrow_return}}</div>
-    </div>
-
-    <!-- Lend Return -->
-    <div id="lend-return-container">
-        <div class="button-row">
-            <h6>{% translate 'Lend return' %}</h6>
-            <c-new-button url="{% url 'debts:return_new' 'lend' %}" title="{% translate 'Sum' context 'sum button' %}" css_class="flex-right" />
-        </div>
-
-        <div id="lend_return" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:return_list' 'lend' %}" hx-target="this">{{lend_return}}</div>
-    </div>
-</main>
-
-{% endblock content %}
+{% block quick_add %}
+<c-quick-add>
+    <c-quick-add.pill url="{% url 'debts:new' 'lend' %}" tab="lend">{% translate 'Lend' context 'lend button' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'debts:new' 'borrow' %}" tab="borrow">{% translate 'Borrow' context 'borrow button' %}</c-quick-add.pill>
+</c-quick-add>
+{% endblock quick_add %}

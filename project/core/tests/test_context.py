@@ -78,7 +78,7 @@ def test_context_months_are_the_users_year(main_user, rf):
             "/transactions/accounts/", {"transactions"}, id="transactions_tab"
         ),
         pytest.param("/debts/", {"debts"}, id="debts"),
-        pytest.param("/debts/lend/lists/", set(), id="debts_list_exact_path"),
+        pytest.param("/debts/borrow/", {"debts"}, id="debts_borrow_tab"),
         pytest.param("/books/data/all/", {"books"}, id="books_tab"),
         pytest.param("/drinks/", {"drinks"}, id="drinks"),
         pytest.param("/drinks/data/", set(), id="drinks_tab_exact_path"),

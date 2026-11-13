@@ -2,22 +2,23 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import PriceToFloatViewMixin
-from ..core.lib.utils import rendered_content
+from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
     ListViewMixin,
-    TemplateViewMixin,
     UpdateViewMixin,
 )
-from . import forms, models
+from . import forms
+from .models import OTHER_PARTY
 from .services.model_services import DebtModelService, DebtReturnModelService
+from .tabs import DEBT_TABS, TABS
 
 
 class AddDebtTypeMixin:
     def url(self):
         # the route's kwargs carry the debt type, and the pk where there is one
-        return reverse_lazy(f"debts:{self.url_name}", kwargs=self.kwargs)
+        return reverse_lazy(self.url_name, kwargs=self.kwargs)
 
     def get_form_kwargs(self, **kwargs):
         kwargs["debt_type"] = self.kwargs.get("debt_type")
@@ -26,12 +27,7 @@ class AddDebtTypeMixin:
 
 class DebtMixin:
     def get_success_url(self):
-        debt_type = self.kwargs.get("debt_type")
-        return reverse_lazy("debts:list", kwargs={"debt_type": debt_type})
-
-    def get_hx_trigger_django(self):
-        debt_type = self.kwargs.get("debt_type")
-        return f"after_{debt_type}"
+        return DEBT_TABS[self.kwargs["debt_type"]].url
 
 
 class DebtReturnMixin:
@@ -44,48 +40,45 @@ class DebtReturnMixin:
         return f"after_{debt_type}_return"
 
 
-class Index(TemplateViewMixin):
-    template_name = "debts/index.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "borrow": rendered_content(
-                    self.request, DebtLists, debt_type=models.Debt.DebtType.BORROW
-                ),
-                "borrow_return": rendered_content(
-                    self.request, DebtReturnLists, debt_type=models.Debt.DebtType.BORROW
-                ),
-                "lend": rendered_content(
-                    self.request, DebtLists, debt_type=models.Debt.DebtType.LEND
-                ),
-                "lend_return": rendered_content(
-                    self.request, DebtReturnLists, debt_type=models.Debt.DebtType.LEND
-                ),
-            }
-        )
-        return context
+class TabViewMixin(CoreTabViewMixin):
+    tabs = TABS
+    default_tab = TABS["lend"]
+    app_title = _("Debts")
+    page_template = "debts/index.html"
 
 
-class DebtLists(ListViewMixin):
-    template_name = "debts/debt_list.html"
-
+class TabDebts(TabViewMixin, ListViewMixin):
     def get_queryset(self):
         user = self.request.user
-        service = DebtModelService(user, self.kwargs["debt_type"])
-        return service.year(user.selected_year())
+        return DebtModelService(user, self.tab.debt_type).year(user.selected_year())
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "other_party": OTHER_PARTY[self.tab.debt_type],
+            "debt_type": self.tab.debt_type,
+        }
+
+
+class TabLend(TabDebts):
+    tab = TABS["lend"]
+
+
+class TabBorrow(TabDebts):
+    tab = TABS["borrow"]
 
 
 class DebtNew(AddDebtTypeMixin, DebtMixin, CreateViewMixin):
-    url_name = "new"
+    url_name = "debts:new"
     form_class = forms.DebtForm
+    hx_trigger_django = "reload"
     modal_form_title = _("Debt")
 
 
 class DebtUpdate(PriceToFloatViewMixin, AddDebtTypeMixin, DebtMixin, UpdateViewMixin):
-    url_name = "update"
+    url_name = "debts:update"
     form_class = forms.DebtForm
+    hx_trigger_django = "reload"
     modal_form_title = _("Debt")
 
     def get_queryset(self):
@@ -93,7 +86,7 @@ class DebtUpdate(PriceToFloatViewMixin, AddDebtTypeMixin, DebtMixin, UpdateViewM
 
 
 class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
-    url_name = "delete"
+    url_name = "debts:delete"
     modal_form_title = _("Delete debt")
 
     def get_queryset(self):
@@ -110,7 +103,7 @@ class DebtReturnLists(ListViewMixin):
 
 
 class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
-    url_name = "return_new"
+    url_name = "debts:return_new"
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
 
@@ -118,7 +111,7 @@ class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
 class DebtReturnUpdate(
     PriceToFloatViewMixin, AddDebtTypeMixin, DebtReturnMixin, UpdateViewMixin
 ):
-    url_name = "return_update"
+    url_name = "debts:return_update"
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
 
@@ -129,7 +122,7 @@ class DebtReturnUpdate(
 
 
 class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
-    url_name = "return_delete"
+    url_name = "debts:return_delete"
     modal_form_title = _("Delete debt repayment")
 
     def get_queryset(self):

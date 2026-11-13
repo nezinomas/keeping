@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import date
 
@@ -11,7 +12,7 @@ from ....core.tests.utils import count_queries, edit_row_opening
 from ... import models
 from ...services.model_services import DebtModelService
 from .. import factories
-from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES
+from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES, TAB_PATHS
 
 pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
@@ -23,16 +24,14 @@ pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
         pytest.param(models.Debt.DebtType.LEND, factories.BorrowFactory, id="lend"),
     ],
 )
-def test_debt_list_empty(client_logged, debt_type, other_factory):
+def test_debt_tab_empty(client_logged, debt_type, other_factory):
     other_factory(price=666)
 
-    url = reverse("debts:list", kwargs={"debt_type": debt_type})
-    response = client_logged.get(url)
+    response = client_logged.get(TAB_PATHS[debt_type])
     content = response.content.decode("utf-8")
 
     assert re.search(
-        r'<div class="alert alert-warning">\s*1999 metais įrašų nėra\.\s*</div>',
-        content,
+        r'<div class="alert">\s*1999 metais įrašų nėra\.\s*</div>', content
     )
 
 
@@ -55,44 +54,63 @@ def test_debt_list_empty(client_logged, debt_type, other_factory):
         ),
     ],
 )
-def test_debt_list_with_data(client_logged, debt_type, other_factory, label, remark):
+def test_debt_tab_with_data(client_logged, debt_type, other_factory, label, remark):
     # both named: Faker cannot promise two different names
     obj1 = DEBT_FACTORIES[debt_type](
         name="Own name", closed=True, price=777_777, returned=543_210
     )
     obj2 = other_factory(name="Other name", price=666_666)
 
-    url = reverse("debts:list", kwargs={"debt_type": debt_type})
-    response = client_logged.get(url)
+    response = client_logged.get(TAB_PATHS[debt_type])
     content = response.content.decode("utf-8")
 
     assert '">Data</th>' in content
-    assert re.search(rf'<th class="text-left cell-padding">\s*{label}\s*</th>', content)
+    assert f'<th class="text-left main__name">{label}</th>' in content
     assert '">Suma</th>' in content
     assert '">Grąžinta</th>' in content
     assert '">Sąskaita</th>' in content
     assert '">Pastaba</th>' in content
     assert '">Uždaryta</th>' in content
+    assert '<th class="edit-col"></th>' in content
+    assert '<th class="delete-col"></th>' in content
 
-    assert '<td class="text-center">1999-01-01</td>' in content
-    assert f'<td class="text-left cell-padding">{obj1.name}</td>' in content
-    assert '<td class="cell-padding">7.777,77</td>' in content
-    assert re.search(r"<span[^>]*>\s*5\.432,10\s*</span>", content)
-    assert '<td class="text-left cell-padding">Account1</td>' in content
-    assert f'<td class="text-left">{remark}</td>' in content
-    assert '<i class="bi bi-check-circle-fill"></i>' in content
+    assert '<td class="text-left main__date">1999-01-01</td>' in content
+    assert f'<td class="text-left main__name">{obj1.name}</td>' in content
+    assert '<td class="main__figure" data-cell="">7.777,77</td>' in content
+    assert re.search(
+        r'<td class="main__figure" data-cell="">\s*<span>\s*5\.432,10\s*</span>',
+        content,
+    )
+    assert '<td class="text-left main__fold">Account1</td>' in content
+    assert f'<td class="text-left main__fold">{remark}</td>' in content
+    assert (
+        '<td class="text-center"><i class="bi bi-check-circle-fill"></i></td>'
+        in content
+    )
 
-    assert f'<td class="text-left cell-padding">{obj2.name}</td>' not in content
-    assert '<td class="cell-padding">6.666,66</td>' not in content
+    assert f'<td class="text-left main__name">{obj2.name}</td>' not in content
+    assert '<td class="main__figure" data-cell="">6.666,66</td>' not in content
+
+
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_an_open_debts_returned_cell_tips_its_remaining(client_logged, debt_type):
+    DEBT_FACTORIES[debt_type](price=10_00, returned=4_00)
+
+    content = client_logged.get(TAB_PATHS[debt_type]).content.decode("utf-8")
+
+    assert re.search(
+        r'<td class="main__figure" data-cell="">\s*'
+        r'<span\s+class="tip right w100" data-tip="Liko grąžinti:  6,00">\s*4,00\s*',
+        content,
+    )
 
 
 @pytest.mark.parametrize("url_name", ["debts:update", "debts:delete"])
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_list_links_each_row_button(client_logged, debt_type, url_name):
+def test_debt_tab_links_each_row_button(client_logged, debt_type, url_name):
     obj = DEBT_FACTORIES[debt_type]()
 
-    url = reverse("debts:list", kwargs={"debt_type": debt_type})
-    response = client_logged.get(url)
+    response = client_logged.get(TAB_PATHS[debt_type])
     content = response.content.decode("utf-8")
 
     link = reverse(url_name, kwargs={"pk": obj.pk, "debt_type": debt_type})
@@ -103,8 +121,6 @@ def test_debt_list_links_each_row_button(client_logged, debt_type, url_name):
 @pytest.mark.parametrize(
     "url_name, debt_type, factory",
     [
-        pytest.param("debts:list", "borrow", factories.BorrowFactory, id="borrow"),
-        pytest.param("debts:list", "lend", factories.LendFactory, id="lend"),
         # each return gets its own debt, so the rows' debt reads grow too
         pytest.param(
             "debts:return_list",
@@ -317,8 +333,60 @@ def test_debt_delete(client_logged, debt_type):
 def test_a_debt_row_opens_its_update_form(client_logged, debt_type):
     obj = DEBT_FACTORIES[debt_type]()
 
-    url = reverse("debts:list", kwargs={"debt_type": debt_type})
-    content = client_logged.get(url).content.decode("utf-8")
+    content = client_logged.get(TAB_PATHS[debt_type]).content.decode("utf-8")
 
     update = reverse("debts:update", kwargs={"pk": obj.pk, "debt_type": debt_type})
     assert edit_row_opening(update) in content
+
+
+def _debt_new(debt):
+    return reverse("debts:new", kwargs={"debt_type": debt.debt_type})
+
+
+def _debt_update(debt):
+    return reverse("debts:update", kwargs={"pk": debt.pk, "debt_type": debt.debt_type})
+
+
+def _debt_delete(debt):
+    return reverse("debts:delete", kwargs={"pk": debt.pk, "debt_type": debt.debt_type})
+
+
+def _debt_data(debt):
+    return {
+        "date": "1999-01-01",
+        "name": "New name",
+        "price": "1",
+        "account": debt.account.pk,
+    }
+
+
+DEBT_SAVES = [
+    pytest.param(_debt_new, id="new"),
+    pytest.param(_debt_update, id="update"),
+]
+
+
+@pytest.mark.parametrize(
+    "url_of", [*DEBT_SAVES, pytest.param(_debt_delete, id="delete")]
+)
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_a_debt_form_fires_reload(client_logged, debt_type, url_of):
+    debt = DEBT_FACTORIES[debt_type]()
+
+    response = client_logged.post(
+        url_of(debt), _debt_data(debt), headers={"HX-Request": "true"}
+    )
+
+    assert response.status_code == 204
+    assert json.loads(response.headers.get("HX-Trigger", "null")) == {"reload": {}}
+
+
+@pytest.mark.parametrize("url_of", DEBT_SAVES)
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_a_debt_save_without_htmx_lands_on_its_tab(client_logged, debt_type, url_of):
+    debt = DEBT_FACTORIES[debt_type]()
+
+    response = client_logged.post(url_of(debt), _debt_data(debt))
+
+    assert response.status_code == 302
+    assert response.url == TAB_PATHS[debt_type]

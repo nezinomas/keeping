@@ -50,7 +50,7 @@ NAV_RULES = (
     ("incomes", _exact("/incomes/")),
     ("transactions", _within("/transactions/")),
     ("savings", _within("/savings/", excluding=LEDGER_ELSEWHERE)),
-    ("debts", _exact("/debts/")),
+    ("debts", _within("/debts/")),
     ("books", _within("/books/")),
     ("drinks", _exact("/drinks/")),
     ("counts", _within("/counts/")),

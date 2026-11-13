@@ -9,8 +9,9 @@ register_converter(converters.DebtTypeConverter, "debt_type")
 
 
 urlpatterns = [
-    path("", views.Index.as_view(), name="index"),
-    path("<debt_type:debt_type>/lists/", views.DebtLists.as_view(), name="list"),
+    path("", views.TabLend.as_view(), name="index"),
+    path("", views.TabLend.as_view(), name="tab_lend"),
+    path("borrow/", views.TabBorrow.as_view(), name="tab_borrow"),
     path("<debt_type:debt_type>/new/", views.DebtNew.as_view(), name="new"),
     path(
         "<debt_type:debt_type>/update/<int:pk>/",

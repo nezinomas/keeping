@@ -62,3 +62,9 @@ class DebtReturn(models.Model):
     @property
     def journal(self):
         return self.account.journal
+
+
+OTHER_PARTY = {
+    Debt.DebtType.LEND: _("Borrower"),
+    Debt.DebtType.BORROW: _("Lender"),
+}

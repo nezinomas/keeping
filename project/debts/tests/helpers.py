@@ -17,6 +17,8 @@ RETURN_FACTORIES = {
     Debt.DebtType.BORROW: BorrowReturnFactory,
 }
 
+TAB_PATHS = {Debt.DebtType.LEND: "/debts/", Debt.DebtType.BORROW: "/debts/borrow/"}
+
 
 def assert_balance(actual, *, incomes, expenses, balance, title="Account1"):
     assert actual.account.title == title
