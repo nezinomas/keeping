@@ -139,6 +139,11 @@ NAME_CELL = re.compile(
             [("", "A"), ("table-group-divider", "A")],
             id="closed",
         ),
+        pytest.param(
+            [("A", True, 1), ("A", True, 1)],
+            [("", "A"), ("table-group-divider", "A")],
+            id="two_closed_of_one_name",
+        ),
     ],
 )
 def test_a_return_tab_divides_its_debts(client_logged, debts, divided):

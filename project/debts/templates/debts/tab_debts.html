@@ -12,10 +12,7 @@
             <th class="price-col main__fold">{% translate 'Sum' %}</th>
             <th class="price-col main__fold">{% translate 'Returned' %}</th>
             <th class="price-col">{% translate 'Remaining' %}</th>
-            <th class="text-left main__fold">{% translate 'Account' %}</th>
-            <th class="text-left main__fold">{% translate 'Remark' %}</th>
-            <th class="edit-col"></th>
-            <th class="delete-col"></th>
+            {% include 'debts/includes/tail_heads.html' %}
         </tr>
     </c-slot>
     {% for object in object_list %}
@@ -27,10 +24,7 @@
         <td class="main__figure main__fold" data-cell="{{ object.price|cell_state }}">{{ object.price|price|cellformat }}</td>
         <td class="main__figure main__fold" data-cell="{{ object.returned|cell_state }}">{{ object.returned|price|cellformat }}</td>
         <td class="main__figure" data-cell="{{ object.remaining|cell_state }}">{{ object.remaining|price|cellformat }}</td>
-        <td class="text-left main__fold">{{ object.account }}</td>
-        <td class="text-left main__fold">{{ object.remark }}</td>
-        <c-td-edit :url="url_update" />
-        <c-td-delete :url="url_delete" />
+        {% include 'debts/includes/tail_cells.html' %}
     </c-edit-row>
     {% endfor %}
 </c-paper-table>
