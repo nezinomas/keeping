@@ -85,26 +85,28 @@ RETURN_ROW = re.compile(
     "debts, divided",
     [
         pytest.param(
-            [("A", False, 2), ("B", False, 1)],
+            [("A", False, [2, 2]), ("B", False, [2])],
             [("", "A"), ("", "A"), ("table-group-divider", "B")],
             id="name",
         ),
         pytest.param(
-            [("A", False, 1), ("A", True, 1)],
+            [("A", False, [2]), ("A", True, [2])],
             [("", "A"), ("table-group-divider", "A")],
             id="closed",
         ),
+        # one name, one date: the Returns' days interleave unless the Debt orders them
         pytest.param(
-            [("A", True, 1), ("A", True, 1)],
-            [("", "A"), ("table-group-divider", "A")],
+            [("A", True, [4, 2]), ("A", True, [3])],
+            [("", "A"), ("", "A"), ("table-group-divider", "A")],
             id="two_closed_of_one_name",
         ),
     ],
 )
 def test_a_return_tab_divides_its_debts(client_logged, debts, divided):
-    for name, closed, count in debts:
+    for name, closed, days in debts:
         debt = DEBT_FACTORIES[BORROW](name=name, closed=closed)
-        RETURN_FACTORIES[BORROW].create_batch(count, debt=debt)
+        for day in days:
+            RETURN_FACTORIES[BORROW](debt=debt, date=date(1999, 1, day))
 
     content = client_logged.get(RETURN_TAB_PATHS[BORROW]).content.decode("utf-8")
     rows = RETURN_ROW.findall(content)

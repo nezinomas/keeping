@@ -49,7 +49,7 @@ class DebtReturn(models.Model):
     debt = models.ForeignKey(Debt, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ["-debt__date", "debt__name", "-date"]
+        ordering = ["-debt__date", "debt__name", "debt_id", "-date"]
 
     def __str__(self):
         return f"{RETURN_TITLE[self.debt.debt_type]} {int_cents_to_float(self.price)}"
