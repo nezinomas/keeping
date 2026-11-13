@@ -94,7 +94,8 @@ def test_debt_save(main_user, client_logged, debt_type):
     ],
 )
 def test_debt_update(main_user, client_logged, debt_type, existing):
-    e = DEBT_FACTORIES[debt_type](**existing)
+    # Closed before, so the posted `closed` has a change to make
+    e = DEBT_FACTORIES[debt_type](**existing, price=1, returned=1, closed=True)
 
     data = {
         "name": "XXX",
