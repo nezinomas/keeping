@@ -18,6 +18,10 @@ RETURN_FACTORIES = {
 }
 
 TAB_PATHS = {Debt.DebtType.LEND: "/debts/", Debt.DebtType.BORROW: "/debts/borrow/"}
+RETURN_TAB_PATHS = {
+    Debt.DebtType.LEND: "/debts/returns/",
+    Debt.DebtType.BORROW: "/debts/borrow/returns/",
+}
 
 
 def assert_balance(actual, *, incomes, expenses, balance, title="Account1"):

@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 import pytest
@@ -11,17 +12,40 @@ from ....core.tests.utils import (
     PAPER_PARTS,
     count_queries,
     form_posts_to,
+    nav_tabs,
     paper_page_parts,
     quick_add_pills,
+    row_forms,
     tab_fragment,
 )
 from ...models import Debt
 from .. import factories
-from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES, TAB_PATHS
+from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES
 
 pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
-TAB_TITLES = {Debt.DebtType.LEND: "Paskolinta", Debt.DebtType.BORROW: "Pasiskolinta"}
+TAB_ROWS = [
+    pytest.param("/debts/", factories.LendFactory, "Paskolinta", id="lend"),
+    pytest.param(
+        "/debts/returns/", factories.LendReturnFactory, "Grąžino", id="lend_returns"
+    ),
+    pytest.param(
+        "/debts/borrow/", factories.BorrowFactory, "Pasiskolinta", id="borrow"
+    ),
+    pytest.param(
+        "/debts/borrow/returns/",
+        factories.BorrowReturnFactory,
+        "Grąžinau",
+        id="borrow_returns",
+    ),
+]
+
+SUBNAV = [
+    ("lend", "/debts/"),
+    ("lend_returns", "/debts/returns/"),
+    ("borrow", "/debts/borrow/"),
+    ("borrow_returns", "/debts/borrow/returns/"),
+]
 
 
 def test_debts_index_not_logged(client):
@@ -31,49 +55,144 @@ def test_debts_index_not_logged(client):
     assert response.status_code == 302
 
 
-@pytest.mark.parametrize("debt_type", TAB_PATHS)
+@pytest.mark.parametrize("path, factory, title", TAB_ROWS)
 @pytest.mark.parametrize(
     "headers, whole",
     [({}, True), ({"HX-Request": "true"}, False)],
     ids=["page", "fragment"],
 )
-def test_a_debt_tab_is_the_whole_paper_page_unless_htmx_asks(
-    client_logged, debt_type, headers, whole
+def test_a_tab_is_the_whole_paper_page_unless_htmx_asks(
+    client_logged, path, factory, title, headers, whole
 ):
-    DEBT_FACTORIES[debt_type](remark="The year's debt")
+    factory(remark="The year's record")
 
-    response = client_logged.get(TAB_PATHS[debt_type], headers=headers)
+    response = client_logged.get(path, headers=headers)
     content = response.content.decode()
 
-    assert f"<title>Skolos | {TAB_TITLES[debt_type]}</title>" in content
+    assert f"<title>Skolos | {title}</title>" in content
     assert paper_page_parts(content) == dict.fromkeys(PAPER_PARTS, whole)
-    assert '<td class="text-left main__fold">The year&#x27;s debt</td>' in content
+    assert nav_tabs(content) == (SUBNAV if whole else [])
+    assert '<td class="text-left main__fold">The year&#x27;s record</td>' in content
 
 
-@pytest.mark.parametrize("debt_type", TAB_PATHS)
-def test_a_debt_tab_query_count_does_not_grow_with_the_rows(
-    main_user, client_logged, debt_type
+@pytest.mark.parametrize(
+    "path, factory", [pytest.param(*row.values[:2], id=row.id) for row in TAB_ROWS]
+)
+def test_a_tab_query_count_does_not_grow_with_the_rows(
+    main_user, client_logged, path, factory
 ):
+    # each Return gets its own Debt, so the rows' Debt reads grow too
     def tab_queries():
-        return count_queries(lambda: tab_fragment(client_logged, TAB_PATHS[debt_type]))
+        return count_queries(lambda: tab_fragment(client_logged, path))
 
     with quiet_build(main_user):
-        DEBT_FACTORIES[debt_type].create_batch(2)
+        factory.create_batch(2)
     two = tab_queries()
 
     with quiet_build(main_user):
-        DEBT_FACTORIES[debt_type].create_batch(4)
+        factory.create_batch(4)
     six = tab_queries()
 
     assert six == two
 
 
-def test_quick_add_offers_a_pill_per_debt_type(client_logged):
+@pytest.mark.parametrize(
+    "path, other_factory",
+    [
+        pytest.param("/debts/", factories.BorrowFactory, id="lend"),
+        pytest.param(
+            "/debts/returns/", factories.BorrowReturnFactory, id="lend_returns"
+        ),
+        pytest.param("/debts/borrow/", factories.LendFactory, id="borrow"),
+        pytest.param(
+            "/debts/borrow/returns/", factories.LendReturnFactory, id="borrow_returns"
+        ),
+    ],
+)
+def test_a_tab_with_no_records_of_its_own_says_so(client_logged, path, other_factory):
+    other_factory(price=666)
+
+    content = client_logged.get(path).content.decode("utf-8")
+
+    assert re.search(
+        r'<div class="alert">\s*1999 metais įrašų nėra\.\s*</div>', content
+    )
+
+
+@pytest.mark.parametrize(
+    "path, factory, debt_type, update, delete",
+    [
+        pytest.param(
+            "/debts/",
+            factories.LendFactory,
+            Debt.DebtType.LEND,
+            "debts:update",
+            "debts:delete",
+            id="lend",
+        ),
+        pytest.param(
+            "/debts/returns/",
+            factories.LendReturnFactory,
+            Debt.DebtType.LEND,
+            "debts:return_update",
+            "debts:return_delete",
+            id="lend_returns",
+        ),
+        pytest.param(
+            "/debts/borrow/",
+            factories.BorrowFactory,
+            Debt.DebtType.BORROW,
+            "debts:update",
+            "debts:delete",
+            id="borrow",
+        ),
+        pytest.param(
+            "/debts/borrow/returns/",
+            factories.BorrowReturnFactory,
+            Debt.DebtType.BORROW,
+            "debts:return_update",
+            "debts:return_delete",
+            id="borrow_returns",
+        ),
+    ],
+)
+def test_a_tab_row_offers_its_edit_and_delete_buttons(
+    client_logged, path, factory, debt_type, update, delete
+):
+    obj = factory()
+
+    content = client_logged.get(path).content.decode("utf-8")
+
+    kwargs = {"pk": obj.pk, "debt_type": debt_type}
+    assert row_forms(content) == [
+        (
+            reverse(update, kwargs=kwargs),
+            [
+                ("edit-col", reverse(update, kwargs=kwargs)),
+                ("delete-col", reverse(delete, kwargs=kwargs)),
+            ],
+        )
+    ]
+
+
+def test_quick_add_offers_a_pill_per_tab(client_logged):
     content = client_logged.get("/debts/").content.decode()
 
     assert quick_add_pills(content) == [
         ("button", "lend", 'hx-get="/debts/lend/new/"', "Paskolinti"),
+        (
+            "button",
+            "lend_returns",
+            'hx-get="/debts/lend/return/new/"',
+            "Pridėti grąžinimą",
+        ),
         ("button", "borrow", 'hx-get="/debts/borrow/new/"', "Pasiskolinti"),
+        (
+            "button",
+            "borrow_returns",
+            'hx-get="/debts/borrow/return/new/"',
+            "Pridėti grąžinimą",
+        ),
     ]
 
 
@@ -301,7 +420,6 @@ def test_a_record_out_of_reach_is_404(
     [
         pytest.param(Client.get, "/debts/x/new/", id="new"),
         pytest.param(Client.post, "/debts/x/new/", id="create"),
-        pytest.param(Client.get, "/debts/x/return/lists/", id="return_list"),
     ],
 )
 def test_debts_url_of_an_unknown_type_is_404(client_logged, send, path):

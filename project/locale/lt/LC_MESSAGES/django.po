@@ -26,7 +26,6 @@ msgstr "Sąskaitos pavadinimas"
 
 #: .\project\accounts\forms.py:27
 #: .\project\debts\templates\debts\debt_list.html:23
-#: .\project\debts\templates\debts\debtreturn_list.html:21
 #: .\project\savings\forms.py:30
 msgid "Closed"
 msgstr "Uždaryta"
@@ -43,7 +42,6 @@ msgstr "Sąskaitos"
 #: .\project\accounts\views.py:25 .\project\accounts\views.py:33
 #: .\project\debts\forms.py:68 .\project\debts\forms.py:151
 #: .\project\debts\templates\debts\debt_list.html:21
-#: .\project\debts\templates\debts\debtreturn_list.html:19
 #: .\project\expenses\forms.py:127
 #: .\project\expenses\templates\expenses\expense_list.html:35
 #: .\project\incomes\forms.py:43
@@ -301,7 +299,6 @@ msgstr "Fondas"
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:34
 #: .\project\debts\forms.py:69 .\project\debts\forms.py:153
 #: .\project\debts\templates\debts\debt_list.html:19
-#: .\project\debts\templates\debts\debtreturn_list.html:18
 #: .\project\pensions\forms.py:41
 #: .\project\pensions\templates\pensions\pension_list.html:12
 #: .\project\savings\forms.py:67
@@ -326,7 +323,6 @@ msgstr "Mokesčiai"
 #: .\project\counts\templates\counts\tab_data.html:10
 #: .\project\debts\forms.py:66 .\project\debts\forms.py:150
 #: .\project\debts\templates\debts\debt_list.html:14
-#: .\project\debts\templates\debts\debtreturn_list.html:13
 #: .\project\drinks\forms.py:55
 #: .\project\drinks\templates\drinks\tab_data.html:10
 #: .\project\expenses\forms.py:120
@@ -537,7 +533,6 @@ msgstr "Autorius"
 #: .\project\books\templates\books\book_list.html:13
 #: .\project\debts\forms.py:70 .\project\debts\forms.py:154
 #: .\project\debts\templates\debts\debt_list.html:22
-#: .\project\debts\templates\debts\debtreturn_list.html:20
 #: .\project\expenses\forms.py:125
 #: .\project\expenses\templates\expenses\expense_list.html:33
 #: .\project\incomes\forms.py:45
@@ -1163,13 +1158,11 @@ msgstr ""
 
 #: .\project\debts\forms.py:62 .\project\debts\forms.py:145
 #: .\project\debts\templates\debts\debt_list.html:16
-#: .\project\debts\templates\debts\debtreturn_list.html:15
 msgid "Borrower"
 msgstr "Paskolos gavėjas"
 
 #: .\project\debts\forms.py:64 .\project\debts\forms.py:148
 #: .\project\debts\templates\debts\debt_list.html:17
-#: .\project\debts\templates\debts\debtreturn_list.html:16
 msgid "Lender"
 msgstr "Paskolos davėjas"
 

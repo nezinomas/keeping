@@ -15,6 +15,8 @@
 {% block quick_add %}
 <c-quick-add>
     <c-quick-add.pill url="{% url 'debts:new' 'lend' %}" tab="lend">{% translate 'Lend' context 'lend button' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'debts:return_new' 'lend' %}" tab="lend_returns">{% translate 'Add return' %}</c-quick-add.pill>
     <c-quick-add.pill url="{% url 'debts:new' 'borrow' %}" tab="borrow">{% translate 'Borrow' context 'borrow button' %}</c-quick-add.pill>
+    <c-quick-add.pill url="{% url 'debts:return_new' 'borrow' %}" tab="borrow_returns">{% translate 'Add return' %}</c-quick-add.pill>
 </c-quick-add>
 {% endblock quick_add %}

@@ -8,73 +8,56 @@ from ....accounts.tests.factories import AccountFactory
 from ... import models
 from ...services.model_services import DebtReturnModelService
 from .. import factories
-from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES
+from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES, RETURN_TAB_PATHS
 
 pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_list_empty(client_logged, debt_type):
-    url = reverse("debts:return_list", kwargs={"debt_type": debt_type})
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
-    assert re.search(
-        r'<div class="alert alert-warning">\s*1999 metais įrašų nėra\.\s*</div>',
-        content,
-    )
-
-
 @pytest.mark.parametrize(
-    "debt_type, other_factory, remark",
+    "debt_type, other_factory, label",
     [
         pytest.param(
             models.Debt.DebtType.BORROW,
             factories.LendReturnFactory,
-            "Borrow Return Remark",
+            "Paskolos davėjas",
             id="borrow",
         ),
         pytest.param(
             models.Debt.DebtType.LEND,
             factories.BorrowReturnFactory,
-            "Lend Return Remark",
+            "Paskolos gavėjas",
             id="lend",
         ),
     ],
 )
-def test_debt_return_list_with_data(client_logged, debt_type, other_factory, remark):
-    RETURN_FACTORIES[debt_type](price=543_210)
-    other_factory(price=666_666)
+def test_a_return_tab_with_data(client_logged, debt_type, other_factory, label):
+    obj = RETURN_FACTORIES[debt_type](
+        price=543_210, debt__name="Own name", debt__closed=True
+    )
+    other_factory(price=666_666, debt__name="Other name")
 
-    url = reverse("debts:return_list", kwargs={"debt_type": debt_type})
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
+    content = client_logged.get(RETURN_TAB_PATHS[debt_type]).content.decode("utf-8")
 
-    assert '">Data</th>' in content
-    assert '">Suma</th>' in content
-    assert '">Sąskaita</th>' in content
-    assert '">Pastaba</th>' in content
+    assert '<th class="text-left">Data</th>' in content
+    assert f'<th class="text-left main__name">{label}</th>' in content
+    assert '<th class="price-col">Suma</th>' in content
+    assert '<th class="text-left main__fold">Sąskaita</th>' in content
+    assert '<th class="text-left main__fold">Pastaba</th>' in content
+    assert '<th class="price-col text-center">Uždaryta</th>' in content
+    assert '<th class="edit-col"></th>' in content
+    assert '<th class="delete-col"></th>' in content
 
-    assert '<td class="text-center">1999-01-02</td>' in content
-    assert '<td class="text-right cell-padding">5.432,10</td>' in content
-    assert '<td class="text-left cell-padding">Account1</td>' in content
-    assert f'<td class="text-left">{remark}</td>' in content
+    assert '<td class="text-left main__date">1999-01-02</td>' in content
+    assert f'<td class="text-left main__name">{obj.debt.name}</td>' in content
+    assert '<td class="main__figure" data-cell="">5.432,10</td>' in content
+    assert '<td class="text-left main__fold">Account1</td>' in content
+    assert (
+        '<td class="text-center"><i class="bi bi-check-circle-fill"></i></td>'
+        in content
+    )
 
-    assert '<td class="text-right cell-padding">6.666,66</td>' not in content
-
-
-@pytest.mark.parametrize("url_name", ["debts:return_update", "debts:return_delete"])
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_list_links_each_row_button(client_logged, debt_type, url_name):
-    obj = RETURN_FACTORIES[debt_type]()
-
-    url = reverse("debts:return_list", kwargs={"debt_type": debt_type})
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
-    link = reverse(url_name, kwargs={"pk": obj.pk, "debt_type": debt_type})
-
-    assert f'<a role="button" hx-get="{link}"' in content
+    assert '<td class="text-left main__name">Other name</td>' not in content
+    assert '<td class="main__figure" data-cell="">6.666,66</td>' not in content
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
@@ -132,9 +115,11 @@ def test_debt_return_update(
 
 
 RETURN_ROW = re.compile(
-    r'<tr hx-get="([^"]*)" hx-trigger="([^"]*)" hx-target="([^"]*)" class="([^"]*)">'
-    r'\s*<td[^>]*>[^<]*</td>\s*<td class="text-left cell-padding">([^<]*)</td>'
+    r'<tr(?: hx-get="([^"]+)" hx-trigger="([^"]*)" hx-target="([^"]*)")? '
+    r'class="([^"]*)">(.*?)</tr>',
+    re.DOTALL,
 )
+NAME_CELL = re.compile(r'<td class="text-left main__name">([^<]*)</td>')
 
 
 @pytest.mark.parametrize(
@@ -152,16 +137,18 @@ RETURN_ROW = re.compile(
         ),
     ],
 )
-def test_debt_return_list_divides_its_debts(client_logged, debts, divided):
+def test_a_return_tab_divides_its_debts(client_logged, debts, divided):
     returns = []
     for name, closed, count in debts:
         debt = factories.BorrowFactory(name=name, closed=closed)
         returns += factories.BorrowReturnFactory.create_batch(count, debt=debt)
 
-    url = reverse("debts:return_list", kwargs={"debt_type": "borrow"})
-    rows = RETURN_ROW.findall(client_logged.get(url).content.decode("utf-8"))
+    content = client_logged.get("/debts/borrow/returns/").content.decode("utf-8")
+    rows = RETURN_ROW.findall(content)
 
-    assert [(divider, name) for *_, divider, name in rows] == divided
+    assert [
+        (divider, NAME_CELL.search(cells)[1]) for *_, divider, cells in rows
+    ] == divided
     assert {(get, trigger, target) for get, trigger, target, *_ in rows} == {
         (
             reverse("debts:return_update", kwargs={"pk": r.pk, "debt_type": "borrow"}),

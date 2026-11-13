@@ -12,7 +12,7 @@ from ..core.mixins.views import (
 from . import forms
 from .models import OTHER_PARTY
 from .services.model_services import DebtModelService, DebtReturnModelService
-from .tabs import DEBT_TABS, TABS
+from .tabs import DEBT_TABS, RETURN_TABS, TABS
 
 
 class AddDebtTypeMixin:
@@ -32,12 +32,7 @@ class DebtMixin:
 
 class DebtReturnMixin:
     def get_success_url(self):
-        debt_type = self.kwargs.get("debt_type")
-        return reverse_lazy("debts:return_list", kwargs={"debt_type": debt_type})
-
-    def get_hx_trigger_django(self):
-        debt_type = self.kwargs.get("debt_type")
-        return f"after_{debt_type}_return"
+        return RETURN_TABS[self.kwargs["debt_type"]].url
 
 
 class TabViewMixin(CoreTabViewMixin):
@@ -45,12 +40,6 @@ class TabViewMixin(CoreTabViewMixin):
     default_tab = TABS["lend"]
     app_title = _("Debts")
     page_template = "debts/index.html"
-
-
-class TabDebts(TabViewMixin, ListViewMixin):
-    def get_queryset(self):
-        user = self.request.user
-        return DebtModelService(user, self.tab.debt_type).year(user.selected_year())
 
     def get_context_data(self, **kwargs):
         return {
@@ -60,12 +49,33 @@ class TabDebts(TabViewMixin, ListViewMixin):
         }
 
 
+class TabDebts(TabViewMixin, ListViewMixin):
+    def get_queryset(self):
+        user = self.request.user
+        return DebtModelService(user, self.tab.debt_type).year(user.selected_year())
+
+
 class TabLend(TabDebts):
     tab = TABS["lend"]
 
 
 class TabBorrow(TabDebts):
     tab = TABS["borrow"]
+
+
+class TabReturns(TabViewMixin, ListViewMixin):
+    def get_queryset(self):
+        user = self.request.user
+        service = DebtReturnModelService(user, self.tab.debt_type)
+        return service.year(user.selected_year())
+
+
+class TabLendReturns(TabReturns):
+    tab = TABS["lend_returns"]
+
+
+class TabBorrowReturns(TabReturns):
+    tab = TABS["borrow_returns"]
 
 
 class DebtNew(AddDebtTypeMixin, DebtMixin, CreateViewMixin):
@@ -93,18 +103,10 @@ class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
         return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
 
 
-class DebtReturnLists(ListViewMixin):
-    template_name = "debts/debtreturn_list.html"
-
-    def get_queryset(self):
-        user = self.request.user
-        service = DebtReturnModelService(user, self.kwargs["debt_type"])
-        return service.year(user.selected_year())
-
-
 class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
     url_name = "debts:return_new"
     form_class = forms.DebtReturnForm
+    hx_trigger_django = "reload"
     modal_form_title = _("Debt return")
 
 
@@ -113,6 +115,7 @@ class DebtReturnUpdate(
 ):
     url_name = "debts:return_update"
     form_class = forms.DebtReturnForm
+    hx_trigger_django = "reload"
     modal_form_title = _("Debt return")
 
     def get_queryset(self):

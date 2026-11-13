@@ -19,10 +19,17 @@ class DebtTab(Tab):
 
 TABS = Tabs(
     DebtTab("lend", _("Lend"), Debt.DebtType.LEND, "debts"),
+    DebtTab("lend_returns", _("Lend return"), Debt.DebtType.LEND, "returns"),
     DebtTab("borrow", _("Borrow"), Debt.DebtType.BORROW, "debts"),
+    DebtTab("borrow_returns", _("Borrow return"), Debt.DebtType.BORROW, "returns"),
 )
 
 DEBT_TABS = {
     Debt.DebtType.LEND: TABS["lend"],
     Debt.DebtType.BORROW: TABS["borrow"],
+}
+
+RETURN_TABS = {
+    Debt.DebtType.LEND: TABS["lend_returns"],
+    Debt.DebtType.BORROW: TABS["borrow_returns"],
 }
