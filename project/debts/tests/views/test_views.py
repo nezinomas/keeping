@@ -375,6 +375,17 @@ def _other_journals_return(debt_type, second_user):
     }
 
 
+def _closed_debts_return(debt_type, _second_user):
+    debt = DEBT_FACTORIES[debt_type](closed=True)
+    obj = RETURN_FACTORIES[debt_type](debt=debt, price=666)
+    return obj, {
+        "date": "1999-1-2",
+        "price": "1",
+        "account": obj.account.pk,
+        "debt": debt.pk,
+    }
+
+
 DEBT_SENDS = [
     ("debts:update", Client.get, "update_get"),
     ("debts:update", Client.post, "update_post"),
@@ -398,6 +409,10 @@ RETURN_SENDS = [
         ),
         *(
             pytest.param(_other_journals_return, url_name, send, id=f"return_{id_}")
+            for url_name, send, id_ in RETURN_SENDS
+        ),
+        *(
+            pytest.param(_closed_debts_return, url_name, send, id=f"closed_{id_}")
             for url_name, send, id_ in RETURN_SENDS
         ),
     ],

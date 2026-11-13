@@ -5,6 +5,7 @@ import pytest
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
+from ....core.tests.utils import ROW_BUTTON
 from ... import models
 from ...services.model_services import DebtReturnModelService
 from .. import factories
@@ -149,11 +150,39 @@ def test_a_return_tab_divides_its_debts(client_logged, debts, divided):
     assert [
         (divider, NAME_CELL.search(cells)[1]) for *_, divider, cells in rows
     ] == divided
-    assert {(get, trigger, target) for get, trigger, target, *_ in rows} == {
+    assert {(get, trigger, target) for get, trigger, target, *_ in rows if get} == {
         (
             reverse("debts:return_update", kwargs={"pk": r.pk, "debt_type": "borrow"}),
             "dblclick",
             "#mainModal",
         )
         for r in returns
+        if not r.debt.closed
     }
+
+
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_a_closed_debts_return_row_opens_nothing(client_logged, debt_type):
+    # the open row first: a Closed row must not keep the url the row above drew
+    open_return = RETURN_FACTORIES[debt_type](debt__name="Open")
+    closed = DEBT_FACTORIES[debt_type](name="Shut", closed=True)
+    RETURN_FACTORIES[debt_type](debt=closed)
+
+    content = client_logged.get(RETURN_TAB_PATHS[debt_type]).content.decode("utf-8")
+    rows = [
+        (get, ROW_BUTTON.findall(cells))
+        for get, _trigger, _target, _divider, cells in RETURN_ROW.findall(content)
+    ]
+
+    kwargs = {"pk": open_return.pk, "debt_type": debt_type}
+    update = reverse("debts:return_update", kwargs=kwargs)
+    assert rows == [
+        (
+            update,
+            [
+                ("edit-col", update),
+                ("delete-col", reverse("debts:return_delete", kwargs=kwargs)),
+            ],
+        ),
+        ("", []),
+    ]

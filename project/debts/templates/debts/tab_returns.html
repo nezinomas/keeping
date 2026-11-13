@@ -18,8 +18,12 @@
         </tr>
     </c-slot>
     {% for object in object_list %}
+    {# a scope per row: a Closed row must not keep the urls {% url … as %} set on the row above #}
+    {% with url_update="" url_delete="" %}
+    {% if not object.debt.closed %}
     {% url 'debts:return_update' debt_type object.id as url_update %}
     {% url 'debts:return_delete' debt_type object.id as url_delete %}
+    {% endif %}
     <c-edit-row :url="url_update" class="{% ifchanged object.debt.name object.debt.closed %}{{ forloop.first|yesno:",table-group-divider" }}{% endifchanged %}">
         <td class="text-left main__date">{{ object.date|date:"Y-m-d" }}</td>
         <td class="text-left main__name">{{ object.debt.name }}</td>
@@ -27,14 +31,10 @@
         <td class="text-left main__fold">{{ object.account }}</td>
         <td class="text-left main__fold">{{ object.remark }}</td>
         <td class="text-center">{% if object.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
-        {% if not object.debt.closed %}
-            <c-td-edit :url="url_update" />
-            <c-td-delete :url="url_delete" />
-        {% else %}
-            <td class="edit-col"></td>
-            <td class="delete-col"></td>
-        {% endif %}
+        <c-td-edit :url="url_update" />
+        <c-td-delete :url="url_delete" />
     </c-edit-row>
+    {% endwith %}
     {% endfor %}
 </c-paper-table>
 

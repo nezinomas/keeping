@@ -91,6 +91,9 @@ class DebtReturnModelService(SumMixin, _DebtTypeService):
     def year(self, year):
         return self.objects.filter(date__year=year)
 
+    def of_open_debts(self):
+        return self.objects.filter(debt__closed=False)
+
     def sum_by_month(self, year):
         return (
             self.objects.filter(date__year=year)

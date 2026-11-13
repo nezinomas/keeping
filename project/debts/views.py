@@ -21,16 +21,23 @@ class AddDebtTypeMixin:
         return reverse_lazy(self.url_name, kwargs=self.kwargs)
 
     def get_form_kwargs(self, **kwargs):
-        kwargs["debt_type"] = self.kwargs.get("debt_type")
+        kwargs["debt_type"] = self.kwargs["debt_type"]
         return super().get_form_kwargs(**kwargs)
 
 
 class DebtMixin:
+    def get_queryset(self):
+        return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
+
     def get_success_url(self):
         return DEBT_TABS[self.kwargs["debt_type"]].url
 
 
 class DebtReturnMixin:
+    def get_queryset(self):
+        service = DebtReturnModelService(self.request.user, self.kwargs["debt_type"])
+        return service.of_open_debts()
+
     def get_success_url(self):
         return RETURN_TABS[self.kwargs["debt_type"]].url
 
@@ -91,16 +98,10 @@ class DebtUpdate(PriceToFloatViewMixin, AddDebtTypeMixin, DebtMixin, UpdateViewM
     hx_trigger_django = "reload"
     modal_form_title = _("Debt")
 
-    def get_queryset(self):
-        return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
-
 
 class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
     url_name = "debts:delete"
     modal_form_title = _("Delete debt")
-
-    def get_queryset(self):
-        return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
 
 
 class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
@@ -118,17 +119,7 @@ class DebtReturnUpdate(
     hx_trigger_django = "reload"
     modal_form_title = _("Debt return")
 
-    def get_queryset(self):
-        return DebtReturnModelService(
-            self.request.user, self.kwargs["debt_type"]
-        ).objects
-
 
 class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
     url_name = "debts:return_delete"
     modal_form_title = _("Delete debt return")
-
-    def get_queryset(self):
-        return DebtReturnModelService(
-            self.request.user, self.kwargs["debt_type"]
-        ).objects
