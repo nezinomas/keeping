@@ -483,6 +483,10 @@ msgstr "Paskolinta"
 msgid "Lend return"
 msgstr "Grąžino"
 
+#: .\project\debts\templates\debts\index.html:18 .\project\debts\templates\debts\index.html:20
+msgid "Add return"
+msgstr "Pridėti grąžinimą"
+
 #: .\project\bookkeeping\templates\cotton\year_balance.html:27
 msgid "Money flow"
 msgstr "Pinigų srautas"
@@ -1210,12 +1214,12 @@ msgstr "Skola"
 msgid "Delete debt"
 msgstr "Trinti skolą"
 
-#: .\project\debts\views.py:134 .\project\debts\views.py:146
-msgid "Debt repayment"
+#: .\project\debts\views.py:111 .\project\debts\views.py:120
+msgid "Debt return"
 msgstr "Skolos grąžinimas"
 
-#: .\project\debts\views.py:166
-msgid "Delete debt repayment"
+#: .\project\debts\views.py:125
+msgid "Delete debt return"
 msgstr "Trinti skolos grąžinimą"
 
 #: .\project\drinks\forms.py:56 .\project\drinks\forms.py:129

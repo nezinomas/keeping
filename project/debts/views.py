@@ -105,7 +105,7 @@ class DebtReturnLists(ListViewMixin):
 class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
     url_name = "debts:return_new"
     form_class = forms.DebtReturnForm
-    modal_form_title = _("Debt repayment")
+    modal_form_title = _("Debt return")
 
 
 class DebtReturnUpdate(
@@ -113,7 +113,7 @@ class DebtReturnUpdate(
 ):
     url_name = "debts:return_update"
     form_class = forms.DebtReturnForm
-    modal_form_title = _("Debt repayment")
+    modal_form_title = _("Debt return")
 
     def get_queryset(self):
         return DebtReturnModelService(
@@ -123,7 +123,7 @@ class DebtReturnUpdate(
 
 class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
     url_name = "debts:return_delete"
-    modal_form_title = _("Delete debt repayment")
+    modal_form_title = _("Delete debt return")
 
     def get_queryset(self):
         return DebtReturnModelService(
