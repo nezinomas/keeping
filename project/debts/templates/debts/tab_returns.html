@@ -12,7 +12,6 @@
             <th class="price-col">{% translate 'Sum' %}</th>
             <th class="text-left main__fold">{% translate 'Account' %}</th>
             <th class="text-left main__fold">{% translate 'Remark' %}</th>
-            <th class="price-col text-center">{% translate 'Closed' %}</th>
             <th class="edit-col"></th>
             <th class="delete-col"></th>
         </tr>
@@ -26,11 +25,10 @@
     {% endif %}
     <c-edit-row :url="url_update" class="{% ifchanged object.debt.name object.debt.closed %}{{ forloop.first|yesno:",table-group-divider" }}{% endifchanged %}">
         <td class="text-left main__date">{{ object.date|date:"Y-m-d" }}</td>
-        <td class="text-left main__name">{{ object.debt.name }}</td>
+        {% include 'debts/includes/other_party_cell.html' with debt=object.debt %}
         <td class="main__figure" data-cell="{{ object.price|cell_state }}">{{ object.price|price|cellformat }}</td>
         <td class="text-left main__fold">{{ object.account }}</td>
         <td class="text-left main__fold">{{ object.remark }}</td>
-        <td class="text-center">{% if object.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
         <c-td-edit :url="url_update" />
         <c-td-delete :url="url_delete" />
     </c-edit-row>

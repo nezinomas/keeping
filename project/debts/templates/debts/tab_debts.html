@@ -14,7 +14,6 @@
             <th class="price-col">{% translate 'Remaining' %}</th>
             <th class="text-left main__fold">{% translate 'Account' %}</th>
             <th class="text-left main__fold">{% translate 'Remark' %}</th>
-            <th class="price-col text-center">{% translate 'Closed' %}</th>
             <th class="edit-col"></th>
             <th class="delete-col"></th>
         </tr>
@@ -24,13 +23,12 @@
     {% url 'debts:delete' debt_type object.id as url_delete %}
     <c-edit-row :url="url_update">
         <td class="text-left main__date">{{ object.date|date:"Y-m-d" }}</td>
-        <td class="text-left main__name">{{ object.name }}</td>
+        {% include 'debts/includes/other_party_cell.html' with debt=object %}
         <td class="main__figure main__fold" data-cell="{{ object.price|cell_state }}">{{ object.price|price|cellformat }}</td>
         <td class="main__figure main__fold" data-cell="{{ object.returned|cell_state }}">{{ object.returned|price|cellformat }}</td>
         <td class="main__figure" data-cell="{{ object.remaining|cell_state }}">{{ object.remaining|price|cellformat }}</td>
         <td class="text-left main__fold">{{ object.account }}</td>
         <td class="text-left main__fold">{{ object.remark }}</td>
-        <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
         <c-td-edit :url="url_update" />
         <c-td-delete :url="url_delete" />
     </c-edit-row>

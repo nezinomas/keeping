@@ -55,19 +55,19 @@ def test_debt_tab_with_data(client_logged, debt_type, other_factory, label):
     assert '">Grąžinta</th>' in content
     assert '">Sąskaita</th>' in content
     assert '">Pastaba</th>' in content
-    assert '">Uždaryta</th>' in content
+    assert '">Uždaryta</th>' not in content
     assert '<th class="edit-col"></th>' in content
     assert '<th class="delete-col"></th>' in content
 
     assert '<td class="text-left main__date">1999-01-01</td>' in content
-    assert f'<td class="text-left main__name">{obj1.name}</td>' in content
+    assert (
+        f'<td class="text-left main__name">{obj1.name} '
+        '<span class="main__closed">Grąžinta</span></td>'
+    ) in content
     assert '<td class="main__figure main__fold" data-cell="">7.777,77</td>' in content
     assert '<td class="main__figure main__fold" data-cell="">5.432,10</td>' in content
     assert '<td class="text-left main__fold">Account1</td>' in content
-    assert (
-        '<td class="text-center"><i class="bi bi-check-circle-fill"></i></td>'
-        in content
-    )
+    assert "bi-check-circle-fill" not in content
 
     assert f'<td class="text-left main__name">{obj2.name}</td>' not in content
     assert "6.666,66</td>" not in content
@@ -99,6 +99,27 @@ def test_remaining_follows_returned_and_both_show_their_state(
     content = client_logged.get(TAB_PATHS[debt_type]).content.decode("utf-8")
 
     assert FIGURE_CELL.findall(content) == [(FOLDED_FIGURE, "", "10,00"), *cells]
+
+
+@pytest.mark.parametrize(
+    "paths", [TAB_PATHS, RETURN_TAB_PATHS], ids=["debts", "returns"]
+)
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_a_closed_debt_is_labelled_beside_its_name_and_by_nothing_else(
+    client_logged, debt_type, paths
+):
+    for name, closed in (("Open name", False), ("Shut name", True)):
+        debt = DEBT_FACTORIES[debt_type](name=name, closed=closed)
+        RETURN_FACTORIES[debt_type](debt=debt)
+
+    content = client_logged.get(paths[debt_type]).content.decode("utf-8")
+
+    assert sorted(
+        re.findall(r'<td class="text-left main__name">(.*?)</td>', content)
+    ) == ["Open name", 'Shut name <span class="main__closed">Grąžinta</span>']
+    assert ">Uždaryta</th>" not in content
+    assert "bi-check-circle-fill" not in content
+    assert "data-tip" not in content
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)

@@ -44,18 +44,18 @@ def test_a_return_tab_with_data(client_logged, debt_type, other_factory, label):
     assert '<th class="price-col">Suma</th>' in content
     assert '<th class="text-left main__fold">Sąskaita</th>' in content
     assert '<th class="text-left main__fold">Pastaba</th>' in content
-    assert '<th class="price-col text-center">Uždaryta</th>' in content
+    assert ">Uždaryta</th>" not in content
     assert '<th class="edit-col"></th>' in content
     assert '<th class="delete-col"></th>' in content
 
     assert '<td class="text-left main__date">1999-01-02</td>' in content
-    assert f'<td class="text-left main__name">{obj.debt.name}</td>' in content
+    assert (
+        f'<td class="text-left main__name">{obj.debt.name} '
+        '<span class="main__closed">Grąžinta</span></td>'
+    ) in content
     assert '<td class="main__figure" data-cell="">5.432,10</td>' in content
     assert '<td class="text-left main__fold">Account1</td>' in content
-    assert (
-        '<td class="text-center"><i class="bi bi-check-circle-fill"></i></td>'
-        in content
-    )
+    assert "bi-check-circle-fill" not in content
 
     assert '<td class="text-left main__name">Other name</td>' not in content
     assert '<td class="main__figure" data-cell="">6.666,66</td>' not in content
@@ -120,7 +120,10 @@ RETURN_ROW = re.compile(
     r'class="([^"]*)">(.*?)</tr>',
     re.DOTALL,
 )
-NAME_CELL = re.compile(r'<td class="text-left main__name">([^<]*)</td>')
+NAME_CELL = re.compile(
+    r'<td class="text-left main__name">([^<]*)'
+    r'(?: <span class="main__closed">[^<]*</span>)?</td>'
+)
 
 
 @pytest.mark.parametrize(
