@@ -52,16 +52,7 @@ class DebtReturn(models.Model):
         ordering = ["-debt__date", "debt__name", "-date"]
 
     def __str__(self):
-        price = round(self.price, 1)
-
-        text = ""
-        if self.debt.debt_type == Debt.DebtType.LEND:
-            text = f"{_('Lend return')} {int_cents_to_float(price)}"
-
-        if self.debt.debt_type == Debt.DebtType.BORROW:
-            text = f"{_('Borrow return')} {int_cents_to_float(price)}"
-
-        return text
+        return f"{RETURN_TITLE[self.debt.debt_type]} {int_cents_to_float(self.price)}"
 
     @property
     def journal(self):
@@ -71,4 +62,9 @@ class DebtReturn(models.Model):
 OTHER_PARTY = {
     Debt.DebtType.LEND: _("Borrower"),
     Debt.DebtType.BORROW: _("Lender"),
+}
+
+RETURN_TITLE = {
+    Debt.DebtType.LEND: _("Lend return"),
+    Debt.DebtType.BORROW: _("Borrow return"),
 }
