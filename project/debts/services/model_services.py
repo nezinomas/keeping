@@ -35,7 +35,7 @@ class _DebtTypeService(DatedModelService):
 
 class DebtModelService(_DebtTypeService):
     def get_queryset(self):
-        return models.Debt.objects.select_related("account", "journal").filter(
+        return models.Debt.objects.select_related("account").filter(
             journal=self.user.journal, debt_type=self.debt_type
         )
 
