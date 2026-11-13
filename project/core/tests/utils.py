@@ -41,6 +41,21 @@ def tab_fragment(client, url):
     return client.get(url, headers={"HX-Request": "true"}).content.decode()
 
 
+PAPER_PARTS = ("bundle", "subnav", "quick-add", "sticky headers", "tab panel")
+
+
+def paper_page_parts(content):
+    """Whether `content` holds each part only a whole paper page draws."""
+    holds = (
+        '<link rel="stylesheet" href="/static/css/paper.min.css">' in content,
+        '<nav class="subnav">' in content,
+        bool(re.search(r'<div\b[^>]*class="quick-add\b', content)),
+        bool(re.search(STICKY_HEADERS, content)),
+        'id="tab_content"' in content,
+    )
+    return dict(zip(PAPER_PARTS, holds, strict=True))
+
+
 def form_posts_to(content, form_id, url):
     form = rf'<form method="POST" id="{form_id}"[^>]* hx-post="{re.escape(url)}"'
     return bool(re.search(form, content))

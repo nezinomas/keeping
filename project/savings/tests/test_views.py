@@ -10,11 +10,12 @@ from ...accounts.tests.factories import AccountFactory
 from ...core.tests.utils import (
     FOLD_BUTTON,
     FOLDED,
-    STICKY_HEADERS,
+    PAPER_PARTS,
     clean_content,
     closed_fold,
     count_queries,
     form_posts_to,
+    paper_page_parts,
     quick_add_pills,
     row_forms,
     tab_fragment,
@@ -49,13 +50,7 @@ def test_a_tab_is_the_whole_paper_page_unless_htmx_asks(
     content = client_logged.get(tab.url, headers=headers).content.decode()
 
     assert f"<title>Taupymas | {TAB_TITLES[tab.name]}</title>" in content
-    assert (
-        '<link rel="stylesheet" href="/static/css/paper.min.css">' in content
-    ) is whole
-    assert ('<nav class="subnav">' in content) is whole
-    assert bool(re.search(r'<div\b[^>]*class="quick-add\b', content)) is whole
-    assert bool(re.search(STICKY_HEADERS, content)) is whole
-    assert ('id="tab_content"' in content) is whole
+    assert paper_page_parts(content) == dict.fromkeys(PAPER_PARTS, whole)
 
 
 # each row in a Fund and from an Account of its own, so a read per owner grows
