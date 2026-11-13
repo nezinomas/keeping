@@ -2863,3 +2863,11 @@ msgstr "III ketv."
 msgctxt "quarter"
 msgid "Q4"
 msgstr "IV ketv."
+
+msgctxt "lend button"
+msgid "Lend"
+msgstr "Paskolinti"
+
+msgctxt "borrow button"
+msgid "Borrow"
+msgstr "Pasiskolinti"
