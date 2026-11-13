@@ -94,6 +94,8 @@
             <button type="button" hx-get="{% url 'expenses:new' %}" hx-target="#mainModal">{% translate "Expenses" context "expenses button" %}</button>
             <button type="button" hx-get="{% url 'transactions:new' %}" hx-target="#mainModal">{% translate 'Transactions' context "transactions button" %}</button>
             <button type="button" hx-get="{% url 'savings:new' %}" hx-target="#mainModal">{% translate 'Savings' context "savings button" %}</button>
+            <button type="button" hx-get="{% url 'debts:new' 'lend' %}" hx-target="#mainModal">{% translate 'Lend' context 'lend button' %}</button>
+            <button type="button" hx-get="{% url 'debts:new' 'borrow' %}" hx-target="#mainModal">{% translate 'Borrow' context 'borrow button' %}</button>
             <span class="dropdown-divider"></span>
             <button type="button" hx-get="{% url 'accounts:new' %}" hx-target="#mainModal">{% translate 'Account' context 'account button' %}</button>
             <button type="button" hx-get="{% url 'incomes:type_new' %}" hx-target="#mainModal">{% translate 'Incomes type' context 'income type button' %}</button>

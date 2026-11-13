@@ -134,22 +134,26 @@ def test_the_navbar_menus_without_a_page_stay_unlinked_where_a_page_has_a_url(
 def test_the_navbar_acts_are_buttons_that_open_their_form(client_logged):
     nav = _nav(client_logged, "/")
     forms = [
-        "/counts/type/new/",
-        "/incomes/new/",
-        "/expenses/new/",
-        "/transactions/new/",
-        "/savings/new/",
-        "/accounts/new/",
-        "/incomes/type/new/",
-        "/expenses/type/new/",
-        "/expenses/name/new/",
-        "/savings/type/new/",
+        ("/counts/type/new/", "Pridėti skaitiklį"),
+        ("/incomes/new/", "Pajamas"),
+        ("/expenses/new/", "Išlaidas"),
+        ("/transactions/new/", "Pervedimą"),
+        ("/savings/new/", "Taupymą"),
+        ("/debts/lend/new/", "Paskolinti"),
+        ("/debts/borrow/new/", "Pasiskolinti"),
+        ("/accounts/new/", "Sąskaitą"),
+        ("/incomes/type/new/", "Pajamų rūšį"),
+        ("/expenses/type/new/", "Išlaidų rūšį"),
+        ("/expenses/name/new/", "Išlaidų pavadinimą"),
+        ("/savings/type/new/", "Fondą"),
     ]
 
-    assert re.findall(r'hx-get="([^"]+)"', nav) == forms
+    assert re.findall(r'hx-get="([^"]+)"', nav) == [url for url, _ in forms]
     assert (
         re.findall(
-            r'<button type="button" hx-get="([^"]+)" hx-target="#mainModal">', nav
+            r'<button type="button" hx-get="([^"]+)" hx-target="#mainModal">'
+            r"([^<]+)</button>",
+            nav,
         )
         == forms
     )
