@@ -10,6 +10,7 @@ from ...accounts.tests.factories import AccountFactory
 from ...core.tests.utils import (
     FOLD_BUTTON,
     FOLDED,
+    HEAD_CELL,
     PAPER_PARTS,
     clean_content,
     closed_fold,
@@ -88,7 +89,6 @@ def test_tab_query_count_does_not_grow_with_the_rows(client_logged, tab):
     assert six == two
 
 
-HEAD_CELL = re.compile(r'<th class="([^"]*)">([^<]*)</th>')
 SAVING_ROW = re.compile(
     r'<tr [^>]*class="([^"]*)">\s*<td class="text-left main__date">([^<]*)</td>'
     r'\s*<td class="text-left main__name">([^<]*)</td>'
