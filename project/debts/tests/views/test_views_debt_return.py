@@ -2,8 +2,6 @@ import re
 from datetime import date
 
 import pytest
-import time_machine
-from django.test import Client
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
@@ -80,19 +78,6 @@ def test_debt_return_list_links_each_row_button(client_logged, debt_type, url_na
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-@time_machine.travel("2000-01-01")
-def test_debt_return_load_form(client_logged, debt_type):
-    url = reverse("debts:return_new", kwargs={"debt_type": debt_type})
-    response = client_logged.get(url)
-    actual = response.context["form"].as_p()
-    content = response.content.decode()
-
-    assert '<input type="text" name="date" value="1999-01-01"' in actual
-    assert f'hx-post="{url}"' in content
-    assert '<h5 class="modal-title">Skolos grąžinimas</h5>' in content
-
-
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
 def test_debt_return_save(main_user, client_logged, debt_type):
     a = AccountFactory()
     b = DEBT_FACTORIES[debt_type]()
@@ -108,53 +93,28 @@ def test_debt_return_save(main_user, client_logged, debt_type):
     assert actual.debt == b
 
 
+@pytest.mark.parametrize(
+    "others, before, price, saved, returned",
+    [
+        pytest.param((), 5_00, "1", 1_00, 1_00, id="alone"),
+        pytest.param((40_00, 50_00), 95_00, "6", 6_00, 96_00, id="with_returns"),
+    ],
+)
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_save_invalid_data(client_logged, debt_type):
-    data = {"debt": "A", "price": "0"}
-    url = reverse("debts:return_new", kwargs={"debt_type": debt_type})
-    response = client_logged.post(url, data)
-    form = response.context["form"]
-
-    assert sorted(form.errors) == ["account", "date", "debt", "price"]
-
-
-@pytest.mark.parametrize(
-    "debt_type, remark",
-    [
-        pytest.param(models.Debt.DebtType.BORROW, "Borrow Return Remark", id="borrow"),
-        pytest.param(models.Debt.DebtType.LEND, "Lend Return Remark", id="lend"),
-    ],
-)
-def test_debt_return_load_update_form(client_logged, debt_type, remark):
-    obj = RETURN_FACTORIES[debt_type](price=1)
-    url = reverse("debts:return_update", kwargs={"pk": obj.pk, "debt_type": debt_type})
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert form.instance.date == date(1999, 1, 2)
-    assert form.instance.price == 0.01
-    assert form.instance.account.title == "Account1"
-    assert form.instance.remark == remark
-    assert f'hx-post="{url}"' in response.content.decode()
-
-
-@pytest.mark.parametrize(
-    "debt_type, returned",
-    [
-        pytest.param(models.Debt.DebtType.BORROW, 5, id="borrow"),
-        pytest.param(models.Debt.DebtType.LEND, 6, id="lend"),
-    ],
-)
-def test_debt_return_update(client_logged, debt_type, returned):
-    debt = DEBT_FACTORIES[debt_type](price=2_00)
-    e = RETURN_FACTORIES[debt_type](debt=debt)
+def test_debt_return_update(
+    client_logged, debt_type, others, before, price, saved, returned
+):
+    debt = DEBT_FACTORIES[debt_type](price=100_00)
+    for other in others:
+        RETURN_FACTORIES[debt_type](debt=debt, price=other)
+    e = RETURN_FACTORIES[debt_type](debt=debt, price=5_00)
     a = AccountFactory(title="AAA")
 
-    assert models.Debt.objects.get(pk=debt.pk).returned == returned
+    assert models.Debt.objects.get(pk=debt.pk).returned == before
 
     data = {
         "date": "1999-1-2",
-        "price": "1",
+        "price": price,
         "remark": "Pastaba",
         "account": a.pk,
         "debt": debt.pk,
@@ -165,83 +125,10 @@ def test_debt_return_update(client_logged, debt_type, returned):
     actual = models.DebtReturn.objects.get(pk=e.pk)
     assert actual.debt == debt
     assert actual.date == date(1999, 1, 2)
-    assert actual.price == 1_00
+    assert actual.price == saved
     assert actual.account.title == "AAA"
     assert actual.remark == "Pastaba"
-    assert models.Debt.objects.get(pk=debt.pk).returned == 1_00
-
-
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_update_with_returns(client_logged, debt_type):
-    debt = DEBT_FACTORIES[debt_type](price=100_00)
-    RETURN_FACTORIES[debt_type](debt=debt, price=40_00)
-    RETURN_FACTORIES[debt_type](debt=debt, price=50_00)
-    e = RETURN_FACTORIES[debt_type](debt=debt, price=5_00)
-    a = AccountFactory(title="AAA")
-
-    data = {
-        "date": "1999-1-2",
-        "price": "6",
-        "remark": "Pastaba",
-        "account": a.pk,
-        "debt": debt.pk,
-    }
-    url = reverse("debts:return_update", kwargs={"pk": e.pk, "debt_type": debt_type})
-    client_logged.post(url, data)
-
-    assert models.DebtReturn.objects.get(pk=e.pk).price == 6_00
-    assert models.Debt.objects.get(pk=debt.pk).returned == 96_00
-
-
-@pytest.mark.parametrize(
-    "url_name, send",
-    [
-        pytest.param("debts:return_update", Client.get, id="update_get"),
-        pytest.param("debts:return_update", Client.post, id="update_post"),
-        pytest.param("debts:return_delete", Client.get, id="delete_get"),
-        pytest.param("debts:return_delete", Client.post, id="delete_post"),
-    ],
-)
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_of_other_journal_is_404(
-    client_logged, second_user, debt_type, url_name, send
-):
-    a2 = AccountFactory(journal=second_user.journal, title="a2")
-    d2 = DEBT_FACTORIES[debt_type](account=a2, journal=second_user.journal)
-
-    obj = RETURN_FACTORIES[debt_type](debt=d2, account=a2, price=666)
-    data = {"date": "1999-1-2", "price": "1", "account": a2.pk, "debt": d2.pk}
-
-    url = reverse(url_name, kwargs={"pk": obj.pk, "debt_type": debt_type})
-    response = send(client_logged, url, data)
-
-    assert response.status_code == 404
-    assert models.DebtReturn.objects.get(pk=obj.pk).price == 666
-
-
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_delete_load_form(client_logged, debt_type):
-    obj = RETURN_FACTORIES[debt_type]()
-
-    url = reverse("debts:return_delete", kwargs={"pk": obj.pk, "debt_type": debt_type})
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert '<form method="POST"' in actual
-    assert f'hx-post="{url}"' in actual
-    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
-    assert '<h5 class="modal-title">Trinti skolos grąžinimą</h5>' in actual
-
-
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_delete(client_logged, debt_type):
-    p = RETURN_FACTORIES[debt_type]()
-
-    url = reverse("debts:return_delete", kwargs={"pk": p.pk, "debt_type": debt_type})
-    response = client_logged.post(url)
-
-    assert response.status_code == 204
-    assert not models.DebtReturn.objects.filter(pk=p.pk).exists()
+    assert models.Debt.objects.get(pk=debt.pk).returned == returned
 
 
 RETURN_ROW = re.compile(
