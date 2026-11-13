@@ -1,8 +1,8 @@
 {% load i18n %}
 
 <div class="table-responsive">
-<table class="main striped hover sticky-table">
-    <thead class="sortable-header-row" hx-push-url:inherited="true">
+<c-paper-table head_attrs='class="sortable-header-row" hx-push-url:inherited="true"'>
+    <c-slot name="head">
         <tr>
             <c-sort-th key="title" :active="table.order" :url="sort_url" target="#tab_content" align="left">{% translate 'Type / name' %}</c-sort-th>
             <c-sort-th key="this_year" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'This year' %}</c-sort-th>
@@ -11,7 +11,8 @@
             <c-sort-th key="last_expense" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Last expense' %}</c-sort-th>
             <th class="edit-col"></th>
         </tr>
-    </thead>
+    </c-slot>
+    <c-slot name="body">
     {% for row in table.rows %}
     <tbody>
         {% url 'expenses:type_update' row.pk as url_update %}
@@ -36,7 +37,8 @@
         {% endfor %}
     </tbody>
     {% endfor %}
-    <tfoot>
+    </c-slot>
+    <c-slot name="foot">
         <tr class="main__total">
             <td class="text-left">{% translate 'Total' %}</td>
             <td class="main__figure">{{ table.total.this_year }}</td>
@@ -45,6 +47,6 @@
             <td></td>
             <td class="edit-col"></td>
         </tr>
-    </tfoot>
-</table>
+    </c-slot>
+</c-paper-table>
 </div>

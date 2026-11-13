@@ -1488,3 +1488,11 @@ def test_a_drink_row_opens_its_update_form(client_logged):
 
     update = reverse("drinks:update", kwargs={"pk": obj.pk})
     assert edit_row_opening(update) in content
+
+
+def test_tab_data_draws_its_table_shell(client_logged):
+    DrinkFactory()
+
+    actual = client_logged.get(reverse("drinks:tab_data")).content.decode("utf-8")
+
+    assert '<table class="main striped hover sticky-table">' in actual

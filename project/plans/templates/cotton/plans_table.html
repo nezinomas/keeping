@@ -1,10 +1,11 @@
 {% load i18n %}
 {% load math %}
 {% load cell_format %}
+{% load months %}
 
 <div class="month-table">
-<table class="main striped hover">
-    <thead>
+<c-paper-table class="main striped hover">
+    <c-slot name="head">
         <tr>
             <th class="title-col"></th>
             <c-quarter-band />
@@ -17,8 +18,7 @@
             <th class="edit-col"></th>
             <th class="delete-col"></th>
         </tr>
-    </thead>
-    <tbody>
+    </c-slot>
         {% for row in rows %}
         <c-edit-row :url="row.update_url">
             <td class="text-left">{{ row.title }}</td>
@@ -30,9 +30,10 @@
         </c-edit-row>
         {% empty %}
         <tr>
-            <td colspan="15">{% include "core/no_records_in_year.html" with year=year %}</td>
+            {# the title, edit and delete columns beside the months #}
+            {% month_abbreviations as months %}
+            <td colspan="{{ months|length|add:3 }}">{% include "core/no_records_in_year.html" with year=year %}</td>
         </tr>
         {% endfor %}
-    </tbody>
-</table>
+</c-paper-table>
 </div>

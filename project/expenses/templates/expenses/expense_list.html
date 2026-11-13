@@ -5,11 +5,9 @@
 
 {% if object_list %}
 
-    <table class="main expenses-table striped hover sticky-table">
-        {% if sum_price %}
-        <caption>{% translate "Average unit price" %}: {{average|price|floatformat:"2g"}}</caption>
-        {% endif %}
-        <thead>
+    <c-paper-table class="main expenses-table striped hover sticky-table">
+        <c-slot name="caption">{% if sum_price %}{% translate "Average unit price" %}: {{average|price|floatformat:"2g"}}{% endif %}</c-slot>
+        <c-slot name="head">
             <tr>
                 <th class="text-left">{% translate 'Date' %}</th>
                 <th class="text-left">{% translate 'Expense type' %}</th>
@@ -22,8 +20,7 @@
                 <th class="edit-col"></th>
                 <th class="delete-col"></th>
             </tr>
-        </thead>
-        <tbody>
+        </c-slot>
             {% url 'core:modal_image' as modal_image_url %}
             {% get_media_prefix as media_url %}
 
@@ -50,9 +47,7 @@
                 <td class="delete-col"><a role="button" hx-get="{{ object.url_delete }}" hx-target="#mainModal" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a></td>
             </tr>
             {% endfor %}
-        </tbody>
-        {% if sum_price %}
-        <tfoot>
+        <c-slot name="foot">{% if sum_price %}
             <tr class="main__total">
                 <td class="text-left">{% translate 'Total' %}</td>
                 <td></td>
@@ -61,9 +56,8 @@
                 <td class="main__figure">{{sum_price|price|cellformat}}</td>
                 <td colspan="5"></td>
             </tr>
-        </tfoot>
-        {% endif %}
-    </table>
+        {% endif %}</c-slot>
+    </c-paper-table>
 
 {% if paginator_object %}
 <div hx-push-url:inherited="true">
@@ -77,14 +71,10 @@
 </div>
 
 
-{% else %}
-
-{% if notice %}
-<div class="alert">{{ notice }}</div>
+{% elif notice %}
+<c-notice>{{ notice }}</c-notice>
 {% elif all_months %}
 {% include 'core/paper_no_records.html' %}
 {% else %}
-<div class="alert">{% blocktranslate with month=first_day|date:"E"|capfirst %}No records for {{ month }}.{% endblocktranslate %}</div>
-{% endif %}
-
+<c-notice>{% blocktranslate with month=first_day|date:"E"|capfirst %}No records for {{ month }}.{% endblocktranslate %}</c-notice>
 {% endif %}

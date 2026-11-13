@@ -1027,3 +1027,12 @@ def test_a_count_row_opens_its_update_form(client_logged):
 
     update = reverse("counts:update", kwargs={"pk": obj.pk})
     assert edit_row_opening(update) in content
+
+
+def test_data_draws_its_table_shell(client_logged):
+    CountFactory()
+    url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
+
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert '<table class="main striped hover sticky-table">' in actual

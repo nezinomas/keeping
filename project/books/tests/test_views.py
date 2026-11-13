@@ -700,3 +700,12 @@ def test_a_saved_goal_triggers_reload(client_logged, make_url):
     )
 
     assert response.headers["HX-Trigger"] == '{"reload": {}}'
+
+
+def test_list_draws_its_table_shell(client_logged):
+    BookFactory()
+    url = reverse("books:list", kwargs={"scope": "year"})
+
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert '<table class="main book-table striped hover sticky-table">' in actual

@@ -4,8 +4,8 @@
 {% if object_list %}
 
 
-<table class="main book-table striped hover sticky-table">
-    <thead>
+<c-paper-table class="main book-table striped hover sticky-table">
+    <c-slot name="head">
         <tr>
             <th class="text-left">{% translate 'No.' %}</th>
             <th class="text-left author-col">{% translate 'Author' %}</th>
@@ -16,8 +16,7 @@
             <th class="edit-col"></th>
             <th class="delete-col"></th>
         </tr>
-    </thead>
-    <tbody>
+    </c-slot>
         {% for object in object_list %}
         {% url 'books:update' object.id as url_update %}
         {% url 'books:delete' object.id as url_delete %}
@@ -33,21 +32,16 @@
             <c-td-delete :url="url_delete" />
         </c-edit-row>
         {% endfor %}
-    </tbody>
-</table>
+</c-paper-table>
 
 
 <c-paging :url="url" :search="search" :paginator_object="paginator_object" :page_obj="object_list" target="#data"/>
 
-{% else %}
-
+{% elif notice %}
 {# a search brings its own notice, from SearchMixin #}
-{% if notice %}
-<div class="alert">{{ notice }}</div>
+<c-notice>{{ notice }}</c-notice>
 {% elif scope == "all" %}
-<div class="alert">{% translate "No records" %}</div>
+<c-notice>{% translate "No records" %}</c-notice>
 {% else %}
 {% include 'core/paper_no_records.html' %}
-{% endif %}
-
 {% endif %}
