@@ -11,7 +11,8 @@ from .factories import (
     LendReturnFactory,
 )
 
-DEBT_TYPES = [Debt.DebtType.LEND, Debt.DebtType.BORROW]
+LEND, BORROW = Debt.DebtType.LEND, Debt.DebtType.BORROW
+DEBT_TYPES = [LEND, BORROW]
 
 DEBT_FACTORIES = {Debt.DebtType.LEND: LendFactory, Debt.DebtType.BORROW: BorrowFactory}
 RETURN_FACTORIES = {
@@ -30,6 +31,11 @@ FIGURE_CELL = re.compile(
     r'<td class="(main__figure[^"]*)" data-cell="([^"]*)">([^<]*)</td>'
 )
 FOLDED_FIGURE = "main__figure main__fold"
+# the Other party's name, without the Closed label beside it
+NAME_CELL = re.compile(
+    r'<td class="text-left main__name">([^<]*)'
+    r'(?: <span class="main__closed">[^<]*</span>)?</td>'
+)
 
 
 def assert_balance(actual, *, incomes, expenses, balance, title="Account1"):

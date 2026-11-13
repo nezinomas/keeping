@@ -9,6 +9,7 @@ from django.urls import resolve, reverse
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping.tests.helper import quiet_build
 from ....core.tests.utils import (
+    HEAD_CELL,
     PAPER_PARTS,
     count_queries,
     form_posts_to,
@@ -19,33 +20,38 @@ from ....core.tests.utils import (
     tab_fragment,
 )
 from ...models import Debt
-from .. import factories
-from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES
+from ..helpers import (
+    BORROW,
+    DEBT_FACTORIES,
+    DEBT_TYPES,
+    FIGURE_CELL,
+    FOLDED_FIGURE,
+    LEND,
+    NAME_CELL,
+    RETURN_FACTORIES,
+    RETURN_TAB_PATHS,
+    TAB_PATHS,
+)
 
 pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
 
 TAB_ROWS = [
-    pytest.param("/debts/", factories.LendFactory, "Paskolinta", id="lend"),
+    pytest.param(TAB_PATHS[LEND], DEBT_FACTORIES[LEND], "Paskolinta", id="lend"),
     pytest.param(
-        "/debts/returns/", factories.LendReturnFactory, "Grąžino", id="lend_returns"
+        RETURN_TAB_PATHS[LEND], RETURN_FACTORIES[LEND], "Grąžino", id="lend_returns"
     ),
     pytest.param(
-        "/debts/borrow/", factories.BorrowFactory, "Pasiskolinta", id="borrow"
+        TAB_PATHS[BORROW], DEBT_FACTORIES[BORROW], "Pasiskolinta", id="borrow"
     ),
     pytest.param(
-        "/debts/borrow/returns/",
-        factories.BorrowReturnFactory,
+        RETURN_TAB_PATHS[BORROW],
+        RETURN_FACTORIES[BORROW],
         "Grąžinau",
         id="borrow_returns",
     ),
 ]
 
-SUBNAV = [
-    ("lend", "/debts/"),
-    ("lend_returns", "/debts/returns/"),
-    ("borrow", "/debts/borrow/"),
-    ("borrow_returns", "/debts/borrow/returns/"),
-]
+SUBNAV = [(row.id, row.values[0]) for row in TAB_ROWS]
 
 
 def test_debts_index_not_logged(client):
@@ -75,6 +81,124 @@ def test_a_tab_is_the_whole_paper_page_unless_htmx_asks(
     assert '<td class="text-left main__fold">The year&#x27;s record</td>' in content
 
 
+DEBT_HEADS = [
+    ("main__fold", "Suma"),
+    ("main__fold", "Grąžinta"),
+    ("", "Liko"),
+]
+RETURN_HEADS = [("", "Suma")]
+TAIL_HEADS = [
+    ("text-left main__fold", "Sąskaita"),
+    ("text-left main__fold", "Pastaba"),
+    ("edit-col", ""),
+    ("delete-col", ""),
+]
+OTHER_PARTY = {LEND: "Paskolos gavėjas", BORROW: "Paskolos davėjas"}
+OTHER_TYPE = {LEND: BORROW, BORROW: LEND}
+
+
+def _a_debt(factory, name):
+    factory(name=name, price=777_777, returned=543_210)
+
+
+def _a_return(factory, name):
+    factory(price=543_210, debt__name=name)
+
+
+# the day is each factory's own date
+@pytest.mark.parametrize(
+    "paths, factory_table, build, heads, day, figures",
+    [
+        pytest.param(
+            TAB_PATHS,
+            DEBT_FACTORIES,
+            _a_debt,
+            DEBT_HEADS,
+            "1999-01-01",
+            [
+                (FOLDED_FIGURE, "", "7.777,77"),
+                (FOLDED_FIGURE, "", "5.432,10"),
+                ("main__figure", "", "2.345,67"),
+            ],
+            id="debts",
+        ),
+        pytest.param(
+            RETURN_TAB_PATHS,
+            RETURN_FACTORIES,
+            _a_return,
+            RETURN_HEADS,
+            "1999-01-02",
+            [("main__figure", "", "5.432,10")],
+            id="returns",
+        ),
+    ],
+)
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_a_tab_draws_its_columns_and_only_its_own_records(
+    client_logged, debt_type, paths, factory_table, build, heads, day, figures
+):
+    # both named: Faker cannot promise two different names
+    build(factory_table[debt_type], "Own name")
+    build(factory_table[OTHER_TYPE[debt_type]], "Other name")
+
+    content = client_logged.get(paths[debt_type]).content.decode("utf-8")
+
+    assert HEAD_CELL.findall(content) == [
+        ("text-left", "Data"),
+        ("text-left main__name", OTHER_PARTY[debt_type]),
+        *heads,
+        *TAIL_HEADS,
+    ]
+    assert f'<td class="text-left main__date">{day}</td>' in content
+    assert '<td class="text-left main__name">Own name</td>' in content
+    assert FIGURE_CELL.findall(content) == figures
+    assert '<td class="text-left main__fold">Account1</td>' in content
+    assert "Other name" not in content
+
+
+def _debts_of_three_years(factory):
+    factory(name="Carried", date=date(1998, 6, 1))
+    factory(name="Settled", date=date(1998, 6, 1), closed=True)
+    factory(name="Current", date=date(1999, 6, 1))
+    factory(name="Later", date=date(2000, 6, 1))
+
+
+def _returns_of_three_years(factory):
+    for year, name in [(1998, "Before"), (1999, "Current"), (2000, "Later")]:
+        day = date(year, 6, 1)
+        factory(date=day, debt__date=day, debt__name=name)
+
+
+@pytest.mark.parametrize(
+    "paths, factory_table, build, shown",
+    [
+        pytest.param(
+            TAB_PATHS,
+            DEBT_FACTORIES,
+            _debts_of_three_years,
+            ["Carried", "Current"],
+            id="debts",
+        ),
+        pytest.param(
+            RETURN_TAB_PATHS,
+            RETURN_FACTORIES,
+            _returns_of_three_years,
+            ["Current"],
+            id="returns",
+        ),
+    ],
+)
+@pytest.mark.parametrize("debt_type", DEBT_TYPES)
+def test_a_tab_lists_its_year_and_the_open_debts_before_it(
+    client_logged, debt_type, paths, factory_table, build, shown
+):
+    build(factory_table[debt_type])
+
+    content = client_logged.get(paths[debt_type]).content.decode("utf-8")
+
+    assert sorted(NAME_CELL.findall(content)) == shown
+
+
 @pytest.mark.parametrize(
     "path, factory", [pytest.param(*row.values[:2], id=row.id) for row in TAB_ROWS]
 )
@@ -99,13 +223,13 @@ def test_a_tab_query_count_does_not_grow_with_the_rows(
 @pytest.mark.parametrize(
     "path, other_factory",
     [
-        pytest.param("/debts/", factories.BorrowFactory, id="lend"),
+        pytest.param(TAB_PATHS[LEND], DEBT_FACTORIES[BORROW], id="lend"),
         pytest.param(
-            "/debts/returns/", factories.BorrowReturnFactory, id="lend_returns"
+            RETURN_TAB_PATHS[LEND], RETURN_FACTORIES[BORROW], id="lend_returns"
         ),
-        pytest.param("/debts/borrow/", factories.LendFactory, id="borrow"),
+        pytest.param(TAB_PATHS[BORROW], DEBT_FACTORIES[LEND], id="borrow"),
         pytest.param(
-            "/debts/borrow/returns/", factories.LendReturnFactory, id="borrow_returns"
+            RETURN_TAB_PATHS[BORROW], RETURN_FACTORIES[LEND], id="borrow_returns"
         ),
     ],
 )
@@ -123,33 +247,33 @@ def test_a_tab_with_no_records_of_its_own_says_so(client_logged, path, other_fac
     "path, factory, debt_type, update, delete",
     [
         pytest.param(
-            "/debts/",
-            factories.LendFactory,
-            Debt.DebtType.LEND,
+            TAB_PATHS[LEND],
+            DEBT_FACTORIES[LEND],
+            LEND,
             "debts:update",
             "debts:delete",
             id="lend",
         ),
         pytest.param(
-            "/debts/returns/",
-            factories.LendReturnFactory,
-            Debt.DebtType.LEND,
+            RETURN_TAB_PATHS[LEND],
+            RETURN_FACTORIES[LEND],
+            LEND,
             "debts:return_update",
             "debts:return_delete",
             id="lend_returns",
         ),
         pytest.param(
-            "/debts/borrow/",
-            factories.BorrowFactory,
-            Debt.DebtType.BORROW,
+            TAB_PATHS[BORROW],
+            DEBT_FACTORIES[BORROW],
+            BORROW,
             "debts:update",
             "debts:delete",
             id="borrow",
         ),
         pytest.param(
-            "/debts/borrow/returns/",
-            factories.BorrowReturnFactory,
-            Debt.DebtType.BORROW,
+            RETURN_TAB_PATHS[BORROW],
+            RETURN_FACTORIES[BORROW],
+            BORROW,
             "debts:return_update",
             "debts:return_delete",
             id="borrow_returns",
@@ -176,7 +300,7 @@ def test_a_tab_row_offers_its_edit_and_delete_buttons(
 
 
 def test_quick_add_offers_a_pill_per_tab(client_logged):
-    content = client_logged.get("/debts/").content.decode()
+    content = client_logged.get(TAB_PATHS[LEND]).content.decode()
 
     assert quick_add_pills(content) == [
         ("button", "lend", 'hx-get="/debts/lend/new/"', "Paskolinti"),
@@ -247,8 +371,8 @@ def test_a_new_form_with_invalid_data_names_each_field(
     "debt_type, factory, url_name, day, remark, title",
     [
         pytest.param(
-            Debt.DebtType.BORROW,
-            factories.BorrowFactory,
+            BORROW,
+            DEBT_FACTORIES[BORROW],
             "debts:update",
             1,
             "Borrow Remark",
@@ -256,8 +380,8 @@ def test_a_new_form_with_invalid_data_names_each_field(
             id="debt-borrow",
         ),
         pytest.param(
-            Debt.DebtType.LEND,
-            factories.LendFactory,
+            LEND,
+            DEBT_FACTORIES[LEND],
             "debts:update",
             1,
             "Lend Remark",
@@ -265,8 +389,8 @@ def test_a_new_form_with_invalid_data_names_each_field(
             id="debt-lend",
         ),
         pytest.param(
-            Debt.DebtType.BORROW,
-            factories.BorrowReturnFactory,
+            BORROW,
+            RETURN_FACTORIES[BORROW],
             "debts:return_update",
             2,
             "Borrow Return Remark",
@@ -274,8 +398,8 @@ def test_a_new_form_with_invalid_data_names_each_field(
             id="return-borrow",
         ),
         pytest.param(
-            Debt.DebtType.LEND,
-            factories.LendReturnFactory,
+            LEND,
+            RETURN_FACTORIES[LEND],
             "debts:return_update",
             2,
             "Lend Return Remark",

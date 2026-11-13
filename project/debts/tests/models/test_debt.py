@@ -11,11 +11,17 @@ from ....accounts.tests.factories import AccountBalance, AccountFactory
 from ....incomes.tests.factories import IncomeFactory
 from ....journals.tests.factories import JournalFactory
 from ...models import Debt
-from ...services.model_services import DebtModelService
-from ..factories import BorrowFactory, LendFactory
+from ...services.model_services import DebtModelService, DebtReturnModelService
+from ..factories import (
+    BorrowFactory,
+    BorrowReturnFactory,
+    LendFactory,
+    LendReturnFactory,
+)
 from ..helpers import (
     DEBT_FACTORIES,
     DEBT_TYPES,
+    RETURN_FACTORIES,
     account_read_queries,
     assert_balance,
 )
@@ -72,16 +78,25 @@ def test_debt_related(main_user, second_user, debt_type):
 
 
 @factory.django.mute_signals(post_save)
+@pytest.mark.parametrize(
+    "factory_table, service_class",
+    [
+        pytest.param(DEBT_FACTORIES, DebtModelService, id="debt"),
+        pytest.param(RETURN_FACTORIES, DebtReturnModelService, id="return"),
+    ],
+)
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_related_queries_do_not_grow(main_user, debt_type):
-    service = DebtModelService(main_user, debt_type)
+def test_debt_and_return_related_queries_do_not_grow(
+    main_user, debt_type, factory_table, service_class
+):
+    service = service_class(main_user, debt_type)
 
     for _ in range(2):
-        DEBT_FACTORIES[debt_type]()
+        factory_table[debt_type]()
     two = account_read_queries(service)
 
     for _ in range(4):
-        DEBT_FACTORIES[debt_type]()
+        factory_table[debt_type]()
     six = account_read_queries(service)
 
     assert two == six
@@ -272,54 +287,53 @@ def test_debt_post_save_change_account(debt_type, incomes, expenses, balance):
 
 
 @pytest.mark.parametrize(
-    "debt_type, incomes, expenses, balance",
-    [
-        pytest.param(Debt.DebtType.LEND, 0.0, 10.0, -10.0, id="lend"),
-        pytest.param(Debt.DebtType.BORROW, 10.0, 0.0, 10.0, id="borrow"),
-    ],
-)
-def test_debt_post_delete(debt_type, incomes, expenses, balance):
-    obj = DEBT_FACTORIES[debt_type](price=10)
-
-    actual = AccountBalance.objects.get(account_id=obj.account_id, year=1999)
-    assert_balance(actual, incomes=incomes, expenses=expenses, balance=balance)
-
-    Debt.objects.get(pk=obj.pk).delete()
-
-    assert not AccountBalance.objects.exists()
-
-
-@pytest.mark.parametrize(
-    "debt_type, before, after",
+    "debt_type, kept_prices, before, after",
     [
         pytest.param(
             Debt.DebtType.LEND,
-            {"incomes": 0.0, "expenses": 11.0, "balance": -11.0},
-            {"incomes": 0.0, "expenses": 1.0, "balance": -1.0},
+            (),
+            {"incomes": 0.0, "expenses": 10.0, "balance": -10.0},
+            [],
             id="lend",
         ),
         pytest.param(
             Debt.DebtType.BORROW,
-            {"incomes": 11.0, "expenses": 0.0, "balance": 11.0},
-            {"incomes": 1.0, "expenses": 0.0, "balance": 1.0},
+            (),
+            {"incomes": 10.0, "expenses": 0.0, "balance": 10.0},
+            [],
             id="borrow",
+        ),
+        pytest.param(
+            Debt.DebtType.LEND,
+            (1,),
+            {"incomes": 0.0, "expenses": 11.0, "balance": -11.0},
+            # the sync carries the balance into the next year's row
+            [(1999, 0.0, 1.0, -1.0), (2000, 0.0, 0.0, -1.0)],
+            id="lend_beside_another",
+        ),
+        pytest.param(
+            Debt.DebtType.BORROW,
+            (1,),
+            {"incomes": 11.0, "expenses": 0.0, "balance": 11.0},
+            [(1999, 1.0, 0.0, 1.0), (2000, 0.0, 0.0, 1.0)],
+            id="borrow_beside_another",
         ),
     ],
 )
-def test_debt_post_delete_with_update(debt_type, before, after):
-    obj = DEBT_FACTORIES[debt_type](price=1)
-    obj_delete = DEBT_FACTORIES[debt_type](price=10)
-
-    assert AccountBalance.objects.count() == 2
-    assert Debt.objects.count() == 2
+def test_debt_post_delete(debt_type, kept_prices, before, after):
+    for price in kept_prices:
+        DEBT_FACTORIES[debt_type](price=price)
+    obj = DEBT_FACTORIES[debt_type](price=10)
 
     actual = AccountBalance.objects.get(account_id=obj.account_id, year=1999)
     assert_balance(actual, **before)
 
-    Debt.objects.get(pk=obj_delete.pk).delete()
+    Debt.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.get(account_id=obj.account_id, year=1999)
-    assert_balance(actual, **after)
+    assert [
+        (row.year, row.incomes, row.expenses, row.balance)
+        for row in AccountBalance.objects.order_by("year")
+    ] == after
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
@@ -382,27 +396,49 @@ def test_debt_sum_all_not_closed(main_user, debt_type, open_debts, expect):
 
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
-    "factory_, other, debt_type, sums, key",
+    "factory_, other, service_class, debt_type, sums, key",
     [
         pytest.param(
             BorrowFactory,
             LendFactory,
+            DebtModelService,
             Debt.DebtType.BORROW,
             lambda s: s.incomes(),
             "incomes",
-            id="incomes",
+            id="debt_incomes",
         ),
         pytest.param(
             LendFactory,
             BorrowFactory,
+            DebtModelService,
             Debt.DebtType.LEND,
             lambda s: s.expenses(),
             "expenses",
-            id="expenses",
+            id="debt_expenses",
+        ),
+        pytest.param(
+            LendReturnFactory,
+            BorrowReturnFactory,
+            DebtReturnModelService,
+            Debt.DebtType.LEND,
+            lambda s: s.incomes(),
+            "incomes",
+            id="return_incomes",
+        ),
+        pytest.param(
+            BorrowReturnFactory,
+            LendReturnFactory,
+            DebtReturnModelService,
+            Debt.DebtType.BORROW,
+            lambda s: s.expenses(),
+            "expenses",
+            id="return_expenses",
         ),
     ],
 )
-def test_debt_yearly_sums_per_account(main_user, factory_, other, debt_type, sums, key):
+def test_debt_and_return_yearly_sums_per_account(
+    main_user, factory_, other, service_class, debt_type, sums, key
+):
     a1 = AccountFactory(title="A1", order=20)
     a2 = AccountFactory(title="A2")
 
@@ -416,9 +452,9 @@ def test_debt_yearly_sums_per_account(main_user, factory_, other, debt_type, sum
     factory_(date=dt(1999, 1, 1), account=a2, price=30)
     factory_(date=dt(1999, 1, 1), account=a2, price=40)
 
-    other()
+    other(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = sums(DebtModelService(main_user, debt_type))
+    actual = sums(service_class(main_user, debt_type))
 
     assert [(row["year"], row["category_id"], row[key]) for row in actual] == [
         (1970, 1, 3),

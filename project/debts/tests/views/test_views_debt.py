@@ -6,9 +6,7 @@ import pytest
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
-from ... import models
 from ...services.model_services import DebtModelService
-from .. import factories
 from ..helpers import (
     DEBT_FACTORIES,
     DEBT_TYPES,
@@ -20,57 +18,6 @@ from ..helpers import (
 )
 
 pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("quiet_syncs")]
-
-
-@pytest.mark.parametrize(
-    "debt_type, other_factory, label",
-    [
-        pytest.param(
-            models.Debt.DebtType.BORROW,
-            factories.LendFactory,
-            "Paskolos davėjas",
-            id="borrow",
-        ),
-        pytest.param(
-            models.Debt.DebtType.LEND,
-            factories.BorrowFactory,
-            "Paskolos gavėjas",
-            id="lend",
-        ),
-    ],
-)
-def test_debt_tab_with_data(client_logged, debt_type, other_factory, label):
-    # both named: Faker cannot promise two different names
-    obj1 = DEBT_FACTORIES[debt_type](
-        name="Own name", closed=True, price=777_777, returned=543_210
-    )
-    obj2 = other_factory(name="Other name", price=666_666)
-
-    response = client_logged.get(TAB_PATHS[debt_type])
-    content = response.content.decode("utf-8")
-
-    assert '">Data</th>' in content
-    assert f'<th class="text-left main__name">{label}</th>' in content
-    assert '">Suma</th>' in content
-    assert '">Grąžinta</th>' in content
-    assert '">Sąskaita</th>' in content
-    assert '">Pastaba</th>' in content
-    assert '">Uždaryta</th>' not in content
-    assert '<th class="edit-col"></th>' in content
-    assert '<th class="delete-col"></th>' in content
-
-    assert '<td class="text-left main__date">1999-01-01</td>' in content
-    assert (
-        f'<td class="text-left main__name">{obj1.name} '
-        '<span class="main__closed">Grąžinta</span></td>'
-    ) in content
-    assert '<td class="main__figure main__fold" data-cell="">7.777,77</td>' in content
-    assert '<td class="main__figure main__fold" data-cell="">5.432,10</td>' in content
-    assert '<td class="text-left main__fold">Account1</td>' in content
-    assert "bi-check-circle-fill" not in content
-
-    assert f'<td class="text-left main__name">{obj2.name}</td>' not in content
-    assert "6.666,66</td>" not in content
 
 
 @pytest.mark.parametrize(
@@ -266,14 +213,15 @@ SAVES = [
     pytest.param(_return_update, _return_data, RETURN_TAB_PATHS, id="return_update"),
 ]
 DELETES = [
-    pytest.param(_debt_delete, _debt_data, TAB_PATHS, id="debt_delete"),
-    pytest.param(_return_delete, _return_data, RETURN_TAB_PATHS, id="return_delete"),
+    pytest.param(_debt_delete, _debt_data, id="debt_delete"),
+    pytest.param(_return_delete, _return_data, id="return_delete"),
 ]
+FORMS = [pytest.param(*row.values[:2], id=row.id) for row in [*SAVES, *DELETES]]
 
 
-@pytest.mark.parametrize("url_of, data_of, paths", [*SAVES, *DELETES])
+@pytest.mark.parametrize("url_of, data_of", FORMS)
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_a_form_fires_reload(client_logged, debt_type, url_of, data_of, paths):
+def test_a_form_fires_reload(client_logged, debt_type, url_of, data_of):
     debt = DEBT_FACTORIES[debt_type]()
 
     response = client_logged.post(

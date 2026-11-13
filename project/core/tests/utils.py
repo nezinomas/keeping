@@ -23,7 +23,7 @@ def row_start(url=r'[^"]*'):
 
 ROW = re.compile(row_start(ANY_URL) + r"[^>]*>(.*?)</tr>", re.DOTALL)
 # (class, text) of each header cell
-HEAD_CELL = re.compile(r'<th class="([^"]*)">([^<]*)</th>')
+HEAD_CELL = re.compile(r'<th(?: class="([^"]*)")?>([^<]*)</th>')
 ROW_BUTTON = re.compile(
     r'<td class="(edit-col|delete-col)">\s*<a role="button" hx-get="([^"]*)"'
 )

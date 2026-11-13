@@ -10,12 +10,11 @@ from ....accounts.tests.factories import AccountFactory
 from ....incomes.tests.factories import IncomeFactory
 from ...models import Debt, DebtReturn
 from ...services.model_services import DebtReturnModelService
-from ..factories import BorrowReturnFactory, LendReturnFactory
+from ..factories import BorrowReturnFactory
 from ..helpers import (
     DEBT_FACTORIES,
     DEBT_TYPES,
     RETURN_FACTORIES,
-    account_read_queries,
     assert_balance,
 )
 
@@ -56,22 +55,6 @@ def test_debt_return_related(main_user, second_user, debt_type, expected):
     actual = DebtReturnModelService(main_user, debt_type).objects.get()
 
     assert str(actual) == expected
-
-
-@factory.django.mute_signals(post_save)
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_related_queries_do_not_grow(main_user, debt_type):
-    service = DebtReturnModelService(main_user, debt_type)
-
-    for _ in range(2):
-        RETURN_FACTORIES[debt_type]()
-    two = account_read_queries(service)
-
-    for _ in range(4):
-        RETURN_FACTORIES[debt_type]()
-    six = account_read_queries(service)
-
-    assert two == six
 
 
 @factory.django.mute_signals(post_save)
@@ -174,11 +157,12 @@ def _price_set_to_one(obj):
 
 
 @pytest.mark.parametrize(
-    "debt_type, change, before, after",
+    "debt_type, change, kept_prices, before, after",
     [
         pytest.param(
             Debt.DebtType.LEND,
             _price_set_to_one,
+            (),
             LEND_BEFORE,
             {"incomes": 1, "expenses": 100, "balance": -99},
             id="lend_updated",
@@ -186,6 +170,7 @@ def _price_set_to_one(obj):
         pytest.param(
             Debt.DebtType.BORROW,
             _price_set_to_one,
+            (),
             BORROW_BEFORE,
             {"incomes": 100, "expenses": 1, "balance": 99},
             id="borrow_updated",
@@ -193,21 +178,41 @@ def _price_set_to_one(obj):
         pytest.param(
             Debt.DebtType.LEND,
             DebtReturn.delete,
+            (),
             LEND_BEFORE,
             {"incomes": 0, "expenses": 100, "balance": -100},
             id="lend_deleted",
         ),
         pytest.param(
+            Debt.DebtType.LEND,
+            DebtReturn.delete,
+            (1,),
+            {"incomes": 7, "expenses": 100, "balance": -93},
+            {"incomes": 1, "expenses": 100, "balance": -99},
+            id="lend_deleted_beside_another",
+        ),
+        pytest.param(
             Debt.DebtType.BORROW,
             DebtReturn.delete,
+            (),
             BORROW_BEFORE,
             {"incomes": 100, "expenses": 0, "balance": 100},
             id="borrow_deleted",
         ),
+        pytest.param(
+            Debt.DebtType.BORROW,
+            DebtReturn.delete,
+            (1,),
+            {"incomes": 100, "expenses": 6, "balance": 94},
+            {"incomes": 100, "expenses": 1, "balance": 99},
+            id="borrow_deleted_beside_another",
+        ),
     ],
 )
-def test_debt_return_post_save_or_delete(debt_type, change, before, after):
+def test_debt_return_post_save_or_delete(debt_type, change, kept_prices, before, after):
     obj = RETURN_FACTORIES[debt_type]()
+    for price in kept_prices:
+        RETURN_FACTORIES[debt_type](debt=obj.debt, price=price)
 
     actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert_balance(actual, **before)
@@ -247,89 +252,6 @@ def test_debt_return_post_save_first_record(
         (1999, 1, incomes, expenses, balance, delta),
         # the sync writes a next-year row carrying the balance forward
         (2000, balance, 0, 0, balance, delta),
-    ]
-
-
-@pytest.mark.parametrize(
-    "debt_type, before, after",
-    [
-        pytest.param(
-            Debt.DebtType.LEND,
-            {"incomes": 3, "expenses": 100, "balance": -97},
-            {"incomes": 1, "expenses": 100, "balance": -99},
-            id="lend",
-        ),
-        pytest.param(
-            Debt.DebtType.BORROW,
-            {"incomes": 100, "expenses": 3, "balance": 97},
-            {"incomes": 100, "expenses": 1, "balance": 99},
-            id="borrow",
-        ),
-    ],
-)
-def test_debt_return_post_delete_with_update(debt_type, before, after):
-    return_factory = RETURN_FACTORIES[debt_type]
-    b = DEBT_FACTORIES[debt_type]()
-    return_factory(debt=b, price=1)
-
-    obj = return_factory(debt=b, price=2)
-
-    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert_balance(actual, **before)
-
-    DebtReturn.objects.get(pk=obj.pk).delete()
-
-    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert_balance(actual, **after)
-
-
-@factory.django.mute_signals(post_save)
-@pytest.mark.parametrize(
-    "factory_, other, debt_type, sums, key",
-    [
-        pytest.param(
-            LendReturnFactory,
-            BorrowReturnFactory,
-            Debt.DebtType.LEND,
-            lambda s: s.incomes(),
-            "incomes",
-            id="incomes",
-        ),
-        pytest.param(
-            BorrowReturnFactory,
-            LendReturnFactory,
-            Debt.DebtType.BORROW,
-            lambda s: s.expenses(),
-            "expenses",
-            id="expenses",
-        ),
-    ],
-)
-def test_debt_return_yearly_sums_per_account(
-    main_user, factory_, other, debt_type, sums, key
-):
-    a1 = AccountFactory(title="A1", order=20)
-    a2 = AccountFactory(title="A2")
-
-    factory_(date=dt(1970, 1, 1), account=a1, price=1)
-    factory_(date=dt(1970, 1, 1), account=a1, price=2)
-    factory_(date=dt(1970, 1, 1), account=a2, price=3)
-    factory_(date=dt(1970, 1, 1), account=a2, price=4)
-
-    factory_(date=dt(1999, 1, 1), account=a1, price=10)
-    factory_(date=dt(1999, 1, 1), account=a1, price=20)
-    factory_(date=dt(1999, 1, 1), account=a2, price=30)
-    factory_(date=dt(1999, 1, 1), account=a2, price=40)
-
-    other(date=dt(1999, 1, 1), account=a2, price=180)
-
-    actual = sums(DebtReturnModelService(main_user, debt_type))
-
-    assert [(row["year"], row["category_id"], row[key]) for row in actual] == [
-        (1970, 1, 3),
-        (1970, 2, 7),
-        (1999, 1, 30),
-        (1999, 2, 70),
     ]
 
 

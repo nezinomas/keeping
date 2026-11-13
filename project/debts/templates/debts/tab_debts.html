@@ -9,9 +9,9 @@
         <tr>
             <th class="text-left">{% translate 'Date' %}</th>
             <th class="text-left main__name">{{ other_party }}</th>
-            <th class="price-col main__fold">{% translate 'Sum' %}</th>
-            <th class="price-col main__fold">{% translate 'Returned' %}</th>
-            <th class="price-col">{% translate 'Remaining' %}</th>
+            <th class="main__fold">{% translate 'Sum' %}</th>
+            <th class="main__fold">{% translate 'Returned' %}</th>
+            <th>{% translate 'Remaining' %}</th>
             {% include 'debts/includes/tail_heads.html' %}
         </tr>
     </c-slot>
