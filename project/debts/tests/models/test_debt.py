@@ -34,6 +34,19 @@ def test_debt_returned_is_never_null():
         LendFactory(returned=None)
 
 
+@pytest.mark.parametrize(
+    "returned, closed, remaining",
+    [
+        pytest.param(40_00, False, 60_00, id="open"),
+        pytest.param(100_00, True, 0, id="closed"),
+    ],
+)
+def test_debt_remaining_is_its_sum_less_its_returned(returned, closed, remaining):
+    debt = LendFactory.build(price=100_00, returned=returned, closed=closed)
+
+    assert debt.remaining == remaining
+
+
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
 def test_debt_factory_name_is_always_valid(debt_type):
     seed = 8118

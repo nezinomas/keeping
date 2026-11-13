@@ -25,7 +25,6 @@ msgid "Account title"
 msgstr "Sąskaitos pavadinimas"
 
 #: .\project\accounts\forms.py:27
-#: .\project\debts\templates\debts\debt_list.html:23
 #: .\project\savings\forms.py:30
 msgid "Closed"
 msgstr "Uždaryta"
@@ -41,7 +40,7 @@ msgstr "Sąskaitos"
 
 #: .\project\accounts\views.py:25 .\project\accounts\views.py:33
 #: .\project\debts\forms.py:68 .\project\debts\forms.py:151
-#: .\project\debts\templates\debts\debt_list.html:21
+#: .\project\debts\templates\debts\includes\tail_heads.html:2
 #: .\project\expenses\forms.py:127
 #: .\project\expenses\templates\expenses\expense_list.html:35
 #: .\project\incomes\forms.py:43
@@ -298,7 +297,7 @@ msgstr "Fondas"
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:33
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:34
 #: .\project\debts\forms.py:69 .\project\debts\forms.py:153
-#: .\project\debts\templates\debts\debt_list.html:19
+#: .\project\debts\templates\debts\tab_debts.html:12 .\project\debts\templates\debts\tab_returns.html:12
 #: .\project\pensions\forms.py:41
 #: .\project\pensions\templates\pensions\pension_list.html:12
 #: .\project\savings\forms.py:67
@@ -322,7 +321,7 @@ msgstr "Mokesčiai"
 #: .\project\counts\forms.py:50
 #: .\project\counts\templates\counts\tab_data.html:10
 #: .\project\debts\forms.py:66 .\project\debts\forms.py:150
-#: .\project\debts\templates\debts\debt_list.html:14
+#: .\project\debts\templates\debts\tab_debts.html:10 .\project\debts\templates\debts\tab_returns.html:10
 #: .\project\drinks\forms.py:55
 #: .\project\drinks\templates\drinks\tab_data.html:10
 #: .\project\expenses\forms.py:120
@@ -442,9 +441,12 @@ msgid "Year"
 msgstr "Metai"
 
 #: .\project\bookkeeping\templates\cotton\info_table.html:22
-#: .\project\debts\templates\debts\debt_list.html:37
 msgid "Remains to be returned"
 msgstr "Liko grąžinti"
+
+#: .\project\debts\templates\debts\tab_debts.html:14
+msgid "Remaining"
+msgstr "Liko"
 
 #: .\project\bookkeeping\templates\cotton\year_balance.html:11
 #: .\project\templates\base.html:87
@@ -465,7 +467,7 @@ msgid "Borrow"
 msgstr "Pasiskolinta"
 
 #: .\project\bookkeeping\templates\cotton\year_balance.html:24
-#: .\project\debts\models.py:61 .\project\debts\templates\debts\index.html:35
+#: .\project\debts\models.py:69
 msgid "Borrow return"
 msgstr "Grąžinau"
 
@@ -475,7 +477,7 @@ msgid "Lend"
 msgstr "Paskolinta"
 
 #: .\project\bookkeeping\templates\cotton\year_balance.html:26
-#: .\project\debts\models.py:58 .\project\debts\templates\debts\index.html:45
+#: .\project\debts\models.py:68
 msgid "Lend return"
 msgstr "Grąžino"
 
@@ -532,7 +534,7 @@ msgstr "Autorius"
 #: .\project\books\forms.py:39
 #: .\project\books\templates\books\book_list.html:13
 #: .\project\debts\forms.py:70 .\project\debts\forms.py:154
-#: .\project\debts\templates\debts\debt_list.html:22
+#: .\project\debts\templates\debts\includes\tail_heads.html:3
 #: .\project\expenses\forms.py:125
 #: .\project\expenses\templates\expenses\expense_list.html:33
 #: .\project\incomes\forms.py:45
@@ -1156,18 +1158,17 @@ msgid ""
 msgstr ""
 "Ištrynus %(counter)s bus ištrinta ir %(count)s įrašų, sukurtų nuo %(year)s."
 
-#: .\project\debts\forms.py:62 .\project\debts\forms.py:145
-#: .\project\debts\templates\debts\debt_list.html:16
+#: .\project\debts\models.py:63
 msgid "Borrower"
 msgstr "Paskolos gavėjas"
 
-#: .\project\debts\forms.py:64 .\project\debts\forms.py:148
-#: .\project\debts\templates\debts\debt_list.html:17
+#: .\project\debts\models.py:64
 msgid "Lender"
 msgstr "Paskolos davėjas"
 
 #: .\project\debts\forms.py:71
-#: .\project\debts\templates\debts\debt_list.html:20
+#: .\project\debts\templates\debts\tab_debts.html:13
+#: .\project\debts\templates\debts\includes\other_party_cell.html:2
 msgid "Returned"
 msgstr "Grąžinta"
 
@@ -1186,18 +1187,6 @@ msgstr "Skola negali būti mažesnė nei grąžinta suma."
 #: .\project\debts\forms.py:185
 msgid "The date preceding the debt's date."
 msgstr "Data yra ankstesnė nei skolos data."
-
-#: .\project\debts\templates\debts\index.html:16
-#: .\project\debts\templates\debts\index.html:26
-msgctxt "debt button"
-msgid "Debt"
-msgstr "Skolą"
-
-#: .\project\debts\templates\debts\index.html:36
-#: .\project\debts\templates\debts\index.html:46
-msgctxt "sum button"
-msgid "Sum"
-msgstr "Sumą"
 
 #: .\project\debts\views.py:78 .\project\debts\views.py:88
 msgid "Debt"

@@ -1,3 +1,5 @@
+import re
+
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
@@ -22,6 +24,12 @@ RETURN_TAB_PATHS = {
     Debt.DebtType.LEND: "/debts/returns/",
     Debt.DebtType.BORROW: "/debts/borrow/returns/",
 }
+
+# (class, data-cell, text) of each money cell
+FIGURE_CELL = re.compile(
+    r'<td class="(main__figure[^"]*)" data-cell="([^"]*)">([^<]*)</td>'
+)
+FOLDED_FIGURE = "main__figure main__fold"
 
 
 def assert_balance(actual, *, incomes, expenses, balance, title="Account1"):

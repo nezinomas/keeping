@@ -9,8 +9,9 @@
         <tr>
             <th class="text-left">{% translate 'Date' %}</th>
             <th class="text-left main__name">{{ other_party }}</th>
-            <th class="price-col">{% translate 'Sum' %}</th>
-            <th class="price-col">{% translate 'Returned' %}</th>
+            <th class="price-col main__fold">{% translate 'Sum' %}</th>
+            <th class="price-col main__fold">{% translate 'Returned' %}</th>
+            <th class="price-col">{% translate 'Remaining' %}</th>
             <th class="text-left main__fold">{% translate 'Account' %}</th>
             <th class="text-left main__fold">{% translate 'Remark' %}</th>
             <th class="price-col text-center">{% translate 'Closed' %}</th>
@@ -24,12 +25,9 @@
     <c-edit-row :url="url_update">
         <td class="text-left main__date">{{ object.date|date:"Y-m-d" }}</td>
         <td class="text-left main__name">{{ object.name }}</td>
-        <td class="main__figure" data-cell="{{ object.price|cell_state }}">{{ object.price|price|cellformat }}</td>
-        <td class="main__figure" data-cell="{{ object.returned|cell_state }}">
-            <span{% if not object.closed %} class="tip right w100" data-tip="{% translate 'Remains to be returned' %}:  {{ object.price|sub:object.returned|price|floatformat:'2g' }}"{% endif %}>
-            {{ object.returned|price|floatformat:"2g" }}
-            </span>
-        </td>
+        <td class="main__figure main__fold" data-cell="{{ object.price|cell_state }}">{{ object.price|price|cellformat }}</td>
+        <td class="main__figure main__fold" data-cell="{{ object.returned|cell_state }}">{{ object.returned|price|cellformat }}</td>
+        <td class="main__figure" data-cell="{{ object.remaining|cell_state }}">{{ object.remaining|price|cellformat }}</td>
         <td class="text-left main__fold">{{ object.account }}</td>
         <td class="text-left main__fold">{{ object.remark }}</td>
         <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>

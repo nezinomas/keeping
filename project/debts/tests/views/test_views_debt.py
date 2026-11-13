@@ -12,6 +12,8 @@ from .. import factories
 from ..helpers import (
     DEBT_FACTORIES,
     DEBT_TYPES,
+    FIGURE_CELL,
+    FOLDED_FIGURE,
     RETURN_FACTORIES,
     RETURN_TAB_PATHS,
     TAB_PATHS,
@@ -59,11 +61,8 @@ def test_debt_tab_with_data(client_logged, debt_type, other_factory, label):
 
     assert '<td class="text-left main__date">1999-01-01</td>' in content
     assert f'<td class="text-left main__name">{obj1.name}</td>' in content
-    assert '<td class="main__figure" data-cell="">7.777,77</td>' in content
-    assert re.search(
-        r'<td class="main__figure" data-cell="">\s*<span>\s*5\.432,10\s*</span>',
-        content,
-    )
+    assert '<td class="main__figure main__fold" data-cell="">7.777,77</td>' in content
+    assert '<td class="main__figure main__fold" data-cell="">5.432,10</td>' in content
     assert '<td class="text-left main__fold">Account1</td>' in content
     assert (
         '<td class="text-center"><i class="bi bi-check-circle-fill"></i></td>'
@@ -71,30 +70,35 @@ def test_debt_tab_with_data(client_logged, debt_type, other_factory, label):
     )
 
     assert f'<td class="text-left main__name">{obj2.name}</td>' not in content
-    assert '<td class="main__figure" data-cell="">6.666,66</td>' not in content
+    assert "6.666,66</td>" not in content
 
 
 @pytest.mark.parametrize(
-    "returned, cell, remaining, shown",
+    "returned, closed, cells",
     [
-        pytest.param(4_00, "", "6,00", "4,00", id="part"),
-        pytest.param(0, "empty", "10,00", "0,00", id="nothing"),
+        pytest.param(
+            0,
+            False,
+            [(FOLDED_FIGURE, "empty", "-"), ("main__figure", "", "10,00")],
+            id="nothing",
+        ),
+        pytest.param(
+            10_00,
+            True,
+            [(FOLDED_FIGURE, "", "10,00"), ("main__figure", "empty", "-")],
+            id="closed",
+        ),
     ],
 )
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_an_open_debts_returned_cell_shows_its_state_and_remaining(
-    client_logged, debt_type, returned, cell, remaining, shown
+def test_remaining_follows_returned_and_both_show_their_state(
+    client_logged, debt_type, returned, closed, cells
 ):
-    DEBT_FACTORIES[debt_type](price=10_00, returned=returned)
+    DEBT_FACTORIES[debt_type](price=10_00, returned=returned, closed=closed)
 
     content = client_logged.get(TAB_PATHS[debt_type]).content.decode("utf-8")
 
-    assert re.search(
-        rf'<td class="main__figure" data-cell="{cell}">\s*'
-        rf'<span\s+class="tip right w100" data-tip="Liko grąžinti:  {remaining}">'
-        rf"\s*{shown}\s*",
-        content,
-    )
+    assert FIGURE_CELL.findall(content) == [(FOLDED_FIGURE, "", "10,00"), *cells]
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)

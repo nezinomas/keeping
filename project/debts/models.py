@@ -34,6 +34,10 @@ class Debt(models.Model):
     def __str__(self):
         return str(self.name)
 
+    @property
+    def remaining(self) -> int:
+        return self.price - self.returned
+
 
 class DebtReturn(models.Model):
     date = models.DateField()
