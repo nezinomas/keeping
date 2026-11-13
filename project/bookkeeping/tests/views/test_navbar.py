@@ -84,6 +84,15 @@ def test_the_navbar_menus_carry_no_flag(client_logged):
                 ("savings:tab_pension_funds", "II pakopos fondai"),
             ],
         ),
+        (
+            "/debts/",
+            [
+                ("debts:tab_lend", "Paskolinta"),
+                ("debts:tab_lend_returns", "Grąžino"),
+                ("debts:tab_borrow", "Pasiskolinta"),
+                ("debts:tab_borrow_returns", "Grąžinau"),
+            ],
+        ),
     ],
 )
 def test_the_tab_menus_name_their_tabs_in_order(client_logged, item_url, tabs):
