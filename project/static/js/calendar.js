@@ -18,14 +18,22 @@ function initCalendar() {
         if (!label) return;
 
         const [date, ...rows] = label.split('\n');
-        let html = `<div class="heat-tooltip__date">${date}</div>`;
-        for (const row of rows) html += `<div class="heat-tooltip__row">${row}</div>`;
-
-        tooltip.innerHTML = html;
+        tooltip.replaceChildren(
+            line('heat-tooltip__date', date),
+            ...rows.map(row => line('heat-tooltip__row', row)),
+        );
         tooltip.style.borderColor = getComputedStyle(cell).backgroundColor;
         tooltip.hidden = false;
 
         positionTooltip(cell);
+    }
+
+    // textContent, not innerHTML: getAttribute hands back the label unescaped
+    function line(className, text) {
+        const div = document.createElement('div');
+        div.className = className;
+        div.textContent = text;
+        return div;
     }
 
     function hide() {
