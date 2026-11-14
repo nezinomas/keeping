@@ -116,6 +116,37 @@ def test_a_return_tab_divides_its_debts(client_logged, debts, divided):
     ] == divided
 
 
+DATE_CELL = re.compile(r'<td class="text-left main__date">([^<]*)</td>')
+
+
+def test_a_return_tab_orders_by_debt_then_its_latest_return(client_logged):
+    # each Debt's (date, name, creation) and each Return's day apart from every key's
+    # reverse, so dropping or flipping any one key reorders the rows
+    debts = [
+        ("Late", date(1999, 3, 1), [5]),
+        ("B", date(1999, 1, 1), [2, 4]),
+        ("B", date(1999, 1, 1), [3]),
+        ("A", date(1999, 1, 1), [5]),
+    ]
+    for name, day, return_days in debts:
+        debt = DEBT_FACTORIES[BORROW](name=name, date=day, closed=True)
+        for return_day in return_days:
+            RETURN_FACTORIES[BORROW](debt=debt, date=date(1999, day.month, return_day))
+
+    content = client_logged.get(RETURN_TAB_PATHS[BORROW]).content.decode("utf-8")
+    rows = RETURN_ROW.findall(content)
+
+    assert [
+        (NAME_CELL.search(cells)[1], DATE_CELL.search(cells)[1]) for *_, cells in rows
+    ] == [
+        ("Late", "1999-03-05"),
+        ("A", "1999-01-05"),
+        ("B", "1999-01-04"),
+        ("B", "1999-01-02"),
+        ("B", "1999-01-03"),
+    ]
+
+
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
 def test_a_closed_debts_return_row_opens_nothing(client_logged, debt_type):
     # the open row first: a Closed row must not keep the url the row above drew
