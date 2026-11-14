@@ -226,6 +226,27 @@ class DrinksCalendarTooltip(Browser):
         assert len(lines) == 3
         assert (hidden, shown, hidden_after, errors) == (False, lines, True, [])
 
+    def test_tooltip_shows_a_label_as_text_not_markup(self):
+        DrinkFactory()
+        self.open("/drinks/")
+        day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]")
+
+        lines, tags = self.browser.execute_script(
+            """
+            const day = arguments[0];
+            const tooltip = document.getElementById('heat-tooltip');
+            day.dataset.label = '<b>1999-01-05</b>\\n<img src=x>';
+            day.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
+            return [
+                [...tooltip.children].map(line => line.textContent),
+                tooltip.querySelectorAll('b, img').length,
+            ];
+            """,
+            day,
+        )
+
+        assert (lines, tags) == (["<b>1999-01-05</b>", "<img src=x>"], 0)
+
     def test_tooltip_wears_the_calendars_face(self):
         DrinkFactory()
         self.open("/drinks/")
