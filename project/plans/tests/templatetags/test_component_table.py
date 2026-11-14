@@ -62,3 +62,9 @@ def test_renders_over_class_only_on_the_over_months(table, states, count):
     actual = table([_row(states=states)])
 
     assert actual.count("plans-table__over") == count
+
+
+def test_draws_its_table_shell(table):
+    actual = table([_row()])
+
+    assert '<table class="main striped hover">' in actual

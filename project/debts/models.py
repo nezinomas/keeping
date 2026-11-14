@@ -34,6 +34,10 @@ class Debt(models.Model):
     def __str__(self):
         return str(self.name)
 
+    @property
+    def remaining(self) -> int:
+        return self.price - self.returned
+
 
 class DebtReturn(models.Model):
     date = models.DateField()
@@ -45,20 +49,22 @@ class DebtReturn(models.Model):
     debt = models.ForeignKey(Debt, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ["-debt__date", "debt__name", "-date"]
+        ordering = ["-debt__date", "debt__name", "debt_id", "-date"]
 
     def __str__(self):
-        price = round(self.price, 1)
-
-        text = ""
-        if self.debt.debt_type == Debt.DebtType.LEND:
-            text = f"{_('Lend return')} {int_cents_to_float(price)}"
-
-        if self.debt.debt_type == Debt.DebtType.BORROW:
-            text = f"{_('Borrow return')} {int_cents_to_float(price)}"
-
-        return text
+        return f"{RETURN_TITLE[self.debt.debt_type]} {int_cents_to_float(self.price)}"
 
     @property
     def journal(self):
         return self.account.journal
+
+
+OTHER_PARTY = {
+    Debt.DebtType.LEND: _("Borrower"),
+    Debt.DebtType.BORROW: _("Lender"),
+}
+
+RETURN_TITLE = {
+    Debt.DebtType.LEND: _("Lend return"),
+    Debt.DebtType.BORROW: _("Borrow return"),
+}

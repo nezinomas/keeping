@@ -751,3 +751,19 @@ def test_a_user_with_no_year_raises(rf, main_user, call):
 
     with pytest.raises(ValueError, match="has no year"):
         call(rf, main_user)
+
+
+@pytest.mark.parametrize(
+    ("url", "shell"),
+    [
+        ("incomes:list", '<table class="main striped hover sticky-table">'),
+        ("incomes:tab_types", '<table class="main striped hover sticky-table">'),
+    ],
+    ids=["list", "types"],
+)
+def test_each_list_draws_its_table_shell(client_logged, url, shell):
+    IncomeFactory()
+
+    actual = client_logged.get(reverse(url)).content.decode("utf-8")
+
+    assert shell in actual

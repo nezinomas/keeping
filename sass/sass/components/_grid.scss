@@ -285,42 +285,6 @@
 }
 
 
-.debts-grid {
-    @include grid-template;
-
-    grid-template-areas:
-        "lend-container"
-        "lend-return-container"
-        "borrow-container"
-        "borrow-return-container"
-    ;
-
-    @include wide {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-areas:
-            "borrow-container          lend-container"
-            "borrow-return-container   lend-return-container"
-        ;
-    }
-
-    #lend-container {
-        grid-area: lend-container;
-    }
-
-    #lend-return-container {
-        grid-area: lend-return-container;
-    }
-
-    #borrow-container {
-        grid-area: borrow-container;
-    }
-
-    #borrow-return-container {
-        grid-area: borrow-return-container;
-    }
-}
-
-
 .summary-expenses-grid {
     display: grid;
     grid-template-columns: 15% minmax(80%, 1fr);

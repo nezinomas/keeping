@@ -13,7 +13,7 @@ class BorrowFactory(factory.django.DjangoModelFactory):
 
     date = dt(1999, 1, 1)
     debt_type = "borrow"
-    name = factory.Faker("first_name")
+    name = factory.Faker("name")
     price = 100
     closed = False
     remark = "Borrow Remark"
@@ -38,7 +38,7 @@ class LendFactory(factory.django.DjangoModelFactory):
 
     date = dt(1999, 1, 1)
     debt_type = "lend"
-    name = factory.Faker("first_name")
+    name = factory.Faker("name")
     price = 100
     closed = False
     remark = "Lend Remark"

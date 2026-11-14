@@ -1,8 +1,26 @@
-<table class="main striped hover sticky-table"{% if attrs %} {{ attrs }}{% endif %}>
-    <thead>
+<c-vars class="main striped hover sticky-table" head_attrs="" caption="" body="" foot="" />
+
+{# attrs counts the vars too, so only its text says whether a caller passed more #}
+{% with rest=attrs|stringformat:"s" %}
+<table class="{{ class }}"{% if rest %} {{ rest }}{% endif %}>
+    {% if caption %}
+    <caption>{{ caption }}</caption>
+    {% endif %}
+    {# a caller's own literal attributes: a cotton string var would arrive escaped #}
+    <thead{% if head_attrs %} {{ head_attrs|safe }}{% endif %}>
         {{ head }}
     </thead>
+    {% if body %}
+    {{ body }}
+    {% else %}
     <tbody>
         {{ slot }}
     </tbody>
+    {% endif %}
+    {% if foot %}
+    <tfoot>
+        {{ foot }}
+    </tfoot>
+    {% endif %}
 </table>
+{% endwith %}

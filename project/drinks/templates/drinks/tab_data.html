@@ -4,8 +4,8 @@
 
 {% if object_list %}
 
-<table class="main hover sticky-table">
-    <thead>
+<c-paper-table class="main striped hover sticky-table">
+    <c-slot name="head">
         <tr>
             <th class="text-left">{% translate 'Date' %}</th>
             <th class="text-left">{% translate 'Drink Type' %}</th>
@@ -13,8 +13,7 @@
             <th class="edit-col"></th>
             <th class="delete-col"></th>
         </tr>
-    </thead>
-    <tbody>
+    </c-slot>
         {% for obj in object_list %}
         {% url 'drinks:update' obj.id as url_update %}
         {% url 'drinks:delete' obj.id as url_delete %}
@@ -23,12 +22,11 @@
             <td class="text-left main__date">{{ obj.date|date:"Y-m-d" }}</td>
             <td class="text-left">{% with obj.option|title as drink_type %}{% translate drink_type %}{% endwith %}</td>
             <td class="text-left main__figure">{{ obj.amount.display }}</td>
-            <c-td-edit :url=url_update />
-            <c-td-delete :url=url_delete />
+            <c-td-edit :url="url_update" />
+            <c-td-delete :url="url_delete" />
         </c-edit-row>
         {% endfor %}
-    </tbody>
-</table>
+</c-paper-table>
 
 {% else %}
 

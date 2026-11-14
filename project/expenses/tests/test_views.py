@@ -1236,6 +1236,16 @@ def test_search_totals_row_sums_the_quantity_and_price_under_their_columns(
     assert "<caption>Vidutinė vieneto kaina: 1,00</caption>" in actual
 
 
+def test_a_month_list_draws_no_average_and_no_totals_row(client_logged):
+    ExpenseFactory()
+
+    url = reverse("expenses:list", kwargs={"month": 1})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert "<caption>" not in actual
+    assert "<tfoot>" not in actual
+
+
 def _get(view):
     return view.get(view.request)
 
@@ -1303,3 +1313,25 @@ def test_an_expense_row_opens_its_update_form(client_logged):
 
     update = reverse("expenses:update", kwargs={"pk": obj.pk})
     assert edit_row_opening(update) in content
+
+
+@pytest.mark.parametrize(
+    ("url", "shell"),
+    [
+        (
+            reverse_lazy("expenses:list", kwargs={"month": 1}),
+            '<table class="main expenses-table striped hover sticky-table">',
+        ),
+        (
+            reverse_lazy("expenses:tab_types"),
+            '<table class="main striped hover sticky-table">',
+        ),
+    ],
+    ids=["list", "types"],
+)
+def test_each_list_draws_its_table_shell(client_logged, url, shell):
+    ExpenseFactory()
+
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert shell in actual

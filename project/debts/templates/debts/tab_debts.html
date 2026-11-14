@@ -1,0 +1,36 @@
+{% load i18n %}
+{% load math %}
+{% load cell_format %}
+
+{% if object_list %}
+
+<c-paper-table>
+    <c-slot name="head">
+        <tr>
+            <th class="text-left">{% translate 'Date' %}</th>
+            <th class="text-left main__name">{{ other_party }}</th>
+            <th class="main__fold">{% translate 'Sum' %}</th>
+            <th class="main__fold">{% translate 'Returned' %}</th>
+            <th>{% translate 'Remaining' %}</th>
+            {% include 'debts/includes/tail_heads.html' %}
+        </tr>
+    </c-slot>
+    {% for object in object_list %}
+    {% url 'debts:update' debt_type object.id as url_update %}
+    {% url 'debts:delete' debt_type object.id as url_delete %}
+    <c-edit-row :url="url_update">
+        <td class="text-left main__date">{{ object.date|date:"Y-m-d" }}</td>
+        {% include 'debts/includes/other_party_cell.html' with debt=object %}
+        <td class="main__figure main__fold" data-cell="{{ object.price|cell_state }}">{{ object.price|price|cellformat }}</td>
+        <td class="main__figure main__fold" data-cell="{{ object.returned|cell_state }}">{{ object.returned|price|cellformat }}</td>
+        <td class="main__figure" data-cell="{{ object.remaining|cell_state }}">{{ object.remaining|price|cellformat }}</td>
+        {% include 'debts/includes/tail_cells.html' %}
+    </c-edit-row>
+    {% endfor %}
+</c-paper-table>
+
+{% else %}
+
+{% include 'core/paper_no_records.html' %}
+
+{% endif %}

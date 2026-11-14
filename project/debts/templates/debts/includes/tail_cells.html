@@ -1,0 +1,5 @@
+{# reads the tab loop's object, url_update and url_delete #}
+<td class="text-left main__fold">{{ object.account }}</td>
+<td class="text-left main__fold">{{ object.remark }}</td>
+<c-td-edit :url="url_update" />
+<c-td-delete :url="url_delete" />

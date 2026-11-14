@@ -35,7 +35,7 @@ class _DebtTypeService(DatedModelService):
 
 class DebtModelService(_DebtTypeService):
     def get_queryset(self):
-        return models.Debt.objects.select_related("account", "journal").filter(
+        return models.Debt.objects.select_related("account").filter(
             journal=self.user.journal, debt_type=self.debt_type
         )
 
@@ -90,6 +90,9 @@ class DebtReturnModelService(SumMixin, _DebtTypeService):
 
     def year(self, year):
         return self.objects.filter(date__year=year)
+
+    def of_open_debts(self):
+        return self.objects.filter(debt__closed=False)
 
     def sum_by_month(self, year):
         return (

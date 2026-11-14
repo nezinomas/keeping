@@ -22,6 +22,8 @@ def row_start(url=r'[^"]*'):
 
 
 ROW = re.compile(row_start(ANY_URL) + r"[^>]*>(.*?)</tr>", re.DOTALL)
+# (class, text) of each header cell
+HEAD_CELL = re.compile(r'<th(?: class="([^"]*)")?>([^<]*)</th>')
 ROW_BUTTON = re.compile(
     r'<td class="(edit-col|delete-col)">\s*<a role="button" hx-get="([^"]*)"'
 )
@@ -39,6 +41,21 @@ def clean_content(rendered):
 def tab_fragment(client, url):
     """A tab's fragment, as htmx asks for it."""
     return client.get(url, headers={"HX-Request": "true"}).content.decode()
+
+
+PAPER_PARTS = ("bundle", "subnav", "quick-add", "sticky headers", "tab panel")
+
+
+def paper_page_parts(content):
+    """Whether `content` holds each part only a whole paper page draws."""
+    holds = (
+        '<link rel="stylesheet" href="/static/css/paper.min.css">' in content,
+        '<nav class="subnav">' in content,
+        bool(re.search(r'<div\b[^>]*class="quick-add\b', content)),
+        bool(re.search(STICKY_HEADERS, content)),
+        'id="tab_content"' in content,
+    )
+    return dict(zip(PAPER_PARTS, holds, strict=True))
 
 
 def form_posts_to(content, form_id, url):
@@ -97,7 +114,7 @@ def closed_fold(content, label):
             parts.append(
                 (
                     part["attrs"],
-                    re.findall(r'<th class="([^"]*)">([^<]*)</th>', part["body"]),
+                    HEAD_CELL.findall(part["body"]),
                     re.findall(
                         row_start() + r">\s*"
                         r'<td class="text-left main__name">(.*?)</td>',
