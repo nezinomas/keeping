@@ -94,12 +94,12 @@ def test_debt_save(main_user, client_logged, debt_type):
     ],
 )
 def test_debt_update(main_user, client_logged, debt_type, existing):
-    # Closed before, so the posted `closed` has a change to make
-    e = DEBT_FACTORIES[debt_type](**existing, price=1, returned=1, closed=True)
+    # Closed before and a price apart from the posted one: both posts have a change to make
+    e = DEBT_FACTORIES[debt_type](**existing, price=5_00, returned=5_00, closed=True)
 
     data = {
         "name": "XXX",
-        "price": "0.01",
+        "price": "6",
         "date": "1999-12-31",
         "remark": "Pastaba",
         "account": e.account.pk,
@@ -111,7 +111,7 @@ def test_debt_update(main_user, client_logged, debt_type, existing):
     actual = DebtModelService(main_user, debt_type).items().get()
     assert actual.name == "XXX"
     assert actual.date == date(1999, 12, 31)
-    assert actual.price == 1
+    assert actual.price == 6_00
     assert actual.account.title == "Account1"
     assert actual.remark == "Pastaba"
     assert not actual.closed
