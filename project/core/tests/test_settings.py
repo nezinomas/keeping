@@ -3,7 +3,9 @@ import importlib
 import sys
 
 import pytest
+from django.core.checks.security.base import check_csp_nonce_context_processor
 from django.template.backends.django import DjangoTemplates
+from django.test import override_settings
 
 from ...config.settings import base
 
@@ -53,3 +55,14 @@ def test_production_templates_build_an_engine_that_caches(import_production):
     first, again = (engine.get_template("empty.html").template for _ in range(2))
 
     assert first is again
+
+
+def test_production_csp_nonce_reaches_the_templates(import_production):
+    production = import_production()
+
+    with override_settings(
+        MIDDLEWARE=production.MIDDLEWARE,
+        SECURE_CSP=production.SECURE_CSP,
+        TEMPLATES=production.TEMPLATES,
+    ):
+        assert check_csp_nonce_context_processor(None) == []

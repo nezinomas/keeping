@@ -120,3 +120,6 @@ def test_every_script_a_paper_page_runs_carries_the_csp_nonce(client_logged, url
     ]
     assert scripts
     assert [tag for tag in scripts if "nonce=" not in tag] == []
+    nonces = {re.search(r'nonce="([^"]*)"', tag)[1] for tag in scripts}
+    assert len(nonces) == 1
+    assert nonces.isdisjoint({"", "None"})

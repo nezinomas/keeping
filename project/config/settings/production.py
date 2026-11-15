@@ -38,11 +38,6 @@ STORAGES = {
 }
 
 
-MIDDLEWARE += [
-    "django.middleware.csp.ContentSecurityPolicyMiddleware",
-]
-
-
 SECURE_CSP = {
     "default-src": [CSP.SELF],
     "script-src": [CSP.SELF, CSP.NONCE, CSP.UNSAFE_EVAL],
