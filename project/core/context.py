@@ -66,7 +66,3 @@ def nav_active(request):
             name for name, matches in NAV_RULES if matches(request.path)
         )
     }
-
-
-def csp_nonce(request):
-    return {"csp_nonce": getattr(request, "_csp_nonce", "")}

@@ -103,7 +103,7 @@ TEMPLATES = [
                 "project.core.context.nav_active",
                 "project.counts.context.counts_menu",
                 "project.bookkeeping.context.nav_tab_menus",
-                "project.core.context.csp_nonce",
+                "django.template.context_processors.csp",
             ],
         },
     },
@@ -122,6 +122,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
 ]
 
 
