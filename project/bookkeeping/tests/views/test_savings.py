@@ -25,7 +25,7 @@ from ..helper import (
     total_cells,
     view_queries,
 )
-from ..signals.helpers import worth
+from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
@@ -211,6 +211,24 @@ def test_open_fund_with_no_worth_marks_its_empty_cells(client_logged):
     assert cells[4][1].strip() == "1.000,00"
     assert 'data-cell="empty"' not in cells[4][0]
     assert all('data-cell="empty"' in attrs for attrs, _ in cells[8:])
+
+
+def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
+    client_logged,
+):
+    fund = SavingTypeFactory(title="Even")
+    buy(fund, 100000)
+    worth(fund, 100000)
+
+    table = _table(client_logged)
+    row = re.search(r"<tr>\s*<td[^>]*>Even</td>(.*?)</tr>", table, re.S).group(1)
+
+    foot = re.search(r"<tfoot>(.*?)</tfoot>", table, re.S).group(1)
+
+    assert {
+        "row": re.findall(r"<td([^>]*)>[^<]*</td>", row)[-2:],
+        "total": re.findall(r"<th([^>]*)>[^<]*</th>", foot)[-2:],
+    } == dict.fromkeys(("row", "total"), [' data-cell="empty"'] * 2)
 
 
 @pytest.mark.parametrize("kind", ["funds", "pensions"])

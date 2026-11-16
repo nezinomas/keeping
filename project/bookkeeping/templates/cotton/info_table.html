@@ -19,7 +19,7 @@
         <tr>
             {% for d in data.data %}
             {% if data.empty %}<td>&mdash;</td>{% else %}
-            <td{% if data.highlight|get_list_val:forloop.counter0 %} data-sign="{{d|sign}}"{% endif %}>
+            <td{% if d and data.highlight|get_list_val:forloop.counter0 %} data-sign="{{d|sign}}"{% endif %}>
                  {% if calculate_debt_remains and forloop.counter0 == 0 %}<span class="tip bottom w100" data-tip="{% translate 'Remains to be returned' %}:  {{data.data.0|sub:data.data.1|price|floatformat:'2g'}}">{% endif %}
                     {{d|price|cellformat}}
                 {% if calculate_debt_remains and forloop.counter0 == 0 %}</span>{% endif %}

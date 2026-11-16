@@ -157,6 +157,24 @@
             color: $harm;
         }
 
+        // a signed money figure is coloured text, never a filled cell
+        [data-sign="gain"] {
+            color: $gain;
+        }
+
+        [data-sign="loss"] {
+            color: $harm;
+        }
+
+        // the Cash-flow check's two figures disagree: a highlighter stroke, not harm
+        [data-check="mismatch"] {
+            background-color: var(--skin-attention-wash);
+
+            &::before {
+                content: "! ";
+            }
+        }
+
         // a zero is present, not read (the `cell_state` filter's "empty")
         [data-cell="empty"] {
             color: $ink-faint;

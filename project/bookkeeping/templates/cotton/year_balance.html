@@ -33,7 +33,7 @@
             <td>{{item.date|date:"F"|title}}</td>
             <td data-cell="{{item.incomes|cell_state}}">{{item.incomes|price|cellformat}}</td>
             <td data-cell="{{item.expenses|cell_state}}">{{item.expenses|price|cellformat}}</td>
-            <td data-sign="{{item.balance|sign}}" data-cell="{{item.balance|cell_state}}">{{item.balance|price|cellformat}}</td>
+            <td{% if item.balance %} data-sign="{{item.balance|sign}}"{% endif %} data-cell="{{item.balance|cell_state}}">{{item.balance|price|cellformat}}</td>
             <td class="left-thick-border" data-cell="{{item.savings|cell_state}}">{{item.savings|price|cellformat}}</td>
             <td class="right-thick-border" data-cell="{{item.savings_close|cell_state}}">{{item.savings_close|price|cellformat}}</td>
             <td class="left-thick-border" data-cell="{{item.borrow|cell_state}}" x-show="open">{{item.borrow|price|cellformat}}</td>
@@ -62,14 +62,14 @@
             <th>{% translate 'Total' %}</th>
             <th data-cell="{{ctx.total_row.incomes|cell_state}}">{{ctx.total_row.incomes|price|cellformat}}</th>
             <th data-cell="{{ctx.total_row.expenses|cell_state}}">{{ctx.total_row.expenses|price|cellformat}}</th>
-            <th data-sign="{{ctx.total_row.balance|sign}}">{{ctx.total_row.balance|price|cellformat}}</th>
+            <th{% if ctx.total_row.balance %} data-sign="{{ctx.total_row.balance|sign}}"{% endif %}>{{ctx.total_row.balance|price|cellformat}}</th>
             <th class="left-thick-border" data-cell="{{ctx.total_row.savings|cell_state}}">{{ctx.total_row.savings|price|cellformat}}</th>
             <th class="right-thick-border" data-cell="{{ctx.total_row.savings_close|cell_state}}">{{ctx.total_row.savings_close|price|cellformat}}</th>
             <th class="left-thick-border" data-cell="{{ctx.total_row.borrow|cell_state}}" x-show="open">{{ctx.total_row.borrow|price|cellformat}}</th>
             <th x-show="open" data-cell="{{ctx.total_row.borrow_return|cell_state}}">{{ctx.total_row.borrow_return|price|cellformat}}</th>
             <th x-show="open" data-cell="{{ctx.total_row.lend|cell_state}}">{{ctx.total_row.lend|price|cellformat}}</th>
             <th class="right-thick-border" data-cell="{{ctx.total_row.lend_return|cell_state}}" x-show="open">{{ctx.total_row.lend_return|price|cellformat}}</th>
-            <th data-sign="{{ctx.amount_end|sign}}" data-check="{{ctx.cash_flow_check}}">{{ctx.amount_end|price|cellformat}}</th>
+            <th{% if ctx.amount_end %} data-sign="{{ctx.amount_end|sign}}"{% endif %} data-check="{{ctx.cash_flow_check}}">{{ctx.amount_end|price|cellformat}}</th>
         </tr>
     </tfoot>
 </table>

@@ -4,6 +4,7 @@ from django.urls import reverse
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
+from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
 from ...expenses.tests.factories import ExpenseTypeFactory
@@ -11,6 +12,7 @@ from ...incomes.tests.factories import IncomeFactory
 from ...pensions.tests.factories import PensionFactory
 from ...savings.tests.factories import SavingFactory
 from ..tabs import INDEX_TABS
+from .factories import AccountWorthFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -18,6 +20,10 @@ CHART_ROOTS = (
     "#chart-balance-container .highcharts-root,"
     " #chart-expenses-container .highcharts-root"
 )
+GAIN, HARM = "rgb(31, 107, 74)", "rgb(125, 39, 51)"
+INK, INK_FAINT = "rgb(22, 34, 43)", "rgb(139, 151, 159)"
+CLEAR = "rgba(0, 0, 0, 0)"
+WASH = "rgba(232, 194, 26, 0.3)"
 
 
 @pytest.mark.webtest
@@ -47,23 +53,75 @@ class BookkeepingIndex(TestCase, Browser):
 
         assert (by_click, self._drawn_charts()) == (2, 2)
 
-    def test_a_reload_redraws_each_chart_once_on_the_charts_tab(self):
-        self.browser.get(self.live_server_url + reverse("bookkeeping:tab_charts"))
-        self.wait_until_idle()
+    def test_a_reload_redraws_each_chart_once_and_throws_nothing(self):
+        # the overview has no chart: a reload there must find none to redraw
+        for url_name, drawn in (
+            ("bookkeeping:tab_overview", 0),
+            ("bookkeeping:tab_charts", 2),
+        ):
+            with self.subTest(tab=url_name):
+                self.open(reverse(url_name))
 
-        assert self._reload() == {
-            "drawn_on_load": 2,
-            "roots": ["redrawn", "redrawn"],
-            "draws": 2,
-            "errors": [],
+                assert self._reload() == {
+                    "drawn_on_load": drawn,
+                    "roots": ["redrawn"] * drawn,
+                    "draws": drawn,
+                    "errors": [],
+                }
+
+    def test_a_signed_figure_is_gain_or_harm_text_and_a_zero_is_not(self):
+        for title, have in (("Even", 10000), ("Gain", 15000), ("Loss", 5000)):
+            account = AccountFactory(title=title)
+            IncomeFactory(account=account, price=10000)
+            AccountWorthFactory(account=account, price=have)
+
+        self.open_at(reverse("bookkeeping:tab_overview"), 1500)
+        looks = self._looks(
+            # Delta's zero is drawn "ok": a gain, unlike every other zero (Q26)
+            delta_ok="#accounts tbody tr:nth-child(1) td:last-child",
+            delta_gain="#accounts tbody tr:nth-child(2) td:last-child",
+            delta_loss="#accounts tbody tr:nth-child(3) td:last-child",
+            # the year strip's end, not highlighted: a figure, not a sign
+            year_end="#last td:nth-child(3)",
+        )
+        self.open_at(reverse("bookkeeping:tab_balance"), 1500)
+        looks |= self._looks(
+            zero_month="#table-balance tbody tr:nth-child(2) td:nth-child(4)"
+        )
+
+        assert looks == {
+            "delta_ok": [GAIN, True],
+            "delta_gain": [GAIN, True],
+            "delta_loss": [HARM, True],
+            "year_end": [INK, True],
+            "zero_month": [INK_FAINT, True],
         }
 
-    def test_a_reload_on_the_overview_draws_no_chart_and_throws_nothing(self):
-        assert self._reload() == {
-            "drawn_on_load": 0,
-            "roots": [],
-            "draws": 0,
-            "errors": [],
+    def test_a_cash_flow_mismatch_wears_the_attention_wash_on_each_tab(self):
+        IncomeFactory(price=100000)
+        cells = {
+            "bookkeeping:tab_overview": "#accounts tfoot [data-check]",
+            "bookkeeping:tab_balance": "#table-balance tfoot [data-check]",
+        }
+        marks = {}
+        for case, accounts_balance in (("equal", 100000), ("differ", 99900)):
+            AccountBalance.objects.filter(year=1999).update(balance=accounts_balance)
+            for url_name, cell in cells.items():
+                self.open_at(reverse(url_name), 1500)
+                marks[case, url_name.removeprefix("bookkeeping:tab_")] = (
+                    self.browser.execute_script(
+                        "const cell = document.querySelector(arguments[0]);"
+                        " return [getComputedStyle(cell).backgroundColor,"
+                        " getComputedStyle(cell, '::before').content];",
+                        cell,
+                    )
+                )
+
+        assert marks == {
+            ("equal", "overview"): [CLEAR, "none"],
+            ("equal", "balance"): [CLEAR, "none"],
+            ("differ", "overview"): [WASH, '"! "'],
+            ("differ", "balance"): [WASH, '"! "'],
         }
 
     def test_insert_clears_each_worth_row(self):
@@ -169,6 +227,18 @@ class BookkeepingIndex(TestCase, Browser):
             " form: !!document.querySelector('#mainModal .modal-form'), errors};"
         )
         assert swap == {"tables": 1, "form": True, "errors": []}
+
+    def _looks(self, **cells):
+        """Each cell's colour, and whether its background is its row's first cell's."""
+        return self.browser.execute_script(
+            "return Object.fromEntries(Object.entries(arguments[0]).map(([k, q]) => {"
+            " const cell = document.querySelector(q);"
+            " const own = getComputedStyle(cell);"
+            " const row = getComputedStyle(cell.parentElement.firstElementChild);"
+            " return [k, [own.color, own.backgroundColor === row.backgroundColor]];"
+            " }));",
+            cells,
+        )
 
     def _drawn_charts(self):
         return self.browser.execute_script(

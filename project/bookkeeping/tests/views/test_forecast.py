@@ -17,8 +17,8 @@ def test_empty_forecast_totals_row_reads_dashes(client_logged):
     content = client_logged.get(url).content.decode("utf-8")
 
     assert '<tfoot x-show="open">' in content
-    assert content.count("<th>-</th>") == 2
-    assert '<th data-sign="gain">-</th>' in content
+    assert content.count("<th>-</th>") == 3
+    assert "data-sign" not in content
 
 
 def test_302(client):

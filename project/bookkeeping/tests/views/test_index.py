@@ -14,7 +14,9 @@ from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...tabs import INDEX_TABS
+from ..factories import AccountWorthFactory
 from ..helper import quiet_build, row_cells, script_json, table_titled, total_cells
+from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
@@ -303,6 +305,74 @@ def test_view_cash_flow_check_marks_each_foot_cell(
     assert re.findall(CASH_FLOW_CELL, content) == [
         cell.format(state=state) for cell in cells
     ]
+
+
+@pytest.mark.parametrize(
+    "url_name",
+    [
+        "bookkeeping:tab_overview",
+        "bookkeeping:tab_balance",
+    ],
+)
+def test_view_a_zero_figure_carries_no_sign(client_logged, url_name):
+    content = tab_fragment(client_logged, reverse(url_name))
+
+    assert "data-sign" not in content
+
+
+FOOT_END = r"\s*</tr>\s*</tfoot>"
+GAIN_PROFIT = ' data-sign="gain" data-cell=""'
+
+
+@pytest.mark.parametrize(
+    "url_name, cells, attrs",
+    [
+        pytest.param(
+            "bookkeeping:tab_overview",
+            r"<td([^>]*)>ok</td>",
+            [' data-sign="gain"'],
+            id="delta-ok",
+        ),
+        pytest.param(
+            "bookkeeping:tab_overview",
+            rf"<th([^>]*)>[^<]*</th>{FOOT_END}",
+            [' data-sign="gain"'],
+            id="delta-total",
+        ),
+        pytest.param(
+            "bookkeeping:tab_funds",
+            rf"<th([^>]*)>[^<]*</th>\s*<th([^>]*)>[^<]*</th>{FOOT_END}",
+            [(GAIN_PROFIT, GAIN_PROFIT)],
+            id="profit-totals",
+        ),
+        pytest.param(
+            "bookkeeping:tab_balance",
+            r"<th([^>]*)>-20,00</th>",
+            [' data-sign="loss"'],
+            id="year-total",
+        ),
+        # only the highlighted balance is signed, not the start or the end
+        pytest.param(
+            "bookkeeping:forecast",
+            r"<th([^>]*)>",
+            [' class="no-right-border"', "", "", ' data-sign="loss"'],
+            id="forecast",
+        ),
+    ],
+)
+def test_view_a_signed_figure_carries_its_sign(client_logged, url_name, cells, attrs):
+    fund = SavingTypeFactory(title="Up")
+    buy(fund, 100000)
+    worth(fund, 150000)
+    # Even holds what it should; the year's balance is -20,00
+    even = AccountFactory(title="Even")
+    IncomeFactory(account=even, price=1000)
+    AccountWorthFactory(account=even, price=1000)
+    ExpenseFactory(price=3000)
+
+    content = tab_fragment(client_logged, reverse(url_name))
+
+    assert re.findall(cells, content) == attrs
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)

@@ -54,8 +54,8 @@
             <td class="right-thick-border" data-cell="empty">-</td>
             {% endif %}
             {% if item.shows_profit %}
-            <td data-sign="{{item.profit_sum|sign}}" data-cell="{{item.profit_sum|cell_state}}">{{item.profit_sum|price|cellformat}}</td>
-            <td data-sign="{{item.profit_sum|sign}}" data-cell="{{item.profit_sum|cell_state}}">{{item.profit_proc|cellformat}}%</td>
+            <td{% if item.profit_sum %} data-sign="{{item.profit_sum|sign}}"{% endif %} data-cell="{{item.profit_sum|cell_state}}">{{item.profit_sum|price|cellformat}}</td>
+            <td{% if item.profit_sum %} data-sign="{{item.profit_sum|sign}}"{% endif %} data-cell="{{item.profit_sum|cell_state}}">{{item.profit_proc|cellformat}}%</td>
             {% else %}
             <td data-cell="empty">-</td>
             <td data-cell="empty">-</td>
@@ -75,8 +75,8 @@
             <th data-cell="{{total_row.sold|cell_state}}">{{total_row.sold|price|cellformat}}</th>
             <th class="right-thin-border" data-cell="{{total_row.sold_fee|cell_state}}">{{total_row.sold_fee|price|cellformat}}</th>
             <th colspan="2" class="right-thick-border" data-cell="{{total_row.market_value|cell_state}}">{{total_row.market_value|price|cellformat}}</th>
-            <th data-sign="{{total_row.profit_sum|sign}}" data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_sum|price|cellformat}}</th>
-            <th data-sign="{{total_row.profit_sum|sign}}" data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_proc|cellformat}}%</th>
+            <th{% if total_row.profit_sum %} data-sign="{{total_row.profit_sum|sign}}"{% endif %} data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_sum|price|cellformat}}</th>
+            <th{% if total_row.profit_sum %} data-sign="{{total_row.profit_sum|sign}}"{% endif %} data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_proc|cellformat}}%</th>
         </tr>
     </tfoot>
 </table>

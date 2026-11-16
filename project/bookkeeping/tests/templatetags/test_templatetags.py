@@ -54,12 +54,20 @@ def test_info_table_with_data_and_title(info_table):
 
 
 def test_info_table_highlight(info_table):
-    ctx = {"data": {"data": [1, -2], "title": ["x", "y"], "highlight": [True, True]}}
+    ctx = {
+        "data": {
+            "data": [1, -2, 0],
+            "title": ["x", "y", "z"],
+            "highlight": [True, True, True],
+        }
+    }
 
     actual = info_table(ctx)
 
     assert '<td data-sign="gain"> 0,01</td>' in actual
     assert '<td data-sign="loss"> -0,02</td>' in actual
+    # a zero is not a gain (Q26)
+    assert "<td> -</td>" in actual
     assert "table-success" not in actual
     assert "table-danger" not in actual
 
