@@ -122,6 +122,11 @@ msgstr "Pajamos"
 msgid "Expenses"
 msgstr "Išlaidos"
 
+#: .\project\bookkeeping\templates\cotton\year_balance.html:49
+#: .\project\bookkeeping\templates\cotton\year_expenses.html:32
+msgid "Avg"
+msgstr "Vidurkis"
+
 #: .\project\bookkeeping\services\chart_summary.py:74
 #: .\project\bookkeeping\services\index\presenters.py:61
 msgid "Average incomes"

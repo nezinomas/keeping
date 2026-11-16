@@ -46,7 +46,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th>Avg</th>
+            <th>{% translate 'Avg' %}</th>
             <th data-cell="{{ctx.avg_row.incomes|cell_state}}">{{ctx.avg_row.incomes|price|cellformat}}</th>
             <th data-cell="{{ctx.avg_row.expenses|cell_state}}">{{ctx.avg_row.expenses|price|cellformat}}</th>
             <th></th>
@@ -69,7 +69,7 @@
             <th x-show="open" data-cell="{{ctx.total_row.borrow_return|cell_state}}">{{ctx.total_row.borrow_return|price|cellformat}}</th>
             <th x-show="open" data-cell="{{ctx.total_row.lend|cell_state}}">{{ctx.total_row.lend|price|cellformat}}</th>
             <th class="right-thick-border" data-cell="{{ctx.total_row.lend_return|cell_state}}" x-show="open">{{ctx.total_row.lend_return|price|cellformat}}</th>
-            <th data-sign="{{ctx.amount_end|sign}}" class="check">{{ctx.amount_end|price|cellformat}}</th>
+            <th data-sign="{{ctx.amount_end|sign}}" data-check="{{ctx.cash_flow_check}}">{{ctx.amount_end|price|cellformat}}</th>
         </tr>
     </tfoot>
 </table>

@@ -32,6 +32,7 @@ class ReloadIndexContextDataMixin:
         user = self.request.user
         ind = services.index.load_service(user, date.today())
         exp = services.expenses.load_service(user)
+        accounts = services.accounts.load_service(user, user.selected_year())
 
         context = {
             "year": user.selected_year(),
@@ -39,7 +40,7 @@ class ReloadIndexContextDataMixin:
             "borrow": ind.borrow_context(),
             "lend": ind.lend_context(),
             "balance_short": ind.balance_short_context(),
-            "balance": ind.balance_context(),
+            "balance": ind.balance_context(accounts["total_row"]["balance"]),
             "chart_balance": ind.chart_balance_context(),
             "chart_expenses": exp.chart_context(),
             "expenses": exp.table_context(),
@@ -72,7 +73,7 @@ class RegenerateBalances(TemplateViewMixin):
             "savings": (balance_sources.sync_savings, "afterSignalSavings"),
             "pensions": (balance_sources.sync_pensions, "afterSignalPensions"),
         }
-        syncs = [sync for sync, _ in balances.values()]
+        syncs = [sync for sync, _trigger in balances.values()]
         hx_trigger_name = "afterSignal"
 
         if (kind := request.GET.get("type")) in balances:
@@ -91,6 +92,10 @@ class Accounts(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         user = self.request.user
         context = services.accounts.load_service(user, user.selected_year())
+        index = services.index.load_service(user, date.today())
+        context["cash_flow_check"] = index.check_cash_flow(
+            context["total_row"]["balance"]
+        )
 
         return super().get_context_data(**kwargs) | context
 

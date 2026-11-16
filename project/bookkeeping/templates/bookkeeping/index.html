@@ -57,22 +57,6 @@
 
 </main>
 
-<script nonce="{{ csp_nonce }}">
-    function compareValues() {
-        const elements = document.querySelectorAll('.check');
-        elements.forEach(element => element.classList.remove('check-accounts-balance'));
-        if (elements[0].textContent !== elements[1].textContent) {
-            elements.forEach(element => element.classList.add('check-accounts-balance'));
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', compareValues);
-    htmx.on("htmx:after:swap", (e) => {
-        compareValues();
-    });
-</script>
-
-
 <div id="chart-balance-source" hidden>
     <c-chart-balance-data :data=chart_balance />
 </div>

@@ -24,18 +24,29 @@ INDEX_COLUMNS = (
 )
 
 
+def cash_flow_check(cash_flow: int, accounts_balance: int) -> str:
+    state = ""
+    if cash_flow != accounts_balance:
+        state = "mismatch"
+    return state
+
+
 class IndexContextBuilder:
     def __init__(self, balance: YearBalance, debts: dict[Debt.DebtType, dict]):
         self._balance = balance
         self._debts = debts
 
-    def balance_context(self) -> dict:
+    def balance_context(self, accounts_balance: int) -> dict:
         return {
             "data": self._balance.balance,
             "total_row": self._balance.total_row,
             "amount_end": self._balance.amount_end,
             "avg_row": self._balance.average,
+            "cash_flow_check": self.check_cash_flow(accounts_balance),
         }
+
+    def check_cash_flow(self, accounts_balance: int) -> str:
+        return cash_flow_check(self._balance.amount_end, accounts_balance)
 
     def balance_short_context(self) -> dict:
         start = self._balance.amount_start

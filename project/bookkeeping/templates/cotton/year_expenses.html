@@ -29,7 +29,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th>Avg</th>
+            <th>{% translate 'Avg' %}</th>
             {% for category in ctx.categories %}{% with ctx.avg_row|get_item:category as val %}
             <th data-cell="{{val|cell_state}}">{{val|price|cellformat}}</th>
             {% endwith %}{% endfor %}

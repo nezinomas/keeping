@@ -12,7 +12,7 @@ from ....debts.tests.factories import (
     LendFactory,
     LendReturnFactory,
 )
-from ...services.index.presenters import IndexContextBuilder
+from ...services.index.presenters import IndexContextBuilder, cash_flow_check
 from ...services.index.providers import IndexDataProvider
 
 MODULE_PATH = "project.bookkeeping.services.index"
@@ -202,26 +202,42 @@ def mock_year_balance(mocker):
 
 def test_index_context_builder_balance_context(mock_year_balance):
     builder = IndexContextBuilder(balance=mock_year_balance, debts={})
-    actual = builder.balance_context()
+    actual = builder.balance_context(accounts_balance=1500)
 
-    assert actual["data"] == [100, 200, 300]
-    assert actual["total_row"] == 600
-    assert actual["amount_end"] == 1600
-    assert actual["avg_row"] == 200
-
-
-def test_index_context_builder_averages_context(mock_year_balance):
-    builder = IndexContextBuilder(balance=mock_year_balance, debts={})
-    actual = builder.averages_context()
-
-    assert actual["data"] == [50, 10]
-    assert actual["title"] == ["Vidutinės pajamos", "Vidutinės išlaidos"]
-    assert actual["empty"] is False
+    assert actual == {
+        "data": [100, 200, 300],
+        "total_row": 600,
+        "amount_end": 1600,
+        "avg_row": 200,
+        "cash_flow_check": "mismatch",
+    }
 
 
-def test_index_context_builder_averages_of_a_coming_year_are_empty(mock_year_balance):
-    mock_year_balance.is_coming = True
+@pytest.mark.parametrize(
+    "cash_flow, accounts_balance, state",
+    [
+        pytest.param(100000, 100000, "", id="equal"),
+        pytest.param(100000, 99999, "mismatch", id="differ"),
+    ],
+)
+def test_cash_flow_check(cash_flow, accounts_balance, state):
+    assert cash_flow_check(cash_flow, accounts_balance) == state
+
+
+@pytest.mark.parametrize(
+    "is_coming, empty",
+    [
+        pytest.param(False, False, id="past"),
+        pytest.param(True, True, id="coming"),
+    ],
+)
+def test_index_context_builder_averages_context(mock_year_balance, is_coming, empty):
+    mock_year_balance.is_coming = is_coming
 
     actual = IndexContextBuilder(balance=mock_year_balance, debts={}).averages_context()
 
-    assert actual["empty"] is True
+    assert actual == {
+        "title": ["Vidutinės pajamos", "Vidutinės išlaidos"],
+        "data": [50, 10],
+        "empty": empty,
+    }

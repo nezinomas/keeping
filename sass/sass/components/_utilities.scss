@@ -100,12 +100,3 @@
 .me-1 {
     margin-right: calc($gap / 3);
 }
-
-.check-accounts-balance {
-    background-color: $negative!important;
-    color: #fff;
-
-    &:before {
-        content: "!  ";
-    }
-}

@@ -4,6 +4,7 @@ from datetime import date
 import pytest
 from django.urls import reverse
 
+from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
 from ....core.tests.utils import count_queries
 from ....debts.tests.factories import BorrowFactory, LendFactory
@@ -16,7 +17,10 @@ from ..helper import quiet_build, row_cells, script_json, total_cells
 
 pytestmark = pytest.mark.django_db
 
-INDEX_QUERY_CAP = 32
+INDEX_QUERY_CAP = 44
+CASH_FLOW_CELL = r'<th[^>]*data-check="[^"]*">'
+YEAR_END = '<th data-sign="gain" data-check="{state}">'
+ACCOUNTS_TOTAL = '<th data-cell="" data-check="{state}">'
 
 
 def _add_items(first, last):
@@ -97,6 +101,12 @@ def test_view_index_renders_its_chart_data(client_logged, url_name):
     assert [point["y"] for point in expenses] == [100]
 
 
+def test_view_index_foot_rows_name_the_average(index_content):
+    labels = re.findall(r"<tfoot>\s*<tr>\s*<th>([^<]*)</th>", index_content)
+
+    assert labels == ["Vidurkis", "Vidurkis"]
+
+
 def test_view_index_names_each_chart_data_element_once(index_content):
     ids = [
         "chart-balance-data",
@@ -140,6 +150,38 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     accounts_balance = total_cells(content[content.index('id="accounts"') :])[4]
 
     assert year_end == accounts_balance != ""
+    assert re.findall(CASH_FLOW_CELL, content) == [
+        YEAR_END.format(state=""),
+        ACCOUNTS_TOTAL.format(state=""),
+    ]
+
+
+@pytest.mark.parametrize(
+    "url_name, cells",
+    [
+        pytest.param("bookkeeping:index", [YEAR_END, ACCOUNTS_TOTAL], id="index"),
+        pytest.param("bookkeeping:reload_index", [YEAR_END], id="reload"),
+        pytest.param("bookkeeping:accounts", [ACCOUNTS_TOTAL], id="accounts"),
+    ],
+)
+@pytest.mark.parametrize(
+    "accounts_balance, state",
+    [
+        pytest.param(100000, "", id="equal"),
+        pytest.param(99900, "mismatch", id="differ"),
+    ],
+)
+def test_view_cash_flow_check_marks_each_foot_cell(
+    client_logged, url_name, cells, accounts_balance, state
+):
+    IncomeFactory(price=100000)
+    AccountBalance.objects.update(balance=accounts_balance)
+
+    content = client_logged.get(reverse(url_name)).content.decode()
+
+    assert re.findall(CASH_FLOW_CELL, content) == [
+        cell.format(state=state) for cell in cells
+    ]
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
@@ -170,25 +212,18 @@ def test_view_index_regenerate_buttons(client_logged):
     assert tips == ["Bus atnaujinti visų metų balansai."]
 
 
-@pytest.mark.parametrize(
-    "shown",
-    [
-        [
-            'hx-swap-oob="innerHTML:#table-balance"',
-            'hx-swap-oob="innerHTML:#table-expenses"',
-            'hx-swap-oob="innerHTML:#chart-balance-source"',
-            'hx-swap-oob="innerHTML:#chart-expenses-source"',
-        ],
-        ["<th>1999</th>"],
-    ],
-    ids=["index_blocks", "year_header"],
-)
-def test_view_reload_renders_the_index(client_logged, shown):
+def test_view_reload_renders_the_index(client_logged):
+    shown = {
+        'hx-swap-oob="innerHTML:#table-balance"': 1,
+        'hx-swap-oob="innerHTML:#table-expenses"': 1,
+        'hx-swap-oob="innerHTML:#chart-balance-source"': 1,
+        'hx-swap-oob="innerHTML:#chart-expenses-source"': 1,
+        "<th>1999</th>": 2,
+    }
     url = reverse("bookkeeping:reload_index")
     content = client_logged.get(url).content.decode("utf-8")
 
-    for text in shown:
-        assert text in content
+    assert {text: content.count(text) for text in shown} == shown
 
 
 def test_view_reload_anonymous(client):
