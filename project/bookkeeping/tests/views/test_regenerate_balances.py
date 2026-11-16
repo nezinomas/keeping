@@ -49,27 +49,11 @@ def test_view_regenerate_balances_all_year(client_logged, main_user):
 
     url = reverse("bookkeeping:regenerate_balances")
 
-    client_logged.get(url, {"ajax_trigger": 1}, follow=True)
+    client_logged.get(url, follow=True)
 
     assert AccountBalance.objects.all().count() == 3
     assert SavingBalance.objects.all().count() == 2
     assert PensionBalance.objects.all().count() == 2
-
-
-def test_view_regenerate_balances_func_called(mocker, fake_request):
-    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
-    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
-    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
-
-    class Dummy(views.RegenerateBalances):
-        pass
-
-    view = setup_view(Dummy(), fake_request)
-    view.get(fake_request)
-
-    assert account.call_count == 1
-    assert saving.call_count == 1
-    assert pension.call_count == 1
 
 
 @pytest.mark.parametrize(
@@ -78,53 +62,20 @@ def test_view_regenerate_balances_func_called(mocker, fake_request):
         pytest.param("accounts", (1, 0, 0), id="accounts"),
         pytest.param("savings", (0, 1, 0), id="savings"),
         pytest.param("pensions", (0, 0, 1), id="pensions"),
+        pytest.param("", (1, 1, 1), id="none"),
+        pytest.param("xxx", (1, 1, 1), id="unknown"),
     ],
 )
-def test_view_regenerate_balances_syncs_only_its_kind(kind, calls, mocker, rf):
+def test_view_regenerate_syncs_its_kind_and_reloads_the_tab(kind, calls, mocker, rf):
     request = rf.get(f"/fake/?type={kind}")
-    request.user = UserFactory.build()
-    request.user.journal = JournalFactory.build()
-
-    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
-    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
-    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
-
-    setup_view(views.RegenerateBalances(), request).get(request)
-
-    assert (account.call_count, saving.call_count, pension.call_count) == calls
-
-
-@pytest.mark.parametrize(
-    "kind, trigger",
-    [
-        ("accounts", "afterSignalAccounts"),
-        ("savings", "afterSignalSavings"),
-        ("pensions", "afterSignalPensions"),
-    ],
-)
-def test_view_regenerate_sends_the_trigger_of_its_kind(kind, trigger, mocker, rf):
-    request = rf.get(f"/fake/?type={kind}")
-    request.user = UserFactory.build()
-    request.user.journal = JournalFactory.build()
-    mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
-    mocker.patch("project.bookkeeping.balance_sources.sync_savings")
-    mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
-
-    response = setup_view(views.RegenerateBalances(), request).get(request)
-
-    assert json.loads(response.headers["HX-Trigger"]) == {trigger: {}}
-
-
-def test_view_regenerate_unknown_type_syncs_all_and_sends_after_signal(mocker, rf):
-    request = rf.get("/fake/?type=xxx")
     request.user = UserFactory.build()
     request.user.journal = JournalFactory.build()
     syncs = [
-        mocker.patch(f"project.bookkeeping.balance_sources.sync_{kind}")
-        for kind in ("accounts", "savings", "pensions")
+        mocker.patch(f"project.bookkeeping.balance_sources.sync_{name}")
+        for name in ("accounts", "savings", "pensions")
     ]
 
     response = setup_view(views.RegenerateBalances(), request).get(request)
 
-    assert [x.call_count for x in syncs] == [1, 1, 1]
-    assert json.loads(response.headers["HX-Trigger"]) == {"afterSignal": {}}
+    assert tuple(sync.call_count for sync in syncs) == calls
+    assert json.loads(response.headers["HX-Trigger"]) == {"reload": {}}

@@ -1,12 +1,3 @@
-document.addEventListener('DOMContentLoaded', drawIndexBalance);
-
-// an out-of-band swap settles on its target, the data's wrapper
-htmx.on('htmx:after:settle', (event) => {
-    if (event.target.id === 'chart-balance-source') {
-        drawIndexBalance();
-    }
-});
-
 function drawIndexBalance() {
     const chartData = JSON.parse(document.getElementById("chart-balance-data").textContent);
     // convert data

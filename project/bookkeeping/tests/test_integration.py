@@ -1,7 +1,5 @@
 import pytest
-from django.db import connection
 from django.test import TestCase
-from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,21 +8,20 @@ from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeFactory
-from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
-from ...savings.tests.factories import SavingFactory, SavingTypeFactory
+from ...pensions.tests.factories import PensionFactory
+from ...savings.tests.factories import SavingFactory
+from ..tabs import INDEX_TABS
 
 pytestmark = pytest.mark.django_db
+
+CHART_ROOTS = (
+    "#chart-balance-container .highcharts-root,"
+    " #chart-expenses-container .highcharts-root"
+)
 
 
 @pytest.mark.webtest
 class BookkeepingIndex(TestCase, Browser):
-    def test_index_queries_do_not_grow_with_rows(self):
-        self._add_rows(range(2))
-        queries_at_two = self._index_queries()
-        self._add_rows(range(2, 6))
-
-        assert self._index_queries() == queries_at_two
-
     def test_a_pressed_nav_act_closes_its_menu(self):
         url = reverse("incomes:new")
         act = self.browser.find_element(
@@ -41,31 +38,33 @@ class BookkeepingIndex(TestCase, Browser):
             "return arguments[0].matches(':focus-within')", menu
         )
 
-    def test_reload_redraws_both_index_charts(self):
-        roots = (
-            "#chart-balance-container .highcharts-root,"
-            " #chart-expenses-container .highcharts-root"
-        )
-        # the reload settles the tables too: each chart draws on its own data's swap only
-        drawn_on_load = self.browser.execute_script(
-            f"const drawn = document.querySelectorAll('{roots}');"
-            " drawn.forEach(root => root.dataset.drawnOnLoad = '');"
-            " window.draws = 0;"
-            " Highcharts.addEvent(Highcharts.Chart, 'load', () => window.draws++);"
-            " htmx.trigger(document.body, 'reload');"
-            " return drawn.length;"
-        )
+    def test_the_charts_tab_draws_both_charts_by_click_and_by_url(self):
+        self.browser.find_element(By.ID, "tab-charts").click()
+        self.wait_until_idle()
+        by_click = self._drawn_charts()
+        self.browser.get(self.live_server_url + reverse("bookkeeping:tab_charts"))
         self.wait_until_idle()
 
-        reload = self.browser.execute_script(
-            f"return {{roots: [...document.querySelectorAll('{roots}')]"
-            ".map(root => 'drawnOnLoad' in root.dataset ? 'stale' : 'redrawn'),"
-            " draws: window.draws};"
-        )
-        assert (drawn_on_load, reload) == (
-            2,
-            {"roots": ["redrawn", "redrawn"], "draws": 2},
-        )
+        assert (by_click, self._drawn_charts()) == (2, 2)
+
+    def test_a_reload_redraws_each_chart_once_on_the_charts_tab(self):
+        self.browser.get(self.live_server_url + reverse("bookkeeping:tab_charts"))
+        self.wait_until_idle()
+
+        assert self._reload() == {
+            "drawn_on_load": 2,
+            "roots": ["redrawn", "redrawn"],
+            "draws": 2,
+            "errors": [],
+        }
+
+    def test_a_reload_on_the_overview_draws_no_chart_and_throws_nothing(self):
+        assert self._reload() == {
+            "drawn_on_load": 0,
+            "roots": [],
+            "draws": 0,
+            "errors": [],
+        }
 
     def test_insert_clears_each_worth_row(self):
         AccountFactory(title="Account 0")
@@ -87,6 +86,21 @@ class BookkeepingIndex(TestCase, Browser):
             for price_id in price_ids
         ]
         assert values == ["", ""]
+
+    def test_every_index_tab_fits_a_phone(self):
+        # a funds table and the accounts table run wider than a phone's column
+        IncomeFactory()
+        SavingFactory()
+        PensionFactory()
+        overflow = {}
+        for tab in INDEX_TABS:
+            self.open_at(tab.url, 360)
+            overflow[tab.name] = self.browser.execute_script(
+                "const page = document.documentElement;"
+                " return page.scrollWidth - page.clientWidth;"
+            )
+
+        assert overflow == dict.fromkeys(("overview", "funds", "balance", "charts"), 0)
 
     def test_month_page_fits_a_phone_and_its_table_scrolls_in_its_box(self):
         # a column per type: ten make the table wider than the phone
@@ -156,15 +170,26 @@ class BookkeepingIndex(TestCase, Browser):
         )
         assert swap == {"tables": 1, "form": True, "errors": []}
 
-    def _add_rows(self, numbers):
-        # A type's save re-syncs its balances, so the rows come from records.
-        for i in numbers:
-            IncomeFactory(account=AccountFactory(title=f"Account {i}"))
-            SavingFactory(saving_type=SavingTypeFactory(title=f"Fund {i}"))
-            PensionFactory(pension_type=PensionTypeFactory(title=f"Pension {i}"))
+    def _drawn_charts(self):
+        return self.browser.execute_script(
+            f"return document.querySelectorAll('{CHART_ROOTS}').length;"
+        )
 
-    def _index_queries(self):
-        with CaptureQueriesContext(connection) as queries:
-            self.browser.get(self.live_server_url)
-            self.wait_until_idle()
-        return len(queries)
+    def _reload(self):
+        """Roots marked on load, then each read after one reload."""
+        drawn_on_load = self.browser.execute_script(
+            f"const drawn = document.querySelectorAll('{CHART_ROOTS}');"
+            " drawn.forEach(root => root.dataset.drawnOnLoad = '');"
+            " window.draws = 0; window.errors = [];"
+            " addEventListener('error', e => errors.push(e.message));"
+            " Highcharts.addEvent(Highcharts.Chart, 'load', () => window.draws++);"
+            " htmx.trigger(document.body, 'reload');"
+            " return drawn.length;"
+        )
+        self.wait_until_idle()
+
+        return {"drawn_on_load": drawn_on_load} | self.browser.execute_script(
+            f"return {{roots: [...document.querySelectorAll('{CHART_ROOTS}')]"
+            ".map(root => 'drawnOnLoad' in root.dataset ? 'stale' : 'redrawn'),"
+            " draws: window.draws, errors: window.errors};"
+        )

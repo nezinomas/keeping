@@ -9,7 +9,11 @@ app_name = App_name
 register_converter(converters.DateConverter, "date")
 
 urlpatterns = [
-    path("", views.Index.as_view(), name="index"),
+    path("", views.TabOverview.as_view(), name="index"),
+    path("", views.TabOverview.as_view(), name="tab_overview"),
+    path("bookkeeping/funds/", views.TabFunds.as_view(), name="tab_funds"),
+    path("bookkeeping/balance/", views.TabBalance.as_view(), name="tab_balance"),
+    path("bookkeeping/charts/", views.TabCharts.as_view(), name="tab_charts"),
     path(
         "set/balances/", views.RegenerateBalances.as_view(), name="regenerate_balances"
     ),

@@ -1,0 +1,19 @@
+{% load i18n %}
+
+<div class="flex">
+    <c-new-button url="{% url 'bookkeeping:accounts_worth_new' %}" title="{% translate 'Accounts fact' %}" />
+    <button class="button-secondary button-refresh" hx-get="{% url 'bookkeeping:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span></button>
+</div>
+
+<div id="accounts" class="table-responsive">{% include 'bookkeeping/includes/account_worth_list.html' %}</div>
+
+<div class="table-responsive">{% include 'bookkeeping/includes/balance_short.html' with data=balance_short %}</div>
+
+<div class="table-responsive">{% include 'bookkeeping/includes/no_incomes.html' %}</div>
+
+<div class="table-responsive"><c-info-table :data="wealth" /></div>
+
+<div class="table-responsive"><c-info-table :data="averages" /></div>
+
+{% if borrow %}<div class="table-responsive"><c-info-table :data="borrow" calculate_debt_remains="true"/></div>{% endif %}
+{% if lend %}<div class="table-responsive"><c-info-table :data="lend" calculate_debt_remains="true"/></div>{% endif %}

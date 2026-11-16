@@ -15,7 +15,7 @@ from ....expenses.tests.factories import (
 )
 from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
-from ...tabs import TABS
+from ...tabs import DETAILED_TABS
 
 pytestmark = pytest.mark.django_db
 
@@ -102,7 +102,7 @@ def test_view_detailed_only_the_open_tab_reloads(client_logged):
     assert content.count(" from:body") == 1
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+@pytest.mark.parametrize("tab", DETAILED_TABS, ids=lambda tab: tab.name)
 def test_view_detailed_tab_query_count_does_not_grow(client_logged, tab):
     def queries():
         with CaptureQueriesContext(connection) as captured:
@@ -130,17 +130,41 @@ def test_view_detailed_page_wears_the_paper_bundle(client_logged):
     assert not re.search(r'class="(?:[^"]* )?quick-add[" ]', content)
 
 
+@pytest.mark.parametrize(
+    "url_name, tab, title, rows",
+    [
+        pytest.param(
+            "bookkeeping:detailed", "incomes", "Pajamos", ["Income Type"], id="opens"
+        ),
+        pytest.param(
+            "bookkeeping:detailed_savings",
+            "savings",
+            "Taupymas",
+            ["Savings"],
+            id="savings",
+        ),
+        pytest.param(
+            "bookkeeping:detailed_expenses",
+            "expenses",
+            "Expense Type",
+            ["Alpha"],
+            id="expenses",
+        ),
+    ],
+)
 @factory.django.mute_signals(post_save)
-def test_view_detailed_opens_on_incomes(client_logged):
+def test_view_detailed_tab_is_open_and_holds_only_its_own_table(
+    client_logged, url_name, tab, title, rows
+):
     IncomeFactory()
     SavingFactory()
+    _expense("Alpha", 1, ExpenseTypeFactory())
 
-    response = client_logged.get(reverse("bookkeeping:detailed"))
-    content = response.content.decode()
+    content = client_logged.get(reverse(url_name)).content.decode()
 
-    assert response.status_code == 200
-    assert re.search(TITLE_COLUMN.format(title="Pajamos"), content)
-    assert ROW_TITLE.format(title="Income Type") in content
+    assert re.findall(r"x-data=\"\{ tab: '(\w+)' \}\"", content) == [tab]
+    assert re.findall(TITLE_COLUMN.format(title="([^<]*)"), content) == [title]
+    assert re.findall(ROW_TITLE.format(title="([^<]*)"), content) == [*rows, "Viso"]
     assert content.count("<table") == 1
 
 
@@ -257,20 +281,6 @@ def test_view_detailed_a_type_table_sorts_inside_its_own_panel(client_logged):
 
 
 @factory.django.mute_signals(post_save)
-def test_view_detailed_with_savings(client_logged):
-    SavingFactory()
-    IncomeFactory()
-
-    content = client_logged.get(
-        reverse("bookkeeping:detailed_savings")
-    ).content.decode()
-
-    assert ROW_TITLE.format(title="Savings") in content
-    assert re.search(TITLE_COLUMN.format(title="Taupymas"), content)
-    assert ROW_TITLE.format(title="Income Type") not in content
-
-
-@factory.django.mute_signals(post_save)
 def test_view_detailed_rendered_expenses(client_logged, expenses):
     content = client_logged.get(
         reverse("bookkeeping:detailed_expenses")
@@ -296,20 +306,6 @@ def test_view_detailed_expenses_one_panel_per_type(client_logged):
     assert '<h2 class="panel__title">Zeta</h2>' in content
     first, second = _positions(content, 'id="detailed-beta"', 'id="detailed-zeta"')
     assert first < second
-
-
-@factory.django.mute_signals(post_save)
-def test_view_detailed_expenses_tab_holds_no_income_or_saving_table(client_logged):
-    _expense("Alpha", 1, ExpenseTypeFactory())
-    IncomeFactory()
-    SavingFactory()
-
-    content = client_logged.get(
-        reverse("bookkeeping:detailed_expenses")
-    ).content.decode()
-
-    assert content.count("<table") == 1
-    assert ROW_TITLE.format(title="Income Type") not in content
 
 
 @factory.django.mute_signals(post_save)
@@ -424,26 +420,23 @@ def test_view_detailed_expenses_bigger_type_first(client_logged):
     assert first < second
 
 
+@pytest.mark.parametrize(
+    "prices, shares",
+    [
+        pytest.param((30000, 70000), ["70% metų sumos", "30% metų sumos"], id="whole"),
+        pytest.param(
+            (10, 9990), ["&gt; 99% metų sumos", "&lt; 1% metų sumos"], id="edges"
+        ),
+    ],
+)
 @factory.django.mute_signals(post_save)
-def test_view_detailed_expenses_panels_carry_their_share(client_logged):
-    _expense("a1", 30000, expense_type=ExpenseTypeFactory(title="A"))
-    _expense("b1", 70000, expense_type=ExpenseTypeFactory(title="B"))
+def test_view_detailed_expenses_panels_carry_their_share(client_logged, prices, shares):
+    _expense("a1", prices[0], expense_type=ExpenseTypeFactory(title="A"))
+    _expense("b1", prices[1], expense_type=ExpenseTypeFactory(title="B"))
 
     content = _expenses_page(client_logged)
 
-    assert '<p class="panel__subtitle">30% metų sumos</p>' in content
-    assert '<p class="panel__subtitle">70% metų sumos</p>' in content
-
-
-@factory.django.mute_signals(post_save)
-def test_view_detailed_expenses_small_share_reads_less_than_one(client_logged):
-    _expense("a1", 10, expense_type=ExpenseTypeFactory(title="A"))
-    _expense("b1", 9990, expense_type=ExpenseTypeFactory(title="B"))
-
-    content = _expenses_page(client_logged)
-
-    assert '<p class="panel__subtitle">&lt; 1% metų sumos</p>' in content
-    assert '<p class="panel__subtitle">0% metų sumos</p>' not in content
+    assert re.findall(r'<p class="panel__subtitle">([^<]*)</p>', content) == shares
 
 
 @factory.django.mute_signals(post_save)

@@ -44,6 +44,9 @@ LEDGER_ELSEWHERE = ("/summary/", "/plans/", "/detailed/")
 
 NAV_RULES = (
     ("bookkeeping", _exact("/")),
+    ("bookkeeping", _exact("/bookkeeping/funds/")),
+    ("bookkeeping", _exact("/bookkeeping/balance/")),
+    ("bookkeeping", _exact("/bookkeeping/charts/")),
     ("month", _exact("/month/")),
     ("detailed", _within("/detailed/")),
     ("expenses", _within("/expenses/", excluding=LEDGER_ELSEWHERE)),

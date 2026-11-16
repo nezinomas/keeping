@@ -106,6 +106,7 @@ def test_a_paper_page_draws_its_tab_panel(client_logged, url, panel_class):
         pytest.param("plans:index", [], id="plans"),
         pytest.param("counts:index", ["count-type"], id="counts"),
         pytest.param("drinks:index", [], id="drinks"),
+        pytest.param("bookkeeping:index", [], id="bookkeeping"),
     ],
 )
 def test_every_script_a_paper_page_runs_carries_the_csp_nonce(client_logged, url, args):

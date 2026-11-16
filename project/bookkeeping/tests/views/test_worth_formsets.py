@@ -213,17 +213,20 @@ def test_modal_renders_the_formset_under_its_title_and_worth_css_class(
 
 
 @pytest.mark.django_db
-def test_formset_has_one_empty_price_per_account(client_logged):
-    AccountFactory(title="A1")
-    AccountFactory(title="A2")
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
+def test_modal_has_one_unpriced_form_per_fund_with_that_fund_selected(
+    client_logged, worth
+):
+    f1 = worth.fund_factory(title="F1")
+    f2 = worth.fund_factory(title="F2")
+    worth.worth_factory(**{worth.fund_field: f1})
 
-    response = client_logged.get(reverse("bookkeeping:accounts_worth_new"))
+    content = client_logged.get(reverse(worth.url)).content.decode()
 
-    prices = re.findall(
-        r'<input[^>]*name="form-\d+-price"[^>]*>', response.content.decode()
-    )
-    assert len(prices) == 2
-    assert not any("value=" in price for price in prices)
+    selected = re.findall(r'<option value="(\d+)" selected>([^<]*)</option>', content)
+    prices = re.findall(r'<input[^>]*name="form-\d+-price"[^>]*>', content)
+    assert selected == [(str(f1.pk), "F1"), (str(f2.pk), "F2")]
+    assert ["value=" in price for price in prices] == [False, False]
 
 
 @pytest.mark.django_db
@@ -274,22 +277,6 @@ def test_service_instance_is_built_once(rf, main_user):
     view = worth_view(rf, main_user)
 
     assert view.service_instance is view.service_instance
-
-
-@pytest.mark.django_db
-def test_unbound_formset_renders_one_form_per_fund_with_that_fund_selected(
-    rf, main_user
-):
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
-    AccountWorthFactory(account=a1)
-    view = worth_view(rf, main_user)
-
-    actual = [str(form["account"]) for form in view.unbound_formset()]
-
-    assert len(actual) == 2
-    assert f'<option value="{a1.pk}" selected>A1</option>' in actual[0]
-    assert f'<option value="{a2.pk}" selected>A2</option>' in actual[1]
 
 
 @pytest.mark.django_db
@@ -352,19 +339,21 @@ def test_post_saves_only_the_rows_with_a_price(rf, main_user, prices, saved):
         (w.account.title, w.price, w.date.strftime("%Y-%m-%d")) for w in actual
     ] == saved
     assert response.status_code == 204
-    assert response["HX-Trigger"] == '{"afterAccountWorthNew": {}}'
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("worth", WORTH_FORMSETS)
-def test_post_syncs_the_balances_of_the_saved_rows_user(client_logged, worth):
+def test_post_syncs_the_balances_of_the_saved_rows_user_and_reloads_the_tab(
+    client_logged, worth
+):
     fund = worth.fund_factory()
     row = {"date": "1999-9-9", "price": "0.01", worth.fund_field: fund.pk}
 
-    client_logged.post(reverse(worth.url), post_data([row]))
+    response = client_logged.post(reverse(worth.url), post_data([row]))
 
     actual = worth.balance.objects.values_list("year", worth.balance_field)
     assert list(actual) == [(1999, 1), (2000, 1)]
+    assert response["HX-Trigger"] == '{"reload": {}}'
 
 
 @pytest.mark.django_db
