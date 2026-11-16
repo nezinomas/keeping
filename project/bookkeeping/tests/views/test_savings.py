@@ -5,167 +5,207 @@ import pytest
 import pytz
 from django.urls import reverse
 
+from ....core.tests.utils import tab_fragment
 from ....incomes.tests.factories import IncomeFactory
+from ....pensions.tests.factories import (
+    PensionFactory,
+    PensionTypeFactory,
+)
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
-from ..factories import SavingWorthFactory
+from ..factories import PensionWorthFactory, SavingWorthFactory
 from ..helper import (
     closed_every_other,
     fund_with_a_sell,
     row_cells,
+    row_titles,
     switch_a_into_b,
+    tab_table,
     total_cells,
     view_queries,
-    worth_in_1999,
 )
+from ..signals.helpers import worth
 
 pytestmark = pytest.mark.django_db
 
-
-def test_view_context(client_logged):
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-    actual = response.context
-
-    assert actual["title"] == "Fondai"
-    assert actual["type"] == "savings"
+FUNDS_TAB = "bookkeeping:tab_funds"
+SAVED_SHARE = re.compile(
+    r'<div class="alert ([^"]*)">Pajamų dalis pervedama taupymui: <b>([^<]*)</b>%'
+)
 
 
-def test_view_context_no_pensions_type(client_logged):
+def _table(client, title="Fondai"):
+    return tab_table(client, FUNDS_TAB, title)
+
+
+def _saved_share(client):
+    """(colour class, percent) of the Saved share."""
+    return SAVED_SHARE.search(tab_fragment(client, reverse(FUNDS_TAB))).groups()
+
+
+@pytest.mark.parametrize(
+    "title, rows",
+    [
+        pytest.param("Fondai", ["FFF"], id="funds"),
+        # the funds of kind Pensijos first, then the II pillar's Pension funds
+        pytest.param("Pensijos", ["PPP", "PensionType"], id="pensions"),
+    ],
+)
+def test_each_table_lists_its_own_funds(client_logged, title, rows):
     SavingFactory(saving_type=SavingTypeFactory(title="FFF", type="funds"))
     SavingFactory(saving_type=SavingTypeFactory(title="PPP", type="pensions"))
+    PensionFactory()
 
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-    actual = response.context["object_list"]
-
-    assert len(actual) == 1
-    assert actual[0].saving_type.title == "FFF"
+    assert row_titles(_table(client_logged, title)) == rows
 
 
-def test_percentage_from_incomes(client_logged):
-    IncomeFactory(price=10)
-    SavingFactory(price=20)
-
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "Pajamų dalis pervedama taupymui: <b>200,0</b>%" in actual
-
-
-@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
-def test_percentage_from_incomes_reads_the_invested_price(client_logged, fee_source):
-    IncomeFactory(price=10000)
+@pytest.mark.parametrize(
+    "income, price, fee, fee_source, percent",
+    [
+        pytest.param(10, 20, 0, "account", "200,0", id="over-the-incomes"),
+        *(
+            pytest.param(10000, 2000, 500, source, "20,0", id=source)
+            for source in SavingType.FeeSource.values
+        ),
+    ],
+)
+def test_saved_share_is_the_invested_price_over_the_incomes(
+    client_logged, income, price, fee, fee_source, percent
+):
+    IncomeFactory(price=income)
     SavingFactory(
-        price=2000,
-        fee=500,
+        price=price,
+        fee=fee,
         saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
     )
 
-    actual = client_logged.get(reverse("bookkeeping:savings")).content.decode()
-
-    assert "Pajamų dalis pervedama taupymui: <b>20,0</b>%" in actual
+    assert _saved_share(client_logged)[1] == percent
 
 
 @pytest.mark.parametrize(
     "income, savings, alert",
     [
-        pytest.param(10, [1], "alert alert-success", id="green"),
-        pytest.param(100, [1], "alert alert-warning", id="yellow"),
-        pytest.param(10, [], "alert alert-danger", id="red"),
+        pytest.param(10, [1], "alert-success", id="green"),
+        pytest.param(100, [1], "alert-warning", id="yellow"),
+        pytest.param(10, [], "alert-danger", id="red"),
     ],
 )
-def test_percentage_from_incomes_alert(client_logged, income, savings, alert):
+def test_saved_share_colour(client_logged, income, savings, alert):
     IncomeFactory(price=income)
     for price in savings:
         SavingFactory(price=price)
 
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert alert in actual
+    assert _saved_share(client_logged)[0] == alert
 
 
-def test_table_percentage(client_logged):
-    IncomeFactory(price=1000)
-    SavingFactory(price=660)
-
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "6,60</td>" in actual  # row
-    assert "6,60</th>" in actual  # total_row
+TABLES = [
+    pytest.param("Fondai", SavingFactory, "Savings", id="funds"),
+    pytest.param("Pensijos", PensionFactory, "PensionType", id="pensions"),
+]
 
 
-def test_latest_check(client_logged):
-    SavingFactory()
-    SavingWorthFactory()
-    SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
+@pytest.mark.parametrize("title, factory, row", TABLES)
+def test_table_shows_the_year_s_transfers_in_its_row_and_total(
+    client_logged, title, factory, row
+):
+    factory(price=660)
 
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-    object_list = response.context["object_list"]
+    table = _table(client_logged, title)
 
-    assert object_list[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
-
-
-def test_regenerate_buttons(client_logged):
-    SavingFactory()
-
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
-    url = reverse("bookkeeping:regenerate_balances")
-
-    assert f'hx-get="{url}?type=savings"' in content
-    assert "Bus atnaujinti tik šios lentelės balansai." in content
+    assert row_cells(table, row)[2] == "6,60"
+    assert total_cells(table)[3] == "6,60"
 
 
-def test_closed_fund_with_a_sell_shows_its_profit_but_no_worth(client_logged):
-    fund_with_a_sell("Closed", 100000, 60000, closed=1999)
+@pytest.mark.parametrize(
+    "title, factory, worth_factory, row",
+    [
+        pytest.param(
+            "Fondai", SavingFactory, SavingWorthFactory, "Savings", id="funds"
+        ),
+        pytest.param(
+            "Pensijos",
+            PensionFactory,
+            PensionWorthFactory,
+            "PensionType",
+            id="pensions",
+        ),
+    ],
+)
+def test_table_dates_the_latest_check(
+    client_logged, title, factory, worth_factory, row
+):
+    factory()
+    worth_factory()
+    worth_factory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
 
-    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
-    cells = row_cells(content, "Closed")
+    assert row_cells(_table(client_logged, title), row)[8] == "1999-01-01"
+
+
+@pytest.mark.parametrize(
+    "title, kind, bought, sold, fee, profit",
+    [
+        pytest.param(
+            "Fondai", "funds", 100000, 60000, 0, ["-400,00", "-40,00%"], id="funds"
+        ),
+        pytest.param(
+            "Pensijos",
+            "pensions",
+            2596753,
+            3459722,
+            20000,
+            ["8.429,69", "32,46%"],
+            id="pensions",
+        ),
+    ],
+)
+def test_closed_fund_with_a_sell_shows_its_profit_but_no_worth(
+    client_logged, title, kind, bought, sold, fee, profit
+):
+    fund_with_a_sell("Closed", bought, sold, fee=fee, kind=kind, closed=1999)
+
+    cells = row_cells(_table(client_logged, title), "Closed")
 
     assert cells[8:10] == ["-", "-"]
-    assert cells[10] == "-400,00"
-    assert cells[11] == "-40,00%"
+    assert cells[10:12] == profit
 
 
 def test_fund_with_a_loss_marks_its_profit_cells_as_a_loss(client_logged):
     fund_with_a_sell("Closed", 100000, 60000, closed=1999)
 
-    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
-    row = re.search(r"<tr>\s*<td[^>]*>Closed</td>(.*?)</tr>", content, re.S).group(1)
+    table = _table(client_logged)
+    row = re.search(r"<tr>\s*<td[^>]*>Closed</td>(.*?)</tr>", table, re.S).group(1)
     lost = re.findall(r'<td[^>]*data-sign="loss"[^>]*>(.*?)</td>', row, re.S)
 
     assert lost == ["-400,00", "-40,00%"]
-    assert "table-success" not in content
-    assert "table-danger" not in content
+    assert "table-success" not in row
+    assert "table-danger" not in row
 
 
+@pytest.mark.parametrize(
+    "title, kind",
+    [
+        pytest.param("Fondai", "funds", id="funds"),
+        pytest.param("Pensijos", "pensions", id="pensions"),
+    ],
+)
 @pytest.mark.parametrize("sold", [True, False])
-def test_open_fund_with_no_worth_shows_dashes(client_logged, sold):
+def test_open_fund_with_no_worth_shows_dashes(client_logged, title, kind, sold):
     if sold:
-        fund_with_a_sell("Open", 100000, 60000)
+        fund_with_a_sell("Open", 100000, 60000, kind=kind)
     else:
-        SavingFactory(saving_type=SavingTypeFactory(title="Open"), price=100000)
+        SavingFactory(
+            saving_type=SavingTypeFactory(title="Open", type=kind), price=100000
+        )
 
-    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
-
-    assert row_cells(content, "Open")[8:] == ["-"] * 4
+    assert row_cells(_table(client_logged, title), "Open")[8:] == ["-"] * 4
 
 
 def test_open_fund_with_no_worth_marks_its_empty_cells(client_logged):
     SavingFactory(saving_type=SavingTypeFactory(title="Open"), price=100000)
 
-    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
-    row = re.search(r"<tr>\s*<td[^>]*>Open</td>(.*?)</tr>", content, re.S).group(1)
+    table = _table(client_logged)
+    row = re.search(r"<tr>\s*<td[^>]*>Open</td>(.*?)</tr>", table, re.S).group(1)
     cells = re.findall(r"<td([^>]*)>(.*?)</td>", row, re.S)
 
     assert cells[4][1].strip() == "1.000,00"
@@ -173,24 +213,35 @@ def test_open_fund_with_no_worth_marks_its_empty_cells(client_logged):
     assert all('data-cell="empty"' in attrs for attrs, _ in cells[8:])
 
 
-def test_savings_queries_do_not_grow_with_closed_funds(client_logged, main_user):
+@pytest.mark.parametrize("kind", ["funds", "pensions"])
+def test_funds_tab_queries_do_not_grow_with_closed_funds(
+    client_logged, main_user, kind
+):
     def build(i):
-        fund_with_a_sell(f"Fund {i}", 100000, 60000, closed=closed_every_other(i))
+        fund_with_a_sell(
+            f"Fund {i}", 100000, 60000, kind=kind, closed=closed_every_other(i)
+        )
+        PensionFactory(pension_type=PensionTypeFactory(title=f"P {i}"))
 
     queries = [
-        view_queries(client_logged, main_user, "bookkeeping:savings", build, n)
-        for n in (2, 4)
+        view_queries(client_logged, main_user, FUNDS_TAB, build, n) for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
 
 
-@pytest.mark.parametrize("kind", ["funds", "shares"])
-def test_total_counts_the_switched_money_once(client_logged, kind):
+@pytest.mark.parametrize(
+    "title, kind",
+    [
+        pytest.param("Fondai", "funds", id="funds"),
+        pytest.param("Fondai", "shares", id="shares"),
+        pytest.param("Pensijos", "pensions", id="pensions"),
+    ],
+)
+def test_total_counts_the_switched_money_once(client_logged, title, kind):
     switch_a_into_b(kind=kind)
 
-    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
-    cells = total_cells(content)
+    cells = total_cells(_table(client_logged, title))
 
     assert cells[5] == "2.300,00"
     assert cells[-1] == "7,69%"
@@ -203,14 +254,14 @@ def test_total_keeps_the_base_of_a_source_closed_before_the_year(client_logged):
     SavingChangeFactory(
         from_account=a, to_account=b, price=130000, fee=0, date=date(1998, 6, 1)
     )
-    worth_in_1999(b, 140000)
+    worth(b, 140000)
 
-    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
+    table = _table(client_logged)
 
-    assert total_cells(content)[-1] == row_cells(content, "B")[-1]
+    assert total_cells(table)[-1] == row_cells(table, "B")[-1]
 
 
-def test_total_counts_money_switched_through_a_closed_fund_once(client_logged):
+def _switched_through_a_closed_fund():
     a = SavingTypeFactory(title="A")
     b = SavingTypeFactory(title="B", closed=1998)
     c = SavingTypeFactory(title="C")
@@ -223,15 +274,11 @@ def test_total_counts_money_switched_through_a_closed_fund_once(client_logged):
             fee=0,
             date=date(1998, 6, 1),
         )
-    worth_in_1999(a, 50000)
-    worth_in_1999(c, 60000)
-
-    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
-
-    assert total_cells(content)[-1] == "10,00%"
+    worth(a, 50000)
+    worth(c, 60000)
 
 
-def test_total_takes_off_the_gain_a_closed_fund_passes_on(client_logged):
+def _gain_passed_on_by_a_closed_fund():
     a = SavingTypeFactory(title="A", closed=1998)
     b = SavingTypeFactory(title="B")
     c = SavingTypeFactory(title="C")
@@ -244,35 +291,52 @@ def test_total_takes_off_the_gain_a_closed_fund_passes_on(client_logged):
             fee=0,
             date=date(1998, 6, 1),
         )
-    worth_in_1999(c, 70000)
-    worth_in_1999(b, 55000)
-
-    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
-
-    assert total_cells(content)[-1] == "15,00%"
+    worth(c, 70000)
+    worth(b, 55000)
 
 
-def test_total_without_switches_reads_the_plain_percentage(client_logged):
+def _no_switches():
     fund = SavingTypeFactory(title="A")
     SavingFactory(saving_type=fund, price=100000, fee=0, date=date(1999, 1, 1))
-    worth_in_1999(fund, 130000)
-
-    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
-
-    assert total_cells(content)[-1] == "30,00%"
+    worth(fund, 130000)
 
 
-def test_savings_queries_do_not_grow_with_switches(client_logged, main_user):
+@pytest.mark.parametrize(
+    "build, percent",
+    [
+        pytest.param(_switched_through_a_closed_fund, "10,00%", id="through-closed"),
+        pytest.param(_gain_passed_on_by_a_closed_fund, "15,00%", id="gain-passed-on"),
+        pytest.param(_no_switches, "30,00%", id="no-switches"),
+    ],
+)
+def test_total_profit_percentage(client_logged, build, percent):
+    build()
+
+    assert total_cells(_table(client_logged))[-1] == percent
+
+
+@pytest.mark.parametrize("kind", ["funds", "pensions"])
+def test_funds_tab_queries_do_not_grow_with_switches(client_logged, main_user, kind):
     def build(i):
-        a = fund_with_a_sell(f"A {i}", 100000, 60000)
-        b = SavingTypeFactory(title=f"B {i}")
+        a = fund_with_a_sell(f"A {i}", 100000, 60000, kind=kind)
+        b = SavingTypeFactory(title=f"B {i}", type=kind)
         SavingChangeFactory(
             from_account=a, to_account=b, price=1000, fee=0, date=date(1999, 7, 1)
         )
 
     queries = [
-        view_queries(client_logged, main_user, "bookkeeping:savings", build, n)
-        for n in (2, 4)
+        view_queries(client_logged, main_user, FUNDS_TAB, build, n) for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
+
+
+def test_pensions_total_ignores_a_switch_between_funds(client_logged):
+    switch_a_into_b(kind="funds")
+    PensionFactory(price=100000)
+    PensionWorthFactory(price=130000)
+
+    table = _table(client_logged, "Pensijos")
+
+    assert total_cells(table)[5] == "1.000,00"
+    assert total_cells(table)[-1] == row_cells(table, "PensionType")[-1]

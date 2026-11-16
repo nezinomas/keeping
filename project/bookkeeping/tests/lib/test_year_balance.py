@@ -216,8 +216,6 @@ def _year_of(*months):
                 {"incomes": 10},
             ],
             {
-                "incomes": [100, 10] + [0] * 10,
-                "expenses": [1] + [0] * 11,
                 "borrow": [8] + [0] * 11,
                 "borrow_return": [16] + [0] * 11,
                 "lend": [32] + [0] * 11,
@@ -230,8 +228,6 @@ def _year_of(*months):
             0,
             [{"expenses": 7}, {"incomes": 3}, {"lend": 1}],
             {
-                "incomes": [0, 3] + [0] * 10,
-                "expenses": [7] + [0] * 11,
                 "borrow": [0] * 12,
                 "borrow_return": [0] * 12,
                 "lend": [0, 0, 1] + [0] * 9,
@@ -252,8 +248,6 @@ def test_balance_series_read_their_column_and_money_flow_runs_from_the_start(
     )
 
     actual = {
-        "incomes": balance.income_data,
-        "expenses": balance.expense_data,
         "borrow": balance.borrow_data,
         "borrow_return": balance.borrow_return_data,
         "lend": balance.lend_data,

@@ -1,20 +1,19 @@
 import json
 import re
 from contextlib import contextmanager
-from datetime import date, datetime
+from datetime import date
 from unittest.mock import patch
 
-import pytz
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from ...accounts.tests.factories import AccountFactory
+from ...core.tests.utils import tab_fragment
 from ...savings.models import SavingType
-from ...savings.tests.factories import SavingFactory, SavingTypeFactory
-from ...transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
+from ...savings.tests.factories import SavingTypeFactory
+from ...transactions.tests.factories import SavingChangeFactory
 from .. import balance_sources, views
-from .factories import SavingWorthFactory
+from .signals.helpers import buy, sell, worth
 
 WORTH_VIEWS = (views.AccountsWorthNew, views.SavingsWorthNew, views.PensionsWorthNew)
 
@@ -40,17 +39,18 @@ def post_data(rows):
 def fund_with_a_sell(title, bought, sold, *, fee=0, kind="funds", closed=None):
     """Bought in 1999, sold in part or whole that June, worth 0 at the year end."""
     fund = SavingTypeFactory(title=title, type=kind, closed=closed)
-    SavingFactory(saving_type=fund, price=bought, fee=fee, date=date(1999, 1, 1))
-    SavingCloseFactory(
-        from_account=fund,
-        to_account=AccountFactory(title="Bank"),
-        price=sold,
-        fee=0,
-        date=date(1999, 6, 1),
-    )
-    SavingWorthFactory(
-        saving_type=fund, price=0, date=datetime(1999, 12, 31, 12, tzinfo=pytz.utc)
-    )
+    buy(fund, bought, fee=fee)
+    sell(fund, sold)
+    worth(fund, 0)
+    return fund
+
+
+def stale_fund(title="Stale", kind="funds"):
+    """Worth 1 000,00 on 1 March, then 400,00 of it sold in June: the worth is stale."""
+    fund = SavingTypeFactory(title=title, type=kind)
+    buy(fund, 100000)
+    worth(fund, 100000, month=3, day=1)
+    sell(fund, 40000)
     return fund
 
 
@@ -70,31 +70,40 @@ def script_json(content, script_id):
     return json.loads(found.group(1))
 
 
-def worth_in_1999(fund, price, month=12):
-    return SavingWorthFactory(
-        saving_type=fund,
-        price=price,
-        date=datetime(1999, month, 28, 12, tzinfo=pytz.utc),
-    )
-
-
 def switch_a_into_b(*, kind="funds", a_closed=None, switched=130000):
     """A bought 1 000,00, worth 1 300,00, all switched into B; A ends at 0, B at 1 400,00."""
     a = SavingTypeFactory(title="A", type=kind, closed=a_closed)
     b = SavingTypeFactory(title="B", type=kind)
-    SavingFactory(saving_type=a, price=100000, fee=0, date=date(1999, 1, 1))
-    worth_in_1999(a, 130000, month=5)
+    buy(a, 100000)
+    worth(a, 130000, month=5, day=28)
     SavingChangeFactory(
         from_account=a, to_account=b, price=switched, fee=0, date=date(1999, 6, 1)
     )
-    worth_in_1999(a, 0)
-    worth_in_1999(b, 140000)
+    worth(a, 0)
+    worth(b, 140000)
     return a, b
 
 
-def total_cells(content):
-    """The Viso row of the funds table, one string per cell."""
-    foot = re.search(r"<tfoot>(.*?)</tfoot>", content, re.S).group(1)
+def table_titled(content, title):
+    """The one table with a `<th>` reading `title`: a tab draws several."""
+    tables = re.findall(r"<table\b.*?</table>", content, re.S)
+    titled = [table for table in tables if re.search(rf">\s*{title}\s*</th>", table)]
+    assert len(titled) == 1, f"{len(titled)} tables titled {title}"
+    return titled[0]
+
+
+def tab_table(client, url_name, title):
+    """The table titled `title` on the tab at `url_name`, as its reload draws it."""
+    return table_titled(tab_fragment(client, reverse(url_name)), title)
+
+
+def row_titles(table):
+    return re.findall(r"<tr>\s*<td[^>]*>([^<]*)</td>", table)
+
+
+def total_cells(table):
+    """The cells of `table`'s foot rows, one string each."""
+    foot = re.search(r"<tfoot>(.*?)</tfoot>", table, re.S).group(1)
     return [c.strip() for c in re.findall(r"<th[^>]*>(.*?)</th>", foot, re.S)]
 
 

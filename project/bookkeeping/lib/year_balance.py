@@ -57,14 +57,6 @@ class YearBalance(BalanceBase):
         return super().average.get("expenses", 0)
 
     @property
-    def income_data(self) -> list[float]:
-        return self._balance["incomes"].to_list()
-
-    @property
-    def expense_data(self) -> list[float]:
-        return self._balance["expenses"].to_list()
-
-    @property
     def borrow_data(self) -> list[float]:
         return self._balance["borrow"].to_list()
 

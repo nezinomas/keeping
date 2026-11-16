@@ -1,8 +1,6 @@
 import re
-from datetime import datetime
 
 import pytest
-import pytz
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
@@ -10,28 +8,12 @@ from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import PensionFactory
 from ....savings.tests.factories import SavingFactory
 from .. import factories
+from ..helper import tab_table
 
 pytestmark = pytest.mark.django_db
 
-
-def test_302(client):
-    url = reverse("bookkeeping:accounts")
-    response = client.get(url)
-
-    assert response.status_code == 302
-
-
-def test_latest_check(client_logged):
-    factories.AccountWorthFactory()
-    factories.AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-
-    url = reverse("bookkeeping:accounts")
-    response = client_logged.get(url)
-    items = response.context["items"]
-
-    assert items[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
-
-
+OVERVIEW = "bookkeeping:tab_overview"
+FUNDS = "bookkeeping:tab_funds"
 FUNDS_HEADER = (
     r'<th rowspan="2" colspan="2" class="[^"]*">1999 pradžioje</th>\s*'
     r'<th colspan="2" class="[^"]*">1999</th>'
@@ -39,26 +21,25 @@ FUNDS_HEADER = (
 
 
 @pytest.mark.parametrize(
-    "url_name, factory, header",
+    "url_name, title, factory, header",
     [
         pytest.param(
-            "bookkeeping:accounts",
+            OVERVIEW,
+            "Sąskaitos",
             factories.AccountWorthFactory,
             r"<th>1999 pradžioje</th>",
             id="accounts",
         ),
-        pytest.param("bookkeeping:savings", SavingFactory, FUNDS_HEADER, id="savings"),
-        pytest.param(
-            "bookkeeping:pensions", PensionFactory, FUNDS_HEADER, id="pensions"
-        ),
+        pytest.param(FUNDS, "Fondai", SavingFactory, FUNDS_HEADER, id="funds"),
+        pytest.param(FUNDS, "Pensijos", PensionFactory, FUNDS_HEADER, id="pensions"),
     ],
 )
-def test_header_reads_the_selected_year(client_logged, url_name, factory, header):
+def test_header_reads_the_selected_year(
+    client_logged, url_name, title, factory, header
+):
     factory()
 
-    content = client_logged.get(reverse(url_name)).content.decode("utf-8")
-
-    assert re.search(header, content)
+    assert re.search(header, tab_table(client_logged, url_name, title))
 
 
 def test_negative_delta_is_marked_as_a_loss(client_logged):
@@ -66,20 +47,35 @@ def test_negative_delta_is_marked_as_a_loss(client_logged):
     IncomeFactory(account=account, price=1000)
     factories.AccountWorthFactory(account=account, price=500)
 
-    url = reverse("bookkeeping:accounts")
-    content = client_logged.get(url).content.decode("utf-8")
+    table = tab_table(client_logged, OVERVIEW, "Sąskaitos")
 
-    assert re.search(r'<td data-sign="loss">-', content)
+    assert re.search(r'<td data-sign="loss">-', table)
 
 
-def test_regenerate_buttons(client_logged):
-    SavingFactory()
+@pytest.mark.parametrize(
+    "url_name, title, factory, kind",
+    [
+        pytest.param(
+            OVERVIEW,
+            "Sąskaitos",
+            factories.AccountWorthFactory,
+            "accounts",
+            id="accounts",
+        ),
+        pytest.param(FUNDS, "Fondai", SavingFactory, "savings", id="funds"),
+        pytest.param(FUNDS, "Pensijos", PensionFactory, "pensions", id="pensions"),
+    ],
+)
+def test_each_table_refreshes_its_own_balances(
+    client_logged, url_name, title, factory, kind
+):
+    factory()
 
-    url = reverse("bookkeeping:accounts")
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
+    table = tab_table(client_logged, url_name, title)
     url = reverse("bookkeeping:regenerate_balances")
 
-    assert f'hx-get="{url}?type=accounts"' in content
-    assert "Bus atnaujinti tik šios lentelės balansai." in content
+    assert re.search(
+        r'<span class="tip right" data-tip="Bus atnaujinti tik šios lentelės '
+        rf'balansai.">\s*<a href="#" role="button" hx-get="{url}\?type={kind}">',
+        table,
+    )

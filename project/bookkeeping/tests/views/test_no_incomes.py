@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import date, datetime
 
 import pytest
@@ -8,17 +9,18 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 
 from ....accounts.models import AccountBalance
+from ....core.tests.utils import tab_fragment
 from ....expenses.tests.factories import ExpenseTypeFactory
 from ....journals.tests.factories import JournalFactory
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
-from ....transactions.tests.factories import SavingCloseFactory
 from ...lib import no_incomes
 from ..factories import SavingWorthFactory
+from ..helper import row_cells, stale_fund
 
 pytestmark = pytest.mark.django_db
 
 
-def test_view_not_necessary(client_logged):
+def test_no_incomes_tip_lists_the_unnecessary_expenses(client_logged):
     j = JournalFactory()
     e1 = ExpenseTypeFactory(title="XXX")
     e2 = ExpenseTypeFactory(title="YYY")
@@ -28,15 +30,17 @@ def test_view_not_necessary(client_logged):
     j.unnecessary_expenses = json.dumps([e1.pk, e2.pk])
     j.save()
 
-    url = reverse("bookkeeping:no_incomes")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+    tip = re.search(
+        r'<span class="tip[^"]*" data-tip="(Nebūtinos išlaidos[^"]*)"', content
+    ).group(1)
 
-    assert "Nebūtinos išlaidos, kurių galima atsisakyti:" in actual
-
-    assert "- XXX" in actual
-    assert "- YYY" in actual
-    assert "- Taupymas" in actual
+    assert tip.splitlines() == [
+        "Nebūtinos išlaidos, kurių galima atsisakyti:",
+        "- XXX",
+        "- YYY",
+        "- Taupymas",
+    ]
 
 
 def test_template_month_value():
@@ -58,21 +62,8 @@ def test_template_month_value():
     }
     actual = render_to_string("bookkeeping/includes/no_incomes.html", ctx)
 
-    assert "0,11" in actual
-    assert "0,22" in actual
-    assert "33,0" in actual
-    assert "44,0" in actual
-
-
-def _stale_fund(kind):
-    fund = SavingTypeFactory(title="Stale", type=kind)
-    SavingFactory(saving_type=fund, price=100000, fee=0, date=date(1999, 1, 1))
-    SavingWorthFactory(
-        saving_type=fund,
-        price=100000,
-        date=datetime(1999, 3, 1, 12, tzinfo=pytz.utc),
-    )
-    SavingCloseFactory(from_account=fund, price=40000, fee=0, date=date(1999, 6, 1))
+    assert row_cells(actual, "x") == ["0,11", "0,22"]
+    assert row_cells(actual, "y") == ["33,0", "44,0"]
 
 
 # the buy leaves its account at -100000; the worth is 70000
@@ -95,7 +86,7 @@ def test_a_fresh_worth_counts_by_its_fund_type(main_user, kind, money_fund):
 
 @pytest.mark.parametrize("kind", ["funds", "pensions"])
 def test_a_stale_worth_counts_as_zero(main_user, kind):
-    _stale_fund(kind)
+    stale_fund(kind=kind)
 
     account_sum = AccountBalance.objects.filter(year=1999).aggregate(
         Sum("balance", default=0)

@@ -1,9 +1,11 @@
+from dataclasses import dataclass
 from datetime import date
 
 from django.utils.translation import gettext as _
 
 from ....core.lib.translation import month_names
 from ....debts.models import Debt
+from ....debts.services.model_services import DebtModelService
 from ....users.models import User
 from ...lib.make_dataframe import MakeDataFrame
 from ...lib.year_balance import YearBalance
@@ -32,9 +34,8 @@ def cash_flow_check(cash_flow: int, accounts_balance: int) -> str:
 
 
 class IndexContextBuilder:
-    def __init__(self, balance: YearBalance, debts: dict[Debt.DebtType, dict]):
+    def __init__(self, balance: YearBalance):
         self._balance = balance
-        self._debts = debts
 
     def balance_context(self, accounts_balance: int) -> dict:
         return {
@@ -62,21 +63,63 @@ class IndexContextBuilder:
             "highlight": [False, False, True],
         }
 
-    def chart_balance_context(self) -> dict:
-        return {
-            "categories": list(month_names().values()),
-            "incomes": self._balance.income_data,
-            "incomes_title": _("Incomes"),
-            "expenses": self._balance.expense_data,
-            "expenses_title": _("Expenses"),
-        }
-
     def averages_context(self) -> dict:
         return {
             "title": [_("Average incomes"), _("Average expenses")],
             "data": [self._balance.avg_incomes, self._balance.avg_expenses],
             "empty": self._balance.is_coming,
         }
+
+
+def load_service(user: User, today: date) -> IndexContextBuilder:
+    year = user.selected_year()
+    provider = IndexDataProvider(user)
+    dto = provider.get_data()
+
+    df = MakeDataFrame.for_year(year, dto.monthly_data, INDEX_COLUMNS)
+    balance = YearBalance(data=df, amount_start=dto.amount_start, today=today)
+
+    return IndexContextBuilder(balance=balance)
+
+
+@dataclass(frozen=True)
+class IncomesExpensesChart:
+    """Grafikai's incomes-against-expenses chart, month by month."""
+
+    incomes: list[int]
+    expenses: list[int]
+
+    @classmethod
+    def load(cls, user: User) -> "IncomesExpensesChart":
+        provider = IndexDataProvider(user)
+        data = provider.get_incomes_and_expenses()
+        df = MakeDataFrame.for_year(provider.year, data, ("incomes", "expenses")).data
+        return cls(df["incomes"].to_list(), df["expenses"].to_list())
+
+    def context(self) -> dict:
+        return {
+            "categories": list(month_names().values()),
+            "incomes": self.incomes,
+            "incomes_title": _("Incomes"),
+            "expenses": self.expenses,
+            "expenses_title": _("Expenses"),
+        }
+
+
+@dataclass(frozen=True)
+class DebtsTable:
+    """Apžvalga's Debts table: what is owed and what came back, whatever its year."""
+
+    debts: dict[Debt.DebtType, dict]
+
+    @classmethod
+    def load(cls, user: User) -> "DebtsTable":
+        return cls(
+            {
+                debt_type: DebtModelService(user, debt_type).sum_all()
+                for debt_type in Debt.DebtType
+            }
+        )
 
     def borrow_context(self) -> dict:
         return self._generic_debt_context(
@@ -91,7 +134,7 @@ class IndexContextBuilder:
     def _generic_debt_context(
         self, debt_type: Debt.DebtType, debt_title: str, return_title: str
     ) -> dict:
-        debt = self._debts[debt_type]
+        debt = self.debts[debt_type]
         if not debt["debt"]:
             return {}
 
@@ -99,14 +142,3 @@ class IndexContextBuilder:
             "title": [debt_title, return_title],
             "data": [debt["debt"], debt["debt_return"]],
         }
-
-
-def load_service(user: User, today: date) -> IndexContextBuilder:
-    year = user.selected_year()
-    provider = IndexDataProvider(user)
-    dto = provider.get_data()
-
-    df = MakeDataFrame.for_year(year, dto.monthly_data, INDEX_COLUMNS)
-    balance = YearBalance(data=df, amount_start=dto.amount_start, today=today)
-
-    return IndexContextBuilder(balance=balance, debts=dto.debts)

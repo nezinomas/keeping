@@ -27,27 +27,6 @@ from .services.model_services import (
 from .tabs import DETAILED_TABS, INDEX_TABS
 
 
-class ReloadIndexContextDataMixin:
-    def get_context_data(self, **kwargs):
-        user = self.request.user
-        ind = services.index.load_service(user, date.today())
-        exp = services.expenses.load_service(user)
-        accounts = services.accounts.load_service(user, user.selected_year())
-
-        context = {
-            "year": user.selected_year(),
-            "averages": ind.averages_context(),
-            "borrow": ind.borrow_context(),
-            "lend": ind.lend_context(),
-            "balance_short": ind.balance_short_context(),
-            "balance": ind.balance_context(accounts["total_row"]["balance"]),
-            "chart_balance": ind.chart_balance_context(),
-            "chart_expenses": exp.chart_context(),
-            "expenses": exp.table_context(),
-        }
-        return super().get_context_data(**kwargs) | context
-
-
 class IndexTabMixin(CoreTabViewMixin):
     tabs = INDEX_TABS
     default_tab = INDEX_TABS["overview"]
@@ -66,6 +45,7 @@ class TabOverview(IndexTabMixin, TemplateViewMixin):
         year = user.selected_year()
         today = date.today()
         index = services.index.load_service(user, today)
+        debts = services.index.DebtsTable.load(user)
         accounts = services.accounts.load_service(user, year)
 
         return {
@@ -76,8 +56,8 @@ class TabOverview(IndexTabMixin, TemplateViewMixin):
             **no_incomes.load_service(user, year, today),
             "wealth": services.wealth.load_service(user, year)["data"],
             "averages": index.averages_context(),
-            "borrow": index.borrow_context(),
-            "lend": index.lend_context(),
+            "borrow": debts.borrow_context(),
+            "lend": debts.lend_context(),
         }
 
 
@@ -117,17 +97,12 @@ class TabCharts(IndexTabMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        index = services.index.load_service(user, date.today())
 
         return {
             **super().get_context_data(**kwargs),
-            "chart_balance": index.chart_balance_context(),
+            "chart_balance": services.index.IncomesExpensesChart.load(user).context(),
             "chart_expenses": services.expenses.load_service(user).chart_context(),
         }
-
-
-class ReloadIndex(ReloadIndexContextDataMixin, TemplateViewMixin):
-    template_name = "bookkeeping/includes/reload_index.html"
 
 
 class RegenerateBalances(TemplateViewMixin):
@@ -148,20 +123,6 @@ class RegenerateBalances(TemplateViewMixin):
         return http_htmx_response("reload")
 
 
-class Accounts(TemplateViewMixin):
-    template_name = "bookkeeping/includes/account_worth_list.html"
-
-    def get_context_data(self, **kwargs):
-        user = self.request.user
-        context = services.accounts.load_service(user, user.selected_year())
-        index = services.index.load_service(user, date.today())
-        context["cash_flow_check"] = index.check_cash_flow(
-            context["total_row"]["balance"]
-        )
-
-        return super().get_context_data(**kwargs) | context
-
-
 class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     service_class = AccountWorthModelService
     category_service_class = AccountModelService
@@ -170,15 +131,6 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     url = reverse_lazy("bookkeeping:accounts_worth_new")
     hx_trigger_django = "reload"
     balance_sync = staticmethod(balance_sources.sync_accounts)
-
-
-class Savings(TemplateViewMixin):
-    template_name = "bookkeeping/savings.html"
-
-    def get_context_data(self, **kwargs):
-        user = self.request.user
-        context = services.savings.load_service(user, user.selected_year())
-        return super().get_context_data(**kwargs) | context
 
 
 class SavingsWorthNew(FormsetMixin, CreateViewMixin):
@@ -191,16 +143,6 @@ class SavingsWorthNew(FormsetMixin, CreateViewMixin):
     balance_sync = staticmethod(balance_sources.sync_savings)
 
 
-class Pensions(TemplateViewMixin):
-    template_name = "bookkeeping/includes/funds_table.html"
-
-    def get_context_data(self, **kwargs):
-        user = self.request.user
-        context = services.pensions.load_service(user, user.selected_year())
-
-        return super().get_context_data(**kwargs) | context
-
-
 class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     service_class = PensionWorthModelService
     category_service_class = PensionTypeModelService
@@ -211,30 +153,11 @@ class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     balance_sync = staticmethod(balance_sources.sync_pensions)
 
 
-class Wealth(TemplateViewMixin):
-    template_name = "cotton/info_table.html"
-
-    def get_context_data(self, **kwargs):
-        user = self.request.user
-        context = services.wealth.load_service(user, user.selected_year())
-        return super().get_context_data(**kwargs) | context
-
-
 class Forecast(TemplateViewMixin):
     template_name = "bookkeeping/includes/forecast.html"
 
     def get_context_data(self, **kwargs):
         context = services.forecast.load_service(self.request.user, date.today())
-
-        return super().get_context_data(**kwargs) | context
-
-
-class NoIncomes(TemplateViewMixin):
-    template_name = "bookkeeping/includes/no_incomes.html"
-
-    def get_context_data(self, **kwargs):
-        user = self.request.user
-        context = no_incomes.load_service(user, user.selected_year(), date.today())
 
         return super().get_context_data(**kwargs) | context
 
@@ -349,7 +272,7 @@ class SummaryExpenses(FormViewMixin):
     success_url = reverse_lazy("bookkeeping:summary_expenses")
 
     def form_valid(self, form):
-        form_data = form.cleaned_data.get("types")
+        form_data = form.cleaned_data["types"]
         context = {
             "form": form,
             **services.chart_summary_expenses.load_service(

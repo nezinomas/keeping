@@ -12,7 +12,14 @@ from ....debts.tests.factories import (
     LendFactory,
     LendReturnFactory,
 )
-from ...services.index.presenters import IndexContextBuilder, cash_flow_check
+from ....expenses.tests.factories import ExpenseFactory
+from ....incomes.tests.factories import IncomeFactory
+from ...services.index.presenters import (
+    DebtsTable,
+    IncomesExpensesChart,
+    IndexContextBuilder,
+    cash_flow_check,
+)
 from ...services.index.providers import IndexDataProvider
 
 MODULE_PATH = "project.bookkeeping.services.index"
@@ -27,7 +34,7 @@ MODULE_PATH = "project.bookkeeping.services.index"
 )
 def test_balance_short_context_data(end, data):
     obj = IndexContextBuilder(
-        balance=MagicMock(amount_start=5, amount_end=end, year=2021), debts={}
+        balance=MagicMock(amount_start=5, amount_end=end, year=2021)
     )
     actual = obj.balance_short_context()
 
@@ -36,30 +43,34 @@ def test_balance_short_context_data(end, data):
     assert actual["highlight"] == [False, False, True]
 
 
-def test_chart_balance_context(mock_year_balance):
-    obj = IndexContextBuilder(balance=mock_year_balance, debts={})
-    actual = obj.chart_balance_context()
+@pytest.mark.django_db
+def test_incomes_expenses_chart_reads_the_year_s_incomes_and_expenses_by_month(
+    main_user,
+):
+    IncomeFactory(date=date(1999, 1, 1), price=50)
+    ExpenseFactory(date=date(1999, 2, 1), price=10)
+    IncomeFactory(date=date(2000, 1, 1), price=70)
 
-    assert actual["categories"] == list(month_names().values())
-    assert actual["incomes"] == [50, 50, 50]
-    assert actual["incomes_title"] == "Pajamos"
-    assert actual["expenses"] == [10, 10, 10]
-    assert actual["expenses_title"] == "Išlaidos"
+    actual = IncomesExpensesChart.load(main_user).context()
+
+    assert actual == {
+        "categories": list(month_names().values()),
+        "incomes": [50] + [0] * 11,
+        "incomes_title": "Pajamos",
+        "expenses": [0, 10] + [0] * 10,
+        "expenses_title": "Išlaidos",
+    }
 
 
 @pytest.mark.parametrize(
     "kind, context",
     [
-        pytest.param(
-            Debt.DebtType.BORROW, IndexContextBuilder.borrow_context, id="borrow"
-        ),
-        pytest.param(Debt.DebtType.LEND, IndexContextBuilder.lend_context, id="lend"),
+        pytest.param(Debt.DebtType.BORROW, DebtsTable.borrow_context, id="borrow"),
+        pytest.param(Debt.DebtType.LEND, DebtsTable.lend_context, id="lend"),
     ],
 )
 def test_debt_context_without_debt_is_empty(kind, context):
-    obj = IndexContextBuilder(
-        balance=MagicMock(), debts={kind: {"debt": 0, "debt_return": 0}}
-    )
+    obj = DebtsTable(debts={kind: {"debt": 0, "debt_return": 0}})
 
     assert context(obj) == {}
 
@@ -69,7 +80,7 @@ def test_debt_context_without_debt_is_empty(kind, context):
     [
         pytest.param(
             Debt.DebtType.BORROW,
-            IndexContextBuilder.borrow_context,
+            DebtsTable.borrow_context,
             ("Pasiskolinta", "Grąžinau"),
             99,
             66,
@@ -77,7 +88,7 @@ def test_debt_context_without_debt_is_empty(kind, context):
         ),
         pytest.param(
             Debt.DebtType.BORROW,
-            IndexContextBuilder.borrow_context,
+            DebtsTable.borrow_context,
             ("Pasiskolinta", "Grąžinau"),
             300,
             300,
@@ -85,7 +96,7 @@ def test_debt_context_without_debt_is_empty(kind, context):
         ),
         pytest.param(
             Debt.DebtType.LEND,
-            IndexContextBuilder.lend_context,
+            DebtsTable.lend_context,
             ("Paskolinta", "Grąžino"),
             9,
             3,
@@ -93,7 +104,7 @@ def test_debt_context_without_debt_is_empty(kind, context):
         ),
         pytest.param(
             Debt.DebtType.LEND,
-            IndexContextBuilder.lend_context,
+            DebtsTable.lend_context,
             ("Paskolinta", "Grąžino"),
             300,
             300,
@@ -102,10 +113,7 @@ def test_debt_context_without_debt_is_empty(kind, context):
     ],
 )
 def test_debt_context(kind, context, titles, debt, debt_return):
-    obj = IndexContextBuilder(
-        balance=MagicMock(),
-        debts={kind: {"debt": debt, "debt_return": debt_return}},
-    )
+    obj = DebtsTable(debts={kind: {"debt": debt, "debt_return": debt_return}})
     actual = context(obj)
 
     assert actual["title"] == list(titles)
@@ -143,17 +151,17 @@ def test_index_data_provider_amount_start(main_user, past_by_year, expect):
 
 
 @pytest.mark.django_db
-def test_index_data_provider_get_debts(mocker, main_user):
+def test_debts_table_sums_each_kind(mocker, main_user):
     sums = {
         Debt.DebtType.LEND: {"debt": 100, "debt_return": 50},
         Debt.DebtType.BORROW: {"debt": 200, "debt_return": 0},
     }
     mocker.patch(
-        f"{MODULE_PATH}.providers.DebtModelService",
+        f"{MODULE_PATH}.presenters.DebtModelService",
         side_effect=lambda user, kind: MagicMock(sum_all=lambda: sums[kind]),
     )
 
-    actual = IndexDataProvider(main_user).get_data().debts
+    actual = DebtsTable.load(main_user).debts
 
     assert actual[Debt.DebtType.LEND] == {"debt": 100, "debt_return": 50}
     assert actual[Debt.DebtType.BORROW] == {"debt": 200, "debt_return": 0}
@@ -192,8 +200,6 @@ def mock_year_balance(mocker):
     mock.amount_end = 1600
     mock.average = 200
     mock.year = 2026
-    mock.income_data = [50, 50, 50]
-    mock.expense_data = [10, 10, 10]
     mock.avg_incomes = 50
     mock.avg_expenses = 10
     mock.is_coming = False
@@ -201,7 +207,7 @@ def mock_year_balance(mocker):
 
 
 def test_index_context_builder_balance_context(mock_year_balance):
-    builder = IndexContextBuilder(balance=mock_year_balance, debts={})
+    builder = IndexContextBuilder(balance=mock_year_balance)
     actual = builder.balance_context(accounts_balance=1500)
 
     assert actual == {
@@ -234,7 +240,7 @@ def test_cash_flow_check(cash_flow, accounts_balance, state):
 def test_index_context_builder_averages_context(mock_year_balance, is_coming, empty):
     mock_year_balance.is_coming = is_coming
 
-    actual = IndexContextBuilder(balance=mock_year_balance, debts={}).averages_context()
+    actual = IndexContextBuilder(balance=mock_year_balance).averages_context()
 
     assert actual == {
         "title": ["Vidutinės pajamos", "Vidutinės išlaidos"],

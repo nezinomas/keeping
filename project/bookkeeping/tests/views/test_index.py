@@ -14,7 +14,7 @@ from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...tabs import INDEX_TABS
-from ..helper import quiet_build, row_cells, script_json, total_cells
+from ..helper import quiet_build, row_cells, script_json, table_titled, total_cells
 
 pytestmark = pytest.mark.django_db
 
@@ -63,7 +63,7 @@ def _add_items(first, last):
 
 
 # Balansas' cap holds its one read of the accounts, the Cash-flow check's other side
-QUERY_CAPS = {"overview": 23, "funds": 11, "balance": 18, "charts": 17}
+QUERY_CAPS = {"overview": 23, "funds": 11, "balance": 16, "charts": 8}
 
 
 @pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
@@ -92,6 +92,8 @@ def fixture_tab_contents(client_logged):
     PensionFactory()
     ExpenseFactory(date=date(1999, 1, 1), price=100)
     IncomeFactory(price=600)
+    # the next year's money differs, so a figure read for the wrong year shows
+    IncomeFactory(date=date(2000, 1, 1), price=5000)
 
     return {tab.name: tab_fragment(client_logged, tab.url) for tab in INDEX_TABS}
 
@@ -99,15 +101,34 @@ def fixture_tab_contents(client_logged):
 FIGURES = {
     "accounts": r"<span[^>]*>Account1</span>",
     "accounts_total": re.escape(ACCOUNTS_TOTAL.format(state="")),
-    "year_strip": r"<th[^>]*>\s*1999 pabaigoje\s*</th>",
-    "no_incomes": r"<th[^>]*>€ \+ F \+ P</th>",
-    "wealth": r"<th>\s*Turtas\s*</th>",
-    "averages": r"<th>\s*Vidutinės pajamos\s*</th>",
+    # start, end and balance of the year: 6,00 - 1,00 - 1,50 + 70,00 - 90,00
+    "year_strip": (
+        r'<td class="no-right-border"></td>\s*<td>-</td>\s*<td>-16,50</td>\s*'
+        r'<td data-sign="loss">-16,50</td>'
+    ),
+    "no_incomes": r'<td class="text-left">Pinigai, €</td>\s*<td>-16,50</td>',
+    "wealth": (
+        r"<th>\s*Pinigai\s*</th>\s*<th>\s*Turtas\s*</th>\s*</tr>\s*</thead>\s*"
+        r"<tbody>\s*<tr>\s*<td>\s*-16,50\s*</td>\s*<td>\s*-16,50\s*</td>"
+    ),
+    "averages": (
+        r"<th>\s*Vidutinės pajamos\s*</th>\s*<th>\s*Vidutinės išlaidos\s*</th>\s*"
+        r"</tr>\s*</thead>\s*<tbody>\s*<tr>\s*<td>\s*6,00\s*</td>\s*"
+        r"<td>\s*1,00\s*</td>"
+    ),
     "borrow": r'<span[^>]*data-tip="Liko grąžinti:  70,00">',
     "lend": r'<span[^>]*data-tip="Liko grąžinti:  90,00">',
     "saved_share": r"<div[^>]*>Pajamų dalis pervedama taupymui: <b>25,0</b>%",
-    "funds": r"<td[^>]*>Fund A</td>",
-    "pensions": r"<td[^>]*>PensionType</td>",
+    # nothing before the year, then the year's transfer
+    "funds": (
+        r"<td[^>]*>Fund A</td>\s*<td[^>]*>-</td>\s*<td[^>]*>-</td>\s*"
+        r'<td data-cell="">1,50</td>'
+    ),
+    "pensions": (
+        r"<td[^>]*>PensionType</td>\s*<td[^>]*>-</td>\s*<td[^>]*>-</td>\s*"
+        r'<td data-cell="">1,00</td>'
+    ),
+    "year_heads": r"<th>1999</th>",
     "month_balance": r'<td data-sign="gain" data-cell="">5,00</td>',
     "year_end": r'<th data-sign="\w+" data-check="">',
     # January's expense in its type's column; the month balance's January reads 6,00
@@ -139,6 +160,7 @@ def test_each_index_figure_is_drawn_on_exactly_one_tab(tab_contents):
         "saved_share": {"funds": 1},
         "funds": {"funds": 1},
         "pensions": {"funds": 1},
+        "year_heads": {"balance": 2},
         "month_balance": {"balance": 1},
         "year_end": {"balance": 1},
         "expenses_by_type": {"balance": 1},
@@ -193,24 +215,30 @@ def test_each_index_tab_draws_the_buttons_of_its_worth(client_logged, tab, butto
     ]
 
 
+TAG = re.compile(r"<\w+\b[^>]*>")
+
+
 @pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
 def test_an_index_tab_reloads_whole_on_reload_alone(client_logged, tab):
     content = tab_fragment(client_logged, tab.url)
 
-    listeners = re.findall(
-        r'<div hx-get="([^"]*)"[^>]*hx-trigger="([^"]*from:body[^"]*)"', content
+    tags = (
+        dict(re.findall(r"""([\w-]+)=["']([^"']*)["']""", tag))
+        for tag in TAG.findall(content)
     )
+    listeners = [
+        (tag.get("hx-get", ""), tag["hx-trigger"])
+        for tag in tags
+        if "from:body" in tag.get("hx-trigger", "")
+    ]
 
     assert listeners == [(tab.url, "reload from:body")]
 
 
-@pytest.mark.parametrize(
-    "url_name", ["bookkeeping:tab_charts", "bookkeeping:reload_index"]
-)
-def test_view_index_renders_its_chart_data(client_logged, url_name):
+def test_view_index_renders_its_chart_data(client_logged):
     ExpenseFactory(date=date(1999, 1, 1), price=100)
 
-    content = client_logged.get(reverse(url_name)).content.decode()
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_charts"))
     balance = script_json(content, "chart-balance-data")
     expenses = script_json(content, "chart-expenses-data")
 
@@ -238,7 +266,7 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     balance = tab_fragment(client_logged, reverse("bookkeeping:tab_balance"))
     overview = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
     year_end = total_cells(balance[balance.index('id="table-balance"') :])[-1]
-    accounts_balance = total_cells(overview[overview.index('id="accounts"') :])[4]
+    accounts_balance = total_cells(table_titled(overview, "Sąskaitos"))[4]
 
     assert year_end == accounts_balance != ""
     assert re.findall(CASH_FLOW_CELL, balance + overview) == [
@@ -252,8 +280,6 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     [
         pytest.param("bookkeeping:tab_overview", [ACCOUNTS_TOTAL], id="overview"),
         pytest.param("bookkeeping:tab_balance", [YEAR_END], id="balance"),
-        pytest.param("bookkeeping:reload_index", [YEAR_END], id="reload"),
-        pytest.param("bookkeeping:accounts", [ACCOUNTS_TOTAL], id="accounts"),
     ],
 )
 @pytest.mark.parametrize(
@@ -271,7 +297,8 @@ def test_view_cash_flow_check_marks_each_foot_cell(
     IncomeFactory(date=date(2000, 1, 1), price=5000)
     AccountBalance.objects.filter(year=1999).update(balance=accounts_balance)
 
-    content = client_logged.get(reverse(url_name)).content.decode()
+    # what the tab's reload draws
+    content = tab_fragment(client_logged, reverse(url_name))
 
     assert re.findall(CASH_FLOW_CELL, content) == [
         cell.format(state=state) for cell in cells
@@ -290,24 +317,3 @@ def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_s
     january = row_cells(content[content.index('id="table-balance"') :], "Sausis")
 
     assert january[3] == "200,00"
-
-
-def test_view_reload_renders_the_index(client_logged):
-    shown = {
-        'hx-swap-oob="innerHTML:#table-balance"': 1,
-        'hx-swap-oob="innerHTML:#table-expenses"': 1,
-        'hx-swap-oob="innerHTML:#chart-balance-source"': 1,
-        'hx-swap-oob="innerHTML:#chart-expenses-source"': 1,
-        "<th>1999</th>": 2,
-    }
-    url = reverse("bookkeeping:reload_index")
-    content = client_logged.get(url).content.decode("utf-8")
-
-    assert {text: content.count(text) for text in shown} == shown
-
-
-def test_view_reload_anonymous(client):
-    url = reverse("bookkeeping:reload_index")
-    response = client.get(url)
-
-    assert response.url == f"{reverse('users:login')}?next={url}"
