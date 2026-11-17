@@ -7,7 +7,12 @@ from django.urls import reverse
 from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
 from ....core.tests.utils import count_queries, paper_page_parts, tab_fragment
-from ....debts.tests.factories import BorrowFactory, LendFactory
+from ....debts.tests.factories import (
+    BorrowFactory,
+    BorrowReturnFactory,
+    LendFactory,
+    LendReturnFactory,
+)
 from ....expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
@@ -117,8 +122,8 @@ FIGURES = {
         r'<div class="trend-card__label">Vidutinės pajamos</div>\s*'
         r'<div class="trend-card__value[^>]*><span class="trend-card__figure"[^>]*>6<'
     ),
-    "borrow": r'<span[^>]*data-tip="Liko grąžinti:  70,00">',
-    "lend": r'<span[^>]*data-tip="Liko grąžinti:  90,00">',
+    "borrow": r'<td class="text-left">Pasiskolinta</td>\s*<td class="main__figure"[^>]*>70,00<',
+    "lend": r'<td class="text-left">Paskolinta</td>\s*<td class="main__figure"[^>]*>90,00<',
     "saved_share": r"<div[^>]*>Pajamų dalis pervedama taupymui: <b>25,0</b>%",
     # nothing before the year, then the year's transfer
     "funds": (
@@ -137,6 +142,49 @@ FIGURES = {
     "chart_balance": r'<script id="chart-balance-data"',
     "chart_expenses": r'<script id="chart-expenses-data"',
 }
+
+
+def _lend():
+    LendReturnFactory(debt=LendFactory(price=9000), price=3000)
+
+
+def _borrow():
+    BorrowReturnFactory(debt=BorrowFactory(price=7000), price=2000)
+
+
+LENT = ("Paskolinta", "90,00", "30,00", "60,00")
+BORROWED = ("Pasiskolinta", "70,00", "20,00", "50,00")
+DEBTS_PANEL = re.compile(r'<h2 class="panel__title">Skolos</h2>(.*?)</section>', re.S)
+
+
+def _debts_tables(content):
+    """The body rows of each Skolos Panel, (title, Suma, Grąžinta, Liko) each."""
+    return [
+        [
+            tuple(cell.strip() for cell in re.findall(r"<td[^>]*>(.*?)</td>", row))
+            for row in re.findall(r"<tr>(.*?)</tr>", panel.split("</thead>")[-1], re.S)
+        ]
+        for panel in DEBTS_PANEL.findall(content)
+    ]
+
+
+@pytest.mark.parametrize(
+    "debts, tables",
+    [
+        pytest.param([_borrow, _lend], [[LENT, BORROWED]], id="both"),
+        pytest.param([_lend], [[LENT]], id="lend-only"),
+        pytest.param([], [], id="none"),
+    ],
+)
+def test_overview_debts_table_draws_a_row_per_kind_with_a_debt(
+    client_logged, debts, tables
+):
+    for debt in debts:
+        debt()
+
+    content = tab_fragment(client_logged, INDEX_TABS["overview"].url)
+
+    assert _debts_tables(content) == tables
 
 
 def test_each_index_figure_is_drawn_on_exactly_one_tab(tab_contents):

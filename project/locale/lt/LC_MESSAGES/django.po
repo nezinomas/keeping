@@ -445,10 +445,6 @@ msgstr "Pajamų dalis pervedama taupymui"
 msgid "Year"
 msgstr "Metai"
 
-#: .\project\bookkeeping\templates\cotton\info_table.html:22
-msgid "Remains to be returned"
-msgstr "Liko grąžinti"
-
 #: .\project\debts\templates\debts\tab_debts.html:14
 msgid "Remaining"
 msgstr "Liko"

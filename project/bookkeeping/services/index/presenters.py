@@ -134,24 +134,19 @@ class DebtsTable:
             }
         )
 
-    def borrow_context(self) -> dict:
-        return self._generic_debt_context(
-            Debt.DebtType.BORROW, _("Borrow"), _("Borrow return")
-        )
-
-    def lend_context(self) -> dict:
-        return self._generic_debt_context(
-            Debt.DebtType.LEND, _("Lend"), _("Lend return")
-        )
-
-    def _generic_debt_context(
-        self, debt_type: Debt.DebtType, debt_title: str, return_title: str
-    ) -> dict:
-        debt = self.debts[debt_type]
-        if not debt["debt"]:
-            return {}
-
-        return {
-            "title": [debt_title, return_title],
-            "data": [debt["debt"], debt["debt_return"]],
-        }
+    def debts_context(self) -> list[dict]:
+        """A row per kind with a debt, Lend first, as Debts' own tabs."""
+        rows = []
+        for debt_type in (Debt.DebtType.LEND, Debt.DebtType.BORROW):
+            sums = self.debts[debt_type]
+            if not sums["debt"]:
+                continue
+            rows.append(
+                {
+                    "title": debt_type.label,
+                    "debt": sums["debt"],
+                    "debt_return": sums["debt_return"],
+                    "remaining": sums["debt"] - sums["debt_return"],
+                }
+            )
+        return rows

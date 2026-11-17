@@ -55,8 +55,7 @@ class TabOverview(IndexTabMixin, TemplateViewMixin):
             "balance_short": index.balance_short_context(),
             **no_incomes.load_service(user, year, today),
             "cards": index.cards(services.wealth.load_service(user, year)),
-            "borrow": debts.borrow_context(),
-            "lend": debts.lend_context(),
+            "debts": debts.debts_context(),
         }
 
 

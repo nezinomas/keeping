@@ -22,8 +22,6 @@ from ...services.index.presenters import (
 )
 from ...services.index.providers import IndexDataProvider
 
-MODULE_PATH = "project.bookkeeping.services.index"
-
 
 @pytest.mark.parametrize(
     "end, data",
@@ -62,62 +60,45 @@ def test_incomes_expenses_chart_reads_the_year_s_incomes_and_expenses_by_month(
     }
 
 
+LEND, BORROW = Debt.DebtType.LEND, Debt.DebtType.BORROW
+NO_DEBT = {"debt": 0, "debt_return": 0}
+
+
+def _row(title, debt, debt_return, remaining):
+    return {
+        "title": title,
+        "debt": debt,
+        "debt_return": debt_return,
+        "remaining": remaining,
+    }
+
+
 @pytest.mark.parametrize(
-    "kind, context",
+    "debts, rows",
     [
-        pytest.param(Debt.DebtType.BORROW, DebtsTable.borrow_context, id="borrow"),
-        pytest.param(Debt.DebtType.LEND, DebtsTable.lend_context, id="lend"),
+        pytest.param(
+            {
+                BORROW: {"debt": 99, "debt_return": 66},
+                LEND: {"debt": 9, "debt_return": 3},
+            },
+            [_row("Paskolinta", 9, 3, 6), _row("Pasiskolinta", 99, 66, 33)],
+            id="lend_before_borrow",
+        ),
+        pytest.param(
+            {LEND: {"debt": 300, "debt_return": 300}, BORROW: NO_DEBT},
+            [_row("Paskolinta", 300, 300, 0)],
+            id="fully_repaid_lend_only",
+        ),
+        pytest.param(
+            {LEND: NO_DEBT, BORROW: {"debt": 300, "debt_return": 300}},
+            [_row("Pasiskolinta", 300, 300, 0)],
+            id="fully_repaid_borrow_only",
+        ),
+        pytest.param({LEND: NO_DEBT, BORROW: NO_DEBT}, [], id="none"),
     ],
 )
-def test_debt_context_without_debt_is_empty(kind, context):
-    obj = DebtsTable(debts={kind: {"debt": 0, "debt_return": 0}})
-
-    assert context(obj) == {}
-
-
-@pytest.mark.parametrize(
-    "kind, context, titles, debt, debt_return",
-    [
-        pytest.param(
-            Debt.DebtType.BORROW,
-            DebtsTable.borrow_context,
-            ("Pasiskolinta", "Grąžinau"),
-            99,
-            66,
-            id="borrow_part_returned",
-        ),
-        pytest.param(
-            Debt.DebtType.BORROW,
-            DebtsTable.borrow_context,
-            ("Pasiskolinta", "Grąžinau"),
-            300,
-            300,
-            id="borrow_fully_repaid",
-        ),
-        pytest.param(
-            Debt.DebtType.LEND,
-            DebtsTable.lend_context,
-            ("Paskolinta", "Grąžino"),
-            9,
-            3,
-            id="lend_part_returned",
-        ),
-        pytest.param(
-            Debt.DebtType.LEND,
-            DebtsTable.lend_context,
-            ("Paskolinta", "Grąžino"),
-            300,
-            300,
-            id="lend_fully_repaid",
-        ),
-    ],
-)
-def test_debt_context(kind, context, titles, debt, debt_return):
-    obj = DebtsTable(debts={kind: {"debt": debt, "debt_return": debt_return}})
-    actual = context(obj)
-
-    assert actual["title"] == list(titles)
-    assert actual["data"] == [debt, debt_return]
+def test_debts_context_is_a_row_per_kind_with_a_debt(debts, rows):
+    assert DebtsTable(debts=debts).debts_context() == rows
 
 
 @pytest.mark.django_db
@@ -151,20 +132,17 @@ def test_index_data_provider_amount_start(main_user, past_by_year, expect):
 
 
 @pytest.mark.django_db
-def test_debts_table_sums_each_kind(mocker, main_user):
-    sums = {
-        Debt.DebtType.LEND: {"debt": 100, "debt_return": 50},
-        Debt.DebtType.BORROW: {"debt": 200, "debt_return": 0},
-    }
-    mocker.patch(
-        f"{MODULE_PATH}.presenters.DebtModelService",
-        side_effect=lambda user, kind: MagicMock(sum_all=lambda: sums[kind]),
-    )
+def test_debts_table_sums_each_kind_of_open_debt(main_user):
+    LendReturnFactory(debt=LendFactory(price=100), price=50)
+    BorrowFactory(price=200)
+    BorrowFactory(price=999, closed=True)
 
     actual = DebtsTable.load(main_user).debts
 
-    assert actual[Debt.DebtType.LEND] == {"debt": 100, "debt_return": 50}
-    assert actual[Debt.DebtType.BORROW] == {"debt": 200, "debt_return": 0}
+    assert actual == {
+        LEND: {"debt": 100, "debt_return": 50},
+        BORROW: {"debt": 200, "debt_return": 0},
+    }
 
 
 @pytest.mark.django_db

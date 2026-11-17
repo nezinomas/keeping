@@ -1,0 +1,22 @@
+{% load i18n %}
+{% load math %}
+{% load cell_format %}
+
+<c-paper-table class="main striped hover">
+    <c-slot name="head">
+        <tr>
+            <th></th>
+            <th>{% translate 'Sum' %}</th>
+            <th>{% translate 'Returned' %}</th>
+            <th>{% translate 'Remaining' %}</th>
+        </tr>
+    </c-slot>
+    {% for debt in debts %}
+    <tr>
+        <td class="text-left">{{ debt.title }}</td>
+        <td class="main__figure" data-cell="{{ debt.debt|cell_state }}">{{ debt.debt|price|cellformat }}</td>
+        <td class="main__figure" data-cell="{{ debt.debt_return|cell_state }}">{{ debt.debt_return|price|cellformat }}</td>
+        <td class="main__figure" data-cell="{{ debt.remaining|cell_state }}">{{ debt.remaining|price|cellformat }}</td>
+    </tr>
+    {% endfor %}
+</c-paper-table>

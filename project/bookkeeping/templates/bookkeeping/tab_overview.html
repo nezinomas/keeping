@@ -15,5 +15,8 @@
 
 <div class="table-responsive">{% include 'bookkeeping/includes/no_incomes.html' %}</div>
 
-{% if borrow %}<div class="table-responsive"><c-info-table :data="borrow" calculate_debt_remains="true"/></div>{% endif %}
-{% if lend %}<div class="table-responsive"><c-info-table :data="lend" calculate_debt_remains="true"/></div>{% endif %}
+{% if debts %}
+<c-panel table title="{% translate 'Debts' %}">
+    <div class="table-responsive">{% include 'bookkeeping/includes/debts_table.html' %}</div>
+</c-panel>
+{% endif %}
