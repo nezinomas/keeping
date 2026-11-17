@@ -1,9 +1,8 @@
 import json
 import re
-from datetime import date, datetime
+from datetime import date
 
 import pytest
-import pytz
 from django.db.models import Sum
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -12,10 +11,10 @@ from ....accounts.models import AccountBalance
 from ....core.tests.utils import tab_fragment
 from ....expenses.tests.factories import ExpenseTypeFactory
 from ....journals.tests.factories import JournalFactory
-from ....savings.tests.factories import SavingFactory, SavingTypeFactory
+from ....savings.tests.factories import SavingTypeFactory
 from ...lib import no_incomes
-from ..factories import SavingWorthFactory
 from ..helper import row_cells, stale_fund
+from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
@@ -73,10 +72,8 @@ def test_template_month_value():
 )
 def test_a_fresh_worth_counts_by_its_fund_type(main_user, kind, money_fund):
     fund = SavingTypeFactory(title="Fresh", type=kind)
-    SavingFactory(saving_type=fund, price=100000, fee=0, date=date(1999, 1, 1))
-    SavingWorthFactory(
-        saving_type=fund, price=70000, date=datetime(1999, 3, 1, 12, tzinfo=pytz.utc)
-    )
+    buy(fund, 100000)
+    worth(fund, 70000, month=3, day=1)
 
     actual = no_incomes.load_service(main_user, 1999, date(1999, 6, 1))["no_incomes"][0]
 

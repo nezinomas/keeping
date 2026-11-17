@@ -59,9 +59,17 @@ def closed_every_other(i):
     return 1999 if i % 2 else None
 
 
-def row_cells(content, title):
+def row_tags(content, title):
+    """(attributes, text) of each `<td>` in the row titled `title`."""
     row = re.search(rf"<tr>\s*<td[^>]*>{title}</td>(.*?)</tr>", content, re.S)
-    return [c.strip() for c in re.findall(r"<td[^>]*>(.*?)</td>", row.group(1), re.S)]
+    return [
+        (attrs, text.strip())
+        for attrs, text in re.findall(r"<td([^>]*)>(.*?)</td>", row.group(1), re.S)
+    ]
+
+
+def row_cells(content, title):
+    return [text for _attrs, text in row_tags(content, title)]
 
 
 def script_json(content, script_id):

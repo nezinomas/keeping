@@ -19,6 +19,7 @@ from ..helper import (
     closed_every_other,
     fund_with_a_sell,
     row_cells,
+    row_tags,
     row_titles,
     switch_a_into_b,
     tab_table,
@@ -146,7 +147,13 @@ def test_table_dates_the_latest_check(
     "title, kind, bought, sold, fee, profit",
     [
         pytest.param(
-            "Fondai", "funds", 100000, 60000, 0, ["-400,00", "-40,00%"], id="funds"
+            "Fondai",
+            "funds",
+            100000,
+            60000,
+            0,
+            [("-400,00", "loss"), ("-40,00%", "loss")],
+            id="funds",
         ),
         pytest.param(
             "Pensijos",
@@ -154,32 +161,24 @@ def test_table_dates_the_latest_check(
             2596753,
             3459722,
             20000,
-            ["8.429,69", "32,46%"],
+            [("8.429,69", "gain"), ("32,46%", "gain")],
             id="pensions",
         ),
     ],
 )
-def test_closed_fund_with_a_sell_shows_its_profit_but_no_worth(
+def test_closed_fund_with_a_sell_shows_its_signed_profit_but_no_worth(
     client_logged, title, kind, bought, sold, fee, profit
 ):
     fund_with_a_sell("Closed", bought, sold, fee=fee, kind=kind, closed=1999)
 
-    cells = row_cells(_table(client_logged, title), "Closed")
+    cells = row_tags(_table(client_logged, title), "Closed")
 
-    assert cells[8:10] == ["-", "-"]
-    assert cells[10:12] == profit
-
-
-def test_fund_with_a_loss_marks_its_profit_cells_as_a_loss(client_logged):
-    fund_with_a_sell("Closed", 100000, 60000, closed=1999)
-
-    table = _table(client_logged)
-    row = re.search(r"<tr>\s*<td[^>]*>Closed</td>(.*?)</tr>", table, re.S).group(1)
-    lost = re.findall(r'<td[^>]*data-sign="loss"[^>]*>(.*?)</td>', row, re.S)
-
-    assert lost == ["-400,00", "-40,00%"]
-    assert "table-success" not in row
-    assert "table-danger" not in row
+    assert [text for _attrs, text in cells[8:10]] == ["-", "-"]
+    assert [
+        (text, re.search(r'data-sign="(\w+)"', attrs).group(1))
+        for attrs, text in cells[10:12]
+    ] == profit
+    assert not re.search(r"table-(success|danger)", str(cells))
 
 
 @pytest.mark.parametrize(
@@ -190,27 +189,19 @@ def test_fund_with_a_loss_marks_its_profit_cells_as_a_loss(client_logged):
     ],
 )
 @pytest.mark.parametrize("sold", [True, False])
-def test_open_fund_with_no_worth_shows_dashes(client_logged, title, kind, sold):
+def test_open_fund_with_no_worth_draws_its_cost_and_its_worth_cells_empty(
+    client_logged, title, kind, sold
+):
     if sold:
         fund_with_a_sell("Open", 100000, 60000, kind=kind)
     else:
-        SavingFactory(
-            saving_type=SavingTypeFactory(title="Open", type=kind), price=100000
-        )
+        buy(SavingTypeFactory(title="Open", type=kind), 100000)
 
-    assert row_cells(_table(client_logged, title), "Open")[8:] == ["-"] * 4
+    cells = row_tags(_table(client_logged, title), "Open")
 
-
-def test_open_fund_with_no_worth_marks_its_empty_cells(client_logged):
-    SavingFactory(saving_type=SavingTypeFactory(title="Open"), price=100000)
-
-    table = _table(client_logged)
-    row = re.search(r"<tr>\s*<td[^>]*>Open</td>(.*?)</tr>", table, re.S).group(1)
-    cells = re.findall(r"<td([^>]*)>(.*?)</td>", row, re.S)
-
-    assert cells[4][1].strip() == "1.000,00"
-    assert 'data-cell="empty"' not in cells[4][0]
-    assert all('data-cell="empty"' in attrs for attrs, _ in cells[8:])
+    assert [
+        (text, 'data-cell="empty"' in attrs) for attrs, text in [cells[4], *cells[8:]]
+    ] == [("1.000,00", False), *[("-", True)] * 4]
 
 
 def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
@@ -231,18 +222,29 @@ def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
     } == dict.fromkeys(("row", "total"), [' data-cell="empty"'] * 2)
 
 
-@pytest.mark.parametrize("kind", ["funds", "pensions"])
-def test_funds_tab_queries_do_not_grow_with_closed_funds(
-    client_logged, main_user, kind
-):
-    def build(i):
-        fund_with_a_sell(
-            f"Fund {i}", 100000, 60000, kind=kind, closed=closed_every_other(i)
-        )
-        PensionFactory(pension_type=PensionTypeFactory(title=f"P {i}"))
+def _funds_closed_every_other(i, kind):
+    fund_with_a_sell(
+        f"Fund {i}", 100000, 60000, kind=kind, closed=closed_every_other(i)
+    )
+    PensionFactory(pension_type=PensionTypeFactory(title=f"P {i}"))
 
+
+def _switches(i, kind):
+    a = fund_with_a_sell(f"A {i}", 100000, 60000, kind=kind)
+    b = SavingTypeFactory(title=f"B {i}", type=kind)
+    SavingChangeFactory(
+        from_account=a, to_account=b, price=1000, fee=0, date=date(1999, 7, 1)
+    )
+
+
+@pytest.mark.parametrize(
+    "build", [_funds_closed_every_other, _switches], ids=["closed", "switches"]
+)
+@pytest.mark.parametrize("kind", ["funds", "pensions"])
+def test_funds_tab_queries_do_not_grow(client_logged, main_user, build, kind):
     queries = [
-        view_queries(client_logged, main_user, FUNDS_TAB, build, n) for n in (2, 4)
+        view_queries(client_logged, main_user, FUNDS_TAB, lambda i: build(i, kind), n)
+        for n in (2, 4)
     ]
 
     assert queries[0] == queries[1]
@@ -268,7 +270,7 @@ def test_total_counts_the_switched_money_once(client_logged, title, kind):
 def test_total_keeps_the_base_of_a_source_closed_before_the_year(client_logged):
     a = SavingTypeFactory(title="A", closed=1998)
     b = SavingTypeFactory(title="B")
-    SavingFactory(saving_type=a, price=100000, date=date(1998, 1, 1))
+    buy(a, 100000, when=date(1998, 1, 1))
     SavingChangeFactory(
         from_account=a, to_account=b, price=130000, fee=0, date=date(1998, 6, 1)
     )
@@ -283,7 +285,7 @@ def _switched_through_a_closed_fund():
     a = SavingTypeFactory(title="A")
     b = SavingTypeFactory(title="B", closed=1998)
     c = SavingTypeFactory(title="C")
-    SavingFactory(saving_type=a, price=100000, fee=0, date=date(1998, 1, 1))
+    buy(a, 100000, when=date(1998, 1, 1))
     for source, target in ((a, b), (b, c)):
         SavingChangeFactory(
             from_account=source,
@@ -300,7 +302,7 @@ def _gain_passed_on_by_a_closed_fund():
     a = SavingTypeFactory(title="A", closed=1998)
     b = SavingTypeFactory(title="B")
     c = SavingTypeFactory(title="C")
-    SavingFactory(saving_type=c, price=100000, fee=0, date=date(1998, 1, 1))
+    buy(c, 100000, when=date(1998, 1, 1))
     for source, target, price in ((c, a, 40000), (a, b, 50000)):
         SavingChangeFactory(
             from_account=source,
@@ -315,7 +317,7 @@ def _gain_passed_on_by_a_closed_fund():
 
 def _no_switches():
     fund = SavingTypeFactory(title="A")
-    SavingFactory(saving_type=fund, price=100000, fee=0, date=date(1999, 1, 1))
+    buy(fund, 100000)
     worth(fund, 130000)
 
 
@@ -331,22 +333,6 @@ def test_total_profit_percentage(client_logged, build, percent):
     build()
 
     assert total_cells(_table(client_logged))[-1] == percent
-
-
-@pytest.mark.parametrize("kind", ["funds", "pensions"])
-def test_funds_tab_queries_do_not_grow_with_switches(client_logged, main_user, kind):
-    def build(i):
-        a = fund_with_a_sell(f"A {i}", 100000, 60000, kind=kind)
-        b = SavingTypeFactory(title=f"B {i}", type=kind)
-        SavingChangeFactory(
-            from_account=a, to_account=b, price=1000, fee=0, date=date(1999, 7, 1)
-        )
-
-    queries = [
-        view_queries(client_logged, main_user, FUNDS_TAB, build, n) for n in (2, 4)
-    ]
-
-    assert queries[0] == queries[1]
 
 
 def test_pensions_total_ignores_a_switch_between_funds(client_logged):

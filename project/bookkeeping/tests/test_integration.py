@@ -81,6 +81,8 @@ class BookkeepingIndex(TestCase, Browser):
             delta_ok="#accounts tbody tr:nth-child(1) td:last-child",
             delta_gain="#accounts tbody tr:nth-child(2) td:last-child",
             delta_loss="#accounts tbody tr:nth-child(3) td:last-child",
+            # Even + Gain + Loss: a zero with no data-cell to paint it faint
+            delta_total="#accounts tfoot th:last-child",
             # the year strip's end, not highlighted: a figure, not a sign
             year_end="#last td:nth-child(3)",
         )
@@ -93,6 +95,7 @@ class BookkeepingIndex(TestCase, Browser):
             "delta_ok": [GAIN, True],
             "delta_gain": [GAIN, True],
             "delta_loss": [HARM, True],
+            "delta_total": [INK, True],
             "year_end": [INK, True],
             "zero_month": [INK_FAINT, True],
         }
