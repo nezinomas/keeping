@@ -3,12 +3,15 @@ from datetime import date
 
 from django.utils.translation import gettext as _
 
+from ....core.lib.money_cells import amount
+from ....core.lib.stat_card import EmptyStatCard, StatCard
 from ....core.lib.translation import month_names
 from ....debts.models import Debt
 from ....debts.services.model_services import DebtModelService
 from ....users.models import User
 from ...lib.make_dataframe import MakeDataFrame
 from ...lib.year_balance import YearBalance
+from ..wealth.presenters import WealthPresenter
 from .providers import IndexDataProvider
 
 INDEX_COLUMNS = (
@@ -63,12 +66,22 @@ class IndexContextBuilder:
             "highlight": [False, False, True],
         }
 
-    def averages_context(self) -> dict:
-        return {
-            "title": [_("Average incomes"), _("Average expenses")],
-            "data": [self._balance.avg_incomes, self._balance.avg_expenses],
-            "empty": self._balance.is_coming,
+    def cards(self, wealth: WealthPresenter) -> list[StatCard | EmptyStatCard]:
+        averages = {
+            _("Average incomes"): self._balance.avg_incomes,
+            _("Average expenses"): self._balance.avg_expenses,
         }
+        cards = [
+            StatCard(_("Money"), value=amount(wealth.money)),
+            StatCard(_("Wealth"), value=amount(wealth.wealth)),
+        ]
+
+        if self._balance.is_coming:
+            return cards + [EmptyStatCard(title) for title in averages]
+
+        return cards + [
+            StatCard(title, value=amount(figure)) for title, figure in averages.items()
+        ]
 
 
 def load_service(user: User, today: date) -> IndexContextBuilder:

@@ -79,11 +79,11 @@ def test_an_index_tab_queries_stay_under_its_cap_and_do_not_grow(
         _add_items(0, 2)
     two = queries()
     with quiet_build(main_user):
-        _add_items(2, 4)
-    four = queries()
+        _add_items(2, 6)
+    six = queries()
 
-    assert two == four
-    assert four <= QUERY_CAPS[tab.name]
+    assert two == six
+    assert six <= QUERY_CAPS[tab.name]
 
 
 @pytest.fixture(name="tab_contents")
@@ -110,13 +110,12 @@ FIGURES = {
     ),
     "no_incomes": r'<td class="text-left">Pinigai, €</td>\s*<td>-16,50</td>',
     "wealth": (
-        r"<th>\s*Pinigai\s*</th>\s*<th>\s*Turtas\s*</th>\s*</tr>\s*</thead>\s*"
-        r"<tbody>\s*<tr>\s*<td>\s*-16,50\s*</td>\s*<td>\s*-16,50\s*</td>"
+        r'<div class="trend-card__label">Pinigai</div>\s*'
+        r'<div class="trend-card__value[^>]*><span class="trend-card__figure"[^>]*>-17<'
     ),
     "averages": (
-        r"<th>\s*Vidutinės pajamos\s*</th>\s*<th>\s*Vidutinės išlaidos\s*</th>\s*"
-        r"</tr>\s*</thead>\s*<tbody>\s*<tr>\s*<td>\s*6,00\s*</td>\s*"
-        r"<td>\s*1,00\s*</td>"
+        r'<div class="trend-card__label">Vidutinės pajamos</div>\s*'
+        r'<div class="trend-card__value[^>]*><span class="trend-card__figure"[^>]*>6<'
     ),
     "borrow": r'<span[^>]*data-tip="Liko grąžinti:  70,00">',
     "lend": r'<span[^>]*data-tip="Liko grąžinti:  90,00">',
@@ -259,6 +258,8 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     client_logged, fee_source
 ):
     IncomeFactory(price=100000)
+    # the next year's accounts hold more, so a check reading them is never equal
+    IncomeFactory(date=date(2000, 1, 1), price=5000)
     SavingFactory(
         price=20000,
         fee=300,
@@ -284,26 +285,18 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
         pytest.param("bookkeeping:tab_balance", [YEAR_END], id="balance"),
     ],
 )
-@pytest.mark.parametrize(
-    "accounts_balance, state",
-    [
-        pytest.param(100000, "", id="equal"),
-        pytest.param(99900, "mismatch", id="differ"),
-    ],
-)
-def test_view_cash_flow_check_marks_each_foot_cell(
-    client_logged, url_name, cells, accounts_balance, state
+# the two figures equal: test_view_index_year_end_cash_flow_equals_the_accounts_balance
+def test_view_cash_flow_check_marks_each_foot_cell_of_a_mismatch(
+    client_logged, url_name, cells
 ):
     IncomeFactory(price=100000)
-    # the next year's accounts hold more, so a check reading them is never equal
-    IncomeFactory(date=date(2000, 1, 1), price=5000)
-    AccountBalance.objects.filter(year=1999).update(balance=accounts_balance)
+    AccountBalance.objects.filter(year=1999).update(balance=99900)
 
     # what the tab's reload draws
     content = tab_fragment(client_logged, reverse(url_name))
 
     assert re.findall(CASH_FLOW_CELL, content) == [
-        cell.format(state=state) for cell in cells
+        cell.format(state="mismatch") for cell in cells
     ]
 
 

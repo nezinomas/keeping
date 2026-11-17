@@ -200,9 +200,6 @@ def mock_year_balance(mocker):
     mock.amount_end = 1600
     mock.average = 200
     mock.year = 2026
-    mock.avg_incomes = 50
-    mock.avg_expenses = 10
-    mock.is_coming = False
     return mock
 
 
@@ -228,22 +225,3 @@ def test_index_context_builder_balance_context(mock_year_balance):
 )
 def test_cash_flow_check(cash_flow, accounts_balance, state):
     assert cash_flow_check(cash_flow, accounts_balance) == state
-
-
-@pytest.mark.parametrize(
-    "is_coming, empty",
-    [
-        pytest.param(False, False, id="past"),
-        pytest.param(True, True, id="coming"),
-    ],
-)
-def test_index_context_builder_averages_context(mock_year_balance, is_coming, empty):
-    mock_year_balance.is_coming = is_coming
-
-    actual = IndexContextBuilder(balance=mock_year_balance).averages_context()
-
-    assert actual == {
-        "title": ["Vidutinės pajamos", "Vidutinės išlaidos"],
-        "data": [50, 10],
-        "empty": empty,
-    }

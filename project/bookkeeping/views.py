@@ -54,8 +54,7 @@ class TabOverview(IndexTabMixin, TemplateViewMixin):
             "cash_flow_check": index.check_cash_flow(accounts["total_row"]["balance"]),
             "balance_short": index.balance_short_context(),
             **no_incomes.load_service(user, year, today),
-            "wealth": services.wealth.load_service(user, year)["data"],
-            "averages": index.averages_context(),
+            "cards": index.cards(services.wealth.load_service(user, year)),
             "borrow": debts.borrow_context(),
             "lend": debts.lend_context(),
         }

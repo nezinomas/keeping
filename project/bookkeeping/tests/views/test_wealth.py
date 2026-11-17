@@ -1,17 +1,63 @@
-import re
+from datetime import date
 
 import pytest
+import time_machine
+from django.urls import reverse
 
+from ....core.tests.utils import stat_cards, tab_fragment
+from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
-from ..helper import tab_table
+from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
+from ....savings.tests.factories import SavingTypeFactory
+from ..factories import AccountWorthFactory, PensionWorthFactory
+from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
 
-def test_wealth_table_shows_the_money_and_the_wealth(client_logged):
-    IncomeFactory(price=100_000)
+def _cards(client):
+    """(title, value) of each Card in the row that opens the tab."""
+    content = tab_fragment(client, reverse("bookkeeping:tab_overview"))
+    head = content.partition('id="accounts"')[0]
+    row = head.partition('<div class="stat-cards">')[2]
+    return [(title, value) for title, value, _note in stat_cards(row)]
 
-    table = tab_table(client_logged, "bookkeeping:tab_overview", "Turtas")
 
-    assert re.findall(r"<th>\s*([^<]*?)\s*</th>", table) == ["Pinigai", "Turtas"]
-    assert re.findall(r"<td>\s*([^<]*?)\s*</td>", table) == ["1.000,00", "1.000,00"]
+def _wealth_and_averages():
+    """Each figure its own, so a Card that reads another's shows."""
+    # the accounts end at 4 800,00 - 1 000,00 = 3 800,00; their Worth is not read
+    IncomeFactory(price=500000)
+    ExpenseFactory(price=20000)
+    # the next year's money differs, so a figure read for the wrong year shows
+    IncomeFactory(date=date(2000, 1, 1), price=7000)
+    AccountWorthFactory(price=390000)
+    fund = SavingTypeFactory()
+    buy(fund, 100000)
+    worth(fund, 130000)
+    pension = PensionTypeFactory()
+    PensionFactory(pension_type=pension, price=60000, fee=0)
+    PensionWorthFactory(pension_type=pension, price=70000)
+
+
+# a year not started draws its wealth, and its averages empty
+@pytest.mark.parametrize(
+    "today, averages",
+    [
+        pytest.param("2000-06-01", ["5.000", "200"], id="past"),
+        pytest.param("1998-06-01", ["&mdash;", "&mdash;"], id="not-started"),
+    ],
+)
+def test_apzvalga_cards_read_the_wealth_and_the_averages(
+    client_logged, today, averages
+):
+    _wealth_and_averages()
+
+    with time_machine.travel(today, tick=False):
+        cards = _cards(client_logged)
+
+    assert cards == [
+        ("Pinigai", "5.100"),
+        ("Turtas", "5.800"),
+        ("Vidutinės pajamos", averages[0]),
+        ("Vidutinės išlaidos", averages[1]),
+    ]

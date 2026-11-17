@@ -1,5 +1,3 @@
-from django.utils.translation import gettext as _
-
 from .dtos import WealthDto
 from .providers import WealthDataProvider
 
@@ -9,11 +7,11 @@ class WealthPresenter:
         self.dto = dto
 
     @property
-    def money(self) -> float:
+    def money(self) -> int:
         return self.dto.account_balance + self.dto.saving_balance
 
     @property
-    def wealth(self) -> float:
+    def wealth(self) -> int:
         return (
             self.dto.account_balance
             + self.dto.saving_balance
@@ -21,17 +19,5 @@ class WealthPresenter:
         )
 
 
-def build_context(dto: WealthDto) -> dict:
-    presenter = WealthPresenter(dto)
-    return {
-        "data": {
-            "title": [_("Money"), _("Wealth")],
-            "data": [presenter.money, presenter.wealth],
-        }
-    }
-
-
-def load_service(user, year: int) -> dict:
-    provider = WealthDataProvider(user, year)
-    dto = provider.get_wealth_data()
-    return build_context(dto)
+def load_service(user, year: int) -> WealthPresenter:
+    return WealthPresenter(WealthDataProvider(user, year).get_wealth_data())
