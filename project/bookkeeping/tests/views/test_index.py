@@ -154,17 +154,18 @@ def _borrow():
     BorrowReturnFactory(debt=BorrowFactory(price=7000), price=2000)
 
 
+DEBTS_HEAD = ("", "Suma", "Grąžinta", "Liko")
 LENT = ("Paskolinta", "90,00", "30,00", "60,00")
 BORROWED = ("Pasiskolinta", "70,00", "20,00", "50,00")
 DEBTS_PANEL = re.compile(r'<h2 class="panel__title">Skolos</h2>(.*?)</section>', re.S)
 
 
 def _debts_tables(content):
-    """The body rows of each Skolos Panel, (title, Suma, Grąžinta, Liko) each."""
+    """Each Skolos Panel's header row, then its rows, (title, Suma, Grąžinta, Liko)."""
     return [
         [
-            tuple(cell.strip() for cell in re.findall(r"<td[^>]*>(.*?)</td>", row))
-            for row in re.findall(r"<tr>(.*?)</tr>", panel.split("</thead>")[-1], re.S)
+            tuple(c.strip() for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row))
+            for row in re.findall(r"<tr>(.*?)</tr>", panel, re.S)
         ]
         for panel in DEBTS_PANEL.findall(content)
     ]
@@ -173,8 +174,8 @@ def _debts_tables(content):
 @pytest.mark.parametrize(
     "debts, tables",
     [
-        pytest.param([_borrow, _lend], [[LENT, BORROWED]], id="both"),
-        pytest.param([_lend], [[LENT]], id="lend-only"),
+        pytest.param([_borrow, _lend], [[DEBTS_HEAD, LENT, BORROWED]], id="both"),
+        pytest.param([_lend], [[DEBTS_HEAD, LENT]], id="lend-only"),
         pytest.param([], [], id="none"),
     ],
 )
