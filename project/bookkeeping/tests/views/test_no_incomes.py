@@ -3,13 +3,14 @@ import re
 from datetime import date
 
 import pytest
+import time_machine
 from django.db.models import Sum
 from django.template.loader import render_to_string
 from django.urls import reverse
 
 from ....accounts.models import AccountBalance
 from ....core.tests.utils import tab_fragment
-from ....expenses.tests.factories import ExpenseTypeFactory
+from ....expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ....journals.tests.factories import JournalFactory
 from ....savings.tests.factories import SavingTypeFactory
 from ...lib import no_incomes
@@ -19,7 +20,8 @@ from ..signals.helpers import buy, worth
 pytestmark = pytest.mark.django_db
 
 
-def test_no_incomes_tip_lists_the_unnecessary_expenses(client_logged):
+@pytest.fixture(name="unnecessary")
+def fixture_unnecessary():
     j = JournalFactory()
     e1 = ExpenseTypeFactory(title="XXX")
     e2 = ExpenseTypeFactory(title="YYY")
@@ -28,7 +30,43 @@ def test_no_incomes_tip_lists_the_unnecessary_expenses(client_logged):
     j.unnecessary_savings = True
     j.unnecessary_expenses = json.dumps([e1.pk, e2.pk])
     j.save()
+    ExpenseFactory(expense_type=e1, price=120000, date=date(1999, 5, 1))
 
+
+# the six whole months before the view's today hold the cut expense: 1.200,00 / 6
+@time_machine.travel("1999-06-15")
+def test_no_incomes_head_names_its_figure_under_the_panel_title(
+    client_logged, unnecessary
+):
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+
+    assert re.findall(
+        r'<h2 class="panel__title">([^<]*)</h2>\s*<div class="table-responsive">\s*'
+        r"<table\b[^>]*>\s*<thead>\s*<tr>\s*<th[^>]*><span[^>]*>([^<]*)</span>",
+        content,
+    ) == [("Be pajamų", "Nebūtinos išlaidos 200")]
+
+
+def test_no_incomes_panel_keeps_its_legend_under_the_table(client_logged):
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+
+    legend = re.findall(
+        r'<h2 class="panel__title">Be pajamų</h2>.*?</table>\s*</div>\s*'
+        r'<p class="mt-3">(.*?)</p>\s*</section>',
+        content,
+        re.S,
+    )
+
+    assert [
+        re.sub(r"<[^>]+>|\s+", " ", line).split() for line in legend[0].split("<br>")
+    ] == [
+        ["€", "-", "Sąskaitose", "esantys", "pinigai"],
+        ["F", "-", "Fondai/Akcijos"],
+        ["P", "-", "Pensijų", "fondai"],
+    ]
+
+
+def test_no_incomes_tip_lists_the_unnecessary_expenses(client_logged, unnecessary):
     content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
     tip = re.search(
         r'<span class="tip[^"]*" data-tip="(Nebūtinos išlaidos[^"]*)"', content

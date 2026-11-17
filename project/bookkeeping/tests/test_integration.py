@@ -82,10 +82,16 @@ class BookkeepingIndex(TestCase, Browser):
             delta_gain="#accounts tbody tr:nth-child(2) td:last-child",
             delta_loss="#accounts tbody tr:nth-child(3) td:last-child",
             # Even + Gain + Loss: a zero with no data-cell to paint it faint
-            delta_total="#accounts tfoot th:last-child",
+            delta_total="#accounts tfoot td:last-child",
             # the year strip's end, not highlighted: a figure, not a sign
             year_end="#last td:nth-child(3)",
         )
+        # a signed total keeps its colour on the skin's ink total row (Q35)
+        account = AccountFactory(title="Gain 2")
+        IncomeFactory(account=account, price=10000)
+        AccountWorthFactory(account=account, price=12000)
+        self.open_at(reverse("bookkeeping:tab_overview"), 1500)
+        looks |= self._looks(delta_total_gain="#accounts tfoot td:last-child")
         self.open_at(reverse("bookkeeping:tab_balance"), 1500)
         looks |= self._looks(
             zero_month="#table-balance tbody tr:nth-child(2) td:nth-child(4)"
@@ -96,6 +102,7 @@ class BookkeepingIndex(TestCase, Browser):
             "delta_gain": [GAIN, True],
             "delta_loss": [HARM, True],
             "delta_total": [INK, True],
+            "delta_total_gain": [GAIN, True],
             "year_end": [INK, True],
             "zero_month": [INK_FAINT, True],
         }

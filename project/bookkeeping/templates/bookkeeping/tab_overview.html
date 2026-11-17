@@ -9,11 +9,20 @@
     <button class="button-secondary button-refresh" hx-get="{% url 'bookkeeping:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span></button>
 </div>
 
-<div id="accounts" class="table-responsive">{% include 'bookkeeping/includes/account_worth_list.html' %}</div>
+<c-panel table id="accounts" title="{% translate 'Accounts' %}">
+    <div class="table-responsive">{% include 'bookkeeping/includes/account_worth_list.html' %}</div>
+</c-panel>
 
 <div class="table-responsive">{% include 'bookkeeping/includes/balance_short.html' with data=balance_short %}</div>
 
-<div class="table-responsive">{% include 'bookkeeping/includes/no_incomes.html' %}</div>
+<c-panel table title="{% translate 'Without incomes' %}">
+    <div class="table-responsive">{% include 'bookkeeping/includes/no_incomes.html' %}</div>
+    <p class="mt-3">
+        <b>€</b> - {% translate 'Money in accounts' %}<br>
+        <b>F</b> - {% translate 'Funds/Stocks' %}<br>
+        <b>P</b> - {% translate 'Pension funds' %}
+    </p>
+</c-panel>
 
 {% if debts %}
 <c-panel table title="{% translate 'Debts' %}">

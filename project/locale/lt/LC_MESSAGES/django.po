@@ -2858,3 +2858,9 @@ msgstr "Paskolinti"
 msgctxt "borrow button"
 msgid "Borrow"
 msgstr "Pasiskolinti"
+
+msgid "Unnecessary expenses"
+msgstr "Nebūtinos išlaidos"
+
+msgid "Without incomes"
+msgstr "Be pajamų"

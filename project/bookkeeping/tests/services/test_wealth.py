@@ -16,7 +16,7 @@ def _wealth(user):
     return WealthDataProvider(user, 1999).get_wealth_data()
 
 
-def test_provider_empty_year_is_the_database_default_zero_not_a_float(main_user):
+def test_provider_empty_year_is_the_database_default_zero(main_user):
     obj = _wealth(main_user)
 
     balances = (obj.account_balance, obj.saving_balance, obj.pension_balance)

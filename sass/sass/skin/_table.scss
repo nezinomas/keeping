@@ -131,7 +131,11 @@
         :is(tbody, tfoot) tr.main__total td {
             border-bottom: 0;
             font-weight: 600;
-            color: $ink;
+
+            // a signed figure keeps its gain or harm on the total row
+            &:not([data-sign]) {
+                color: $ink;
+            }
         }
 
         // drawn from the row above: border-collapse gives a 1px tie to the upper

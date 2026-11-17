@@ -112,7 +112,7 @@ def row_titles(table):
 def total_cells(table):
     """The cells of `table`'s foot rows, one string each."""
     foot = re.search(r"<tfoot>(.*?)</tfoot>", table, re.S).group(1)
-    return [c.strip() for c in re.findall(r"<th[^>]*>(.*?)</th>", foot, re.S)]
+    return [c.strip() for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", foot, re.S)]
 
 
 @contextmanager

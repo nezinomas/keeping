@@ -42,14 +42,30 @@ def test_header_reads_the_selected_year(
     assert re.search(header, tab_table(client_logged, url_name, title))
 
 
-def test_negative_delta_is_marked_as_a_loss(client_logged):
+@pytest.mark.parametrize(
+    "worth, deltas",
+    [
+        pytest.param(1500, [("gain", "5,00"), ("gain", "5,00")], id="gain"),
+        pytest.param(500, [("loss", "-5,00"), ("loss", "-5,00")], id="loss"),
+        # zero: "ok" on the account, the dash on the total
+        pytest.param(1000, [("gain", "ok"), ("", "-")], id="zero"),
+    ],
+)
+def test_delta_reads_the_worth_check_on_the_row_and_the_total(
+    client_logged, worth, deltas
+):
     account = AccountFactory()
     IncomeFactory(account=account, price=1000)
-    factories.AccountWorthFactory(account=account, price=500)
+    factories.AccountWorthFactory(account=account, price=worth)
 
     table = tab_table(client_logged, OVERVIEW, "Sąskaitos")
+    body = table.split("</thead>")[1]
+    last_cells = re.findall(r"<t[dh]([^>]*)>([^<]*)</t[dh]>\s*</tr>", body)
 
-    assert re.search(r'<td data-sign="loss">-', table)
+    assert [
+        ("".join(re.findall(r'data-sign="(\w+)"', attrs)), text)
+        for attrs, text in last_cells
+    ] == deltas
 
 
 @pytest.mark.parametrize(

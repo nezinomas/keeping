@@ -3,11 +3,10 @@
 {% load i18n %}
 {% load cell_format %}
 
-{% if data.title and data.data %}
-<table class="main" x-data="{ open:false }">
-    <thead>
+<c-paper-table class="main striped hover" x-data="{ open:false }">
+    <c-slot name="head">
         <tr>
-            <th class="no-right-border panel-heading text-left" :class="open ? 'active' : ''">
+            <th>
                 <span class="tip right" data-tip="{% translate 'Forecast' %}">
                 <a
                     role="button"
@@ -19,21 +18,22 @@
                     hx-trigger="click once"
                     hx-indicator="#indicator"
                     >
+                    <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                 </a></span>
             </th>
             {% for title in data.title %}
-            <th class="text-nowrap long-price-col">
-               {{ title }}
-            </th>{% endfor %}
+            <th>{{ title }}</th>
+            {% endfor %}
         </tr>
-    </thead>
+    </c-slot>
+    <c-slot name="body">
     <tbody id="last">
         <tr>
-            <td class="no-right-border"></td>
+            <td></td>
             {% for d in data.data %}
-            <td{% if d and data.highlight|get_list_val:forloop.counter0 %} data-sign="{{d|sign}}"{% endif %}>{{d|price|cellformat}}</td>
+            <td class="main__figure"{% if d and data.highlight|get_list_val:forloop.counter0 %} data-sign="{{d|sign}}"{% endif %}>{{d|price|cellformat}}</td>
             {% endfor %}
         </tr>
     </tbody>
-</table>
-{% endif %}
+    </c-slot>
+</c-paper-table>

@@ -25,9 +25,10 @@ from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
-CASH_FLOW_CELL = r'<th[^>]*data-check="[^"]*">'
+CASH_FLOW_CELL = r'<t[hd][^>]*data-check="[^"]*">'
 YEAR_END = '<th data-sign="gain" data-check="{state}">'
-ACCOUNTS_TOTAL = '<th data-cell="" data-check="{state}">'
+ACCOUNTS_TOTAL = '<td class="main__figure" data-cell="" data-check="{state}">'
+FIGURE = ' class="main__figure"'
 
 
 @pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
@@ -105,25 +106,26 @@ def fixture_tab_contents(client_logged):
     return {tab.name: tab_fragment(client_logged, tab.url) for tab in INDEX_TABS}
 
 
+CARD = (
+    r'<div class="trend-card__label">{label}</div>\s*'
+    r'<div class="trend-card__value[^>]*><span class="trend-card__figure"[^>]*>'
+    r"{figure}<"
+)
 FIGURES = {
     "accounts": r"<span[^>]*>Account1</span>",
     "accounts_total": re.escape(ACCOUNTS_TOTAL.format(state="")),
     # start, end and balance of the year: 6,00 - 1,00 - 1,50 + 70,00 - 90,00
     "year_strip": (
-        r'<td class="no-right-border"></td>\s*<td>-</td>\s*<td>-16,50</td>\s*'
-        r'<td data-sign="loss">-16,50</td>'
+        rf"<td></td>\s*<td{FIGURE}>-</td>\s*<td{FIGURE}>-16,50</td>\s*"
+        rf'<td{FIGURE} data-sign="loss">-16,50</td>'
     ),
-    "no_incomes": r'<td class="text-left">Pinigai, €</td>\s*<td>-16,50</td>',
-    "wealth": (
-        r'<div class="trend-card__label">Pinigai</div>\s*'
-        r'<div class="trend-card__value[^>]*><span class="trend-card__figure"[^>]*>-17<'
-    ),
-    "averages": (
-        r'<div class="trend-card__label">Vidutinės pajamos</div>\s*'
-        r'<div class="trend-card__value[^>]*><span class="trend-card__figure"[^>]*>6<'
-    ),
-    "borrow": r'<td class="text-left">Pasiskolinta</td>\s*<td class="main__figure"[^>]*>70,00<',
-    "lend": r'<td class="text-left">Paskolinta</td>\s*<td class="main__figure"[^>]*>90,00<',
+    "no_incomes": rf'<td class="text-left">Pinigai, €</td>\s*<td{FIGURE}>-16,50</td>',
+    "money": CARD.format(label="Pinigai", figure="-17"),
+    "wealth": CARD.format(label="Turtas", figure="-17"),
+    "average_incomes": CARD.format(label="Vidutinės pajamos", figure="6"),
+    "average_expenses": CARD.format(label="Vidutinės išlaidos", figure="1"),
+    "borrow": rf'<td class="text-left">Pasiskolinta</td>\s*<td{FIGURE}[^>]*>70,00<',
+    "lend": rf'<td class="text-left">Paskolinta</td>\s*<td{FIGURE}[^>]*>90,00<',
     "saved_share": r"<div[^>]*>Pajamų dalis pervedama taupymui: <b>25,0</b>%",
     # nothing before the year, then the year's transfer
     "funds": (
@@ -187,6 +189,57 @@ def test_overview_debts_table_draws_a_row_per_kind_with_a_debt(
     assert _debts_tables(content) == tables
 
 
+LEGACY_CLASSES = ("left-thick-border", "long-price-col", "no-right-border")
+
+
+def test_overview_tables_wear_the_skin_and_no_legacy_class(tab_contents):
+    content = tab_contents["overview"]
+
+    titles = re.findall(r'<h2 class="panel__title">([^<]*)</h2>', content)
+    boxed = re.findall(
+        r'<div class="table-responsive">\s*<table class="([^"]*)"', content
+    )
+    totals = re.findall(r'<tr class="(main__total)">', content)
+    rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", content, re.S)
+    bare = [
+        cell
+        for row in rows
+        for cell in re.findall(r"<td([^>]*)>", row)[1:]
+        if "main__figure" not in cell
+    ]
+    legacy = [name for name in LEGACY_CLASSES if name in content]
+
+    assert (titles, boxed, totals, bare, legacy) == (
+        ["Sąskaitos", "Be pajamų", "Skolos"],
+        ["main striped hover"] * 4,
+        ["main__total"],
+        [],
+        [],
+    )
+
+
+def test_overview_unsigned_money_cells_carry_their_cell_state(tab_contents):
+    content = tab_contents["overview"]
+    tables = (table_titled(content, "Sąskaitos"), *DEBTS_PANEL.findall(content))
+
+    cells = [
+        (attrs, text)
+        for table in tables
+        for attrs, text in re.findall(
+            r'<td class="main__figure"([^>]*)>([^<]*)</td>', table
+        )
+        if "data-sign" not in attrs
+    ]
+    states = {
+        (text == "-", tuple(re.findall(r'data-cell="(\w*)"', attrs)))
+        for attrs, text in cells
+    }
+
+    # Account1's five, the total's five, three for each kind of debt: a zero
+    # (the account's start) is "empty", every other figure ""
+    assert (len(cells), states) == (16, {(True, ("empty",)), (False, ("",))})
+
+
 def test_each_index_figure_is_drawn_on_exactly_one_tab(tab_contents):
     found = {
         name: {
@@ -202,8 +255,10 @@ def test_each_index_figure_is_drawn_on_exactly_one_tab(tab_contents):
         "accounts_total": {"overview": 1},
         "year_strip": {"overview": 1},
         "no_incomes": {"overview": 1},
+        "money": {"overview": 1},
         "wealth": {"overview": 1},
-        "averages": {"overview": 1},
+        "average_incomes": {"overview": 1},
+        "average_expenses": {"overview": 1},
         "borrow": {"overview": 1},
         "lend": {"overview": 1},
         "saved_share": {"funds": 1},
@@ -369,18 +424,6 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
     "url_name, cells, attrs",
     [
         pytest.param(
-            "bookkeeping:tab_overview",
-            r"<td([^>]*)>ok</td>",
-            [' data-sign="gain"'],
-            id="delta-ok",
-        ),
-        pytest.param(
-            "bookkeeping:tab_overview",
-            rf"<th([^>]*)>[^<]*</th>{FOOT_END}",
-            [' data-sign="gain"'],
-            id="delta-total",
-        ),
-        pytest.param(
             "bookkeeping:tab_funds",
             rf"<th([^>]*)>[^<]*</th>\s*<th([^>]*)>[^<]*</th>{FOOT_END}",
             [(GAIN_PROFIT, GAIN_PROFIT)],
@@ -395,8 +438,8 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
         # only the highlighted balance is signed, not the start or the end
         pytest.param(
             "bookkeeping:forecast",
-            r"<th([^>]*)>",
-            [' class="no-right-border"', "", "", ' data-sign="loss"'],
+            r"<td([^>]*)>",
+            ["", FIGURE, FIGURE, f'{FIGURE} data-sign="loss"'],
             id="forecast",
         ),
     ],
