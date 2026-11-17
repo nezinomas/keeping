@@ -92,6 +92,12 @@ def switch_a_into_b(*, kind="funds", a_closed=None, switched=130000):
     return a, b
 
 
+FIGURE = ' class="main__figure"'
+# a Panel's title, and a table's class inside its scroll box
+PANEL_TITLE = r'<h2 class="panel__title">([^<]*)</h2>\s*'
+BOXED_TABLE = r'<div class="table-responsive">\s*<table class="([^"]*)"'
+
+
 def table_titled(content, title):
     """The one table with a `<th>` reading `title`: a tab draws several."""
     tables = re.findall(r"<table\b.*?</table>", content, re.S)

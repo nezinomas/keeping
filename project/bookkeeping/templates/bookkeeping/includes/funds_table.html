@@ -2,83 +2,78 @@
 {% load math %}
 {% load cell_format %}
 
-{% if object_list %}
-<table class="main striped hover">
-    <thead>
+<c-paper-table class="main striped hover">
+    <c-slot name="head">
         <tr>
-            <th class="text-left right-thin-border title-col" rowspan="2"><c-regenerate-balances :type=type />{{ title }}</th>
-            <th rowspan="2" colspan="2" class="text-center right-thin-border">{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
-            <th colspan="2" class="text-center left-thin-border right-thin-border">{{ request.user.selected_year }}</th>
+            <th class="text-left" rowspan="2"><c-regenerate-balances :type="type" />{{ title }}</th>
+            <th rowspan="2" colspan="2" class="text-center">{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
+            <th colspan="2" class="text-center">{{ request.user.selected_year }}</th>
             <th colspan="4" class="text-center">{% translate 'Total' %}</th>
-            <th rowspan="2" colspan="2" class="left-thin-border right-thick-border text-center">{% translate 'Market value' %}</th>
+            <th rowspan="2" colspan="2" class="text-center">{% translate 'Market value' %}</th>
             <th colspan="2" rowspan="2" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
         </tr>
         <tr>
-            <th colspan="2" class="text-center right-thin-border">{% translate 'Transferred' %}</th>
+            <th colspan="2" class="text-center">{% translate 'Transferred' %}</th>
             <th colspan="2" class="text-center">{% translate 'Transferred' %}</th>
             <th colspan="2" class="text-center">{% translate 'Sold' %}</th>
         </tr>
         <tr>
-            <th class="text-left right-thin-border">{% translate 'Fund' %}</th>
-            <th>{% translate 'Sum' %}</th>
-            <th class="right-thin-border">{% translate 'Fees' %}</th>
-            <th>{% translate 'Sum' %}</th>
-            <th class="right-thin-border">{% translate 'Fees' %}</th>
+            <th class="text-left">{% translate 'Fund' %}</th>
             <th>{% translate 'Sum' %}</th>
             <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Sum' %}</th>
-            <th class="right-thin-border">{% translate 'Fees' %}</th>
+            <th>{% translate 'Fees' %}</th>
+            <th>{% translate 'Sum' %}</th>
+            <th>{% translate 'Fees' %}</th>
+            <th>{% translate 'Sum' %}</th>
+            <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Date' %}</th>
-            <th class="right-thick-border">{% translate 'Sum'%}</th>
+            <th>{% translate 'Sum'%}</th>
             <th>{% translate 'Sum' %}</th>
             <th>%</th>
         </tr>
-    </thead>
-    <tbody>
-        {% for item in object_list %}
-        <tr>
-            <td class="text-left right-thin-border">{% if item.saving_type_id %}{{ item.saving_type }}{% else %}{{ item.pension_type }}{% endif %}</td>
-            <td data-cell="{{item.past_amount|cell_state}}">{{item.past_amount|price|cellformat}}</td>
-            <td class="right-thin-border" data-cell="{{item.past_fee|cell_state}}">{{item.past_fee|price|cellformat}}</td>
-            <td data-cell="{{item.per_year_incomes|cell_state}}">{{item.per_year_incomes|price|cellformat}}</td>
-            <td class="right-thin-border" data-cell="{{item.per_year_fee|cell_state}}">{{item.per_year_fee|price|cellformat}}</td>
-            <td data-cell="{{item.incomes|cell_state}}">{{item.incomes|price|cellformat}}</td>
-            <td data-cell="{{item.fee|cell_state}}">{{item.fee|price|cellformat}}</td>
-            <td data-cell="{{item.sold|cell_state}}">{{item.sold|price|cellformat}}</td>
-            <td class="right-thin-border" data-cell="{{item.sold_fee|cell_state}}">{{item.sold_fee|price|cellformat}}</td>
-            {% if item.market_value %}
-            <td>{{ item.latest_check|date:"Y-m-d"|default_if_none:_('No record of account amount') }}</td>
-            <td class="right-thick-border" data-cell="{{item.market_value|cell_state}}">{{item.market_value|price|cellformat}}</td>
-            {% else %}
-            <td data-cell="empty">-</td>
-            <td class="right-thick-border" data-cell="empty">-</td>
-            {% endif %}
-            {% if item.shows_profit %}
-            <td{% if item.profit_sum %} data-sign="{{item.profit_sum|sign}}"{% endif %} data-cell="{{item.profit_sum|cell_state}}">{{item.profit_sum|price|cellformat}}</td>
-            <td{% if item.profit_sum %} data-sign="{{item.profit_sum|sign}}"{% endif %} data-cell="{{item.profit_sum|cell_state}}">{{item.profit_proc|cellformat}}%</td>
-            {% else %}
-            <td data-cell="empty">-</td>
-            <td data-cell="empty">-</td>
-            {% endif %}
+    </c-slot>
+    {% for item in object_list %}
+    <tr>
+        <td class="text-left">{% if item.saving_type_id %}{{ item.saving_type }}{% else %}{{ item.pension_type }}{% endif %}</td>
+        <td class="main__figure" data-cell="{{item.past_amount|cell_state}}">{{item.past_amount|price|cellformat}}</td>
+        <td class="main__figure" data-cell="{{item.past_fee|cell_state}}">{{item.past_fee|price|cellformat}}</td>
+        <td class="main__figure" data-cell="{{item.per_year_incomes|cell_state}}">{{item.per_year_incomes|price|cellformat}}</td>
+        <td class="main__figure" data-cell="{{item.per_year_fee|cell_state}}">{{item.per_year_fee|price|cellformat}}</td>
+        <td class="main__figure" data-cell="{{item.incomes|cell_state}}">{{item.incomes|price|cellformat}}</td>
+        <td class="main__figure" data-cell="{{item.fee|cell_state}}">{{item.fee|price|cellformat}}</td>
+        <td class="main__figure" data-cell="{{item.sold|cell_state}}">{{item.sold|price|cellformat}}</td>
+        <td class="main__figure" data-cell="{{item.sold_fee|cell_state}}">{{item.sold_fee|price|cellformat}}</td>
+        {% if item.market_value %}
+        <td class="main__date">{{ item.latest_check|date:"Y-m-d" }}</td>
+        <td class="main__figure" data-cell="{{item.market_value|cell_state}}">{{item.market_value|price|cellformat}}</td>
+        {% else %}
+        <td class="main__date" data-cell="empty">-</td>
+        <td class="main__figure" data-cell="empty">-</td>
+        {% endif %}
+        {% if item.shows_profit %}
+        <td class="main__figure"{% if item.profit_sum %} data-sign="{{item.profit_sum|sign}}"{% endif %} data-cell="{{item.profit_sum|cell_state}}">{{item.profit_sum|price|cellformat}}</td>
+        <td class="main__figure"{% if item.profit_sum %} data-sign="{{item.profit_sum|sign}}"{% endif %} data-cell="{{item.profit_sum|cell_state}}">{{item.profit_proc|cellformat}}%</td>
+        {% else %}
+        <td class="main__figure" data-cell="empty">-</td>
+        <td class="main__figure" data-cell="empty">-</td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    <c-slot name="foot">
+        <tr class="main__total">
+            <td class="text-left">{% translate 'Total' %}</td>
+            <td class="main__figure" data-cell="{{total_row.past_amount|cell_state}}">{{total_row.past_amount|price|cellformat}}</td>
+            <td class="main__figure" data-cell="{{total_row.past_fee|cell_state}}">{{total_row.past_fee|price|cellformat}}</td>
+            <td class="main__figure" data-cell="{{total_row.per_year_incomes|cell_state}}">{{total_row.per_year_incomes|price|cellformat}}</td>
+            <td class="main__figure" data-cell="{{total_row.per_year_fee|cell_state}}">{{total_row.per_year_fee|price|cellformat}}</td>
+            <td class="main__figure" data-cell="{{total_row.incomes|cell_state}}">{{total_row.incomes|price|cellformat}}</td>
+            <td class="main__figure" data-cell="{{total_row.fee|cell_state}}">{{total_row.fee|price|cellformat}}</td>
+            <td class="main__figure" data-cell="{{total_row.sold|cell_state}}">{{total_row.sold|price|cellformat}}</td>
+            <td class="main__figure" data-cell="{{total_row.sold_fee|cell_state}}">{{total_row.sold_fee|price|cellformat}}</td>
+            <td colspan="2" class="main__figure" data-cell="{{total_row.market_value|cell_state}}">{{total_row.market_value|price|cellformat}}</td>
+            <td class="main__figure"{% if total_row.profit_sum %} data-sign="{{total_row.profit_sum|sign}}"{% endif %} data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_sum|price|cellformat}}</td>
+            <td class="main__figure"{% if total_row.profit_sum %} data-sign="{{total_row.profit_sum|sign}}"{% endif %} data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_proc|cellformat}}%</td>
         </tr>
-        {% endfor %}
-    </tbody>
-    <tfoot>
-        <tr>
-            <th class="funds-title-col-min-width text-left right-thin-border">{% translate 'Total' %}</th>
-            <th data-cell="{{total_row.past_amount|cell_state}}">{{total_row.past_amount|price|cellformat}}</th>
-            <th class="right-thin-border" data-cell="{{total_row.past_fee|cell_state}}">{{total_row.past_fee|price|cellformat}}</th>
-            <th data-cell="{{total_row.per_year_incomes|cell_state}}">{{total_row.per_year_incomes|price|cellformat}}</th>
-            <th class="right-thin-border" data-cell="{{total_row.per_year_fee|cell_state}}">{{total_row.per_year_fee|price|cellformat}}</th>
-            <th data-cell="{{total_row.incomes|cell_state}}">{{total_row.incomes|price|cellformat}}</th>
-            <th data-cell="{{total_row.fee|cell_state}}">{{total_row.fee|price|cellformat}}</th>
-            <th data-cell="{{total_row.sold|cell_state}}">{{total_row.sold|price|cellformat}}</th>
-            <th class="right-thin-border" data-cell="{{total_row.sold_fee|cell_state}}">{{total_row.sold_fee|price|cellformat}}</th>
-            <th colspan="2" class="right-thick-border" data-cell="{{total_row.market_value|cell_state}}">{{total_row.market_value|price|cellformat}}</th>
-            <th{% if total_row.profit_sum %} data-sign="{{total_row.profit_sum|sign}}"{% endif %} data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_sum|price|cellformat}}</th>
-            <th{% if total_row.profit_sum %} data-sign="{{total_row.profit_sum|sign}}"{% endif %} data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_proc|cellformat}}%</th>
-        </tr>
-    </tfoot>
-</table>
-
-{% endif %}
+    </c-slot>
+</c-paper-table>

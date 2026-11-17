@@ -9,6 +9,14 @@
     <c-new-button url="{% url 'bookkeeping:pensions_worth_new' %}" title="{% translate 'Pensions fact' %}" />
 </div>
 
-<div class="table-responsive">{% include 'bookkeeping/includes/funds_table.html' with title=savings.title type=savings.type object_list=savings.object_list total_row=savings.total_row %}</div>
+{% if savings.object_list %}
+<c-panel table id="savings" title="{{ savings.title }}">
+    <div class="table-responsive">{% include 'bookkeeping/includes/funds_table.html' with title=savings.title type=savings.type object_list=savings.object_list total_row=savings.total_row %}</div>
+</c-panel>
+{% endif %}
 
-<div class="table-responsive">{% include 'bookkeeping/includes/funds_table.html' with title=pensions.title type=pensions.type object_list=pensions.object_list total_row=pensions.total_row %}</div>
+{% if pensions.object_list %}
+<c-panel table title="{{ pensions.title }}">
+    <div class="table-responsive">{% include 'bookkeeping/includes/funds_table.html' with title=pensions.title type=pensions.type object_list=pensions.object_list total_row=pensions.total_row %}</div>
+</c-panel>
+{% endif %}

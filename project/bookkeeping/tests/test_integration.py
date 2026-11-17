@@ -10,9 +10,10 @@ from ...core.tests.test_integration_browser import Browser
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeFactory
 from ...pensions.tests.factories import PensionFactory
-from ...savings.tests.factories import SavingFactory
+from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..tabs import INDEX_TABS
 from .factories import AccountWorthFactory
+from .signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
@@ -92,6 +93,11 @@ class BookkeepingIndex(TestCase, Browser):
         AccountWorthFactory(account=account, price=12000)
         self.open_at(reverse("bookkeeping:tab_overview"), 1500)
         looks |= self._looks(delta_total_gain="#accounts tfoot td:last-child")
+        fund = SavingTypeFactory(title="Up")
+        buy(fund, 100000)
+        worth(fund, 150000)
+        self.open_at(reverse("bookkeeping:tab_funds"), 1500)
+        looks |= self._looks(profit_total="#savings tfoot td:last-child")
         self.open_at(reverse("bookkeeping:tab_balance"), 1500)
         looks |= self._looks(
             zero_month="#table-balance tbody tr:nth-child(2) td:nth-child(4)"
@@ -103,6 +109,7 @@ class BookkeepingIndex(TestCase, Browser):
             "delta_loss": [HARM, True],
             "delta_total": [INK, True],
             "delta_total_gain": [GAIN, True],
+            "profit_total": [GAIN, True],
             "year_end": [INK, True],
             "zero_month": [INK_FAINT, True],
         }

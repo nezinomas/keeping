@@ -16,6 +16,9 @@ from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ..factories import PensionWorthFactory, SavingWorthFactory
 from ..helper import (
+    BOXED_TABLE,
+    FIGURE,
+    PANEL_TITLE,
     closed_every_other,
     fund_with_a_sell,
     row_cells,
@@ -23,6 +26,7 @@ from ..helper import (
     row_titles,
     switch_a_into_b,
     tab_table,
+    table_titled,
     total_cells,
     view_queries,
 )
@@ -195,11 +199,7 @@ def test_profit_cards_read_each_table_s_total_and_a_table_without_one_draws_its_
         seed()
 
     content = _fondai(client_logged)
-    drawn = [
-        title
-        for title in ("Fondai", "Pensijos")
-        if re.search(rf"<table\b(?:(?!</table>).)*>\s*{title}\s*</th>", content, re.S)
-    ]
+    drawn = re.findall(PANEL_TITLE, content)
 
     assert (_cards(content)[1:], drawn) == (cards, tables)
 
@@ -322,8 +322,103 @@ def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
 
     assert {
         "row": re.findall(r"<td([^>]*)>[^<]*</td>", row)[-2:],
-        "total": re.findall(r"<th([^>]*)>[^<]*</th>", foot)[-2:],
-    } == dict.fromkeys(("row", "total"), [' data-cell="empty"'] * 2)
+        "total": re.findall(r"<td([^>]*)>[^<]*</td>", foot)[-2:],
+    } == dict.fromkeys(
+        ("row", "total"), [' class="main__figure" data-cell="empty"'] * 2
+    )
+
+
+LEGACY_CLASSES = (
+    "right-thin-border",
+    "left-thin-border",
+    "right-thick-border",
+    "title-col",
+    "funds-title-col-min-width",
+)
+
+
+def _shape(table):
+    """The attributes of each cell: per header row, the row, the foot row."""
+    head = re.search(r"<thead>(.*?)</thead>", table, re.S).group(1)
+    body = re.search(r"<tbody>(.*?)</tbody>", table, re.S).group(1)
+    foot = re.search(r"<tfoot>(.*?)</tfoot>", table, re.S).group(1)
+    return {
+        "head": [re.findall(r"<th([^>]*)>", row) for row in head.split("<tr>")[1:]],
+        "row": re.findall(r"<td([^>]*)>", body),
+        "foot": re.findall(r"<tr([^>]*)>", foot) + re.findall(r"<td([^>]*)>", foot),
+    }
+
+
+CENTRED = ' class="text-center"'
+# the three header rows: 13 columns under their groups
+HEAD = [
+    [
+        ' class="text-left" rowspan="2"',
+        f' rowspan="2" colspan="2"{CENTRED}',
+        f' colspan="2"{CENTRED}',
+        f' colspan="4"{CENTRED}',
+        f' rowspan="2" colspan="2"{CENTRED}',
+        f' colspan="2" rowspan="2"{CENTRED}',
+    ],
+    [f' colspan="2"{CENTRED}'] * 3,
+    [' class="text-left"', *[""] * 12],
+]
+
+EMPTY = f'{FIGURE} data-cell="empty"'
+SHOWN = f'{FIGURE} data-cell=""'
+GAIN = f'{FIGURE} data-sign="gain" data-cell=""'
+TITLE = ' class="text-left"'
+
+
+def test_funds_tables_wear_the_skin_and_keep_their_columns(client_logged):
+    # bought in the year, the fund worth more than it cost; the pension has no worth
+    fund = SavingTypeFactory(title="Fund")
+    buy(fund, 100000)
+    worth(fund, 130000)
+    PensionFactory(price=60000, fee=0)
+
+    content = _fondai(client_logged)
+    panels = re.findall(PANEL_TITLE + BOXED_TABLE, content)
+    shapes = [_shape(table_titled(content, title)) for title, _classes in panels]
+    legacy = re.findall(rf'class="[^"]*\b({"|".join(LEGACY_CLASSES)})\b', content)
+
+    # start, its fee; the year, its fee; the total in, its fee, sold, its fee
+    paid = [EMPTY, EMPTY, SHOWN, EMPTY, SHOWN, EMPTY, EMPTY, EMPTY]
+    assert (panels, shapes, legacy) == (
+        [("Fondai", "main striped hover"), ("Pensijos", "main striped hover")],
+        [
+            {
+                "head": HEAD,
+                "row": [TITLE, *paid, ' class="main__date"', SHOWN, GAIN, GAIN],
+                "foot": [
+                    ' class="main__total"',
+                    TITLE,
+                    *paid,
+                    f' colspan="2"{SHOWN}',
+                    GAIN,
+                    GAIN,
+                ],
+            },
+            {
+                "head": HEAD,
+                "row": [
+                    TITLE,
+                    *paid,
+                    ' class="main__date" data-cell="empty"',
+                    *[EMPTY] * 3,
+                ],
+                "foot": [
+                    ' class="main__total"',
+                    TITLE,
+                    *paid,
+                    f' colspan="2"{EMPTY}',
+                    EMPTY,
+                    EMPTY,
+                ],
+            },
+        ],
+        [],
+    )
 
 
 def _funds_closed_every_other(i, kind):

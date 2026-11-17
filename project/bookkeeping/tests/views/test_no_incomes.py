@@ -14,7 +14,7 @@ from ....expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ....journals.tests.factories import JournalFactory
 from ....savings.tests.factories import SavingTypeFactory
 from ...lib import no_incomes
-from ..helper import row_cells, stale_fund
+from ..helper import PANEL_TITLE, row_cells, stale_fund
 from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
@@ -41,8 +41,9 @@ def test_no_incomes_head_names_its_figure_under_the_panel_title(
     content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
 
     assert re.findall(
-        r'<h2 class="panel__title">([^<]*)</h2>\s*<div class="table-responsive">\s*'
-        r"<table\b[^>]*>\s*<thead>\s*<tr>\s*<th[^>]*><span[^>]*>([^<]*)</span>",
+        PANEL_TITLE
+        + r'<div class="table-responsive">\s*'
+        + r"<table\b[^>]*>\s*<thead>\s*<tr>\s*<th[^>]*><span[^>]*>([^<]*)</span>",
         content,
     ) == [("Be pajamų", "Nebūtinos išlaidos 200")]
 

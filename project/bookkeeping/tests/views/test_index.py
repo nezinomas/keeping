@@ -20,7 +20,15 @@ from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...tabs import INDEX_TABS
 from ..factories import AccountWorthFactory
-from ..helper import quiet_build, row_cells, script_json, table_titled, total_cells
+from ..helper import (
+    BOXED_TABLE,
+    FIGURE,
+    quiet_build,
+    row_cells,
+    script_json,
+    table_titled,
+    total_cells,
+)
 from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
@@ -28,7 +36,6 @@ pytestmark = pytest.mark.django_db
 CASH_FLOW_CELL = r'<t[hd][^>]*data-check="[^"]*">'
 YEAR_END = '<th data-sign="gain" data-check="{state}">'
 ACCOUNTS_TOTAL = '<td class="main__figure" data-cell="" data-check="{state}">'
-FIGURE = ' class="main__figure"'
 
 
 @pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
@@ -137,11 +144,11 @@ FIGURES = {
     # nothing before the year, then the year's transfer
     "funds": (
         r"<td[^>]*>Fund A</td>\s*<td[^>]*>-</td>\s*<td[^>]*>-</td>\s*"
-        r'<td data-cell="">1,50</td>'
+        rf'<td{FIGURE} data-cell="">1,50</td>'
     ),
     "pensions": (
         r"<td[^>]*>PensionType</td>\s*<td[^>]*>-</td>\s*<td[^>]*>-</td>\s*"
-        r'<td data-cell="">1,00</td>'
+        rf'<td{FIGURE} data-cell="">1,00</td>'
     ),
     "year_heads": r"<th>1999</th>",
     "month_balance": r'<td data-sign="gain" data-cell="">5,00</td>',
@@ -204,9 +211,7 @@ def test_overview_tables_wear_the_skin_and_no_legacy_class(tab_contents):
     content = tab_contents["overview"]
 
     titles = re.findall(r'<h2 class="panel__title">([^<]*)</h2>', content)
-    boxed = re.findall(
-        r'<div class="table-responsive">\s*<table class="([^"]*)"', content
-    )
+    boxed = re.findall(BOXED_TABLE, content)
     totals = re.findall(r'<tr class="(main__total)">', content)
     rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", content, re.S)
     bare = [
@@ -437,8 +442,8 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
     [
         pytest.param(
             "bookkeeping:tab_funds",
-            rf"<th([^>]*)>[^<]*</th>\s*<th([^>]*)>[^<]*</th>{FOOT_END}",
-            [(GAIN_PROFIT, GAIN_PROFIT)],
+            rf"<td([^>]*)>[^<]*</td>\s*<td([^>]*)>[^<]*</td>{FOOT_END}",
+            [(f"{FIGURE}{GAIN_PROFIT}", f"{FIGURE}{GAIN_PROFIT}")],
             id="profit-totals",
         ),
         pytest.param(
