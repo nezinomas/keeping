@@ -11,6 +11,11 @@ def amount(cents: int) -> str:
     return floatformat(int_cents_to_float(cents), "0g") if cents else NOTHING
 
 
+def percent(figure: float) -> str:
+    """A percent in one decimal, without its sign."""
+    return floatformat(figure, "1g")
+
+
 def day(when: date) -> str:
     return f"{when:%Y-%m-%d}"
 

@@ -5,6 +5,8 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ...core.lib import utils
+from ...core.lib.money_cells import percent
+from ...core.lib.stat_card import Card, EmptyStatCard, StatCard
 from ...incomes.services.model_services import IncomeModelService
 from ...savings.models import SavingType
 from ...savings.services.model_services import (
@@ -14,6 +16,19 @@ from ...savings.services.model_services import (
 from ...transactions.services.model_services import SavingChangeModelService
 
 FUND_TYPES = [t for t in SavingType.Types.values if t != SavingType.Types.PENSIONS]
+FUNDS_TABLE_FIELDS = [
+    "past_amount",
+    "past_fee",
+    "per_year_incomes",
+    "per_year_fee",
+    "fee",
+    "incomes",
+    "sold",
+    "sold_fee",
+    "market_value",
+    "profit_sum",
+    "profit_proc",
+]
 
 
 def hidden_funds(rows) -> frozenset[int]:
@@ -60,32 +75,26 @@ class SavingsService:
 
 
 class SavingsPresenter:
-    _FIELDS = [
-        "past_amount",
-        "past_fee",
-        "per_year_incomes",
-        "per_year_fee",
-        "fee",
-        "incomes",
-        "sold",
-        "sold_fee",
-        "market_value",
-        "profit_sum",
-        "profit_proc",
-    ]
-
     def __init__(self, dto: SavingsDto):
         self._dto = dto
+
+    def saved_share(self) -> Card:
+        """What the year's savings took of its incomes; empty with no incomes."""
+        title = _("Percentage of income saved")
+        if not self._dto.incomes_total:
+            return EmptyStatCard(title)
+
+        share = self._dto.savings_total / self._dto.incomes_total * 100
+        return StatCard(title, value=percent(share), unit="%")
 
     def as_dict(self) -> dict:
         return {
             "title": _("Funds"),
             "type": "savings",
             "object_list": self._dto.savings,
-            "incomes_total": self._dto.incomes_total,
-            "savings_total": self._dto.savings_total,
+            "saved_share": self.saved_share(),
             "total_row": utils.funds_total_row(
-                self._dto.savings, self._FIELDS, self._dto.switched_within
+                self._dto.savings, FUNDS_TABLE_FIELDS, self._dto.switched_within
             ),
         }
 

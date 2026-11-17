@@ -5,7 +5,7 @@ import pytest
 import pytz
 from django.urls import reverse
 
-from ....core.tests.utils import tab_fragment
+from ....core.tests.utils import stat_cards, tab_fragment
 from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import (
     PensionFactory,
@@ -31,18 +31,34 @@ from ..signals.helpers import buy, worth
 pytestmark = pytest.mark.django_db
 
 FUNDS_TAB = "bookkeeping:tab_funds"
-SAVED_SHARE = re.compile(
-    r'<div class="alert ([^"]*)">Pajamų dalis pervedama taupymui: <b>([^<]*)</b>%'
-)
+CARD_STATE = re.compile(r'class="trend-card__value trend-card__value--(\w+)"')
+CARD_UNIT = re.compile(r'<span class="trend-card__unit">([^<]*)</span>')
 
 
 def _table(client, title="Fondai"):
     return tab_table(client, FUNDS_TAB, title)
 
 
-def _saved_share(client):
-    """(colour class, percent) of the Saved share."""
-    return SAVED_SHARE.search(tab_fragment(client, reverse(FUNDS_TAB))).groups()
+def _fondai(client):
+    return tab_fragment(client, reverse(FUNDS_TAB))
+
+
+def _cards(content):
+    """(label, figure with its unit, note, state) of each Card in the row that opens
+    the tab."""
+    row = content.partition('<div class="stat-cards">')[2].partition(
+        '<div class="flex">'
+    )[0]
+    return [
+        (
+            label,
+            figure + "".join(CARD_UNIT.findall(card)),
+            note,
+            CARD_STATE.search(card).group(1),
+        )
+        for card in row.split('<div class="trend-card">')[1:]
+        for label, figure, note in stat_cards(card)
+    ]
 
 
 @pytest.mark.parametrize(
@@ -64,9 +80,9 @@ def test_each_table_lists_its_own_funds(client_logged, title, rows):
 @pytest.mark.parametrize(
     "income, price, fee, fee_source, percent",
     [
-        pytest.param(10, 20, 0, "account", "200,0", id="over-the-incomes"),
+        pytest.param(10, 20, 0, "account", "200,0%", id="over-the-incomes"),
         *(
-            pytest.param(10000, 2000, 500, source, "20,0", id=source)
+            pytest.param(10000, 2000, 500, source, "20,0%", id=source)
             for source in SavingType.FeeSource.values
         ),
     ],
@@ -81,23 +97,111 @@ def test_saved_share_is_the_invested_price_over_the_incomes(
         saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
     )
 
-    assert _saved_share(client_logged)[1] == percent
+    assert _cards(_fondai(client_logged))[0][1] == percent
 
 
+# ink at any share, one decimal; a year with no incomes draws the Card empty, though
+# the next year has incomes
 @pytest.mark.parametrize(
-    "income, savings, alert",
+    "income_year, savings, card",
     [
-        pytest.param(10, [1], "alert-success", id="green"),
-        pytest.param(100, [1], "alert-warning", id="yellow"),
-        pytest.param(10, [], "alert-danger", id="red"),
+        pytest.param(1999, [], ("0,0%", "neutral"), id="0"),
+        pytest.param(1999, [500], ("5,0%", "neutral"), id="5"),
+        pytest.param(1999, [2049], ("20,5%", "neutral"), id="20"),
+        pytest.param(2000, [2049], ("&mdash;", "empty"), id="no-incomes"),
     ],
 )
-def test_saved_share_colour(client_logged, income, savings, alert):
-    IncomeFactory(price=income)
+def test_saved_share_card_is_the_year_s_savings_over_its_incomes_in_ink(
+    client_logged, income_year, savings, card
+):
+    IncomeFactory(date=date(income_year, 1, 1), price=10000)
     for price in savings:
         SavingFactory(price=price)
 
-    assert _saved_share(client_logged)[0] == alert
+    content = _fondai(client_logged)
+    figures = [
+        (label, figure, state) for label, figure, _note, state in _cards(content)
+    ]
+    alerts = re.findall(r'class="alert ([^"]*)"', content)
+
+    assert (figures[:1], alerts) == (
+        [("Pajamų dalis pervedama taupymui", *card)],
+        [],
+    )
+
+
+def _gaining_fund():
+    """Bought 1 000,00, worth 1 300,60: 300,60 of profit, 30,06 %."""
+    fund = SavingTypeFactory(title="Fund")
+    buy(fund, 100000)
+    worth(fund, 130060)
+
+
+def _gaining_pension():
+    """Bought 600,00, worth 700,00: 100,00 of profit, 16,67 %."""
+    pension = PensionTypeFactory(title="Pension")
+    PensionFactory(pension_type=pension, price=60000, fee=0)
+    PensionWorthFactory(pension_type=pension, price=70000)
+
+
+def _even_fund():
+    """Bought 1 000,00 and worth it: no profit."""
+    fund = SavingTypeFactory(title="Even")
+    buy(fund, 100000)
+    worth(fund, 100000)
+
+
+FUND_PROFIT = ("Fondų pelnas", "301", "30,1%", "neutral")
+PENSION_PROFIT = ("Pensijų pelnas", "100", "16,7%", "neutral")
+NO_FUND_PROFIT = ("Fondų pelnas", "&mdash;", "", "empty")
+NO_PENSION_PROFIT = ("Pensijų pelnas", "&mdash;", "", "empty")
+
+
+@pytest.mark.parametrize(
+    "seeds, cards, tables",
+    [
+        pytest.param(
+            [_gaining_fund, _gaining_pension],
+            [FUND_PROFIT, PENSION_PROFIT],
+            ["Fondai", "Pensijos"],
+            id="both",
+        ),
+        pytest.param(
+            [_gaining_fund],
+            [FUND_PROFIT, NO_PENSION_PROFIT],
+            ["Fondai"],
+            id="no-pensions",
+        ),
+        pytest.param(
+            [_gaining_pension],
+            [NO_FUND_PROFIT, PENSION_PROFIT],
+            ["Pensijos"],
+            id="no-funds",
+        ),
+        pytest.param([], [NO_FUND_PROFIT, NO_PENSION_PROFIT], [], id="neither"),
+        # a table with rows but no profit draws its Card empty too (Q45)
+        pytest.param(
+            [_even_fund, _gaining_pension],
+            [NO_FUND_PROFIT, PENSION_PROFIT],
+            ["Fondai", "Pensijos"],
+            id="zero-profit",
+        ),
+    ],
+)
+def test_profit_cards_read_each_table_s_total_and_a_table_without_one_draws_its_empty(
+    client_logged, seeds, cards, tables
+):
+    for seed in seeds:
+        seed()
+
+    content = _fondai(client_logged)
+    drawn = [
+        title
+        for title in ("Fondai", "Pensijos")
+        if re.search(rf"<table\b(?:(?!</table>).)*>\s*{title}\s*</th>", content, re.S)
+    ]
+
+    assert (_cards(content)[1:], drawn) == (cards, tables)
 
 
 TABLES = [

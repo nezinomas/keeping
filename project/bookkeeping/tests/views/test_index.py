@@ -111,6 +111,10 @@ CARD = (
     r'<div class="trend-card__value[^>]*><span class="trend-card__figure"[^>]*>'
     r"{figure}<"
 )
+EMPTY_CARD = (
+    r'<div class="trend-card__label">{label}</div>\s*'
+    r'<div class="trend-card__value trend-card__value--empty">'
+)
 FIGURES = {
     "accounts": r"<span[^>]*>Account1</span>",
     "accounts_total": re.escape(ACCOUNTS_TOTAL.format(state="")),
@@ -126,7 +130,10 @@ FIGURES = {
     "average_expenses": CARD.format(label="Vidutinės išlaidos", figure="1"),
     "borrow": rf'<td class="text-left">Pasiskolinta</td>\s*<td{FIGURE}[^>]*>70,00<',
     "lend": rf'<td class="text-left">Paskolinta</td>\s*<td{FIGURE}[^>]*>90,00<',
-    "saved_share": r"<div[^>]*>Pajamų dalis pervedama taupymui: <b>25,0</b>%",
+    # 1,50 of savings over 6,00 of incomes; neither fund has a worth, so no profit
+    "saved_share": CARD.format(label="Pajamų dalis pervedama taupymui", figure="25,0"),
+    "fund_profit": EMPTY_CARD.format(label="Fondų pelnas"),
+    "pension_profit": EMPTY_CARD.format(label="Pensijų pelnas"),
     # nothing before the year, then the year's transfer
     "funds": (
         r"<td[^>]*>Fund A</td>\s*<td[^>]*>-</td>\s*<td[^>]*>-</td>\s*"
@@ -219,7 +226,9 @@ def test_overview_tables_wear_the_skin_and_no_legacy_class(tab_contents):
     )
 
 
-def test_overview_unsigned_money_cells_carry_their_cell_state(tab_contents):
+def test_accounts_and_debts_tables_unsigned_money_cells_carry_their_cell_state(
+    tab_contents,
+):
     content = tab_contents["overview"]
     tables = (table_titled(content, "Sąskaitos"), *DEBTS_PANEL.findall(content))
 
@@ -263,6 +272,8 @@ def test_each_index_figure_is_drawn_on_exactly_one_tab(tab_contents):
         "borrow": {"overview": 1},
         "lend": {"overview": 1},
         "saved_share": {"funds": 1},
+        "fund_profit": {"funds": 1},
+        "pension_profit": {"funds": 1},
         "funds": {"funds": 1},
         "pensions": {"funds": 1},
         "year_heads": {"balance": 2},

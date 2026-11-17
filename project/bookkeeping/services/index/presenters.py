@@ -3,8 +3,8 @@ from datetime import date
 
 from django.utils.translation import gettext as _
 
-from ....core.lib.money_cells import amount
-from ....core.lib.stat_card import EmptyStatCard, StatCard
+from ....core.lib.money_cells import amount, percent
+from ....core.lib.stat_card import Card, EmptyStatCard, StatCard
 from ....core.lib.translation import month_names
 from ....debts.models import Debt
 from ....debts.services.model_services import DebtModelService
@@ -66,7 +66,7 @@ class IndexContextBuilder:
             "highlight": [False, False, True],
         }
 
-    def cards(self, wealth: WealthPresenter) -> list[StatCard | EmptyStatCard]:
+    def cards(self, wealth: WealthPresenter) -> list[Card]:
         averages = {
             _("Average incomes"): self._balance.avg_incomes,
             _("Average expenses"): self._balance.avg_expenses,
@@ -82,6 +82,28 @@ class IndexContextBuilder:
         return cards + [
             StatCard(title, value=amount(figure)) for title, figure in averages.items()
         ]
+
+
+def _profit_card(title: str, table: dict) -> Card:
+    """A table's total profit, empty when there is none (no rows, or no gain)."""
+    total = table["total_row"]
+    if not total["profit_sum"]:
+        return EmptyStatCard(title)
+
+    return StatCard(
+        title,
+        value=amount(total["profit_sum"]),
+        note=f"{percent(total['profit_proc'])}%",
+    )
+
+
+def funds_cards(savings: dict, pensions: dict) -> list[Card]:
+    """Fondai's Cards: the Saved share, then each table's total profit."""
+    return [
+        savings["saved_share"],
+        _profit_card(_("Fund profit"), savings),
+        _profit_card(_("Pension profit"), pensions),
+    ]
 
 
 def load_service(user: User, today: date) -> IndexContextBuilder:

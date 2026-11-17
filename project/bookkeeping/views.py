@@ -65,11 +65,14 @@ class TabFunds(IndexTabMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         user = self.request.user
         year = user.selected_year()
+        savings = services.savings.load_service(user, year)
+        pensions = services.pensions.load_service(user, year)
 
         return {
             **super().get_context_data(**kwargs),
-            "savings": services.savings.load_service(user, year),
-            "pensions": services.pensions.load_service(user, year),
+            "cards": services.index.funds_cards(savings, pensions),
+            "savings": savings,
+            "pensions": pensions,
         }
 
 

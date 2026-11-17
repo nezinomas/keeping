@@ -260,7 +260,6 @@ msgid "Delta"
 msgstr "Delta"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:21
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:52
 msgid "No record of account amount"
 msgstr "Nėra įrašo apie sąskaitos lėšas"
 
@@ -435,9 +434,17 @@ msgstr "Gertynės"
 msgid "Show other chart"
 msgstr "Rodyti kitą grafiką"
 
-#: .\project\bookkeeping\templates\bookkeeping\savings.html:5
+#: .\project\bookkeeping\services\savings.py:83
 msgid "Percentage of income saved"
 msgstr "Pajamų dalis pervedama taupymui"
+
+#: .\project\bookkeeping\services\index\presenters.py:104
+msgid "Fund profit"
+msgstr "Fondų pelnas"
+
+#: .\project\bookkeeping\services\index\presenters.py:105
+msgid "Pension profit"
+msgstr "Pensijų pelnas"
 
 #: .\project\bookkeeping\templates\bookkeeping\summary_savings_and_incomes.html:23
 #: .\project\books\forms.py:98 .\project\counts\services\index.py:38
