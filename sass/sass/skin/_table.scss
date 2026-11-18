@@ -51,9 +51,10 @@
         }
 
         // a toggle in a header: an `<a>` gets no border of its own, and without one
-        // it reads as a header label
+        // it reads as a header label; an action, it reads in the body face
         thead .main__toggle {
             padding: 0 0.5rem;
+            font-family: $body;
             border: 1px solid $hair;
             border-radius: 0.1rem;
             color: $ink;

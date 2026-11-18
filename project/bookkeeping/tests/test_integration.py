@@ -368,12 +368,14 @@ class BookkeepingIndex(TestCase, Browser):
         toggle = self.browser.find_element(
             By.CSS_SELECTOR, "#table-balance a[role=button]"
         )
-        # without a border the toggle reads as a header label (Q63); the first group
-        # is blank under the Panel's title (Q62), the others centred over their columns
+        # without a border the toggle reads as a header label (Q63), and an action
+        # reads in the body face (sass.md *Type*); the first group is blank under the
+        # Panel's title (Q62), the others centred over their columns
         looks = self.browser.execute_script(
             "const groups = document.querySelector('#table-balance thead tr').cells;"
             " const toggle = getComputedStyle(arguments[0]);"
             " return [toggle.borderTopStyle, toggle.borderTopColor,"
+            " toggle.fontFamily.split(',')[0],"
             " groups[0].textContent.trim(),"
             " ...[groups[1], groups[2]].map(c => getComputedStyle(c).textAlign)];",
             toggle,
@@ -393,7 +395,7 @@ class BookkeepingIndex(TestCase, Browser):
 
         hidden, opened = ([7], "Rodyti skolas"), ([11], "Slėpti skolas")
         assert (looks, shown) == (
-            ["solid", HAIR, "", "center", "center"],
+            ["solid", HAIR, '"Segoe UI Variable Text"', "", "center", "center"],
             [hidden, opened, hidden],
         )
 
