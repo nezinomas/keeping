@@ -419,13 +419,32 @@ def test_view_index_renders_its_chart_data(client_logged):
     assert [point["y"] for point in expenses] == [100]
 
 
-def test_view_index_foot_rows_name_the_average(tab_contents):
-    labels = re.findall(
-        r'<tfoot>\s*<tr class="main__total">\s*<td>([^<]*)</td>',
-        tab_contents["balance"],
-    )
+def test_balance_tables_name_their_columns_and_foot_rows(client_logged):
+    content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
 
-    assert labels == ["Vidurkis", "Vidurkis"]
+    labels = [
+        (
+            [
+                re.sub(r"<[^>]+>", "", cell).strip()
+                for cell in re.findall(
+                    r"<th\b[^>]*>(.*?)</th>", table.partition("</thead>")[0], re.S
+                )
+            ],
+            re.findall(r"<td[^>]*>([^<\d,.-]+)</td>", table.partition("<tfoot>")[2]),
+        )
+        for table in re.findall(r"<table\b.*?</table>", content, re.S)
+    ]
+
+    # the toggle's words are Alpine's, read by the webtest; no expense type, no column
+    assert labels == [
+        (
+            ["", "Taupymas", "Skolos", ""]
+            + ["1999", "Pajamos", "Išlaidos", "Balansas", "Investuota", "Parduota"]
+            + ["Pasiskolinta", "Grąžinau", "Paskolinta", "Grąžino", "Pinigų srautas"],
+            ["Vidurkis", "Metų pabaigoje", "Viso"],
+        ),
+        (["1999", "Viso"], ["Vidurkis", "Viso"]),
+    ]
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
