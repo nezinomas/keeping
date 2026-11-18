@@ -31,15 +31,44 @@ HAIR, HAIR_SOFT = "rgb(207, 214, 218)", "rgb(225, 230, 232)"
 DATA = "0.0862745 0.411765 0.607843"  # --skin-data's channels in `color(srgb)`
 CLEAR = "rgba(0, 0, 0, 0)"
 WASH = "rgba(232, 194, 26, 0.3)"
+# CSS's named colours, `transparent` and `currentcolor` among them
+NAMED_COLOURS = """
+    aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue
+    blueviolet brown burlywood cadetblue chartreuse chocolate coral cornflowerblue
+    cornsilk crimson currentcolor cyan darkblue darkcyan darkgoldenrod darkgray
+    darkgreen darkgrey darkkhaki darkmagenta darkolivegreen darkorange darkorchid
+    darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey
+    darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue firebrick
+    floralwhite forestgreen fuchsia gainsboro ghostwhite gold goldenrod gray green
+    greenyellow grey honeydew hotpink indianred indigo ivory khaki lavender
+    lavenderblush lawngreen lemonchiffon lightblue lightcoral lightcyan
+    lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon
+    lightseagreen lightskyblue lightslategray lightslategrey lightsteelblue lightyellow
+    lime limegreen linen magenta maroon mediumaquamarine mediumblue mediumorchid
+    mediumpurple mediumseagreen mediumslateblue mediumspringgreen mediumturquoise
+    mediumvioletred midnightblue mintcream mistyrose moccasin navajowhite navy oldlace
+    olive olivedrab orange orangered orchid palegoldenrod palegreen paleturquoise
+    palevioletred papayawhip peachpuff peru pink plum powderblue purple rebeccapurple
+    red rosybrown royalblue saddlebrown salmon sandybrown seagreen seashell sienna
+    silver skyblue slateblue slategray slategrey snow springgreen steelblue tan teal
+    thistle tomato transparent turquoise violet wheat white whitesmoke yellow
+    yellowgreen
+""".split()
 
 
 def test_index_chart_scripts_hold_no_colour_literal():
-    # a chart reads the skin's tokens: a literal or a legacy token is the bug
+    # a chart reads the skin's tokens: a literal or a legacy token is the bug; the one
+    # named colour allowed is an alpha step's `color-mix(..., N%, transparent)` (Q78)
     scripts = ("chart_index_balance.js", "chart_index_expenses.js")
+    literal = re.compile(
+        r"#\w+|\b(?:rgb|hsl|hwb|lab|lch|oklab|oklch|color)a?\(|--chart-[\w-]+"
+        rf"|\b(?:{'|'.join(NAMED_COLOURS)})\b"
+    )
     literals = {
-        script: re.findall(
-            r"#\w+|(?:rgb|hsl)a?\(|color\(|--chart-[\w-]+",
-            (settings.SITE_ROOT / "static" / "js" / script).read_text(encoding="utf-8"),
+        script: literal.findall(
+            (settings.SITE_ROOT / "static" / "js" / script)
+            .read_text(encoding="utf-8")
+            .replace("%, transparent)", "%)")
         )
         for script in scripts
     }
