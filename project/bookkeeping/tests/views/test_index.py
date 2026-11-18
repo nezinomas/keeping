@@ -258,6 +258,21 @@ def test_index_tables_wear_the_skin_and_no_legacy_class(
     )
 
 
+def test_expenses_by_type_head_cuts_a_long_type_and_tips_it_whole(client_logged):
+    ExpenseFactory(expense_type=ExpenseTypeFactory(title="Laisvalaikis"))
+
+    content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
+    panel = content.partition('<h2 class="panel__title">Išlaidų statistika</h2>')[2]
+    head = re.findall(
+        r'<th><span class="tip bottom" data-tip="([^"]*)">([^<]*)</span></th>',
+        panel.partition("</thead>")[0],
+    )
+
+    # cut to eight with its ellipsis; the tooltip reads it in full (Q57); the
+    # factory's expense name brings its own type
+    assert head == [("Expense Type", "Expense…"), ("Laisvalaikis", "Laisval…")]
+
+
 def _accounts_and_debts(content):
     return (table_titled(content, "Sąskaitos"), *DEBTS_PANEL.findall(content))
 
