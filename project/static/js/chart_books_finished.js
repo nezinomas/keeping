@@ -58,9 +58,6 @@ function chartFinished(idData, idContainer) {
             borderWidth: 0,
             dataLabels: {
                 enabled: true,
-                // muted: where a year all but met its Goal the two figures meet,
-                // and the count is the reading
-                color: "var(--skin-ink-muted)",
                 align: "left",
                 x: -28,
                 y: -13,

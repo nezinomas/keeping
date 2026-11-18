@@ -136,8 +136,6 @@ function paperTwoPanes() {
                 enabled: true,
                 crop: false,
                 overflow: "allow",
-                // the theme's `dataLabels.color` beats a `style.color`
-                color: "var(--skin-ink-muted)",
                 formatter: paperFigure(1),
             },
         },
@@ -237,7 +235,9 @@ Highcharts.setOptions({
                 },
             },
             dataLabels: {
-                color: "var(--skin-ink)",
+                // a figure on a mark is muted, as an axis label (`.claude/sass.md`
+                // *Type*); `color` here, as it beats a `style.color`
+                color: "var(--skin-ink-muted)",
                 style: PAPER_DATA_LABEL_STYLE,
             },
         },
