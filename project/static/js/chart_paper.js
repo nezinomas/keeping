@@ -33,7 +33,8 @@ function paperRuleText(name, level) {
     return PAPER_WIDE ? `${name}: ${level}` : String(level);
 }
 
-// Every figure printed on a mark; each use adds only its colour.
+// Every figure printed on a mark: the theme's face, size and weight; its colour is
+// the theme's `dataLabels.color`, as a `style.color` loses to it.
 var PAPER_DATA_LABEL_STYLE = {
     ...PAPER_CHART_TEXT,
     fontWeight: "400",
