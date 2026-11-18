@@ -1,12 +1,5 @@
-{% load i18n %}
-
 <div class="stat-cards">
     <c-stat-cards :cards="cards" />
-</div>
-
-<div class="flex">
-    <c-new-button url="{% url 'bookkeeping:savings_worth_new' %}" title="{% translate 'Funds fact' %}" />
-    <c-new-button url="{% url 'bookkeeping:pensions_worth_new' %}" title="{% translate 'Pensions fact' %}" />
 </div>
 
 {% if savings.object_list %}

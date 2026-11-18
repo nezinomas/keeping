@@ -5,7 +5,6 @@
 </div>
 
 <div class="flex">
-    <c-new-button url="{% url 'bookkeeping:accounts_worth_new' %}" title="{% translate 'Accounts fact' %}" />
     <button class="button-secondary button-refresh" hx-get="{% url 'bookkeeping:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span></button>
 </div>
 

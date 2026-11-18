@@ -12,7 +12,7 @@ from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
 from ...expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeFactory
-from ...pensions.tests.factories import PensionFactory
+from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..tabs import INDEX_TABS
 from .factories import AccountWorthFactory
@@ -77,6 +77,14 @@ def test_index_chart_scripts_hold_no_colour_literal():
     assert literals == dict.fromkeys(scripts, [])
 
 
+def page_overflow(browser):
+    """How far the page runs past the window's width."""
+    return browser.execute_script(
+        "const page = document.documentElement;"
+        " return page.scrollWidth - page.clientWidth;"
+    )
+
+
 @pytest.mark.webtest
 class BookkeepingIndex(TestCase, Browser):
     def test_a_pressed_nav_act_closes_its_menu(self):
@@ -103,12 +111,9 @@ class BookkeepingIndex(TestCase, Browser):
 
     def test_a_reload_redraws_each_chart_once_and_throws_nothing(self):
         # the overview has no chart: a reload there must find none to redraw
-        for url_name, drawn in (
-            ("bookkeeping:tab_overview", 0),
-            ("bookkeeping:tab_charts", 2),
-        ):
-            with self.subTest(tab=url_name):
-                self.open(reverse(url_name))
+        for tab, drawn in (("overview", 0), ("charts", 2)):
+            with self.subTest(tab=tab):
+                self.open(INDEX_TABS[tab].url)
 
                 assert self._reload() == {
                     "drawn_on_load": drawn,
@@ -123,7 +128,7 @@ class BookkeepingIndex(TestCase, Browser):
         IncomeFactory()
         for title, price in (("Small", 100), ("Big", 300), ("Middle", 200)):
             ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
-        self.open_at(reverse("bookkeeping:tab_charts"), 1500)
+        self.open_at(INDEX_TABS["charts"].url, 1500)
 
         drawn = self.browser.execute_script(
             "const all = q => [...document.querySelectorAll(q)];"
@@ -157,7 +162,7 @@ class BookkeepingIndex(TestCase, Browser):
             ("Transportas remontas", 10000),
         ):
             ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
-        self.open_at(reverse("bookkeeping:tab_charts"), 1500)
+        self.open_at(INDEX_TABS["charts"].url, 1500)
 
         bars = self.read_chart(
             "chart-expenses-container",
@@ -178,7 +183,7 @@ class BookkeepingIndex(TestCase, Browser):
     def test_the_charts_stand_side_by_side_from_1200_and_stack_below(self):
         placed = {}
         for width in (1200, 1199):
-            self.open_at(reverse("bookkeeping:tab_charts"), width)
+            self.open_at(INDEX_TABS["charts"].url, width)
             placed[width] = self.browser.execute_script(
                 "const [a, b] = [...document.querySelectorAll('#tab_content .panel')]"
                 "  .map(panel => panel.getBoundingClientRect());"
@@ -206,7 +211,7 @@ class BookkeepingIndex(TestCase, Browser):
         }
 
     def test_a_year_with_no_expenses_draws_one_whole_bar_and_no_part(self):
-        self.open_at(reverse("bookkeeping:tab_charts"), 1500)
+        self.open_at(INDEX_TABS["charts"].url, 1500)
 
         drawn = self.browser.execute_script(
             "return getComputedStyle(document.querySelector("
@@ -296,7 +301,7 @@ class BookkeepingIndex(TestCase, Browser):
             IncomeFactory(account=account, price=10000)
             AccountWorthFactory(account=account, price=have)
 
-        self.open_at(reverse("bookkeeping:tab_overview"), 1500)
+        self.open_at(INDEX_TABS["overview"].url, 1500)
         looks = self._looks(
             # Delta's zero is drawn "ok": a gain, unlike every other zero (Q26)
             delta_ok="#accounts tbody tr:nth-child(1) td:last-child",
@@ -311,14 +316,14 @@ class BookkeepingIndex(TestCase, Browser):
         account = AccountFactory(title="Gain 2")
         IncomeFactory(account=account, price=10000)
         AccountWorthFactory(account=account, price=12000)
-        self.open_at(reverse("bookkeeping:tab_overview"), 1500)
+        self.open_at(INDEX_TABS["overview"].url, 1500)
         looks |= self._looks(delta_total_gain="#accounts tfoot td:last-child")
         fund = SavingTypeFactory(title="Up")
         buy(fund, 100000)
         worth(fund, 150000)
-        self.open_at(reverse("bookkeeping:tab_funds"), 1500)
+        self.open_at(INDEX_TABS["funds"].url, 1500)
         looks |= self._looks(profit_total="#savings tfoot td:last-child")
-        self.open_at(reverse("bookkeeping:tab_balance"), 1500)
+        self.open_at(INDEX_TABS["balance"].url, 1500)
         looks |= self._looks(
             zero_month="#table-balance tbody tr:nth-child(2) td:nth-child(4)"
         )
@@ -337,21 +342,19 @@ class BookkeepingIndex(TestCase, Browser):
     def test_a_cash_flow_mismatch_wears_the_attention_wash_on_each_tab(self):
         IncomeFactory(price=100000)
         cells = {
-            "bookkeeping:tab_overview": "#accounts tfoot [data-check]",
-            "bookkeeping:tab_balance": "#table-balance tfoot [data-check]",
+            "overview": "#accounts tfoot [data-check]",
+            "balance": "#table-balance tfoot [data-check]",
         }
         marks = {}
         for case, accounts_balance in (("equal", 100000), ("differ", 99900)):
             AccountBalance.objects.filter(year=1999).update(balance=accounts_balance)
-            for url_name, cell in cells.items():
-                self.open_at(reverse(url_name), 1500)
-                marks[case, url_name.removeprefix("bookkeeping:tab_")] = (
-                    self.browser.execute_script(
-                        "const cell = document.querySelector(arguments[0]);"
-                        " return [getComputedStyle(cell).backgroundColor,"
-                        " getComputedStyle(cell, '::before').content];",
-                        cell,
-                    )
+            for tab, cell in cells.items():
+                self.open_at(INDEX_TABS[tab].url, 1500)
+                marks[case, tab] = self.browser.execute_script(
+                    "const cell = document.querySelector(arguments[0]);"
+                    " return [getComputedStyle(cell).backgroundColor,"
+                    " getComputedStyle(cell, '::before').content];",
+                    cell,
                 )
 
         assert marks == {
@@ -361,13 +364,8 @@ class BookkeepingIndex(TestCase, Browser):
             ("differ", "balance"): [WASH, '"! "'],
         }
 
-    def test_balance_head_groups_its_columns_and_a_bordered_toggle_shows_the_debts(
-        self,
-    ):
-        self.open_at(reverse("bookkeeping:tab_balance"), 1500)
-        toggle = self.browser.find_element(
-            By.CSS_SELECTOR, "#table-balance a[role=button]"
-        )
+    def test_balance_head_groups_its_columns_beside_a_bordered_toggle(self):
+        toggle = self.balance_toggle()
         # without a border the toggle reads as a header label (Q63), and an action
         # reads in the body face (sass.md *Type*); the first group is blank under the
         # Panel's title (Q62), the others centred over their columns
@@ -380,6 +378,18 @@ class BookkeepingIndex(TestCase, Browser):
             " ...[groups[1], groups[2]].map(c => getComputedStyle(c).textAlign)];",
             toggle,
         )
+
+        assert looks == [
+            "solid",
+            HAIR,
+            '"Segoe UI Variable Text"',
+            "",
+            "center",
+            "center",
+        ]
+
+    def test_the_balance_toggle_shows_and_hides_the_debts(self):
+        toggle = self.balance_toggle()
         shown = []
         for _press in range(3):
             self.wait_two_frames()
@@ -394,19 +404,14 @@ class BookkeepingIndex(TestCase, Browser):
             toggle.click()
 
         hidden, opened = ([7], "Rodyti skolas"), ([11], "Slėpti skolas")
-        assert (looks, shown) == (
-            ["solid", HAIR, '"Segoe UI Variable Text"', "", "center", "center"],
-            [hidden, opened, hidden],
-        )
+        assert shown == [hidden, opened, hidden]
 
     def test_insert_clears_each_worth_row(self):
         AccountFactory(title="Account 0")
         AccountFactory(title="Account 1")
-        self.open(reverse("bookkeeping:index"))
+        self.open(INDEX_TABS["overview"].url)
 
-        url = reverse("bookkeeping:accounts_worth_new")
-        self.browser.find_element(By.CSS_SELECTOR, f"button[hx-get='{url}']").click()
-        self.wait_until_idle()
+        self.press_the_pill("bookkeeping:accounts_worth_new")
         price_ids = ["id_form-0-price", "id_form-1-price"]
         for price_id in price_ids:
             self.browser.find_element(By.ID, price_id).send_keys("5")
@@ -419,6 +424,38 @@ class BookkeepingIndex(TestCase, Browser):
         ]
         assert values == ["", ""]
 
+    def test_a_worth_saved_from_its_pill_reloads_the_tab_once_and_closes_the_modal(
+        self,
+    ):
+        AccountFactory()
+        SavingTypeFactory()
+        PensionTypeFactory()
+        after_save = {}
+        for tab, url_name in (
+            ("overview", "bookkeeping:accounts_worth_new"),
+            ("funds", "bookkeeping:savings_worth_new"),
+            ("funds", "bookkeeping:pensions_worth_new"),
+        ):
+            self.open(INDEX_TABS[tab].url)
+            self.press_the_pill(url_name)
+            self.browser.execute_script(
+                "window.tabSwaps = 0;"
+                " htmx.on('htmx:after:swap', e => {"
+                " if (e.detail.ctx.target.id === 'tab_content') tabSwaps++; });"
+            )
+            self.browser.find_element(By.ID, "id_form-0-price").send_keys("5")
+            self.browser.find_element(By.ID, "_close").click()
+            self.wait_until_idle()
+            after_save[url_name] = self.browser.execute_script(
+                "return {tab_swaps: tabSwaps,"
+                " modal_hidden: document.getElementById('mainModalContainer').hidden,"
+                " form: !!document.querySelector('#mainModal .modal-form')};"
+            )
+
+        assert after_save == dict.fromkeys(
+            after_save, {"tab_swaps": 1, "modal_hidden": True, "form": False}
+        )
+
     def test_every_index_tab_fits_a_phone(self):
         # a funds table and the accounts table run wider than a phone's column
         IncomeFactory()
@@ -427,10 +464,75 @@ class BookkeepingIndex(TestCase, Browser):
         overflow = {}
         for tab in INDEX_TABS:
             self.open_at(tab.url, 360)
-            overflow[tab.name] = self.page_overflow()
+            overflow[tab.name] = page_overflow(self.browser)
 
-        assert overflow == dict.fromkeys(("overview", "funds", "balance", "charts"), 0)
+        assert overflow == dict.fromkeys((tab.name for tab in INDEX_TABS), 0)
 
+    def _looks(self, **cells):
+        """Each cell's colour, and whether its background is its row's first cell's."""
+        return self.browser.execute_script(
+            "return Object.fromEntries(Object.entries(arguments[0]).map(([k, q]) => {"
+            " const cell = document.querySelector(q);"
+            " const own = getComputedStyle(cell);"
+            " const row = getComputedStyle(cell.parentElement.firstElementChild);"
+            " return [k, [own.color, own.backgroundColor === row.backgroundColor]];"
+            " }));",
+            cells,
+        )
+
+    def _open_charts_with_two_types(self, width: int):
+        for title, price in (("Big", 30000), ("Small", 10000)):
+            ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
+        self.open_at(INDEX_TABS["charts"].url, width)
+
+    def _texts(self, selector: str) -> list[str]:
+        return self.browser.execute_script(
+            "return [...document.querySelectorAll(arguments[0])]"
+            "  .map(e => e.textContent);",
+            selector,
+        )
+
+    def balance_toggle(self):
+        self.open_at(INDEX_TABS["balance"].url, 1500)
+
+        return self.browser.find_element(
+            By.CSS_SELECTOR, "#table-balance a[role=button]"
+        )
+
+    def press_the_pill(self, url_name):
+        url = reverse(url_name)
+        self.browser.find_element(
+            By.CSS_SELECTOR, f".quick-add__pill[hx-get='{url}']"
+        ).click()
+        self.wait_until_idle()
+
+    def _drawn_charts(self):
+        return self.browser.execute_script(
+            f"return document.querySelectorAll('{CHART_ROOTS}').length;"
+        )
+
+    def _reload(self):
+        """Roots marked on load, then each read after one reload."""
+        drawn_on_load = self.browser.execute_script(
+            f"const drawn = document.querySelectorAll('{CHART_ROOTS}');"
+            " drawn.forEach(root => root.dataset.drawnOnLoad = '');"
+            " window.draws = 0; window.errors = [];"
+            " addEventListener('error', e => errors.push(e.message));"
+            " Highcharts.addEvent(Highcharts.Chart, 'load', () => window.draws++);"
+            " htmx.trigger(document.body, 'reload');"
+            " return drawn.length;"
+        )
+        self.wait_until_idle()
+
+        return {"drawn_on_load": drawn_on_load} | self.browser.execute_script(
+            f"return {{roots: [...document.querySelectorAll('{CHART_ROOTS}')]"
+            ".map(root => 'drawnOnLoad' in root.dataset ? 'stale' : 'redrawn'),"
+            " draws: window.draws, errors: window.errors};"
+        )
+
+
+@pytest.mark.webtest
+class BookkeepingMonthDetailedAndSummary(TestCase, Browser):
     def test_month_page_fits_a_phone_and_its_table_scrolls_in_its_box(self):
         # a column per type: ten make the table wider than the phone
         for i in range(10):
@@ -441,7 +543,7 @@ class BookkeepingIndex(TestCase, Browser):
             "const box = document.getElementById('month-content');"
             " return {width: innerWidth,"
             " table_scrolls: box.scrollWidth > box.clientWidth};"
-        ) | {"page_overflow": self.page_overflow()}
+        ) | {"page_overflow": page_overflow(self.browser)}
 
         assert overflow == {"width": 360, "page_overflow": 0, "table_scrolls": True}
 
@@ -495,58 +597,3 @@ class BookkeepingIndex(TestCase, Browser):
             " form: !!document.querySelector('#mainModal .modal-form'), errors};"
         )
         assert swap == {"tables": 1, "form": True, "errors": []}
-
-    def _looks(self, **cells):
-        """Each cell's colour, and whether its background is its row's first cell's."""
-        return self.browser.execute_script(
-            "return Object.fromEntries(Object.entries(arguments[0]).map(([k, q]) => {"
-            " const cell = document.querySelector(q);"
-            " const own = getComputedStyle(cell);"
-            " const row = getComputedStyle(cell.parentElement.firstElementChild);"
-            " return [k, [own.color, own.backgroundColor === row.backgroundColor]];"
-            " }));",
-            cells,
-        )
-
-    def _open_charts_with_two_types(self, width: int):
-        for title, price in (("Big", 30000), ("Small", 10000)):
-            ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
-        self.open_at(reverse("bookkeeping:tab_charts"), width)
-
-    def _texts(self, selector: str) -> list[str]:
-        return self.browser.execute_script(
-            "return [...document.querySelectorAll(arguments[0])]"
-            "  .map(e => e.textContent);",
-            selector,
-        )
-
-    def page_overflow(self):
-        """How far the page runs past the window's width."""
-        return self.browser.execute_script(
-            "const page = document.documentElement;"
-            " return page.scrollWidth - page.clientWidth;"
-        )
-
-    def _drawn_charts(self):
-        return self.browser.execute_script(
-            f"return document.querySelectorAll('{CHART_ROOTS}').length;"
-        )
-
-    def _reload(self):
-        """Roots marked on load, then each read after one reload."""
-        drawn_on_load = self.browser.execute_script(
-            f"const drawn = document.querySelectorAll('{CHART_ROOTS}');"
-            " drawn.forEach(root => root.dataset.drawnOnLoad = '');"
-            " window.draws = 0; window.errors = [];"
-            " addEventListener('error', e => errors.push(e.message));"
-            " Highcharts.addEvent(Highcharts.Chart, 'load', () => window.draws++);"
-            " htmx.trigger(document.body, 'reload');"
-            " return drawn.length;"
-        )
-        self.wait_until_idle()
-
-        return {"drawn_on_load": drawn_on_load} | self.browser.execute_script(
-            f"return {{roots: [...document.querySelectorAll('{CHART_ROOTS}')]"
-            ".map(root => 'drawnOnLoad' in root.dataset ? 'stale' : 'redrawn'),"
-            " draws: window.draws, errors: window.errors};"
-        )
