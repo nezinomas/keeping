@@ -178,7 +178,12 @@ def _borrow():
 DEBTS_HEAD = ("", "Suma", "Grąžinta", "Liko")
 LENT = ("Paskolinta", "90,00", "30,00", "60,00")
 BORROWED = ("Pasiskolinta", "70,00", "20,00", "50,00")
-DEBTS_PANEL = re.compile(r'<h2 class="panel__title">Skolos</h2>(.*?)</section>', re.S)
+PANELS = re.compile(PANEL_TITLE + r"(.*?)</section>", re.S)
+
+
+def _panels(content, title):
+    """What each Panel titled `title` holds."""
+    return [body for drawn, body in PANELS.findall(content) if drawn == title]
 
 
 def _debts_tables(content):
@@ -188,7 +193,7 @@ def _debts_tables(content):
             tuple(c.strip() for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row))
             for row in re.findall(r"<tr>(.*?)</tr>", panel, re.S)
         ]
-        for panel in DEBTS_PANEL.findall(content)
+        for panel in _panels(content, "Skolos")
     ]
 
 
@@ -238,7 +243,7 @@ def test_index_tables_wear_the_skin_and_no_legacy_class(
 ):
     content = tab_contents[tab]
 
-    drawn = re.findall(r'<h2 class="panel__title">([^<]*)</h2>', content)
+    drawn = re.findall(PANEL_TITLE, content)
     boxed = re.findall(BOXED_TABLE, content)
     total_rows = re.findall(r'<tr class="(main__total)">', content)
     rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", content, re.S)
@@ -263,11 +268,14 @@ def test_expenses_by_type_head_cuts_a_long_type_and_tips_it_whole(client_logged)
     ExpenseFactory(expense_type=ExpenseTypeFactory(title="Laisvalaikis"))
 
     content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
-    panel = content.partition('<h2 class="panel__title">Išlaidų statistika</h2>')[2]
-    head = re.findall(
-        r'<th><span class="tip bottom" data-tip="([^"]*)">([^<]*)</span></th>',
-        panel.partition("</thead>")[0],
-    )
+    head = [
+        cell
+        for panel in _panels(content, "Išlaidų statistika")
+        for cell in re.findall(
+            r'<th><span class="tip bottom" data-tip="([^"]*)">([^<]*)</span></th>',
+            panel.partition("</thead>")[0],
+        )
+    ]
 
     # cut to eight with its ellipsis; the tooltip reads it in full (Q57); the
     # factory's expense name brings its own type
@@ -275,7 +283,7 @@ def test_expenses_by_type_head_cuts_a_long_type_and_tips_it_whole(client_logged)
 
 
 def _accounts_and_debts(content):
-    return (table_titled(content, "Sąskaitos"), *DEBTS_PANEL.findall(content))
+    return (table_titled(content, "Sąskaitos"), *_panels(content, "Skolos"))
 
 
 @pytest.mark.parametrize(
