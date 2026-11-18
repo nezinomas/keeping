@@ -27,6 +27,7 @@ CHART_ROOTS = (
 GAIN, HARM = "rgb(31, 107, 74)", "rgb(125, 39, 51)"
 INK, INK_FAINT = "rgb(22, 34, 43)", "rgb(139, 151, 159)"
 INK_MUTED = "rgb(90, 106, 117)"
+EXPENSE_PARTS = "#chart-expenses-container .highcharts-data-label span"
 HAIR, HAIR_SOFT = "rgb(207, 214, 218)", "rgb(225, 230, 232)"
 DATA = "0.0862745 0.411765 0.607843"  # --skin-data's channels in `color(srgb)`
 CLEAR = "rgba(0, 0, 0, 0)"
@@ -204,72 +205,89 @@ class BookkeepingIndex(TestCase, Browser):
             },
         }
 
-    def test_expenses_bars_print_their_part_of_the_year_and_axes_read_thousands(
-        self,
-    ):
-        # a year with no expenses draws one empty bar, and no part of nothing
+    def test_a_year_with_no_expenses_draws_one_whole_bar_and_no_part(self):
         self.open_at(reverse("bookkeeping:tab_charts"), 1500)
-        empty_year = [
-            self._chart_texts()["parts"],
-            self.browser.execute_script(
-                "return getComputedStyle(document.querySelector("
-                "  '#chart-expenses-container .highcharts-point')).fill;"
-            ),
+
+        drawn = self.browser.execute_script(
+            "return getComputedStyle(document.querySelector("
+            "  '#chart-expenses-container .highcharts-point')).fill;"
+        )
+
+        assert (drawn, self._texts(EXPENSE_PARTS)) == (f"color(srgb {DATA})", [])
+
+    def test_each_expense_bar_prints_its_part_of_the_year_in_the_muted_figure(self):
+        self._open_charts_with_two_types(1500)
+
+        look = self.browser.execute_script(
+            f"const look = getComputedStyle(document.querySelector('{EXPENSE_PARTS}'));"
+            " return [look.color, look.fontSize, look.fontWeight];"
+        )
+
+        # the factory's own type, spent nothing, gets the last bar and no figure
+        assert (self._texts(EXPENSE_PARTS), look) == (
+            ["75,0%", "25,0%"],
+            [INK_MUTED, "12px", "400"],
+        )
+
+    def test_both_money_axes_read_from_100_in_thousands(self):
+        self._open_charts_with_two_types(1500)
+
+        axes = [
+            self._texts(f"#{chart} .highcharts-yaxis-labels text")
+            for chart in ("chart-expenses-container", "chart-balance-container")
         ]
-        for title, price in (("Big", 30000), ("Small", 10000)):
-            ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
-        self.open_at(reverse("bookkeeping:tab_charts"), 1500)
-        printed = self._chart_texts()
-        printed["tooltip"] = self.read_chart(
+
+        assert axes == [
+            ["0", "0,1k", "0,2k", "0,3k", "0,4k"],
+            ["0", "0,1k", "0,2k", "0,3k", "0,4k", "0,5k"],
+        ]
+
+    def test_the_month_axis_names_each_month_and_no_tick_past_december(self):
+        months = {}
+        for width in (1500, 360):
+            self._open_charts_with_two_types(width)
+            months[width] = self._texts(
+                "#chart-balance-container .highcharts-xaxis-labels text"
+            )
+
+        # a phone prints every other month; the widened edges' tick past December
+        # prints empty
+        assert months == {
+            1500: [
+                "Sausis",
+                "Vasaris",
+                "Kovas",
+                "Balandis",
+                "Gegužė",
+                "Birželis",
+                "Liepa",
+                "Rugpjūtis",
+                "Rugsėjis",
+                "Spalis",
+                "Lapkritis",
+                "Gruodis",
+            ],
+            360: ["Sausis", "Kovas", "Gegužė", "Liepa", "Rugsėjis", "Lapkritis", ""],
+        }
+
+    def test_each_chart_tooltip_prints_whole_euros(self):
+        self._open_charts_with_two_types(1500)
+
+        expenses = self.read_chart(
             "chart-expenses-container",
             "c.tooltip.refresh([c.series[0].points[0]]);"
             " return c.tooltip.label.text.element.textContent;",
         ).split()
-        printed["balance_tooltip"] = self.read_chart(
+        balance = self.read_chart(
             "chart-balance-container",
             # a split tooltip draws a label per series: read what each would say
             "return c.series.map(s => c.tooltip.options.pointFormatter"
             "  .call(s.points[0]).replace(/<[^>]*>/g, ''));",
         )
-        # a phone prints every other month, and no tick past December
-        self.open_at(reverse("bookkeeping:tab_charts"), 360)
-        printed["phone_months"] = self._chart_texts()["months"]
 
-        # the factory's own type, spent nothing, gets the last bar and no figure
-        assert (empty_year, printed) == (
-            [[], f"color(srgb {DATA})"],
-            {
-                "parts": ["75,0%", "25,0%"],
-                "part_look": [INK_MUTED, "12px", "400"],
-                "expenses_axis": ["0", "0,1k", "0,2k", "0,3k", "0,4k"],
-                "balance_axis": ["0", "0,1k", "0,2k", "0,3k", "0,4k", "0,5k"],
-                "months": [
-                    "Sausis",
-                    "Vasaris",
-                    "Kovas",
-                    "Balandis",
-                    "Gegužė",
-                    "Birželis",
-                    "Liepa",
-                    "Rugpjūtis",
-                    "Rugsėjis",
-                    "Spalis",
-                    "Lapkritis",
-                    "Gruodis",
-                ],
-                "tooltip": ["Big", "300€", "75,0%"],
-                "balance_tooltip": ["Pajamos: 0€", "Išlaidos: 400€"],
-                # the widened edges' tick past December, printed empty
-                "phone_months": [
-                    "Sausis",
-                    "Kovas",
-                    "Gegužė",
-                    "Liepa",
-                    "Rugsėjis",
-                    "Lapkritis",
-                    "",
-                ],
-            },
+        assert (expenses, balance) == (
+            ["Big", "300€", "75,0%"],
+            ["Pajamos: 0€", "Išlaidos: 400€"],
         )
 
     def test_a_signed_figure_is_gain_or_harm_text_and_a_zero_is_not(self):
@@ -488,21 +506,16 @@ class BookkeepingIndex(TestCase, Browser):
             cells,
         )
 
-    def _chart_texts(self):
+    def _open_charts_with_two_types(self, width: int):
+        for title, price in (("Big", 30000), ("Small", 10000)):
+            ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
+        self.open_at(reverse("bookkeeping:tab_charts"), width)
+
+    def _texts(self, selector: str) -> list[str]:
         return self.browser.execute_script(
-            "const texts = q => [...document.querySelectorAll(q)]"
-            "  .map(e => e.textContent);"
-            " const part = document.querySelector("
-            "  '#chart-expenses-container .highcharts-data-label span');"
-            " const look = part ? getComputedStyle(part) : {};"
-            " return {parts: texts('#chart-expenses-container"
-            "  .highcharts-data-label span'),"
-            " part_look: [look.color, look.fontSize, look.fontWeight],"
-            " expenses_axis: texts('#chart-expenses-container"
-            "  .highcharts-yaxis-labels text'),"
-            " balance_axis: texts('#chart-balance-container"
-            "  .highcharts-yaxis-labels text'),"
-            " months: texts('#chart-balance-container .highcharts-xaxis-labels text')};"
+            "return [...document.querySelectorAll(arguments[0])]"
+            "  .map(e => e.textContent);",
+            selector,
         )
 
     def page_overflow(self):
