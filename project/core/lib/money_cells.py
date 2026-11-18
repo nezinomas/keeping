@@ -7,8 +7,8 @@ from .convert_price import int_cents_to_float
 NOTHING = "–"
 
 
-def amount(cents: int) -> str:
-    return floatformat(int_cents_to_float(cents), "0g") if cents else NOTHING
+def amount(cents: int, places: str = "0g") -> str:
+    return floatformat(int_cents_to_float(cents), places) if cents else NOTHING
 
 
 def percent(figure: float) -> str:

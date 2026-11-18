@@ -1,7 +1,9 @@
-<div id="table-balance" class="table-responsive">
-    <c-year-balance :ctx=balance />
-</div>
+{% load i18n %}
 
-<div class="table-responsive">
-    <c-year-expenses :ctx=expenses />
-</div>
+<c-panel table id="table-balance" title="{% translate 'Balance' %}">
+    <div class="table-responsive"><c-year-balance :ctx=balance /></div>
+</c-panel>
+
+<c-panel table title="{% translate 'Expenses statistic' %}">
+    <div class="table-responsive"><c-year-expenses :ctx=expenses /></div>
+</c-panel>

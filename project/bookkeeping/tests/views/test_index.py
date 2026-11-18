@@ -33,8 +33,10 @@ from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
-CASH_FLOW_CELL = r'<t[hd][^>]*data-check="[^"]*">'
-YEAR_END = '<th data-sign="gain" data-check="{state}">'
+CASH_FLOW_CELL = r'<td[^>]*data-check="[^"]*">'
+YEAR_END = (
+    '<td class="main__figure" data-sign="gain" data-cell="" data-check="{state}">'
+)
 ACCOUNTS_TOTAL = '<td class="main__figure" data-cell="" data-check="{state}">'
 
 
@@ -151,10 +153,14 @@ FIGURES = {
         rf'<td{FIGURE} data-cell="">1,00</td>'
     ),
     "year_heads": r"<th>1999</th>",
-    "month_balance": r'<td data-sign="gain" data-cell="">5,00</td>',
-    "year_end": r'<th data-sign="\w+" data-check="">',
+    # January's balance, after its incomes and expenses; the total row holds it too
+    "month_balance": (
+        rf"<td>Sausis</td>(?:\s*<td[^>]*>[^<]*</td>){{2}}\s*"
+        rf'<td{FIGURE} data-sign="gain" data-cell="">5,00</td>'
+    ),
+    "year_end": rf'<td{FIGURE} data-sign="\w+" data-cell="" data-check="">',
     # January's expense in its type's column; the month balance's January reads 6,00
-    "expenses_by_type": r'<td>Sausis</td>\s*<td data-cell="">1,00</td>',
+    "expenses_by_type": rf'<td>Sausis</td>\s*<td{FIGURE} data-cell="">1,00</td>',
     "chart_balance": r'<script id="chart-balance-data"',
     "chart_expenses": r'<script id="chart-expenses-data"',
 }
@@ -204,15 +210,36 @@ def test_overview_debts_table_draws_a_row_per_kind_with_a_debt(
     assert _debts_tables(content) == tables
 
 
-LEGACY_CLASSES = ("left-thick-border", "long-price-col", "no-right-border")
+LEGACY_CLASSES = (
+    "left-thick-border",
+    "right-thick-border",
+    "long-price-col",
+    "no-right-border",
+    "text-nowrap",
+    "no-hover",
+    "year-expenses",
+    "no-categories",
+)
 
 
-def test_overview_tables_wear_the_skin_and_no_legacy_class(tab_contents):
-    content = tab_contents["overview"]
+@pytest.mark.parametrize(
+    "tab, titles, tables, totals",
+    [
+        pytest.param(
+            "overview", ["Sąskaitos", "Be pajamų", "Skolos"], 4, 1, id="overview"
+        ),
+        # each table's average and total rows
+        pytest.param("balance", ["Balansas", "Išlaidų statistika"], 2, 4, id="balance"),
+    ],
+)
+def test_index_tables_wear_the_skin_and_no_legacy_class(
+    tab_contents, tab, titles, tables, totals
+):
+    content = tab_contents[tab]
 
-    titles = re.findall(r'<h2 class="panel__title">([^<]*)</h2>', content)
+    drawn = re.findall(r'<h2 class="panel__title">([^<]*)</h2>', content)
     boxed = re.findall(BOXED_TABLE, content)
-    totals = re.findall(r'<tr class="(main__total)">', content)
+    total_rows = re.findall(r'<tr class="(main__total)">', content)
     rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", content, re.S)
     bare = [
         cell
@@ -222,26 +249,37 @@ def test_overview_tables_wear_the_skin_and_no_legacy_class(tab_contents):
     ]
     legacy = [name for name in LEGACY_CLASSES if name in content]
 
-    assert (titles, boxed, totals, bare, legacy) == (
-        ["Sąskaitos", "Be pajamų", "Skolos"],
-        ["main striped hover"] * 4,
-        ["main__total"],
+    assert (drawn, boxed, total_rows, bare, legacy) == (
+        titles,
+        ["main striped hover"] * tables,
+        ["main__total"] * totals,
         [],
         [],
     )
 
 
-def test_accounts_and_debts_tables_unsigned_money_cells_carry_their_cell_state(
-    tab_contents,
-):
-    content = tab_contents["overview"]
-    tables = (table_titled(content, "Sąskaitos"), *DEBTS_PANEL.findall(content))
+def _accounts_and_debts(content):
+    return (table_titled(content, "Sąskaitos"), *DEBTS_PANEL.findall(content))
 
+
+@pytest.mark.parametrize(
+    "tab, tables, count",
+    [
+        # Account1's five, the total's five, three for each kind of debt
+        pytest.param("overview", _accounts_and_debts, 16, id="overview"),
+        # twelve months of ten figures but January's signed balance, eight in each
+        # foot row; twelve months, the average and the total of one type and its sum
+        pytest.param("balance", lambda content: [content], 119 + 16 + 28, id="balance"),
+    ],
+)
+def test_index_tables_unsigned_money_cells_carry_their_cell_state(
+    tab_contents, tab, tables, count
+):
     cells = [
         (attrs, text)
-        for table in tables
+        for table in tables(tab_contents[tab])
         for attrs, text in re.findall(
-            r'<td class="main__figure"([^>]*)>([^<]*)</td>', table
+            r'<td class="main__figure"([^>]*)>([-\d.,]+)</td>', table
         )
         if "data-sign" not in attrs
     ]
@@ -250,9 +288,8 @@ def test_accounts_and_debts_tables_unsigned_money_cells_carry_their_cell_state(
         for attrs, text in cells
     }
 
-    # Account1's five, the total's five, three for each kind of debt: a zero
-    # (the account's start) is "empty", every other figure ""
-    assert (len(cells), states) == (16, {(True, ("empty",)), (False, ("",))})
+    # a zero is "empty", every other figure ""
+    assert (len(cells), states) == (count, {(True, ("empty",)), (False, ("",))})
 
 
 def test_each_index_figure_is_drawn_on_exactly_one_tab(tab_contents):
@@ -368,7 +405,10 @@ def test_view_index_renders_its_chart_data(client_logged):
 
 
 def test_view_index_foot_rows_name_the_average(tab_contents):
-    labels = re.findall(r"<tfoot>\s*<tr>\s*<th>([^<]*)</th>", tab_contents["balance"])
+    labels = re.findall(
+        r'<tfoot>\s*<tr class="main__total">\s*<td>([^<]*)</td>',
+        tab_contents["balance"],
+    )
 
     assert labels == ["Vidurkis", "Vidurkis"]
 
@@ -448,8 +488,9 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
         ),
         pytest.param(
             "bookkeeping:tab_balance",
-            r"<th([^>]*)>-20,00</th>",
-            [' data-sign="loss"'],
+            # the total row's, not the month's balance of the same figure
+            r"(?s)<td>Viso</td>.*?<td([^>]*)>-20,00</td>",
+            [f'{FIGURE} data-sign="loss" data-cell=""'],
             id="year-total",
         ),
         # only the highlighted balance is signed, not the start or the end

@@ -334,14 +334,16 @@ class DrinksOverviewOnAPhone(Browser):
         ):
             with self.subTest(inside=inside, width=width, scroll_to_end=scroll_to_end):
                 self.open_at("/drinks/", width)
-                faded = self.browser.execute_async_script(
+                self.browser.execute_script(
                     f"const box = {self.BOX};"
-                    " const [, toEnd, done] = arguments;"
-                    " if (toEnd) box.scrollLeft = box.scrollWidth;"
-                    " requestAnimationFrame(() => requestAnimationFrame(() =>"
-                    "  done(getComputedStyle(box).maskImage !== 'none')));",
+                    " if (arguments[1]) box.scrollLeft = box.scrollWidth;",
                     inside,
                     scroll_to_end,
+                )
+                self.wait_two_frames()
+                faded = self.browser.execute_script(
+                    f"return getComputedStyle({self.BOX}).maskImage !== 'none';",
+                    inside,
                 )
 
                 assert faded is fade

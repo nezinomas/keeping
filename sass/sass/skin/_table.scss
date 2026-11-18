@@ -50,6 +50,17 @@
             border-bottom: 1px solid $ink;
         }
 
+        // a toggle in a header: an `<a>` gets no border of its own, and without one
+        // it reads as a header label
+        thead .main__toggle {
+            padding: 0 0.5rem;
+            border: 1px solid $hair;
+            border-radius: 0.1rem;
+            color: $ink;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
         tbody td {
             border-bottom: 1px solid $hair-soft;
         }

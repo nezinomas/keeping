@@ -85,16 +85,24 @@ class IndexContextBuilder:
 
 
 def _profit_card(title: str, table: dict) -> Card:
-    """A table's total profit, empty when there is none (no rows, or no gain)."""
+    """A table's total profit or loss, empty at none (no rows, or a total of zero)."""
     total = table["total_row"]
     if not total["profit_sum"]:
         return EmptyStatCard(title)
 
     return StatCard(
         title,
-        value=amount(total["profit_sum"]),
+        value=_profit(total["profit_sum"]),
         note=f"{percent(total['profit_proc'])}%",
     )
+
+
+def _profit(cents: int) -> str:
+    """Whole euros, but under 0,50 either way its cents, so it never reads "0"."""
+    places = "0g"
+    if abs(cents) < 50:
+        places = "2g"
+    return amount(cents, places)
 
 
 def funds_cards(savings: dict, pensions: dict) -> list[Card]:

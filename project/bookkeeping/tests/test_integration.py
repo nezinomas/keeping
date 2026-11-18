@@ -23,6 +23,7 @@ CHART_ROOTS = (
 )
 GAIN, HARM = "rgb(31, 107, 74)", "rgb(125, 39, 51)"
 INK, INK_FAINT = "rgb(22, 34, 43)", "rgb(139, 151, 159)"
+HAIR = "rgb(207, 214, 218)"
 CLEAR = "rgba(0, 0, 0, 0)"
 WASH = "rgba(232, 194, 26, 0.3)"
 
@@ -140,6 +141,42 @@ class BookkeepingIndex(TestCase, Browser):
             ("differ", "overview"): [WASH, '"! "'],
             ("differ", "balance"): [WASH, '"! "'],
         }
+
+    def test_balance_head_groups_its_columns_and_a_bordered_toggle_shows_the_debts(
+        self,
+    ):
+        self.open_at(reverse("bookkeeping:tab_balance"), 1500)
+        toggle = self.browser.find_element(
+            By.CSS_SELECTOR, "#table-balance a[role=button]"
+        )
+        # without a border the toggle reads as a header label (Q63); the first group
+        # is blank under the Panel's title (Q62), the others centred over their columns
+        looks = self.browser.execute_script(
+            "const groups = document.querySelector('#table-balance thead tr').cells;"
+            " const toggle = getComputedStyle(arguments[0]);"
+            " return [toggle.borderTopStyle, toggle.borderTopColor,"
+            " groups[0].textContent.trim(),"
+            " ...[groups[1], groups[2]].map(c => getComputedStyle(c).textAlign)];",
+            toggle,
+        )
+        shown = []
+        for _press in range(3):
+            self.wait_two_frames()
+            # each row's visible cells span every column, the group row's too
+            spans = self.browser.execute_script(
+                "const rows = document.querySelector('#table-balance table').rows;"
+                " return [...new Set([...rows].map(row => [...row.cells]"
+                ".filter(c => c.checkVisibility())"
+                ".reduce((sum, c) => sum + c.colSpan, 0)))];"
+            )
+            shown.append((spans, toggle.text))
+            toggle.click()
+
+        hidden, opened = ([7], "Rodyti skolas"), ([11], "Slėpti skolas")
+        assert (looks, shown) == (
+            ["solid", HAIR, "", "center", "center"],
+            [hidden, opened, hidden],
+        )
 
     def test_insert_clears_each_worth_row(self):
         AccountFactory(title="Account 0")

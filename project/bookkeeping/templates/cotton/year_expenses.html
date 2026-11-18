@@ -3,44 +3,37 @@
 {% load math %}
 {% load cell_format %}
 
-
-<table class="main striped hover year-expenses">
-    <thead>
-        <tr>
-            <th colspan="{{ ctx.categories|length|add:1 }}"{% if not ctx.categories|length %} class="no-categories"{% endif %}>{% translate 'Expenses statistic' %}</th>
-            <th class="left-thick-border top"></th>
-        </tr>
+<c-paper-table class="main striped hover">
+    <c-slot name="head">
         <tr>
             <th>{{ year|title }}</th>
             {% for category in ctx.categories %}<th><span class="tip bottom" data-tip="{{ category }}">{{ category|truncatechars:8 }}</span></th>{% endfor %}
-            <th class="left-thick-border">{% translate 'Total' %}</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item, total_column in ctx.data  %}
-        <tr>
-            <td>{{ item.date|date:"F"|title }}</td>
-            {% for category in ctx.categories %}
-            {% with item|get_item:category as val%}<td data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>{% endwith %}
-            {% endfor %}
-            <td class="left-thick-border" data-cell="{{total_column.total|cell_state}}">{{total_column.total|price|cellformat}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-    <tfoot>
-        <tr>
-            <th>{% translate 'Avg' %}</th>
-            {% for category in ctx.categories %}{% with ctx.avg_row|get_item:category as val %}
-            <th data-cell="{{val|cell_state}}">{{val|price|cellformat}}</th>
-            {% endwith %}{% endfor %}
-            <th class="left-thick-border" data-cell="{{ctx.avg|cell_state}}">{{ctx.avg|price|cellformat}}</th>
-        </tr>
-        <tr>
             <th>{% translate 'Total' %}</th>
-            {% for category in ctx.categories %}{% with ctx.total_row|get_item:category as val%}
-            <th data-cell="{{val|cell_state}}">{{val|price|cellformat}}</th>
-            {% endwith %}{% endfor %}
-            <th class="left-thick-border" data-cell="{{ctx.total|cell_state}}">{{ctx.total|price|cellformat}}</th>
         </tr>
-    </tfoot>
-</table>
+    </c-slot>
+    {% for item, total_column in ctx.data %}
+    <tr>
+        <td>{{ item.date|date:"F"|title }}</td>
+        {% for category in ctx.categories %}
+        {% with item|get_item:category as val %}<td class="main__figure" data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>{% endwith %}
+        {% endfor %}
+        <td class="main__figure" data-cell="{{total_column.total|cell_state}}">{{total_column.total|price|cellformat}}</td>
+    </tr>
+    {% endfor %}
+    <c-slot name="foot">
+        <tr class="main__total">
+            <td>{% translate 'Average' %}</td>
+            {% for category in ctx.categories %}{% with ctx.avg_row|get_item:category as val %}
+            <td class="main__figure" data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>
+            {% endwith %}{% endfor %}
+            <td class="main__figure" data-cell="{{ctx.avg|cell_state}}">{{ctx.avg|price|cellformat}}</td>
+        </tr>
+        <tr class="main__total">
+            <td>{% translate 'Total' %}</td>
+            {% for category in ctx.categories %}{% with ctx.total_row|get_item:category as val %}
+            <td class="main__figure" data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>
+            {% endwith %}{% endfor %}
+            <td class="main__figure" data-cell="{{ctx.total|cell_state}}">{{ctx.total|price|cellformat}}</td>
+        </tr>
+    </c-slot>
+</c-paper-table>

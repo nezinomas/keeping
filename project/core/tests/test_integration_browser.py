@@ -61,6 +61,12 @@ class Browser(StaticLiveServerTestCase):
 
         WebDriverWait(self.browser, timeout, poll_frequency=0.1).until(settled)
 
+    def wait_two_frames(self):
+        # a scroll's fade or Alpine's x-show lands a frame after what set it off
+        self.browser.execute_async_script(
+            "requestAnimationFrame(() => requestAnimationFrame(arguments[0]));"
+        )
+
     def open_at(self, path: str, width: int):
         self.addCleanup(
             self.browser.execute_cdp_cmd, "Emulation.clearDeviceMetricsOverride", {}

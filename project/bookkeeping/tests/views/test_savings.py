@@ -1,5 +1,6 @@
 import re
 from datetime import date, datetime
+from functools import partial
 
 import pytest
 import pytz
@@ -81,46 +82,43 @@ def test_each_table_lists_its_own_funds(client_logged, title, rows):
     assert row_titles(_table(client_logged, title)) == rows
 
 
+INCOME = (1999, 10000)
+
+
+# ink at any share, one decimal: the invested price, not its fee, over the year's
+# incomes; a year with no incomes draws the Card empty, though the next year has some
 @pytest.mark.parametrize(
-    "income, price, fee, fee_source, percent",
+    "income, savings, card",
     [
-        pytest.param(10, 20, 0, "account", "200,0%", id="over-the-incomes"),
+        pytest.param(INCOME, [], ("0,0%", "neutral"), id="0"),
+        pytest.param(INCOME, [(500, 0, "account")], ("5,0%", "neutral"), id="5"),
+        pytest.param(INCOME, [(2049, 0, "account")], ("20,5%", "neutral"), id="20"),
+        pytest.param(
+            (1999, 10),
+            [(20, 0, "account")],
+            ("200,0%", "neutral"),
+            id="over-the-incomes",
+        ),
         *(
-            pytest.param(10000, 2000, 500, source, "20,0%", id=source)
+            pytest.param(INCOME, [(2000, 500, source)], ("20,0%", "neutral"), id=source)
             for source in SavingType.FeeSource.values
+        ),
+        pytest.param(
+            (2000, 10000), [(2049, 0, "account")], ("&mdash;", "empty"), id="no-incomes"
         ),
     ],
 )
-def test_saved_share_is_the_invested_price_over_the_incomes(
-    client_logged, income, price, fee, fee_source, percent
-):
-    IncomeFactory(price=income)
-    SavingFactory(
-        price=price,
-        fee=fee,
-        saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
-    )
-
-    assert _cards(_fondai(client_logged))[0][1] == percent
-
-
-# ink at any share, one decimal; a year with no incomes draws the Card empty, though
-# the next year has incomes
-@pytest.mark.parametrize(
-    "income_year, savings, card",
-    [
-        pytest.param(1999, [], ("0,0%", "neutral"), id="0"),
-        pytest.param(1999, [500], ("5,0%", "neutral"), id="5"),
-        pytest.param(1999, [2049], ("20,5%", "neutral"), id="20"),
-        pytest.param(2000, [2049], ("&mdash;", "empty"), id="no-incomes"),
-    ],
-)
 def test_saved_share_card_is_the_year_s_savings_over_its_incomes_in_ink(
-    client_logged, income_year, savings, card
+    client_logged, income, savings, card
 ):
-    IncomeFactory(date=date(income_year, 1, 1), price=10000)
-    for price in savings:
-        SavingFactory(price=price)
+    year, price = income
+    IncomeFactory(date=date(year, 1, 1), price=price)
+    for saved, fee, fee_source in savings:
+        SavingFactory(
+            price=saved,
+            fee=fee,
+            saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
+        )
 
     content = _fondai(client_logged)
     figures = [
@@ -134,11 +132,19 @@ def test_saved_share_card_is_the_year_s_savings_over_its_incomes_in_ink(
     )
 
 
-def _gaining_fund():
-    """Bought 1 000,00, worth 1 300,60: 300,60 of profit, 30,06 %."""
-    fund = SavingTypeFactory(title="Fund")
-    buy(fund, 100000)
-    worth(fund, 130060)
+def _fund(bought, worth_price):
+    """A seed: a fund bought for `bought` and worth `worth_price` at the year end."""
+
+    def seed():
+        fund = SavingTypeFactory(title="Fund")
+        buy(fund, bought)
+        worth(fund, worth_price)
+
+    return seed
+
+
+# 300,60 of profit, 30,06 %
+_gaining_fund = _fund(100000, 130060)
 
 
 def _gaining_pension():
@@ -146,13 +152,6 @@ def _gaining_pension():
     pension = PensionTypeFactory(title="Pension")
     PensionFactory(pension_type=pension, price=60000, fee=0)
     PensionWorthFactory(pension_type=pension, price=70000)
-
-
-def _even_fund():
-    """Bought 1 000,00 and worth it: no profit."""
-    fund = SavingTypeFactory(title="Even")
-    buy(fund, 100000)
-    worth(fund, 100000)
 
 
 FUND_PROFIT = ("Fondų pelnas", "301", "30,1%", "neutral")
@@ -185,10 +184,33 @@ NO_PENSION_PROFIT = ("Pensijų pelnas", "&mdash;", "", "empty")
         pytest.param([], [NO_FUND_PROFIT, NO_PENSION_PROFIT], [], id="neither"),
         # a table with rows but no profit draws its Card empty too (Q45)
         pytest.param(
-            [_even_fund, _gaining_pension],
+            [_fund(100000, 100000), _gaining_pension],
             [NO_FUND_PROFIT, PENSION_PROFIT],
             ["Fondai", "Pensijos"],
             id="zero-profit",
+        ),
+        pytest.param(
+            [_fund(100000, 70000)],
+            [("Fondų pelnas", "-300", "-30,0%", "neutral"), NO_PENSION_PROFIT],
+            ["Fondai"],
+            id="loss",
+        ),
+        # under 0,50 either way the figure keeps its cents, never a "0", and its note
+        # its one decimal, "0,0%" too (Q47, Q66); from 0,50 whole euros
+        *(
+            pytest.param(
+                [_fund(bought, worth_price)],
+                [("Fondų pelnas", *figure_note, "neutral"), NO_PENSION_PROFIT],
+                ["Fondai"],
+                id=case,
+            )
+            for case, bought, worth_price, figure_note in (
+                ("cents", 1000, 1030, ("0,30", "3,0%")),
+                ("cents-loss", 1000, 970, ("-0,30", "-3,0%")),
+                ("cents-of-a-big-fund", 100000, 100030, ("0,30", "0,0%")),
+                ("half-a-euro", 10000, 10050, ("1", "0,5%")),
+                ("half-a-euro-loss", 10000, 9950, ("-1", "-0,5%")),
+            )
         ),
     ],
 )
@@ -463,10 +485,10 @@ def test_total_counts_the_switched_money_once(client_logged, title, kind):
     cells = total_cells(_table(client_logged, title))
 
     assert cells[5] == "2.300,00"
-    assert cells[-1] == "7,69%"
 
 
-def test_total_keeps_the_base_of_a_source_closed_before_the_year(client_logged):
+def _source_closed_before_the_year():
+    """B's total keeps the base A switched into it before A closed: 100,00 on 1 300,00."""
     a = SavingTypeFactory(title="A", closed=1998)
     b = SavingTypeFactory(title="B")
     buy(a, 100000, when=date(1998, 1, 1))
@@ -474,10 +496,6 @@ def test_total_keeps_the_base_of_a_source_closed_before_the_year(client_logged):
         from_account=a, to_account=b, price=130000, fee=0, date=date(1998, 6, 1)
     )
     worth(b, 140000)
-
-    table = _table(client_logged)
-
-    assert total_cells(table)[-1] == row_cells(table, "B")[-1]
 
 
 def _switched_through_a_closed_fund():
@@ -521,17 +539,35 @@ def _no_switches():
 
 
 @pytest.mark.parametrize(
-    "build, percent",
+    "build, title, percent",
     [
-        pytest.param(_switched_through_a_closed_fund, "10,00%", id="through-closed"),
-        pytest.param(_gain_passed_on_by_a_closed_fund, "15,00%", id="gain-passed-on"),
-        pytest.param(_no_switches, "30,00%", id="no-switches"),
+        pytest.param(
+            _switched_through_a_closed_fund, "Fondai", "10,00%", id="through-closed"
+        ),
+        pytest.param(
+            _gain_passed_on_by_a_closed_fund, "Fondai", "15,00%", id="gain-passed-on"
+        ),
+        pytest.param(_no_switches, "Fondai", "30,00%", id="no-switches"),
+        pytest.param(
+            _source_closed_before_the_year, "Fondai", "7,69%", id="closed-source"
+        ),
+        # the switched money counted once in the base
+        *(
+            pytest.param(
+                partial(switch_a_into_b, kind=kind), title, "7,69%", id=f"switch-{kind}"
+            )
+            for title, kind in (
+                ("Fondai", "funds"),
+                ("Fondai", "shares"),
+                ("Pensijos", "pensions"),
+            )
+        ),
     ],
 )
-def test_total_profit_percentage(client_logged, build, percent):
+def test_total_profit_percentage(client_logged, build, title, percent):
     build()
 
-    assert total_cells(_table(client_logged))[-1] == percent
+    assert total_cells(_table(client_logged, title))[-1] == percent
 
 
 def test_pensions_total_ignores_a_switch_between_funds(client_logged):
