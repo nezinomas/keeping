@@ -1,4 +1,7 @@
+import re
+
 import pytest
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from selenium.webdriver.common.by import By
@@ -7,7 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
-from ...expenses.tests.factories import ExpenseTypeFactory
+from ...expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeFactory
 from ...pensions.tests.factories import PensionFactory
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
@@ -23,9 +26,25 @@ CHART_ROOTS = (
 )
 GAIN, HARM = "rgb(31, 107, 74)", "rgb(125, 39, 51)"
 INK, INK_FAINT = "rgb(22, 34, 43)", "rgb(139, 151, 159)"
-HAIR = "rgb(207, 214, 218)"
+INK_MUTED = "rgb(90, 106, 117)"
+HAIR, HAIR_SOFT = "rgb(207, 214, 218)", "rgb(225, 230, 232)"
+DATA = "0.0862745 0.411765 0.607843"  # --skin-data's channels in `color(srgb)`
 CLEAR = "rgba(0, 0, 0, 0)"
 WASH = "rgba(232, 194, 26, 0.3)"
+
+
+def test_index_chart_scripts_hold_no_colour_literal():
+    # a chart reads the skin's tokens: a literal or a legacy token is the bug
+    scripts = ("chart_index_balance.js", "chart_index_expenses.js")
+    literals = {
+        script: re.findall(
+            r"#\w+|(?:rgb|hsl)a?\(|color\(|--chart-[\w-]+",
+            (settings.SITE_ROOT / "static" / "js" / script).read_text(encoding="utf-8"),
+        )
+        for script in scripts
+    }
+
+    assert literals == dict.fromkeys(scripts, [])
 
 
 @pytest.mark.webtest
@@ -46,14 +65,11 @@ class BookkeepingIndex(TestCase, Browser):
             "return arguments[0].matches(':focus-within')", menu
         )
 
-    def test_the_charts_tab_draws_both_charts_by_click_and_by_url(self):
-        self.browser.find_element(By.ID, "tab-charts").click()
-        self.wait_until_idle()
-        by_click = self._drawn_charts()
-        self.browser.get(self.live_server_url + reverse("bookkeeping:tab_charts"))
-        self.wait_until_idle()
+    # a tab opened by its URL is the reload test's charts row
+    def test_the_charts_tab_draws_both_charts_by_click(self):
+        self.click_tab("charts")
 
-        assert (by_click, self._drawn_charts()) == (2, 2)
+        assert self._drawn_charts() == 2
 
     def test_a_reload_redraws_each_chart_once_and_throws_nothing(self):
         # the overview has no chart: a reload there must find none to redraw
@@ -70,6 +86,138 @@ class BookkeepingIndex(TestCase, Browser):
                     "draws": drawn,
                     "errors": [],
                 }
+
+    def test_charts_draw_incomes_gain_expenses_harm_and_bars_fading_from_the_biggest(
+        self,
+    ):
+        IncomeFactory()
+        for title, price in (("Small", 100), ("Big", 300), ("Middle", 200)):
+            ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
+        self.open_at(reverse("bookkeeping:tab_charts"), 1500)
+
+        drawn = self.browser.execute_script(
+            "const all = q => [...document.querySelectorAll(q)];"
+            " const fills = q => all(q).map(mark => getComputedStyle(mark).fill);"
+            " return {areas: fills('#chart-balance-container"
+            "  .highcharts-series .highcharts-area'),"
+            " bars: fills('#chart-expenses-container .highcharts-point'),"
+            " types: all('#chart-expenses-container .highcharts-xaxis-labels text')"
+            "  .map(label => label.textContent)};"
+        )
+        # a mixed colour computes as `color(srgb r g b / alpha)`, its alpha 1 unsaid
+        hues, alphas = set(), []
+        for fill in drawn.pop("bars"):
+            hue, _, alpha = fill.removeprefix("color(srgb ").partition(" / ")
+            hues.add(hue.removesuffix(")"))
+            alphas.append(alpha.removesuffix(")") or "1")
+
+        assert (drawn, hues, alphas) == (
+            {
+                "areas": [GAIN, HARM],
+                # the factory's own type, spent nothing, comes last, cut to 11
+                "types": ["Big", "Middle", "Small", "Expense Typ"],
+            },
+            {DATA},
+            ["1", "0.733333", "0.466667", "0.2"],
+        )
+
+    def test_the_charts_stand_side_by_side_from_1200_and_stack_below(self):
+        placed = {}
+        for width in (1200, 1199):
+            self.open_at(reverse("bookkeeping:tab_charts"), width)
+            placed[width] = self.browser.execute_script(
+                "const [a, b] = [...document.querySelectorAll('#tab_content .panel')]"
+                "  .map(panel => panel.getBoundingClientRect());"
+                " const [x, y] = [...document.querySelectorAll("
+                "  '#tab_content .highcharts-xaxis .highcharts-axis-line')]"
+                "  .map(line => line.getBoundingClientRect().top);"
+                " return {beside: a.top === b.top && a.right < b.left,"
+                " stacked: b.top > a.bottom, same_width: a.width === b.width,"
+                " axes_on_one_line: x === y};"
+            )
+
+        assert placed == {
+            1200: {
+                "beside": True,
+                "stacked": False,
+                "same_width": True,
+                "axes_on_one_line": True,
+            },
+            1199: {
+                "beside": False,
+                "stacked": True,
+                "same_width": True,
+                "axes_on_one_line": False,
+            },
+        }
+
+    def test_expenses_bars_print_their_part_of_the_year_and_axes_read_thousands(
+        self,
+    ):
+        # a year with no expenses draws one empty bar, and no part of nothing
+        self.open_at(reverse("bookkeeping:tab_charts"), 1500)
+        empty_year = [
+            self._chart_texts()["parts"],
+            self.browser.execute_script(
+                "return getComputedStyle(document.querySelector("
+                "  '#chart-expenses-container .highcharts-point')).fill;"
+            ),
+        ]
+        for title, price in (("Big", 30000), ("Small", 10000)):
+            ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
+        self.open_at(reverse("bookkeeping:tab_charts"), 1500)
+        printed = self._chart_texts()
+        printed["tooltip"] = self.read_chart(
+            "chart-expenses-container",
+            "c.tooltip.refresh([c.series[0].points[0]]);"
+            " return c.tooltip.label.text.element.textContent;",
+        ).split()
+        printed["balance_tooltip"] = self.read_chart(
+            "chart-balance-container",
+            # a split tooltip draws a label per series: read what each would say
+            "return c.series.map(s => c.tooltip.options.pointFormatter"
+            "  .call(s.points[0]).replace(/<[^>]*>/g, ''));",
+        )
+        # a phone prints every other month, and no tick past December
+        self.open_at(reverse("bookkeeping:tab_charts"), 360)
+        printed["phone_months"] = self._chart_texts()["months"]
+
+        # the factory's own type, spent nothing, gets the last bar and no figure
+        assert (empty_year, printed) == (
+            [[], f"color(srgb {DATA})"],
+            {
+                "parts": ["75,0%", "25,0%"],
+                "part_look": [INK_MUTED, "12px", "400"],
+                "expenses_axis": ["0", "0,1k", "0,2k", "0,3k", "0,4k"],
+                "balance_axis": ["0", "0,1k", "0,2k", "0,3k", "0,4k", "0,5k"],
+                "months": [
+                    "Sausis",
+                    "Vasaris",
+                    "Kovas",
+                    "Balandis",
+                    "Gegužė",
+                    "Birželis",
+                    "Liepa",
+                    "Rugpjūtis",
+                    "Rugsėjis",
+                    "Spalis",
+                    "Lapkritis",
+                    "Gruodis",
+                ],
+                "tooltip": ["Big", "300€", "75,0%"],
+                "balance_tooltip": ["Pajamos: 0€", "Išlaidos: 400€"],
+                # the widened edges' tick past December, printed empty
+                "phone_months": [
+                    "Sausis",
+                    "Kovas",
+                    "Gegužė",
+                    "Liepa",
+                    "Rugsėjis",
+                    "Lapkritis",
+                    "",
+                ],
+            },
+        )
 
     def test_a_signed_figure_is_gain_or_harm_text_and_a_zero_is_not(self):
         for title, have in (("Even", 10000), ("Gain", 15000), ("Loss", 5000)):
@@ -181,8 +329,7 @@ class BookkeepingIndex(TestCase, Browser):
     def test_insert_clears_each_worth_row(self):
         AccountFactory(title="Account 0")
         AccountFactory(title="Account 1")
-        self.browser.get(self.live_server_url)
-        self.wait_until_idle()
+        self.open(reverse("bookkeeping:index"))
 
         url = reverse("bookkeeping:accounts_worth_new")
         self.browser.find_element(By.CSS_SELECTOR, f"button[hx-get='{url}']").click()
@@ -207,10 +354,7 @@ class BookkeepingIndex(TestCase, Browser):
         overflow = {}
         for tab in INDEX_TABS:
             self.open_at(tab.url, 360)
-            overflow[tab.name] = self.browser.execute_script(
-                "const page = document.documentElement;"
-                " return page.scrollWidth - page.clientWidth;"
-            )
+            overflow[tab.name] = self.page_overflow()
 
         assert overflow == dict.fromkeys(("overview", "funds", "balance", "charts"), 0)
 
@@ -221,12 +365,11 @@ class BookkeepingIndex(TestCase, Browser):
         self.open_at(reverse("bookkeeping:month"), 360)
 
         overflow = self.browser.execute_script(
-            "const page = document.documentElement;"
-            " const box = document.getElementById('month-content');"
+            "const box = document.getElementById('month-content');"
             " return {width: innerWidth,"
-            " page_overflow: page.scrollWidth - page.clientWidth,"
             " table_scrolls: box.scrollWidth > box.clientWidth};"
-        )
+        ) | {"page_overflow": self.page_overflow()}
+
         assert overflow == {"width": 360, "page_overflow": 0, "table_scrolls": True}
 
     def test_month_table_rules_run_from_the_band_to_the_foot(self):
@@ -242,11 +385,12 @@ class BookkeepingIndex(TestCase, Browser):
             " return s.borderLeftStyle === 'solid' ? [[i + 1, s.borderLeftColor]] : [];"
             " }));"
         )
-        hair, soft = "rgb(207, 214, 218)", "rgb(225, 230, 232)"
-        body = [[5, soft], [8, soft], [11, soft], [14, hair]]
+        # each quarter's first month, then the rule closing December
+        quarters = (5, 8, 11)
+        body = [[i, HAIR_SOFT] for i in quarters] + [[14, HAIR]]
         assert ruled == [
-            [[3, hair], [4, hair], [5, hair], [6, hair]],
-            [[5, hair], [8, hair], [11, hair], [14, hair]],
+            [[3, HAIR], [4, HAIR], [5, HAIR], [6, HAIR]],
+            [[i, HAIR] for i in (*quarters, 14)],
             body,
             body,
         ]
@@ -265,10 +409,7 @@ class BookkeepingIndex(TestCase, Browser):
 
     def test_a_swap_beside_a_table_with_no_pin_library_throws_nothing(self):
         # the summary draws a .sticky-table and loads no sticky-table-headers.js
-        self.browser.get(
-            self.live_server_url + reverse("bookkeeping:summary_savings_and_incomes")
-        )
-        self.wait_until_idle()
+        self.open(reverse("bookkeeping:summary_savings_and_incomes"))
         self.browser.execute_script(
             "window.errors = [];"
             " addEventListener('error', e => errors.push(e.message));"
@@ -292,6 +433,30 @@ class BookkeepingIndex(TestCase, Browser):
             " return [k, [own.color, own.backgroundColor === row.backgroundColor]];"
             " }));",
             cells,
+        )
+
+    def _chart_texts(self):
+        return self.browser.execute_script(
+            "const texts = q => [...document.querySelectorAll(q)]"
+            "  .map(e => e.textContent);"
+            " const part = document.querySelector("
+            "  '#chart-expenses-container .highcharts-data-label span');"
+            " const look = part ? getComputedStyle(part) : {};"
+            " return {parts: texts('#chart-expenses-container"
+            "  .highcharts-data-label span'),"
+            " part_look: [look.color, look.fontSize, look.fontWeight],"
+            " expenses_axis: texts('#chart-expenses-container"
+            "  .highcharts-yaxis-labels text'),"
+            " balance_axis: texts('#chart-balance-container"
+            "  .highcharts-yaxis-labels text'),"
+            " months: texts('#chart-balance-container .highcharts-xaxis-labels text')};"
+        )
+
+    def page_overflow(self):
+        """How far the page runs past the window's width."""
+        return self.browser.execute_script(
+            "const page = document.documentElement;"
+            " return page.scrollWidth - page.clientWidth;"
         )
 
     def _drawn_charts(self):

@@ -40,10 +40,34 @@ var PAPER_DATA_LABEL_STYLE = {
     textOutline: "none",
 };
 
-// A figure on a mark, left off a mark of zero.
+// A figure on a mark, left off a mark of zero or below.
 function paperFigure(decimals) {
     return function () {
         return this.y > 0 ? Highcharts.numberFormat(this.y, decimals) : "";
+    };
+}
+
+// Whole euros, as a tooltip prints a sum.
+function paperEuros(value) {
+    return Highcharts.numberFormat(value, 0) + "€";
+}
+
+// A money axis label: from 100 in thousands ("0,1k", "1,5k"), below it whole.
+function paperThousands() {
+    if (this.value >= 100) {
+        return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+    }
+    return Highcharts.numberFormat(this.value, 0);
+}
+
+// A category axis for `paperFixEdges`, whose widened edges leave room for a tick past
+// the last category: only a real category prints.
+function paperCategoryAxis(categories) {
+    return {
+        categories: categories,
+        type: "category",
+        tickmarkPlacement: "on",
+        labels: { formatter() { return categories[this.pos] ?? ""; } },
     };
 }
 
@@ -101,13 +125,7 @@ function paperTwoPanes() {
             legend: { enabled: false },
             tooltip: { shared: true },
         },
-        xAxis: (categories) => ({
-            categories: categories,
-            type: "category",
-            tickmarkPlacement: "on",
-            // the widened edges leave room for a tick past the last category
-            labels: { formatter() { return categories[this.pos] ?? ""; } },
-        }),
+        xAxis: paperCategoryAxis,
         paneTop: {
             min: 0,
             top: "0%",

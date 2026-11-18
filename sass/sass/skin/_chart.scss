@@ -1,6 +1,6 @@
 @use "../abstracts/variables" as *;
 
-// Unscoped: Highcharts draws a tooltip outside `.paper-skin`.
+// A chart's own pieces are unscoped: Highcharts draws a tooltip outside `.paper-skin`.
 
 // a rule's label on a paper chip, so a mark crossing the rule never covers it
 .chart-rule-label {
@@ -29,4 +29,15 @@
 // a tooltip figure whose series hue is a mark's, not a text's
 .chart-tip--second {
     color: $second-ink;
+}
+
+// two charts side by side where each keeps room for its labels, stacked below
+.paper-skin .chart-pair {
+    display: grid;
+    gap: 32px;
+    grid-template-columns: minmax(0, 1fr);
+
+    @media only screen and (min-width: 1200px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }

@@ -1,6 +1,14 @@
-<div id="chart-expenses-container"></div>
+{% load i18n %}
 
-<div id="chart-balance-container"></div>
+<div class="chart-pair">
+    <c-panel title="{% translate 'Expenses by type' %}">
+        <div id="chart-expenses-container"></div>
+    </c-panel>
+
+    <c-panel title="{% translate 'Incomes and Expenses' %}">
+        <div id="chart-balance-container"></div>
+    </c-panel>
+</div>
 
 <c-chart-expenses-data :data=chart_expenses />
 

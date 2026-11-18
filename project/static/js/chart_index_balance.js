@@ -1,64 +1,49 @@
 function drawIndexBalance() {
     const chartData = JSON.parse(document.getElementById("chart-balance-data").textContent);
-    // convert data
-    for(let i = 0; i < 12; i++) {
-        chartData.incomes[i] /= 100
-        chartData.expenses[i] /= 100
-    }
+    const euros = (cents) => cents.map((value) => value / 100);
 
     Highcharts.chart("chart-balance-container", {
         chart: {
-            marginBottom: 74,
-        },
-        title: {
-            text: "",
+            // the tilted months and the legend under them; the expenses chart
+            // beside it keeps the same, so both axes sit on one line
+            marginBottom: 100,
+            events: { render: paperFixEdges },
         },
         legend: {
             enabled: true,
-            backgroundColor: undefined,
         },
-        xAxis: {
-            min: 0.49,
-            max: chartData.categories.length - 1.49,
-            categories: chartData.categories,
-            type: "category",
-            tickmarkPlacement: "on",
-            labels: {
-                rotation: -45,
-            },
-        },
+        xAxis: Highcharts.merge(paperCategoryAxis(chartData.categories), {
+            labels: { rotation: -45 },
+        }),
         yAxis: {
             labels: {
-                formatter: function () {
-                    if (this.value >= 100) {
-                        return Highcharts.numberFormat(this.value / 1000, 1) + "k";
-                    }
-                    return Highcharts.numberFormat(this.value, 0);
-                },
+                formatter: paperThousands,
             },
             title: {
-                text: ""
+                text: "",
             },
         },
         tooltip: {
             split: true,
-            pointFormat: "{series.name}: <b>{point.y:,.0f}€</b><br>",
+            pointFormatter() {
+                return `${this.series.name}: <b>${paperEuros(this.y)}</b><br>`;
+            },
         },
         plotOptions: {
             area: {
                 fillOpacity: 0.6,
-            }
+            },
         },
         series: [{
             type: "area",
             name: chartData.incomes_title,
-            data: chartData.incomes,
-            color: "var(--chart-positive-dark)"
+            data: euros(chartData.incomes),
+            color: "var(--skin-gain)",
         }, {
             type: "area",
             name: chartData.expenses_title,
-            data: chartData.expenses,
-            color: "var(--chart-negative-dark)"
-        }]
+            data: euros(chartData.expenses),
+            color: "var(--skin-harm)",
+        }],
     });
 }

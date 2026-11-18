@@ -23,6 +23,7 @@ from ..factories import AccountWorthFactory
 from ..helper import (
     BOXED_TABLE,
     FIGURE,
+    PANEL_TITLE,
     quiet_build,
     row_cells,
     script_json,
@@ -406,6 +407,18 @@ def test_an_index_tab_reloads_whole_on_reload_alone(client_logged, tab):
     ]
 
     assert listeners == [(tab.url, "reload from:body")]
+
+
+def test_charts_tab_draws_each_chart_box_in_its_titled_panel(client_logged):
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_charts"))
+
+    # the id stays on the chart's own box, where its redraw looks it up
+    panels = re.findall(PANEL_TITLE + r'<div id="([^"]*)"></div>', content)
+
+    assert panels == [
+        ("Išlaidos pagal rūšis", "chart-expenses-container"),
+        ("Pajamos ir išlaidos", "chart-balance-container"),
+    ]
 
 
 def test_view_index_renders_its_chart_data(client_logged):

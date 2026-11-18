@@ -1,76 +1,65 @@
+// the palest bar's share of the data hue; the biggest bar takes all of it
+var INDEX_EXPENSES_PALEST = 20;
+
 function drawIndexExpenses() {
     const chartData = JSON.parse(document.getElementById("chart-expenses-data").textContent);
-    // convert data
-    for (var key in chartData) {
-        chartData[key]["y"] /= 100;
-    }
+    const total = chartData.reduce((sum, type) => sum + type.y, 0) / 100;
+    // a type's part of the year's expenses; a type that spent nothing prints none
+    const percentOfYear = (y) => (y ? Highcharts.numberFormat(y / total * 100, 1) + "%" : "");
+    // the types come biggest first: each bar a step paler than the one before
+    const step = (100 - INDEX_EXPENSES_PALEST) / Math.max(chartData.length - 1, 1);
+    const types = chartData.map((type, i) => ({
+        name: type.name,
+        y: type.y / 100,
+        color: `color-mix(in srgb, var(--skin-data) ${100 - i * step}%, transparent)`,
+    }));
 
     Highcharts.chart("chart-expenses-container", {
         chart: {
             type: "column",
-            marginBottom: 74,
-        },
-        title: {
-            text: ""
+            // the balance chart's beside it, so both axes sit on one line
+            marginBottom: 100,
         },
         xAxis: {
             type: "category",
-            gridLineWidth: 0,
             crosshair: true,
             labels: {
                 rotation: -45,
-            }
+            },
         },
         yAxis: {
             title: {
-                text: ""
+                text: "",
             },
             labels: {
-                formatter: function () {
-                    if (this.value >= 100) { return Highcharts.numberFormat(this.value / 1000, 1) + "k"; }
-                    return Highcharts.numberFormat(this.value, 0);
-                },
-            }
+                formatter: paperThousands,
+            },
         },
         tooltip: {
             shared: true,
             formatter: function () {
-                const pcnt = ((this.points[0].y / this.points[0].series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100);
+                const point = this.points[0];
                 return `
-                    <b>${this.points[0].key}</b><br>
-                    ${Highcharts.numberFormat(this.points[0].y, 0)}€<br>
-                    ${Highcharts.numberFormat(pcnt, 1)}%
+                    <b>${point.key}</b><br>
+                    ${paperEuros(point.y)}<br>
+                    ${percentOfYear(point.y)}
                 `;
-            }
-        },
-        plotOptions: {
-            column: {
-                colorByPoint: true,
-            }
+            },
         },
         series: [{
-            data: chartData,
-            borderRadius: 0,
-            borderWidth: 0,
+            data: types,
             dataLabels: {
                 useHTML: true,
                 enabled: true,
                 rotation: -90,
-                color: "#000",
                 align: "center",
                 crop: false,
                 overflow: "allow",
                 y: 2,
-                style: {
-                    fontSize: "10px",
-                    fontWeight: "bold",
-                    textOutline: false
+                formatter: function () {
+                    return percentOfYear(this.y);
                 },
-                formatter: function() {
-                    const pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
-                    return Highcharts.numberFormat(pcnt, 1) + "%";
-                },
-            }
-        }]
+            },
+        }],
     });
 }
