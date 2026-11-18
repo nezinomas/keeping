@@ -25,6 +25,8 @@ function drawIndexExpenses() {
             crosshair: true,
             labels: {
                 rotation: -45,
+                // a type's name, cut to fit under its bar; the tooltip holds it whole
+                formatter() { return this.value.slice(0, 11); },
             },
         },
         yAxis: {

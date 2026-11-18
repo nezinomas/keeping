@@ -60,14 +60,15 @@ def test_chart_no_data(balance):
         pytest.param({"X" * 12: 25}, id="data"),
     ],
 )
-def test_chart_truncate_long_title(balance, total_row):
+def test_chart_keeps_a_long_title_whole(balance, total_row):
+    # the chart's axis cuts it; a cut name would merge two types into one bar
     balance.types = ["X" * 12]
     balance.total_row = total_row
 
     obj = ExpenseService(data=balance)
     actual = obj.chart_context()
 
-    assert len(actual[0]["name"]) == 11
+    assert actual[0]["name"] == "X" * 12
 
 
 def test_table_context(balance):

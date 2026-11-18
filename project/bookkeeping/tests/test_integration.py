@@ -121,6 +121,30 @@ class BookkeepingIndex(TestCase, Browser):
             ["1", "0.733333", "0.466667", "0.2"],
         )
 
+    def test_two_types_cut_alike_on_the_axis_keep_a_bar_each(self):
+        for title, price in (
+            ("Transportas kuras", 30000),
+            ("Transportas remontas", 10000),
+        ):
+            ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
+        self.open_at(reverse("bookkeeping:tab_charts"), 1500)
+
+        bars = self.read_chart(
+            "chart-expenses-container",
+            "return c.series[0].points.filter(p => p.y).map(p => {"
+            "  c.tooltip.refresh([p]);"
+            "  return [p.x, p.series.xAxis.ticks[p.x].label.textStr,"
+            "   p.dataLabel.text.textStr,"
+            "   c.tooltip.label.text.element.textContent.trim().split('\\n')[0]];"
+            " });",
+        )
+
+        # the axis cuts a name to fit; the tooltip names the type whole
+        assert bars == [
+            [0, "Transportas", "75,0%", "Transportas kuras"],
+            [1, "Transportas", "25,0%", "Transportas remontas"],
+        ]
+
     def test_the_charts_stand_side_by_side_from_1200_and_stack_below(self):
         placed = {}
         for width in (1200, 1199):
