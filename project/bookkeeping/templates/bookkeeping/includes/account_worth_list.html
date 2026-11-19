@@ -5,7 +5,7 @@
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="text-left"><c-regenerate-balances type='accounts' /> {% translate 'Accounts' %}</th>
+            <th class="text-left"><c-regenerate-balances /> {% translate 'Accounts' %}</th>
             <th>{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
@@ -19,22 +19,22 @@
         <td class="text-left">
             <span class="tip right w100" data-tip="{{ item.latest_check|default_if_none:_('No record of account amount') }}">{{ item.account.title }}</span>
         </td>
-        <td class="main__figure" data-cell="{{item.past|cell_state}}">{{item.past|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.incomes|cell_state}}">{{item.incomes|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.expenses|cell_state}}">{{item.expenses|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.balance|cell_state}}">{{item.balance|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.have|cell_state}}">{{item.have|price|cellformat}}</td>
+        <c-figure-cell :value="item.past" />
+        <c-figure-cell :value="item.incomes" />
+        <c-figure-cell :value="item.expenses" />
+        <c-figure-cell :value="item.balance" />
+        <c-figure-cell :value="item.have" />
         <td class="main__figure" data-sign="{{item.delta|sign}}">{{item.delta|price|cellformat:"ok"}}</td>
     </tr>
     {% endfor %}
     <c-slot name="foot">
         <tr class="main__total">
             <td class="text-left">{% translate 'Total' %}</td>
-            <td class="main__figure" data-cell="{{total_row.past|cell_state}}">{{total_row.past|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.incomes|cell_state}}">{{total_row.incomes|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.expenses|cell_state}}">{{total_row.expenses|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.balance|cell_state}}" data-check="{{cash_flow_check}}">{{total_row.balance|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.have|cell_state}}">{{total_row.have|price|cellformat}}</td>
+            <c-figure-cell :value="total_row.past" />
+            <c-figure-cell :value="total_row.incomes" />
+            <c-figure-cell :value="total_row.expenses" />
+            <c-figure-cell :value="total_row.balance" check="{{ cash_flow_check }}" />
+            <c-figure-cell :value="total_row.have" />
             <td class="main__figure"{% if total_row.delta %} data-sign="{{total_row.delta|sign}}"{% endif %}>{{total_row.delta|price|cellformat}}</td>
         </tr>
     </c-slot>

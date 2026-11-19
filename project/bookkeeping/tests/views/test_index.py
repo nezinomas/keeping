@@ -23,12 +23,14 @@ from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
+from ....transactions.tests.factories import SavingCloseFactory
 from ...tabs import INDEX_TABS
 from ..factories import AccountWorthFactory
 from ..helper import (
     BOXED_TABLE,
     FIGURE,
     PANEL_TITLE,
+    cell_texts,
     quiet_build,
     row_cells,
     script_json,
@@ -228,21 +230,29 @@ LEGACY_CLASSES = (
     "no-hover",
     "year-expenses",
     "no-categories",
+    "right-thin-border",
+    "left-thin-border",
+    "title-col",
+    "funds-title-col-min-width",
 )
 
 
 @pytest.mark.parametrize(
-    "tab, titles, tables, totals",
+    "tab, titles, tables, totals, undated",
     [
         pytest.param(
-            "overview", ["Sąskaitos", "Be pajamų", "Skolos"], 4, 1, id="overview"
+            "overview", ["Sąskaitos", "Be pajamų", "Skolos"], 4, 1, 0, id="overview"
         ),
+        # Fund A and the pension: no worth, so no check date
+        pytest.param("funds", ["Fondai", "Pensijos"], 2, 2, 2, id="funds"),
         # each table's average and total rows
-        pytest.param("balance", ["Balansas", "Išlaidų statistika"], 2, 4, id="balance"),
+        pytest.param(
+            "balance", ["Balansas", "Išlaidų statistika"], 2, 4, 0, id="balance"
+        ),
     ],
 )
 def test_index_tables_wear_the_skin_and_no_legacy_class(
-    tab_contents, tab, titles, tables, totals
+    tab_contents, tab, titles, tables, totals, undated
 ):
     content = tab_contents[tab]
 
@@ -256,13 +266,13 @@ def test_index_tables_wear_the_skin_and_no_legacy_class(
         for cell in re.findall(r"<td([^>]*)>", row)[1:]
         if "main__figure" not in cell
     ]
-    legacy = [name for name in LEGACY_CLASSES if name in content]
+    legacy = re.findall(rf'class="[^"]*\b({"|".join(LEGACY_CLASSES)})\b', content)
 
     assert (drawn, boxed, total_rows, bare, legacy) == (
         titles,
         ["main striped hover"] * tables,
         ["main__total"] * totals,
-        [],
+        [' class="main__date" data-cell="empty"'] * undated,
         [],
     )
 
@@ -351,42 +361,11 @@ def test_each_index_figure_is_drawn_on_exactly_one_tab(tab_contents):
     }
 
 
-BUTTON = re.compile(r'<button\b[^>]*\bhx-get="([^"]*)"[^>]*>(.*?)</button>', re.S)
+@pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
+def test_no_index_tab_draws_a_fetching_button(client_logged, tab):
+    content = tab_fragment(client_logged, tab.url)
 
-
-def _buttons(content):
-    """(url, label, tips) of each button that fetches."""
-    return [
-        (url, re.sub(r"<[^>]+>", "", inner), re.findall(r'data-tip="([^"]*)"', inner))
-        for url, inner in BUTTON.findall(content)
-    ]
-
-
-@pytest.mark.parametrize(
-    "tab, buttons",
-    [
-        pytest.param(
-            "overview",
-            [
-                (
-                    "bookkeeping:regenerate_balances",
-                    "Atnaujinti balansus",
-                    ["Bus atnaujinti visų metų balansai."],
-                ),
-            ],
-            id="overview",
-        ),
-        pytest.param("funds", [], id="funds"),
-        pytest.param("balance", [], id="balance"),
-        pytest.param("charts", [], id="charts"),
-    ],
-)
-def test_each_index_tab_draws_its_fetching_buttons(client_logged, tab, buttons):
-    content = tab_fragment(client_logged, INDEX_TABS[tab].url)
-
-    assert _buttons(content) == [
-        (reverse(url_name), label, tips) for url_name, label, tips in buttons
-    ]
+    assert re.findall(r"<button\b[^>]*\bhx-get=[^>]*>", content) == []
 
 
 def test_quick_add_offers_each_worth_pill_on_its_own_tab(client_logged):
@@ -610,3 +589,47 @@ def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_s
     january = row_cells(content[content.index('id="table-balance"') :], "Sausis")
 
     assert january[3] == "200,00"
+
+
+def test_balance_table_draws_each_column(client_logged):
+    IncomeFactory(price=100000)
+    ExpenseFactory(price=20000)
+    SavingFactory(price=30000, fee=0)
+    SavingCloseFactory(price=5000, fee=0)
+    _borrow()
+    _lend()
+
+    content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
+    table = content[content.index('id="table-balance"') :].partition("</table>")[0]
+    rows = cell_texts(table)
+
+    # in, out; saved, sold; borrowed, paid back; lent, paid back
+    moves = [
+        "1.000,00",
+        "200,00",
+        "300,00",
+        "50,00",
+        "70,00",
+        "20,00",
+        "90,00",
+        "30,00",
+    ]
+    figures = [*moves[:2], "800,00", *moves[2:]]
+    # January, then the average and total rows
+    assert [rows[2], rows[-2], rows[-1]] == [
+        ["Sausis", *figures, "540,00"],
+        ["Vidurkis", *moves[:2], "", *moves[2:], "Metų pabaigoje"],
+        ["Viso", *figures, "540,00"],
+    ]
+
+
+def test_balance_table_hides_its_debt_columns_until_asked(client_logged):
+    content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
+    table = content[content.index('id="table-balance"') :].partition("</table>")[0]
+    rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S)
+
+    # the debts group's head, then its four columns in every row
+    assert [len(re.findall(r'<t[hd]\b[^>]*x-show="open"', row)) for row in rows] == [
+        1,
+        *[4] * 15,
+    ]

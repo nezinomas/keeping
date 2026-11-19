@@ -391,13 +391,9 @@ msgstr "Fondų faktas"
 msgid "Pensions fact"
 msgstr "Pensijų faktas"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:30
+#: .\project\bookkeeping\templates\cotton\regenerate_balances.html:2
 msgid "Balances for all years will be updated."
 msgstr "Bus atnaujinti visų metų balansai."
-
-#: .\project\bookkeeping\templates\bookkeeping\index.html:30
-msgid "Update balances"
-msgstr "Atnaujinti balansus"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:43
 #: .\project\expenses\templates\expenses\index.html:32
@@ -947,10 +943,6 @@ msgstr "Ankstesnis puslapis"
 #: .\project\core\templates\cotton\paging.html:36
 msgid "Next page"
 msgstr "Kitas puslapis"
-
-#: .\project\core\templates\cotton\regenerate_balances.html:2
-msgid "Only the balances in this table will be updated."
-msgstr "Bus atnaujinti tik šios lentelės balansai."
 
 #: .\project\core\templates\cotton\search_form.html:15
 #: .\project\core\templates\cotton\search_form.html:16

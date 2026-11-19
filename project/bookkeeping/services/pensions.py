@@ -27,7 +27,6 @@ def load_service(user, year: int) -> dict:
 
     return {
         "title": _("Pensions"),
-        "type": "pensions",
         "object_list": data,
         "total_row": utils.funds_total_row(data, FUNDS_TABLE_FIELDS, switched_within),
     }

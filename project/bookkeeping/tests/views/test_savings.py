@@ -1,6 +1,5 @@
 import re
 from datetime import date, datetime
-from functools import partial
 
 import pytest
 import pytz
@@ -17,9 +16,10 @@ from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ..factories import PensionWorthFactory, SavingWorthFactory
 from ..helper import (
-    BOXED_TABLE,
     FIGURE,
+    KINDS,
     PANEL_TITLE,
+    cell_texts,
     closed_every_other,
     fund_with_a_sell,
     row_cells,
@@ -31,7 +31,7 @@ from ..helper import (
     total_cells,
     view_queries,
 )
-from ..signals.helpers import buy, worth
+from ..signals.helpers import buy, sell, worth
 
 pytestmark = pytest.mark.django_db
 
@@ -51,9 +51,7 @@ def _fondai(client):
 def _cards(content):
     """(label, figure with its unit, note, state) of each Card in the row that opens
     the tab."""
-    row = content.partition('<div class="stat-cards">')[2].partition(
-        '<div class="flex">'
-    )[0]
+    row = content.partition('<div class="stat-cards">')[2].partition("<section")[0]
     return [
         (
             label,
@@ -309,13 +307,7 @@ def test_closed_fund_with_a_sell_shows_its_signed_profit_but_no_worth(
     assert not re.search(r"table-(success|danger)", str(cells))
 
 
-@pytest.mark.parametrize(
-    "title, kind",
-    [
-        pytest.param("Fondai", "funds", id="funds"),
-        pytest.param("Pensijos", "pensions", id="pensions"),
-    ],
-)
+@pytest.mark.parametrize("title, kind", KINDS)
 @pytest.mark.parametrize("sold", [True, False])
 def test_open_fund_with_no_worth_draws_its_cost_and_its_worth_cells_empty(
     client_logged, title, kind, sold
@@ -352,15 +344,6 @@ def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
     )
 
 
-LEGACY_CLASSES = (
-    "right-thin-border",
-    "left-thin-border",
-    "right-thick-border",
-    "title-col",
-    "funds-title-col-min-width",
-)
-
-
 def _shape(table):
     """The attributes of each cell: per header row, the row, the foot row."""
     head = re.search(r"<thead>(.*?)</thead>", table, re.S).group(1)
@@ -394,7 +377,33 @@ GAIN = f'{FIGURE} data-sign="gain" data-cell=""'
 TITLE = ' class="text-left"'
 
 
-def test_funds_tables_wear_the_skin_and_keep_their_columns(client_logged):
+def test_funds_table_draws_each_column(client_logged):
+    fund = SavingTypeFactory(title="Fund")
+    buy(fund, 100000, fee=100, when=date(1998, 1, 1))
+    buy(fund, 20000, fee=200)
+    sell(fund, 30000, fee=400)
+    worth(fund, 120000)
+
+    paid = ["1.000,00", "1,00", "200,00", "2,00", "1.200,00", "3,00", "300,00", "4,00"]
+    # bought 1 200,00 for 3,00 of fees, 300,00 sold, worth 1 200,00
+    profit = ["1.200,00", "297,00", "24,75%"]
+    assert cell_texts(_table(client_logged)) == [
+        [
+            "Fondai",
+            "1999 pradžioje",
+            "1999",
+            "Viso",
+            "Rinkos vertė",
+            "Pelnas/Nuostolis",
+        ],
+        ["Pervesta", "Pervesta", "Parduota"],
+        ["Fondas", *["Suma", "Mokesčiai"] * 4, "Data", "Suma", "Suma", "%"],
+        ["Fund", *paid, "1999-12-31", *profit],
+        ["Viso", *paid, *profit],
+    ]
+
+
+def test_funds_tables_cells_carry_their_spans_and_states(client_logged):
     # bought in the year, the fund worth more than it cost; the pension has no worth
     fund = SavingTypeFactory(title="Fund")
     buy(fund, 100000)
@@ -402,47 +411,41 @@ def test_funds_tables_wear_the_skin_and_keep_their_columns(client_logged):
     PensionFactory(price=60000, fee=0)
 
     content = _fondai(client_logged)
-    panels = re.findall(PANEL_TITLE + BOXED_TABLE, content)
-    shapes = [_shape(table_titled(content, title)) for title, _classes in panels]
-    legacy = re.findall(rf'class="[^"]*\b({"|".join(LEGACY_CLASSES)})\b', content)
+    shapes = [_shape(table_titled(content, title)) for title in ("Fondai", "Pensijos")]
 
     # start, its fee; the year, its fee; the total in, its fee, sold, its fee
     paid = [EMPTY, EMPTY, SHOWN, EMPTY, SHOWN, EMPTY, EMPTY, EMPTY]
-    assert (panels, shapes, legacy) == (
-        [("Fondai", "main striped hover"), ("Pensijos", "main striped hover")],
-        [
-            {
-                "head": HEAD,
-                "row": [TITLE, *paid, ' class="main__date"', SHOWN, GAIN, GAIN],
-                "foot": [
-                    ' class="main__total"',
-                    TITLE,
-                    *paid,
-                    f' colspan="2"{SHOWN}',
-                    GAIN,
-                    GAIN,
-                ],
-            },
-            {
-                "head": HEAD,
-                "row": [
-                    TITLE,
-                    *paid,
-                    ' class="main__date" data-cell="empty"',
-                    *[EMPTY] * 3,
-                ],
-                "foot": [
-                    ' class="main__total"',
-                    TITLE,
-                    *paid,
-                    f' colspan="2"{EMPTY}',
-                    EMPTY,
-                    EMPTY,
-                ],
-            },
-        ],
-        [],
-    )
+    assert shapes == [
+        {
+            "head": HEAD,
+            "row": [TITLE, *paid, ' class="main__date"', SHOWN, GAIN, GAIN],
+            "foot": [
+                ' class="main__total"',
+                TITLE,
+                *paid,
+                f' colspan="2"{SHOWN}',
+                GAIN,
+                GAIN,
+            ],
+        },
+        {
+            "head": HEAD,
+            "row": [
+                TITLE,
+                *paid,
+                ' class="main__date" data-cell="empty"',
+                *[EMPTY] * 3,
+            ],
+            "foot": [
+                ' class="main__total"',
+                TITLE,
+                *paid,
+                f' colspan="2"{EMPTY}',
+                EMPTY,
+                EMPTY,
+            ],
+        },
+    ]
 
 
 def _funds_closed_every_other(i, kind):
@@ -474,19 +477,15 @@ def test_funds_tab_queries_do_not_grow(client_logged, main_user, build, kind):
 
 
 @pytest.mark.parametrize(
-    "title, kind",
-    [
-        pytest.param("Fondai", "funds", id="funds"),
-        pytest.param("Fondai", "shares", id="shares"),
-        pytest.param("Pensijos", "pensions", id="pensions"),
-    ],
+    "title, kind", [*KINDS, pytest.param("Fondai", "shares", id="shares")]
 )
 def test_total_counts_the_switched_money_once(client_logged, title, kind):
     switch_a_into_b(kind=kind)
 
     cells = total_cells(_table(client_logged, title))
 
-    assert cells[5] == "2.300,00"
+    # the total in, and the profit's percent on that base
+    assert (cells[5], cells[-1]) == ("2.300,00", "7,69%")
 
 
 def _source_closed_before_the_year():
@@ -541,35 +540,18 @@ def _no_switches():
 
 
 @pytest.mark.parametrize(
-    "build, title, percent",
+    "build, percent",
     [
-        pytest.param(
-            _switched_through_a_closed_fund, "Fondai", "10,00%", id="through-closed"
-        ),
-        pytest.param(
-            _gain_passed_on_by_a_closed_fund, "Fondai", "15,00%", id="gain-passed-on"
-        ),
-        pytest.param(_no_switches, "Fondai", "30,00%", id="no-switches"),
-        pytest.param(
-            _source_closed_before_the_year, "Fondai", "7,69%", id="closed-source"
-        ),
-        # the switched money counted once in the base
-        *(
-            pytest.param(
-                partial(switch_a_into_b, kind=kind), title, "7,69%", id=f"switch-{kind}"
-            )
-            for title, kind in (
-                ("Fondai", "funds"),
-                ("Fondai", "shares"),
-                ("Pensijos", "pensions"),
-            )
-        ),
+        pytest.param(_switched_through_a_closed_fund, "10,00%", id="through-closed"),
+        pytest.param(_gain_passed_on_by_a_closed_fund, "15,00%", id="gain-passed-on"),
+        pytest.param(_no_switches, "30,00%", id="no-switches"),
+        pytest.param(_source_closed_before_the_year, "7,69%", id="closed-source"),
     ],
 )
-def test_total_profit_percentage(client_logged, build, title, percent):
+def test_total_profit_percentage(client_logged, build, percent):
     build()
 
-    assert total_cells(_table(client_logged, title))[-1] == percent
+    assert total_cells(_table(client_logged))[-1] == percent
 
 
 def test_pensions_total_ignores_a_switch_between_funds(client_logged):

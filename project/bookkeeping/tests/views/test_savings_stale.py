@@ -5,22 +5,17 @@ import pytest
 from ....savings.tests.factories import SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ....users.models import User
-from ..helper import row_cells, stale_fund, tab_table, total_cells, view_queries
+from ..helper import KINDS, row_cells, stale_fund, tab_table, total_cells, view_queries
 from ..signals.helpers import YEAR, buy, sell, worth
 
 pytestmark = pytest.mark.django_db
-
-TABLES = [
-    pytest.param("Fondai", "funds", id="funds"),
-    pytest.param("Pensijos", "pensions", id="pensions"),
-]
 
 
 def _table(client, title="Fondai"):
     return tab_table(client, "bookkeeping:tab_funds", title)
 
 
-@pytest.mark.parametrize("title, kind", TABLES)
+@pytest.mark.parametrize("title, kind", KINDS)
 def test_a_stale_worth_shows_dashes_in_the_profit_cells(client_logged, title, kind):
     stale_fund(kind=kind)
 
@@ -48,7 +43,7 @@ def test_a_worth_dated_after_the_sell_shows_the_profit(client_logged):
     assert cells[10:12] == ["100,00", "10,00%"]
 
 
-@pytest.mark.parametrize("title, kind", TABLES)
+@pytest.mark.parametrize("title, kind", KINDS)
 def test_the_total_profit_sums_only_the_rows_that_show_one(client_logged, title, kind):
     a = SavingTypeFactory(title="A", type=kind)
     b = SavingTypeFactory(title="B", type=kind)

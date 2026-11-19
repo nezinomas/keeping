@@ -90,7 +90,6 @@ class SavingsPresenter:
     def as_dict(self) -> dict:
         return {
             "title": _("Funds"),
-            "type": "savings",
             "object_list": self._dto.savings,
             "saved_share": self.saved_share(),
             "total_row": utils.funds_total_row(

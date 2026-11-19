@@ -108,17 +108,11 @@ class TabCharts(IndexTabMixin, TemplateViewMixin):
 
 class RegenerateBalances(TemplateViewMixin):
     def get(self, request, *args, **kwargs):
-        balances = {
-            "accounts": balance_sources.sync_accounts,
-            "savings": balance_sources.sync_savings,
-            "pensions": balance_sources.sync_pensions,
-        }
-        syncs = list(balances.values())
-
-        if (kind := request.GET.get("type")) in balances:
-            syncs = [balances[kind]]
-
-        for sync in syncs:
+        for sync in (
+            balance_sources.sync_accounts,
+            balance_sources.sync_savings,
+            balance_sources.sync_pensions,
+        ):
             sync(request.user)
 
         return http_htmx_response("reload")

@@ -1,14 +1,17 @@
 import re
+from datetime import date
 
 import pytest
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountFactory
+from ....core.tests.utils import tab_fragment
+from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import PensionFactory
 from ....savings.tests.factories import SavingFactory
 from .. import factories
-from ..helper import tab_table
+from ..helper import cell_texts, tab_table, table_titled
 
 pytestmark = pytest.mark.django_db
 
@@ -20,26 +23,46 @@ FUNDS_HEADER = (
 )
 
 
-@pytest.mark.parametrize(
-    "url_name, title, factory, header",
-    [
-        pytest.param(
-            OVERVIEW,
-            "Sąskaitos",
-            factories.AccountWorthFactory,
-            r"<th>1999 pradžioje</th>",
-            id="accounts",
-        ),
-        pytest.param(FUNDS, "Fondai", SavingFactory, FUNDS_HEADER, id="funds"),
-        pytest.param(FUNDS, "Pensijos", PensionFactory, FUNDS_HEADER, id="pensions"),
-    ],
-)
-def test_header_reads_the_selected_year(
-    client_logged, url_name, title, factory, header
-):
-    factory()
+def test_header_reads_the_selected_year(client_logged):
+    PensionFactory()
 
-    assert re.search(header, tab_table(client_logged, url_name, title))
+    assert re.search(FUNDS_HEADER, tab_table(client_logged, FUNDS, "Pensijos"))
+
+
+def test_accounts_table_draws_each_column_under_a_left_title(client_logged):
+    account = AccountFactory()
+    IncomeFactory(account=account, date=date(1998, 1, 1), price=100000)
+    IncomeFactory(account=account, price=50000)
+    ExpenseFactory(account=account, price=20000)
+    factories.AccountWorthFactory(account=account, price=125000)
+
+    table = tab_table(client_logged, OVERVIEW, "Sąskaitos")
+    first_cells = re.findall(r"<tr\b[^>]*>\s*<t[hd]([^>]*)>", table)
+
+    assert (first_cells, cell_texts(table)) == (
+        [' class="text-left"'] * 3,
+        [
+            [
+                "Sąskaitos",
+                "1999 pradžioje",
+                "Pajamos",
+                "Išlaidos",
+                "Balansas",
+                "Turiu",
+                "Delta",
+            ],
+            [
+                "Account1",
+                "1.000,00",
+                "500,00",
+                "200,00",
+                "1.300,00",
+                "1.250,00",
+                "-50,00",
+            ],
+            ["Viso", "1.000,00", "500,00", "200,00", "1.300,00", "1.250,00", "-50,00"],
+        ],
+    )
 
 
 @pytest.mark.parametrize(
@@ -68,30 +91,27 @@ def test_delta_reads_the_worth_check_on_the_row_and_the_total(
     ] == deltas
 
 
-@pytest.mark.parametrize(
-    "url_name, title, factory, kind",
-    [
-        pytest.param(
-            OVERVIEW,
-            "Sąskaitos",
-            factories.AccountWorthFactory,
-            "accounts",
-            id="accounts",
-        ),
-        pytest.param(FUNDS, "Fondai", SavingFactory, "savings", id="funds"),
-        pytest.param(FUNDS, "Pensijos", PensionFactory, "pensions", id="pensions"),
-    ],
-)
-def test_each_table_refreshes_its_own_balances(
-    client_logged, url_name, title, factory, kind
-):
-    factory()
-
-    table = tab_table(client_logged, url_name, title)
+def test_every_table_refreshes_every_balance(client_logged):
+    factories.AccountWorthFactory()
+    SavingFactory()
+    PensionFactory()
     url = reverse("bookkeeping:regenerate_balances")
-
-    assert re.search(
-        r'<span class="tip right" data-tip="Bus atnaujinti tik šios lentelės '
-        rf'balansai.">\s*<a href="#" role="button" hx-get="{url}\?type={kind}">',
-        table,
+    overview, funds = (
+        tab_fragment(client_logged, reverse(url_name)) for url_name in (OVERVIEW, FUNDS)
     )
+
+    # the icon opens the title's header cell
+    icons = [
+        re.findall(
+            r'<th class="text-left"[^>]*>\s*<span class="tip right" data-tip="([^"]*)">'
+            r'\s*<a href="#" role="button" hx-get="([^"]*)">',
+            table_titled(content, title),
+        )
+        for content, title in (
+            (overview, "Sąskaitos"),
+            (funds, "Fondai"),
+            (funds, "Pensijos"),
+        )
+    ]
+
+    assert icons == [[("Bus atnaujinti visų metų balansai.", url)]] * 3

@@ -1,6 +1,6 @@
 {% load i18n %}
-<span class="tip right" data-tip="{% translate 'Only the balances in this table will be updated.' %}">
-    <a href="#" role="button" hx-get="{% url 'bookkeeping:regenerate_balances' %}{% if type %}?type={{ type }}{% endif %}">
+<span class="tip right" data-tip="{% translate 'Balances for all years will be updated.' %}">
+    <a href="#" role="button" hx-get="{% url 'bookkeeping:regenerate_balances' %}">
         <i class="bi bi-arrow-repeat me-1"></i>
     </a>
 </span>

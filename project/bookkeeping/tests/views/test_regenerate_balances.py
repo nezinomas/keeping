@@ -56,18 +56,8 @@ def test_view_regenerate_balances_all_year(client_logged, main_user):
     assert PensionBalance.objects.all().count() == 2
 
 
-@pytest.mark.parametrize(
-    "kind, calls",
-    [
-        pytest.param("accounts", (1, 0, 0), id="accounts"),
-        pytest.param("savings", (0, 1, 0), id="savings"),
-        pytest.param("pensions", (0, 0, 1), id="pensions"),
-        pytest.param("", (1, 1, 1), id="none"),
-        pytest.param("xxx", (1, 1, 1), id="unknown"),
-    ],
-)
-def test_view_regenerate_syncs_its_kind_and_reloads_the_tab(kind, calls, mocker, rf):
-    request = rf.get(f"/fake/?type={kind}")
+def test_view_regenerate_syncs_every_balance_and_reloads_the_tab(mocker, rf):
+    request = rf.get("/fake/")
     request.user = UserFactory.build()
     request.user.journal = JournalFactory.build()
     syncs = [
@@ -77,5 +67,5 @@ def test_view_regenerate_syncs_its_kind_and_reloads_the_tab(kind, calls, mocker,
 
     response = setup_view(views.RegenerateBalances(), request).get(request)
 
-    assert tuple(sync.call_count for sync in syncs) == calls
+    assert tuple(sync.call_count for sync in syncs) == (1, 1, 1)
     assert json.loads(response.headers["HX-Trigger"]) == {"reload": {}}

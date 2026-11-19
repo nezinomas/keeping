@@ -1,0 +1,3 @@
+<c-vars value="" colspan="" :signed="False" :check="None" show="" :empty="False" />
+{# check: a passed "" still draws data-check="" (the Cash-flow check's state); no check, no attribute #}
+{% load math cell_format %}<td{% if colspan %} colspan="{{ colspan }}"{% endif %} class="main__figure"{% if signed and value %} data-sign="{{ value|sign }}"{% endif %} data-cell="{% if empty %}empty{% else %}{{ value|cell_state }}{% endif %}"{% if check is not None %} data-check="{{ check }}"{% endif %}{% if show %} x-show="{{ show }}"{% endif %}>{% if empty %}-{% elif slot %}{{ slot }}{% else %}{{ value|price|cellformat }}{% endif %}</td>

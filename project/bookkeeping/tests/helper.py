@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from datetime import date
 from unittest.mock import patch
 
+import pytest
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
@@ -14,6 +15,12 @@ from ...savings.tests.factories import SavingTypeFactory
 from ...transactions.tests.factories import SavingChangeFactory
 from .. import balance_sources, views
 from .signals.helpers import buy, sell, worth
+
+# the Fondai tab's two tables and the kind of fund each lists
+KINDS = [
+    pytest.param("Fondai", "funds", id="funds"),
+    pytest.param("Pensijos", "pensions", id="pensions"),
+]
 
 WORTH_VIEWS = (views.AccountsWorthNew, views.SavingsWorthNew, views.PensionsWorthNew)
 
@@ -70,6 +77,17 @@ def row_tags(content, title):
 
 def row_cells(content, title):
     return [text for _attrs, text in row_tags(content, title)]
+
+
+def cell_texts(table):
+    """Each row's cells as text, tags and spacing gone: head, body and foot."""
+    return [
+        [
+            " ".join(re.sub(r"<[^>]+>", " ", cell).split())
+            for cell in re.findall(r"<t[hd]\b[^>]*>(.*?)</t[hd]>", row, re.S)
+        ]
+        for row in re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S)
+    ]
 
 
 def script_json(content, script_id):

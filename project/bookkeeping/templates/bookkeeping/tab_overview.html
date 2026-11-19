@@ -4,10 +4,6 @@
     <c-stat-cards :cards="cards" />
 </div>
 
-<div class="flex">
-    <button class="button-secondary button-refresh" hx-get="{% url 'bookkeeping:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span></button>
-</div>
-
 <c-panel table id="accounts" title="{% translate 'Accounts' %}">
     <div class="table-responsive">{% include 'bookkeeping/includes/account_worth_list.html' %}</div>
 </c-panel>

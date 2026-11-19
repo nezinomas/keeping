@@ -1,11 +1,10 @@
 {% load i18n %}
-{% load math %}
 {% load cell_format %}
 
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="text-left" rowspan="2"><c-regenerate-balances :type="type" />{{ title }}</th>
+            <th class="text-left" rowspan="2"><c-regenerate-balances /> {{ title }}</th>
             <th rowspan="2" colspan="2" class="text-center">{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
             <th colspan="2" class="text-center">{{ request.user.selected_year }}</th>
             <th colspan="4" class="text-center">{% translate 'Total' %}</th>
@@ -36,44 +35,44 @@
     {% for item in object_list %}
     <tr>
         <td class="text-left">{% if item.saving_type_id %}{{ item.saving_type }}{% else %}{{ item.pension_type }}{% endif %}</td>
-        <td class="main__figure" data-cell="{{item.past_amount|cell_state}}">{{item.past_amount|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.past_fee|cell_state}}">{{item.past_fee|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.per_year_incomes|cell_state}}">{{item.per_year_incomes|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.per_year_fee|cell_state}}">{{item.per_year_fee|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.incomes|cell_state}}">{{item.incomes|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.fee|cell_state}}">{{item.fee|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.sold|cell_state}}">{{item.sold|price|cellformat}}</td>
-        <td class="main__figure" data-cell="{{item.sold_fee|cell_state}}">{{item.sold_fee|price|cellformat}}</td>
+        <c-figure-cell :value="item.past_amount" />
+        <c-figure-cell :value="item.past_fee" />
+        <c-figure-cell :value="item.per_year_incomes" />
+        <c-figure-cell :value="item.per_year_fee" />
+        <c-figure-cell :value="item.incomes" />
+        <c-figure-cell :value="item.fee" />
+        <c-figure-cell :value="item.sold" />
+        <c-figure-cell :value="item.sold_fee" />
         {% if item.market_value %}
         <td class="main__date">{{ item.latest_check|date:"Y-m-d" }}</td>
-        <td class="main__figure" data-cell="{{item.market_value|cell_state}}">{{item.market_value|price|cellformat}}</td>
+        <c-figure-cell :value="item.market_value" />
         {% else %}
         <td class="main__date" data-cell="empty">-</td>
-        <td class="main__figure" data-cell="empty">-</td>
+        <c-figure-cell empty />
         {% endif %}
         {% if item.shows_profit %}
-        <td class="main__figure"{% if item.profit_sum %} data-sign="{{item.profit_sum|sign}}"{% endif %} data-cell="{{item.profit_sum|cell_state}}">{{item.profit_sum|price|cellformat}}</td>
-        <td class="main__figure"{% if item.profit_sum %} data-sign="{{item.profit_sum|sign}}"{% endif %} data-cell="{{item.profit_sum|cell_state}}">{{item.profit_proc|cellformat}}%</td>
+        <c-figure-cell :value="item.profit_sum" signed />
+        <c-figure-cell :value="item.profit_sum" signed>{{ item.profit_proc|cellformat }}%</c-figure-cell>
         {% else %}
-        <td class="main__figure" data-cell="empty">-</td>
-        <td class="main__figure" data-cell="empty">-</td>
+        <c-figure-cell empty />
+        <c-figure-cell empty />
         {% endif %}
     </tr>
     {% endfor %}
     <c-slot name="foot">
         <tr class="main__total">
             <td class="text-left">{% translate 'Total' %}</td>
-            <td class="main__figure" data-cell="{{total_row.past_amount|cell_state}}">{{total_row.past_amount|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.past_fee|cell_state}}">{{total_row.past_fee|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.per_year_incomes|cell_state}}">{{total_row.per_year_incomes|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.per_year_fee|cell_state}}">{{total_row.per_year_fee|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.incomes|cell_state}}">{{total_row.incomes|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.fee|cell_state}}">{{total_row.fee|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.sold|cell_state}}">{{total_row.sold|price|cellformat}}</td>
-            <td class="main__figure" data-cell="{{total_row.sold_fee|cell_state}}">{{total_row.sold_fee|price|cellformat}}</td>
-            <td colspan="2" class="main__figure" data-cell="{{total_row.market_value|cell_state}}">{{total_row.market_value|price|cellformat}}</td>
-            <td class="main__figure"{% if total_row.profit_sum %} data-sign="{{total_row.profit_sum|sign}}"{% endif %} data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_sum|price|cellformat}}</td>
-            <td class="main__figure"{% if total_row.profit_sum %} data-sign="{{total_row.profit_sum|sign}}"{% endif %} data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_proc|cellformat}}%</td>
+            <c-figure-cell :value="total_row.past_amount" />
+            <c-figure-cell :value="total_row.past_fee" />
+            <c-figure-cell :value="total_row.per_year_incomes" />
+            <c-figure-cell :value="total_row.per_year_fee" />
+            <c-figure-cell :value="total_row.incomes" />
+            <c-figure-cell :value="total_row.fee" />
+            <c-figure-cell :value="total_row.sold" />
+            <c-figure-cell :value="total_row.sold_fee" />
+            <c-figure-cell :value="total_row.market_value" colspan="2" />
+            <c-figure-cell :value="total_row.profit_sum" signed />
+            <c-figure-cell :value="total_row.profit_sum" signed>{{ total_row.profit_proc|cellformat }}%</c-figure-cell>
         </tr>
     </c-slot>
 </c-paper-table>
