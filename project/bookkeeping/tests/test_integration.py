@@ -1,6 +1,8 @@
 import re
+from datetime import date
 
 import pytest
+import time_machine
 from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
@@ -23,7 +25,8 @@ pytestmark = pytest.mark.django_db
 
 CHART_ROOTS = (
     "#chart-balance-container .highcharts-root,"
-    " #chart-expenses-container .highcharts-root"
+    " #chart-expenses-container .highcharts-root,"
+    " #chart-incomes-expenses-container .highcharts-root"
 )
 # the dev DB's longest fund name
 LONGEST_FUND = "VALL - Vanguard FTSE GLB AL-CAP ETF"
@@ -31,9 +34,14 @@ GAIN, HARM = "rgb(31, 107, 74)", "rgb(125, 39, 51)"
 INK, INK_FAINT = "rgb(22, 34, 43)", "rgb(139, 151, 159)"
 INK_MUTED = "rgb(90, 106, 117)"
 YEAR_STRIP = ".overview-grid__column:first-child .panel:first-child"
-EXPENSE_PARTS = "#chart-expenses-container .highcharts-data-label span"
+EXPENSE_PARTS = "#chart-expenses-container .highcharts-data-label text"
 HAIR, HAIR_SOFT = "rgb(207, 214, 218)", "rgb(225, 230, 232)"
-DATA = "0.0862745 0.411765 0.607843"  # --skin-data's channels in `color(srgb)`
+DATA_RGB, TINT = "rgb(22, 105, 155)", "rgba(22, 105, 155, 0.22)"  # --skin-data
+YEAR_0, HARM_SOFT = "rgb(110, 151, 178)", "rgb(196, 127, 134)"
+# a current month's mark at the theme's inactive opacity, 0.35
+TINT_FADED = "color(srgb 0.0862745 0.411765 0.607843 / 0.0768628)"
+DATA_FADED = "color(srgb 0.0862745 0.411765 0.607843 / 0.35)"
+HARM_FADED = "color(srgb 0.490196 0.152941 0.2 / 0.35)"
 CLEAR = "rgba(0, 0, 0, 0)"
 WASH = "rgba(232, 194, 26, 0.3)"
 # CSS's named colours, `transparent` and `currentcolor` among them
@@ -64,7 +72,7 @@ NAMED_COLOURS = """
 def test_index_chart_scripts_hold_no_colour_literal():
     # a chart reads the skin's tokens: a literal or a legacy token is the bug; the one
     # named colour allowed is an alpha step's `color-mix(..., N%, transparent)` (Q78)
-    scripts = ("chart_index_balance.js", "chart_index_expenses.js")
+    scripts = ("chart_index_months.js", "chart_index_expenses.js", "chart_paper.js")
     literal = re.compile(
         r"#\w+|\b(?:rgb|hsl|hwb|lab|lch|oklab|oklch|color)a?\(|--chart-[\w-]+"
         rf"|\b(?:{'|'.join(NAMED_COLOURS)})\b"
@@ -79,6 +87,23 @@ def test_index_chart_scripts_hold_no_colour_literal():
     }
 
     assert literals == dict.fromkeys(scripts, [])
+
+
+# each mark under `q` read as the computed `keys` of its style
+LOOK = (
+    "const look = (q, ...keys) => [...document.querySelectorAll(q)]"
+    "  .map(mark => keys.map(key => getComputedStyle(mark)[key]));"
+)
+
+
+def tooltip_at(x: int) -> str:
+    """A `read_chart` script's start: the tooltip opened on month `x`, its lines `tip`."""
+    return (
+        f"const at = c.series.map(s => s.points[{x}]);"
+        " c.tooltip.refresh(c.options.tooltip.shared ? at : at[0]);"
+        " const tip = c.tooltip.label.text.element.innerText.split('\\n')"
+        "  .filter(Boolean);"
+    )
 
 
 def page_overflow(browser):
@@ -108,14 +133,14 @@ class BookkeepingIndex(TestCase, Browser):
         )
 
     # a tab opened by its URL is the reload test's charts row
-    def test_the_charts_tab_draws_both_charts_by_click(self):
+    def test_the_charts_tab_draws_its_three_charts_by_click(self):
         self.click_tab("charts")
 
-        assert self._drawn_charts() == 2
+        assert self._drawn_charts() == 3
 
     def test_a_reload_redraws_each_chart_once_and_throws_nothing(self):
         # the overview has no chart: a reload there must find none to redraw
-        for tab, drawn in (("overview", 0), ("charts", 2)):
+        for tab, drawn in (("overview", 0), ("charts", 3)):
             with self.subTest(tab=tab):
                 self.open(INDEX_TABS[tab].url)
 
@@ -126,95 +151,121 @@ class BookkeepingIndex(TestCase, Browser):
                     "errors": [],
                 }
 
-    def test_charts_draw_incomes_gain_expenses_harm_and_bars_fading_from_the_biggest(
+    def test_charts_draw_flat_named_one_hue_bars_and_two_marked_lines_on_their_averages(
         self,
     ):
-        IncomeFactory()
-        for title, price in (("Small", 100), ("Big", 300), ("Middle", 200)):
+        IncomeFactory(price=120000)
+        for title, price in (
+            ("Transportas remontas", 60000),
+            ("Transportas kuras", 180000),
+        ):
             ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
         self.open_at(INDEX_TABS["charts"].url, 1500)
 
         drawn = self.browser.execute_script(
             "const all = q => [...document.querySelectorAll(q)];"
-            " const fills = q => all(q).map(mark => getComputedStyle(mark).fill);"
-            " return {areas: fills('#chart-balance-container"
-            "  .highcharts-series .highcharts-area'),"
-            " bars: fills('#chart-expenses-container .highcharts-point'),"
+            f" {LOOK}"
+            " const lines = '#chart-incomes-expenses-container ';"
+            " return {bars: look('#chart-expenses-container .highcharts-point',"
+            "  'fill', 'stroke', 'strokeWidth'),"
             " types: all('#chart-expenses-container .highcharts-xaxis-labels text')"
-            "  .map(label => label.textContent)};"
+            "  .map(label => label.textContent),"
+            " lines: look(lines + '.highcharts-series .highcharts-graph',"
+            "  'stroke', 'fill'),"
+            " rules: look(lines + '.highcharts-plot-line', 'stroke', 'strokeDasharray'),"
+            " rule_labels: all(lines + '.chart-rule-label').map(l => l.textContent),"
+            " legend: all(lines + '.highcharts-legend-item text')"
+            "  .map(item => item.textContent)};"
         )
-        # a mixed colour computes as `color(srgb r g b / alpha)`, its alpha 1 unsaid
-        hues, alphas = set(), []
-        for fill in drawn.pop("bars"):
-            hue, _, alpha = fill.removeprefix("color(srgb ").partition(" / ")
-            hues.add(hue.removesuffix(")"))
-            alphas.append(alpha.removesuffix(")") or "1")
+        markers = self.read_chart(
+            "chart-incomes-expenses-container",
+            "return c.series.map(s => s.symbol);",
+        )
+        drawn["horizontal"] = self.read_chart(
+            "chart-expenses-container", "return c.inverted;"
+        )
 
-        assert (drawn, hues, alphas) == (
+        assert (drawn, markers) == (
             {
-                "areas": [GAIN, HARM],
-                # the factory's own type, spent nothing, comes last, cut to 11
-                "types": ["Big", "Middle", "Small", "Expense Typ"],
+                "bars": [[TINT, YEAR_0, "1px"]] * 3,
+                # whole and flat, biggest first; the factory's own type spent nothing
+                "types": ["Transportas kuras", "Transportas remontas", "Expense Type"],
+                "lines": [[DATA_RGB, "none"], [HARM, "none"]],
+                "rules": [[DATA_RGB, "1px, 3px"], [HARM, "1px, 3px"]],
+                # the twelve months of a past year: 1.200€ and 2.400€ over twelve
+                "rule_labels": ["Vidurkis: 100€", "Vidurkis: 200€"],
+                "legend": ["Pajamos", "Išlaidos"],
+                "horizontal": True,
             },
-            {DATA},
-            ["1", "0.733333", "0.466667", "0.2"],
+            ["circle", "diamond"],
         )
 
-    def test_two_types_cut_alike_on_the_axis_keep_a_bar_each(self):
-        for title, price in (
-            ("Transportas kuras", 30000),
-            ("Transportas remontas", 10000),
-        ):
-            ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
-        self.open_at(INDEX_TABS["charts"].url, 1500)
+    def test_the_balance_chart_draws_each_month_s_balance_against_a_zero_rule(self):
+        IncomeFactory(price=50000)
+        ExpenseFactory(price=20000)
+        ExpenseFactory(date=date(1999, 2, 1), price=150000)
+        drawn = {}
+        for width in (1500, 767):
+            self.open_at(INDEX_TABS["charts"].url, width)
+            drawn[width] = self.browser.execute_script(
+                f"{LOOK}"
+                " const box = '#chart-balance-container ';"
+                " return {columns: look(box + '.highcharts-point', 'fill', 'stroke'),"
+                " figures: [...document.querySelectorAll("
+                "  box + '.highcharts-data-label text')]"
+                "  .map(f => [f.textContent, getComputedStyle(f).fill]),"
+                " zero: look(box + '.highcharts-plot-line', 'stroke'),"
+                " series: document.querySelectorAll("
+                "  box + '.highcharts-series:not(.highcharts-markers)').length,"
+                " legend: document.querySelectorAll(box + '.highcharts-legend-item')"
+                "  .length};"
+            )
 
-        bars = self.read_chart(
-            "chart-expenses-container",
-            "return c.series[0].points.filter(p => p.y).map(p => {"
-            "  c.tooltip.refresh([p]);"
-            "  return [p.x, p.series.xAxis.ticks[p.x].label.textStr,"
-            "   p.dataLabel.text.textStr,"
-            "   c.tooltip.label.text.element.textContent.trim().split('\\n')[0]];"
-            " });",
-        )
-
-        # the axis cuts a name to fit; the tooltip names the type whole
-        assert bars == [
-            [0, "Transportas", "75,0%", "Transportas kuras"],
-            [1, "Transportas", "25,0%", "Transportas remontas"],
-        ]
+        # one column a month, a month at nought in the tint; a figure is muted, off a
+        # month at nought, and below 768px left to the tooltip
+        at_1500 = {
+            "columns": [[TINT, YEAR_0], [HARM_SOFT, HARM]] + [[TINT, YEAR_0]] * 10,
+            "figures": [["0,3k", INK_MUTED], ["-1,5k", INK_MUTED]],
+            "zero": [[INK]],
+            "series": 1,
+            "legend": 0,
+        }
+        assert drawn == {1500: at_1500, 767: at_1500 | {"figures": []}}
 
     def test_the_charts_stand_side_by_side_from_1200_and_stack_below(self):
         placed = {}
         for width in (1200, 1199):
             self.open_at(INDEX_TABS["charts"].url, width)
-            placed[width] = self.browser.execute_script(
-                "const [a, b] = [...document.querySelectorAll('#tab_content .panel')]"
-                "  .map(panel => panel.getBoundingClientRect());"
-                " const [x, y] = [...document.querySelectorAll("
-                "  '#tab_content .highcharts-xaxis .highcharts-axis-line')]"
-                "  .map(line => line.getBoundingClientRect().top);"
-                " return {beside: a.top === b.top && a.right < b.left,"
-                " stacked: b.top > a.bottom, same_width: a.width === b.width,"
-                " axes_on_one_line: x === y};"
-            )
+            a, b, c = self._boxes("#tab_content .panel")
+            x, y, _lines = self._boxes("#tab_content .highcharts-plot-background")
+            placed[width] = {
+                "beside": a["top"] == b["top"] and a["right"] < b["left"],
+                "stacked": b["top"] > a["bottom"],
+                "same_width": a["width"] == b["width"],
+                "plots_end_on_one_line": x["bottom"] == y["bottom"],
+                "lines_below_full_width": c["top"] > max(a["bottom"], b["bottom"])
+                and c["left"] == a["left"]
+                and c["right"] == b["right"],
+            }
 
         assert placed == {
             1200: {
                 "beside": True,
                 "stacked": False,
                 "same_width": True,
-                "axes_on_one_line": True,
+                "plots_end_on_one_line": True,
+                "lines_below_full_width": True,
             },
             1199: {
                 "beside": False,
                 "stacked": True,
                 "same_width": True,
-                "axes_on_one_line": False,
+                "plots_end_on_one_line": False,
+                "lines_below_full_width": True,
             },
         }
 
-    def test_a_year_with_no_expenses_draws_one_whole_bar_and_no_part(self):
+    def test_a_year_with_no_expenses_draws_one_bar_and_no_figure(self):
         self.open_at(INDEX_TABS["charts"].url, 1500)
 
         drawn = self.browser.execute_script(
@@ -222,34 +273,81 @@ class BookkeepingIndex(TestCase, Browser):
             "  '#chart-expenses-container .highcharts-point')).fill;"
         )
 
-        assert (drawn, self._texts(EXPENSE_PARTS)) == (f"color(srgb {DATA})", [])
+        assert (drawn, self._texts(EXPENSE_PARTS)) == (TINT, [])
 
-    def test_each_expense_bar_prints_its_part_of_the_year_in_the_muted_figure(self):
-        self._open_charts_with_two_types(1500)
-
-        look = self.browser.execute_script(
-            f"const look = getComputedStyle(document.querySelector('{EXPENSE_PARTS}'));"
-            " return [look.color, look.fontSize, look.fontWeight];"
-        )
+    def test_each_expense_bar_ends_in_its_whole_sum_and_share_in_the_muted_figure(
+        self,
+    ):
+        for title, price in (("Big", 12345000), ("Small", 4115000)):
+            ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
+        drawn = {}
+        for width in (1500, 360):
+            self.open_at(INDEX_TABS["charts"].url, width)
+            drawn[width] = self.browser.execute_script(
+                f"const look = getComputedStyle(document.querySelector('{EXPENSE_PARTS}'));"
+                " const chart = document.querySelector('#chart-expenses-container svg')"
+                "  .getBoundingClientRect();"
+                f" return {{look: [look.fill, look.fontSize, look.fontWeight],"
+                f" inside: [...document.querySelectorAll('{EXPENSE_PARTS}')]"
+                "  .every(f => f.getBoundingClientRect().right <= chart.right)};"
+            )
 
         # the factory's own type, spent nothing, gets the last bar and no figure
-        assert (self._texts(EXPENSE_PARTS), look) == (
-            ["75,0%", "25,0%"],
-            [INK_MUTED, "12px", "400"],
+        assert (self._texts(EXPENSE_PARTS), drawn) == (
+            ["123.450€ · 75,0%", "41.150€ · 25,0%"],
+            dict.fromkeys(
+                (1500, 360), {"look": [INK_MUTED, "12px", "400"], "inside": True}
+            ),
         )
 
-    def test_both_money_axes_read_from_100_in_thousands(self):
+    def test_the_money_axes_read_from_100_in_thousands_either_way(self):
         self._open_charts_with_two_types(1500)
 
         axes = [
             self._texts(f"#{chart} .highcharts-yaxis-labels text")
-            for chart in ("chart-expenses-container", "chart-balance-container")
+            for chart in (
+                "chart-expenses-container",
+                "chart-balance-container",
+                "chart-incomes-expenses-container",
+            )
         ]
 
         assert axes == [
             ["0", "0,1k", "0,2k", "0,3k", "0,4k"],
-            ["0", "0,1k", "0,2k", "0,3k", "0,4k", "0,5k"],
+            ["-0,6k", "-0,4k", "-0,2k", "0"],
+            ["0", "0,2k", "0,4k", "0,6k"],
         ]
+
+    @time_machine.travel("1999-03-15")
+    def test_the_current_month_draws_paler_and_the_months_after_it_gap(self):
+        IncomeFactory(date=date(1999, 3, 1), price=50000)
+        ExpenseFactory(date=date(1999, 12, 1), price=10000)
+        self.open_at(INDEX_TABS["charts"].url, 1500)
+
+        drawn = {
+            chart: self.read_chart(
+                chart,
+                tooltip_at(2) + " return {y: c.series[0].points.map(p => p.y),"
+                "  fills: c.series.map(s => [0, 2].map(x =>"
+                "   getComputedStyle(s.points[x].graphic.element).fill)),"
+                "  tip: tip[0]};",
+            )
+            for chart in ("chart-balance-container", "chart-incomes-expenses-container")
+        }
+
+        # December already holds an expense, so it draws
+        assert drawn == {
+            "chart-balance-container": {
+                "y": [0, 0, 500, *[None] * 8, -100],
+                "fills": [[TINT, TINT_FADED]],
+                "tip": "Kovas (iki šiol)",
+            },
+            "chart-incomes-expenses-container": {
+                "y": [0, 0, 500, *[None] * 8, 0],
+                "fills": [[DATA_RGB, DATA_FADED], [HARM, HARM_FADED]],
+                "tip": "Kovas (iki šiol)",
+            },
+        }
 
     def test_the_month_axis_names_each_month_and_no_tick_past_december(self):
         months = {}
@@ -282,36 +380,46 @@ class BookkeepingIndex(TestCase, Browser):
     def test_each_chart_tooltip_prints_whole_euros(self):
         self._open_charts_with_two_types(1500)
 
-        expenses = self.read_chart(
-            "chart-expenses-container",
-            "c.tooltip.refresh([c.series[0].points[0]]);"
-            " return c.tooltip.label.text.element.textContent;",
-        ).split()
-        balance = self.read_chart(
-            "chart-balance-container",
-            # a split tooltip draws a label per series: read what each would say
-            "return c.series.map(s => c.tooltip.options.pointFormatter"
-            "  .call(s.points[0]).replace(/<[^>]*>/g, ''));",
-        )
+        tips = {
+            chart: self.read_chart(
+                chart,
+                tooltip_at(0)
+                + " return [getComputedStyle(c.tooltip.label.text.element).color,"
+                "  ...tip];",
+            )
+            for chart in (
+                "chart-expenses-container",
+                "chart-balance-container",
+                "chart-incomes-expenses-container",
+            )
+        }
 
-        assert (expenses, balance) == (
-            ["Big", "300€", "75,0%"],
-            ["Pajamos: 0€", "Išlaidos: 400€"],
-        )
+        # in ink; the lines chart's tooltip gives the month's balance too
+        assert tips == {
+            "chart-expenses-container": [INK, "Big", "300€ · 75,0%"],
+            "chart-balance-container": [INK, "Sausis", "Balansas: -400€"],
+            "chart-incomes-expenses-container": [
+                INK,
+                "Sausis",
+                "Pajamos: 0€",
+                "Išlaidos: 400€",
+                "Balansas: -400€",
+            ],
+        }
 
     def test_the_overview_panels_stand_in_three_columns_from_992_and_one_below(self):
         placed = {}
         for width in (992, 991):
             self.open_at(INDEX_TABS["overview"].url, width)
-            placed[width] = self.browser.execute_script(
-                "const [a, b, c] = [...document.querySelectorAll("
-                "  '.overview-grid__column')].map(col => col.getBoundingClientRect());"
-                " return {beside: a.top === b.top && b.top === c.top"
-                "  && a.right < b.left && b.right < c.left,"
-                " stacked: a.bottom <= b.top && b.bottom <= c.top,"
-                " middle_widest: b.width > a.width"
-                "  && Math.round(a.width) === Math.round(c.width)};"
-            )
+            a, b, c = self._boxes(".overview-grid__column")
+            placed[width] = {
+                "beside": a["top"] == b["top"] == c["top"]
+                and a["right"] < b["left"]
+                and b["right"] < c["left"],
+                "stacked": a["bottom"] <= b["top"] and b["bottom"] <= c["top"],
+                "middle_widest": b["width"] > a["width"]
+                and round(a["width"]) == round(c["width"]),
+            }
 
         # no open debt: the third column is empty and keeps its track
         assert placed == {
@@ -599,6 +707,15 @@ class BookkeepingIndex(TestCase, Browser):
         for title, price in (("Big", 30000), ("Small", 10000)):
             ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
         self.open_at(INDEX_TABS["charts"].url, width)
+
+    def _boxes(self, selector: str) -> list[dict]:
+        return self.browser.execute_script(
+            "return [...document.querySelectorAll(arguments[0])].map(e => {"
+            " const r = e.getBoundingClientRect();"
+            " return {top: r.top, bottom: r.bottom, left: r.left, right: r.right,"
+            "  width: r.width}; });",
+            selector,
+        )
 
     def _texts(self, selector: str) -> list[str]:
         return self.browser.execute_script(

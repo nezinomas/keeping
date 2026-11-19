@@ -5,11 +5,15 @@
         <div id="chart-expenses-container"></div>
     </c-panel>
 
-    <c-panel title="{% translate 'Incomes and Expenses' %}">
+    <c-panel title="{% translate 'Balance per month' %}">
         <div id="chart-balance-container"></div>
     </c-panel>
 </div>
 
+<c-panel title="{% translate 'Incomes and Expenses' %}">
+    <div id="chart-incomes-expenses-container"></div>
+</c-panel>
+
 <c-chart-expenses-data :data=chart_expenses />
 
-<c-chart-balance-data :data=chart_balance />
+<c-month-charts-data :data=month_charts />

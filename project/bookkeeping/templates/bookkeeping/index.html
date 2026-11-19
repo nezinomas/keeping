@@ -8,7 +8,7 @@
     {% include 'highcharts.html' %}
     {# after the shared chart theme it overrides, before the charts it dresses #}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
-    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_index_balance.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_index_months.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_index_expenses.js' %}"></script>
 {% endblock head_scripts %}
 
@@ -28,6 +28,6 @@
 {% block tab_listeners %}
 <script nonce="{{ csp_nonce }}">
     onTabContent('chart-expenses-data', drawIndexExpenses);
-    onTabContent('chart-balance-data', drawIndexBalance);
+    onTabContent('month-charts-data', drawIndexMonthCharts);
 </script>
 {% endblock tab_listeners %}

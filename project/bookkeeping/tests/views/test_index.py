@@ -456,16 +456,17 @@ def test_only_the_charts_tab_draws_each_chart_and_its_data(tab_contents):
         for tab, content in tab_contents.items()
         if (
             found := re.findall(PANEL_TITLE + r'<div id="([^"]*)"></div>', content)
-            + re.findall(r'<script id="(chart-[\w-]+-data)"', content)
+            + re.findall(r'<script id="([\w-]+-data)"', content)
         )
     }
 
     assert charts == {
         "charts": [
             ("Išlaidos pagal rūšis", "chart-expenses-container"),
-            ("Pajamos ir išlaidos", "chart-balance-container"),
+            ("Balansas per mėnesį", "chart-balance-container"),
+            ("Pajamos ir išlaidos", "chart-incomes-expenses-container"),
             "chart-expenses-data",
-            "chart-balance-data",
+            "month-charts-data",
         ]
     }
 
@@ -475,7 +476,7 @@ def test_view_index_renders_its_chart_data(client_logged):
     ExpenseFactory(date=date(1999, 1, 1), price=100)
 
     content = tab_fragment(client_logged, INDEX_TABS["charts"].url)
-    balance = script_json(content, "chart-balance-data")
+    balance = script_json(content, "month-charts-data")
     expenses = script_json(content, "chart-expenses-data")
 
     # today's month is the selected year's current month, the next one not reached

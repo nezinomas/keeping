@@ -1,67 +1,53 @@
-// the palest bar's share of the data hue; the biggest bar takes all of it
-var INDEX_EXPENSES_PALEST = 20;
-
+// The year's expenses by type, biggest first: one hue, as the order already says the
+// rank; each bar ends in its sum and its part of the year.
 function drawIndexExpenses() {
     const chartData = JSON.parse(document.getElementById("chart-expenses-data").textContent);
     const total = chartData.reduce((sum, type) => sum + type.y, 0) / 100;
-    // a type's part of the year's expenses; a type that spent nothing prints none
-    const percentOfYear = (y) => (y ? Highcharts.numberFormat(y / total * 100, 1) + "%" : "");
-    // the types come biggest first: each bar a step paler than the one before
-    const step = (100 - INDEX_EXPENSES_PALEST) / Math.max(chartData.length - 1, 1);
-    const types = chartData.map((type, i) => ({
-        name: type.name,
-        y: type.y / 100,
-        color: `color-mix(in srgb, var(--skin-data) ${100 - i * step}%, transparent)`,
-    }));
+    // a type that spent nothing prints no figure
+    const sumAndShare = (y) => (
+        y ? `${paperEuros(y)} · ${Highcharts.numberFormat(y / total * 100, 1)}%` : ""
+    );
 
     Highcharts.chart("chart-expenses-container", {
         chart: {
-            type: "column",
-            // the balance chart's beside it, so both axes sit on one line
-            marginBottom: 100,
+            type: "bar",
+            marginBottom: PAPER_PAIR_MARGIN_BOTTOM,
+            events: { load: indexRoomForFigures },
         },
+        legend: { enabled: false },
         xAxis: {
             type: "category",
-            crosshair: true,
-            labels: {
-                rotation: -45,
-                // a type's name, cut to fit under its bar; the tooltip holds it whole
-                formatter() { return this.value.slice(0, 11); },
-            },
+            labels: { step: 1, style: { textOverflow: "none", whiteSpace: "nowrap" } },
         },
-        yAxis: {
-            title: {
-                text: "",
-            },
-            labels: {
-                formatter: paperThousands,
-            },
-        },
+        yAxis: paperMoneyAxis(),
         tooltip: {
-            shared: true,
-            formatter: function () {
-                const point = this.points[0];
-                return `
-                    <b>${point.key}</b><br>
-                    ${paperEuros(point.y)}<br>
-                    ${percentOfYear(point.y)}
-                `;
+            formatter() {
+                return `<b>${this.key}</b><br>${sumAndShare(this.y)}`;
             },
         },
         series: [{
-            data: types,
+            data: chartData.map((type) => ({ name: type.name, y: type.y / 100 })),
+            color: "var(--skin-data-tint)",
+            borderColor: "var(--skin-year-0)",
+            borderWidth: 1,
             dataLabels: {
-                useHTML: true,
                 enabled: true,
-                rotation: -90,
-                align: "center",
                 crop: false,
                 overflow: "allow",
-                y: 2,
-                formatter: function () {
-                    return percentOfYear(this.y);
-                },
+                formatter() { return sumAndShare(this.y); },
             },
         }],
     });
+}
+
+// Room past the plot for the widest bar figure, as drawn, so a long sum is not cut.
+function indexRoomForFigures() {
+    const widths = this.series[0].points.map((point) => (
+        point.dataLabel ? point.dataLabel.getBBox().width : 0
+    ));
+    const gap = 12; // the figure's 5px off its bar, and air past it
+    const margin = { chart: { marginRight: Math.ceil(Math.max(0, ...widths)) + gap } };
+    // unanimated: an animated update leaves a phone's figures where the first layout
+    // put them, past the chart's edge
+    this.update(margin, true, false, false);
 }

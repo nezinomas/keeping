@@ -22,7 +22,8 @@ One of the Index's four views, in this order: *Apžvalga* (opened by `/`; not co
 Overview): four Cards, the Account balances table, the Year strip, the No-incomes
 table, the Debts table; *Fondai*: three Cards, the Funds table, the Pensions table;
 *Balansas*: the Month balance table, then the Expenses-by-type table; *Grafikai*: the
-expenses-by-type chart, the incomes-against-expenses chart. Each is fetched and reloaded
+expenses-by-type chart beside the balance-per-month chart (above it below 1200px), then
+the incomes-and-expenses chart under both. Each is fetched and reloaded
 whole, on every event that changes it; a closed tab reads fresh data when opened.
 *Grafikai* also names a navbar item, a different page.
 _Avoid_: section, panel, page
@@ -122,6 +123,16 @@ not a Month table. How a type name too long for its column reads is the builder'
 (design §5).
 _Avoid_: year expenses (the include), Type table (Detailed's Išlaidos table, and core's
 ledger Rūšys tab), expenses-by-type chart (Grafikai's chart of the year's totals)
+
+**Current month**:
+The month of today's date when the selected year is today's year; a past or a coming
+year has none. Grafikai's two month charts draw its marks paler (the balance column,
+each line's point), and its tooltip says *iki šiol*. A month after it, and every month
+of a coming year, is a gap on both charts unless it already holds incomes or expenses,
+which draw. Each line's average rule (*Vidurkis*) averages the months reached, the
+current month included: all twelve for a past year, none for a coming one. An average
+of nought, a coming year's or a year with no incomes, draws no rule.
+_Avoid_: this month, open month, running month
 
 ### Detailed
 
