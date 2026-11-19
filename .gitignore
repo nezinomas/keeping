@@ -8,7 +8,6 @@ media/
 sass/node_modules/
 .idea/
 .claude/
-claude.md
 project.pyproj*
 *.p
 
