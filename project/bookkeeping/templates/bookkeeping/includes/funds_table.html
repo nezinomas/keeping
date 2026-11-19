@@ -4,74 +4,74 @@
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="text-left" rowspan="2"><c-regenerate-balances /> {{ title }}</th>
-            <th rowspan="2" colspan="2" class="text-center">{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
-            <th colspan="2" class="text-center">{{ request.user.selected_year }}</th>
-            <th colspan="4" class="text-center">{% translate 'Total' %}</th>
-            <th rowspan="2" colspan="2" class="text-center">{% translate 'Market value' %}</th>
-            <th colspan="2" rowspan="2" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
+            <th class="text-left funds-table__name" rowspan="2"><c-regenerate-balances /> {{ title }}</th>
+            <th rowspan="2" colspan="2" class="text-center main__group-start">{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
+            <th colspan="2" class="text-center main__group-start">{{ request.user.selected_year }}</th>
+            <th colspan="4" class="text-center main__group-start">{% translate 'Total' %}</th>
+            <th rowspan="2" colspan="2" class="text-center main__group-start">{% translate 'Market value' %}</th>
+            <th colspan="2" rowspan="2" class="text-center main__group-start">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
         </tr>
         <tr>
-            <th colspan="2" class="text-center">{% translate 'Transferred' %}</th>
-            <th colspan="2" class="text-center">{% translate 'Transferred' %}</th>
+            <th colspan="2" class="text-center main__group-start">{% translate 'Transferred' %}</th>
+            <th colspan="2" class="text-center main__group-start">{% translate 'Transferred' %}</th>
             <th colspan="2" class="text-center">{% translate 'Sold' %}</th>
         </tr>
         <tr>
-            <th class="text-left">{% translate 'Fund' %}</th>
-            <th>{% translate 'Sum' %}</th>
+            <th class="text-left funds-table__name">{% translate 'Fund' %}</th>
+            <th class="main__group-start">{% translate 'Sum' %}</th>
+            <th>{% translate 'Fees' %}</th>
+            <th class="main__group-start">{% translate 'Sum' %}</th>
+            <th>{% translate 'Fees' %}</th>
+            <th class="main__group-start">{% translate 'Sum' %}</th>
             <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Sum' %}</th>
             <th>{% translate 'Fees' %}</th>
-            <th>{% translate 'Sum' %}</th>
-            <th>{% translate 'Fees' %}</th>
-            <th>{% translate 'Sum' %}</th>
-            <th>{% translate 'Fees' %}</th>
-            <th>{% translate 'Date' %}</th>
+            <th class="main__group-start">{% translate 'Date' %}</th>
             <th>{% translate 'Sum'%}</th>
-            <th>{% translate 'Sum' %}</th>
+            <th class="main__group-start">{% translate 'Sum' %}</th>
             <th>%</th>
         </tr>
     </c-slot>
     {% for item in object_list %}
     <tr>
-        <td class="text-left">{% if item.saving_type_id %}{{ item.saving_type }}{% else %}{{ item.pension_type }}{% endif %}</td>
-        <c-figure-cell :value="item.past_amount" />
+        <td class="text-left funds-table__name">{% if item.saving_type_id %}{{ item.saving_type }}{% else %}{{ item.pension_type }}{% endif %}</td>
+        <c-figure-cell :value="item.past_amount" group />
         <c-figure-cell :value="item.past_fee" />
-        <c-figure-cell :value="item.per_year_incomes" />
+        <c-figure-cell :value="item.per_year_incomes" group />
         <c-figure-cell :value="item.per_year_fee" />
-        <c-figure-cell :value="item.incomes" />
+        <c-figure-cell :value="item.incomes" group />
         <c-figure-cell :value="item.fee" />
         <c-figure-cell :value="item.sold" />
         <c-figure-cell :value="item.sold_fee" />
         {% if item.market_value %}
-        <td class="main__date">{{ item.latest_check|date:"Y-m-d" }}</td>
+        <td class="main__date main__group-start">{{ item.latest_check|date:"Y-m-d" }}</td>
         <c-figure-cell :value="item.market_value" />
         {% else %}
-        <td class="main__date" data-cell="empty">-</td>
+        <td class="main__date main__group-start" data-cell="empty">-</td>
         <c-figure-cell empty />
         {% endif %}
         {% if item.shows_profit %}
-        <c-figure-cell :value="item.profit_sum" signed />
+        <c-figure-cell :value="item.profit_sum" signed group />
         <c-figure-cell :value="item.profit_sum" signed>{{ item.profit_proc|cellformat }}%</c-figure-cell>
         {% else %}
-        <c-figure-cell empty />
+        <c-figure-cell empty group />
         <c-figure-cell empty />
         {% endif %}
     </tr>
     {% endfor %}
     <c-slot name="foot">
         <tr class="main__total">
-            <td class="text-left">{% translate 'Total' %}</td>
-            <c-figure-cell :value="total_row.past_amount" />
+            <td class="text-left funds-table__name">{% translate 'Total' %}</td>
+            <c-figure-cell :value="total_row.past_amount" group />
             <c-figure-cell :value="total_row.past_fee" />
-            <c-figure-cell :value="total_row.per_year_incomes" />
+            <c-figure-cell :value="total_row.per_year_incomes" group />
             <c-figure-cell :value="total_row.per_year_fee" />
-            <c-figure-cell :value="total_row.incomes" />
+            <c-figure-cell :value="total_row.incomes" group />
             <c-figure-cell :value="total_row.fee" />
             <c-figure-cell :value="total_row.sold" />
             <c-figure-cell :value="total_row.sold_fee" />
-            <c-figure-cell :value="total_row.market_value" colspan="2" />
-            <c-figure-cell :value="total_row.profit_sum" signed />
+            <c-figure-cell :value="total_row.market_value" colspan="2" group />
+            <c-figure-cell :value="total_row.profit_sum" signed group />
             <c-figure-cell :value="total_row.profit_sum" signed>{{ total_row.profit_proc|cellformat }}%</c-figure-cell>
         </tr>
     </c-slot>

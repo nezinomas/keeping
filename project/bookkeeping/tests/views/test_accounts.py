@@ -100,11 +100,11 @@ def test_every_table_refreshes_every_balance(client_logged):
         tab_fragment(client_logged, reverse(url_name)) for url_name in (OVERVIEW, FUNDS)
     )
 
-    # the icon opens the title's header cell
+    # the icon opens the title's header cell; a funds table's carries its name width
     icons = [
         re.findall(
-            r'<th class="text-left"[^>]*>\s*<span class="tip right" data-tip="([^"]*)">'
-            r'\s*<a href="#" role="button" hx-get="([^"]*)">',
+            r'<th class="([^"]*)"[^>]*>\s*<span class="tip right"'
+            r' data-tip="([^"]*)">\s*<a href="#" role="button" hx-get="([^"]*)">',
             table_titled(content, title),
         )
         for content, title in (
@@ -114,4 +114,6 @@ def test_every_table_refreshes_every_balance(client_logged):
         )
     ]
 
-    assert icons == [[("Bus atnaujinti visų metų balansai.", url)]] * 3
+    tip = ("Bus atnaujinti visų metų balansai.", url)
+    named = ("text-left funds-table__name", *tip)
+    assert icons == [[("text-left", *tip)], [named], [named]]

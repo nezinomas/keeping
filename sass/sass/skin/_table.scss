@@ -1,8 +1,21 @@
+@use "sass:map";
 @use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 @use "tokens";
 
 // The paper bundle does not import components/_table: `.main`'s only definition.
+
+// a column group's first column: $hair through the header band, $hair-soft down the
+// body and the foot (sass.md *Tables*, *Column groups*)
+$group-rule-colours: (band: $hair, body: $hair-soft);
+
+@mixin group-rule($zone) {
+    @if not map.has-key($group-rule-colours, $zone) {
+        @error "group-rule takes band or body, not #{$zone}";
+    }
+
+    border-left: 1px solid map.get($group-rule-colours, $zone);
+}
 
 .paper-skin {
     .main {
@@ -64,6 +77,14 @@
 
         tbody td {
             border-bottom: 1px solid $hair-soft;
+        }
+
+        thead th.main__group-start {
+            @include group-rule(band);
+        }
+
+        :is(tbody, tfoot) td.main__group-start {
+            @include group-rule(body);
         }
 
         .main__date {

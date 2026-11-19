@@ -29,6 +29,7 @@ from ..factories import AccountWorthFactory
 from ..helper import (
     BOXED_TABLE,
     FIGURE,
+    GROUP_FIGURE,
     PANEL_TITLE,
     cell_texts,
     quiet_build,
@@ -160,11 +161,11 @@ FIGURES = {
     # nothing before the year, then the year's transfer
     "funds": (
         r"<td[^>]*>Fund A</td>\s*<td[^>]*>-</td>\s*<td[^>]*>-</td>\s*"
-        rf'<td{FIGURE} data-cell="">1,50</td>'
+        rf'<td{GROUP_FIGURE} data-cell="">1,50</td>'
     ),
     "pensions": (
         r"<td[^>]*>PensionType</td>\s*<td[^>]*>-</td>\s*<td[^>]*>-</td>\s*"
-        rf'<td{FIGURE} data-cell="">1,00</td>'
+        rf'<td{GROUP_FIGURE} data-cell="">1,00</td>'
     ),
     "year_heads": r"<th>1999</th>",
     # January's balance, after its incomes and expenses; the total row holds it too
@@ -285,7 +286,7 @@ LEGACY_CLASSES = (
             ["Fondai", "Pensijos"],
             2,
             2,
-            [' class="main__date" data-cell="empty"'] * 2,
+            [' class="main__date main__group-start" data-cell="empty"'] * 2,
             id="funds",
         ),
         # each table's average and total rows; the average row's End of year label
@@ -589,7 +590,7 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
             lambda: INDEX_TABS["funds"].url,
             [_signed_year],
             rf"<td([^>]*)>[^<]*</td>\s*<td([^>]*)>[^<]*</td>{FOOT_END}",
-            [(f"{FIGURE}{GAIN_PROFIT}", f"{FIGURE}{GAIN_PROFIT}")],
+            [(f"{GROUP_FIGURE}{GAIN_PROFIT}", f"{FIGURE}{GAIN_PROFIT}")],
             id="profit-totals",
         ),
         pytest.param(

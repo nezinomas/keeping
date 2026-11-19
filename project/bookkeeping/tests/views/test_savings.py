@@ -17,6 +17,7 @@ from ....transactions.tests.factories import SavingChangeFactory
 from ..factories import PensionWorthFactory, SavingWorthFactory
 from ..helper import (
     FIGURE,
+    GROUP_FIGURE,
     KINDS,
     PANEL_TITLE,
     cell_texts,
@@ -340,7 +341,8 @@ def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
         "row": re.findall(r"<td([^>]*)>[^<]*</td>", row)[-2:],
         "total": re.findall(r"<td([^>]*)>[^<]*</td>", foot)[-2:],
     } == dict.fromkeys(
-        ("row", "total"), [' class="main__figure" data-cell="empty"'] * 2
+        ("row", "total"),
+        [f'{GROUP_FIGURE} data-cell="empty"', f'{FIGURE} data-cell="empty"'],
     )
 
 
@@ -357,24 +359,30 @@ def _shape(table):
 
 
 CENTRED = ' class="text-center"'
+CENTRED_START = ' class="text-center main__group-start"'
+START = ' class="main__group-start"'
+NAME = ' class="text-left funds-table__name"'
 # the three header rows: 13 columns under their groups
 HEAD = [
     [
-        ' class="text-left" rowspan="2"',
-        f' rowspan="2" colspan="2"{CENTRED}',
-        f' colspan="2"{CENTRED}',
-        f' colspan="4"{CENTRED}',
-        f' rowspan="2" colspan="2"{CENTRED}',
-        f' colspan="2" rowspan="2"{CENTRED}',
+        f'{NAME} rowspan="2"',
+        f' rowspan="2" colspan="2"{CENTRED_START}',
+        f' colspan="2"{CENTRED_START}',
+        f' colspan="4"{CENTRED_START}',
+        f' rowspan="2" colspan="2"{CENTRED_START}',
+        f' colspan="2" rowspan="2"{CENTRED_START}',
     ],
-    [f' colspan="2"{CENTRED}'] * 3,
-    [' class="text-left"', *[""] * 12],
+    [f' colspan="2"{CENTRED_START}'] * 2 + [f' colspan="2"{CENTRED}'],
+    [NAME, START, "", START, "", START, "", "", "", START, "", START, ""],
 ]
 
 EMPTY = f'{FIGURE} data-cell="empty"'
 SHOWN = f'{FIGURE} data-cell=""'
 GAIN = f'{FIGURE} data-sign="gain" data-cell=""'
-TITLE = ' class="text-left"'
+EMPTY_START = f'{GROUP_FIGURE} data-cell="empty"'
+SHOWN_START = f'{GROUP_FIGURE} data-cell=""'
+GAIN_START = f'{GROUP_FIGURE} data-sign="gain" data-cell=""'
+DATE_START = ' class="main__date main__group-start"'
 
 
 def test_funds_table_draws_each_column(client_logged):
@@ -414,38 +422,84 @@ def test_funds_tables_cells_carry_their_spans_and_states(client_logged):
     shapes = [_shape(table_titled(content, title)) for title in ("Fondai", "Pensijos")]
 
     # start, its fee; the year, its fee; the total in, its fee, sold, its fee
-    paid = [EMPTY, EMPTY, SHOWN, EMPTY, SHOWN, EMPTY, EMPTY, EMPTY]
+    paid = [EMPTY_START, EMPTY, SHOWN_START, EMPTY, SHOWN_START, EMPTY, EMPTY, EMPTY]
     assert shapes == [
         {
             "head": HEAD,
-            "row": [TITLE, *paid, ' class="main__date"', SHOWN, GAIN, GAIN],
+            "row": [NAME, *paid, DATE_START, SHOWN, GAIN_START, GAIN],
             "foot": [
                 ' class="main__total"',
-                TITLE,
+                NAME,
                 *paid,
-                f' colspan="2"{SHOWN}',
-                GAIN,
+                f' colspan="2"{SHOWN_START}',
+                GAIN_START,
                 GAIN,
             ],
         },
         {
             "head": HEAD,
             "row": [
-                TITLE,
+                NAME,
                 *paid,
-                ' class="main__date" data-cell="empty"',
-                *[EMPTY] * 3,
+                f'{DATE_START} data-cell="empty"',
+                EMPTY,
+                EMPTY_START,
+                EMPTY,
             ],
             "foot": [
                 ' class="main__total"',
-                TITLE,
+                NAME,
                 *paid,
-                f' colspan="2"{EMPTY}',
-                EMPTY,
+                f' colspan="2"{EMPTY_START}',
+                EMPTY_START,
                 EMPTY,
             ],
         },
     ]
+
+
+def _group_starts(table):
+    """Per row, head to foot, the grid columns (from 1) of the cells marked as a
+    column group's first; a header cell's rowspan takes its columns in the rows
+    below."""
+    taken = set()
+    starts = []
+    for r, row in enumerate(re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S)):
+        column, marked = 1, []
+        for attrs in re.findall(r"<t[hd]\b([^>]*)>", row):
+            while (r, column) in taken:
+                column += 1
+            span = re.search(r'colspan="(\d+)"', attrs)
+            span = int(span.group(1)) if span else 1
+            down = re.search(r'rowspan="(\d+)"', attrs)
+            down = int(down.group(1)) if down else 1
+            taken |= {(r + d, column + c) for d in range(1, down) for c in range(span)}
+            if re.search(r'class="[^"]*\bmain__group-start\b', attrs):
+                marked.append(column)
+            column += span
+        starts.append(marked)
+    return starts
+
+
+def test_funds_tables_mark_where_each_column_group_starts(client_logged):
+    for title in ("Fund A", "Fund B"):
+        fund = SavingTypeFactory(title=title)
+        buy(fund, 100000)
+        worth(fund, 130000)
+    PensionFactory(price=60000, fee=0)
+
+    content = _fondai(client_logged)
+
+    # start, the year, the total, market value, profit; none on Parduota, column 8
+    groups = [2, 4, 6, 10, 12]
+    head = [groups, [4, 6], groups]
+    assert {
+        title: _group_starts(table_titled(content, title))
+        for title in ("Fondai", "Pensijos")
+    } == {
+        "Fondai": [*head, groups, groups, groups],
+        "Pensijos": [*head, groups, groups],
+    }
 
 
 def _funds_closed_every_other(i, kind):

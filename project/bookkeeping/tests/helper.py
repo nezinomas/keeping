@@ -111,6 +111,8 @@ def switch_a_into_b(*, kind="funds", a_closed=None, switched=130000):
 
 
 FIGURE = ' class="main__figure"'
+# a figure that starts a column group (sass.md *Tables*, *Column groups*)
+GROUP_FIGURE = ' class="main__figure main__group-start"'
 # a Panel's title, and a table's class inside its scroll box
 PANEL_TITLE = (
     r'<h2 class="panel__title">(?:<a\b[^>]*>)?([^<]*?)\s*'

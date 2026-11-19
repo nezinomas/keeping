@@ -25,6 +25,8 @@ CHART_ROOTS = (
     "#chart-balance-container .highcharts-root,"
     " #chart-expenses-container .highcharts-root"
 )
+# the dev DB's longest fund name
+LONGEST_FUND = "VALL - Vanguard FTSE GLB AL-CAP ETF"
 GAIN, HARM = "rgb(31, 107, 74)", "rgb(125, 39, 51)"
 INK, INK_FAINT = "rgb(22, 34, 43)", "rgb(139, 151, 159)"
 INK_MUTED = "rgb(90, 106, 117)"
@@ -506,16 +508,54 @@ class BookkeepingIndex(TestCase, Browser):
         )
 
     def test_every_index_tab_fits_a_phone(self):
-        # a funds table and the accounts table run wider than a phone's column
+        # a funds table and the accounts table run wider than a phone's column; the
+        # dev DB's longest fund and pension names
         IncomeFactory()
-        SavingFactory()
-        PensionFactory()
+        SavingFactory(saving_type=SavingTypeFactory(title=LONGEST_FUND))
+        PensionFactory(
+            pension_type=PensionTypeFactory(title="Artea Ambicingas Index 16+")
+        )
         overflow = {}
         for tab in INDEX_TABS:
             self.open_at(tab.url, 360)
             overflow[tab.name] = page_overflow(self.browser)
+            if tab.name == "funds":
+                scrolls = self.browser.execute_script(
+                    "return [...document.querySelectorAll('.panel .table-responsive')]"
+                    "  .map(box => box.scrollWidth > box.clientWidth);"
+                )
 
-        assert overflow == dict.fromkeys((tab.name for tab in INDEX_TABS), 0)
+        assert (overflow, scrolls) == (
+            dict.fromkeys((tab.name for tab in INDEX_TABS), 0),
+            [True, True],
+        )
+
+    def test_the_funds_tables_start_their_figures_at_one_x(self):
+        # the longest fund name, beside a short pension name
+        SavingFactory(saving_type=SavingTypeFactory(title=LONGEST_FUND))
+        PensionFactory(pension_type=PensionTypeFactory(title="P"))
+        columns = {}
+        for width in (1500, 1280):
+            self.open_at(INDEX_TABS["funds"].url, width)
+            # per table: the name column's width, the second column's left x
+            columns[width] = self.browser.execute_script(
+                "return [...document.querySelectorAll('.panel table.main')].map(t => {"
+                " const name = t.querySelector('tbody td');"
+                " return [name.getBoundingClientRect().width,"
+                " name.nextElementSibling.getBoundingClientRect().left]; });"
+            )
+            if width == 1500:
+                lines = self.browser.execute_script(
+                    "const range = document.createRange();"
+                    " range.selectNodeContents("
+                    "document.querySelector('#savings tbody td'));"
+                    " return range.getClientRects().length;"
+                )
+
+        assert {w: c[0] for w, c in columns.items()} == {
+            w: c[1] for w, c in columns.items()
+        }
+        assert lines == 1
 
     def _looks(self, **cells):
         """Each cell's colour, and whether its background is its row's first cell's."""
