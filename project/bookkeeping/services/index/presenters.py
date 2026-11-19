@@ -36,6 +36,15 @@ def cash_flow_check(cash_flow: int, accounts_balance: int) -> str:
     return state
 
 
+def year_strip_titles(year: int) -> list[str]:
+    """The Year strip's heads, which the Forecast's figures read under too."""
+    return [
+        _("Start of %(year)s") % {"year": year},
+        _("End of %(year)s") % {"year": year},
+        _("Balance"),
+    ]
+
+
 class IndexContextBuilder:
     def __init__(self, balance: YearBalance):
         self._balance = balance
@@ -57,11 +66,7 @@ class IndexContextBuilder:
         end = self._balance.amount_end
 
         return {
-            "title": [
-                _("Start of %(year)s") % {"year": self._balance.year},
-                _("End of %(year)s") % {"year": self._balance.year},
-                _("Balance"),
-            ],
+            "title": year_strip_titles(self._balance.year),
             "data": [start, end, (end - start)],
             "highlight": [False, False, True],
         }

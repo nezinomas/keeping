@@ -8,19 +8,35 @@
     <div class="table-responsive">{% include 'bookkeeping/includes/account_worth_list.html' %}</div>
 </c-panel>
 
-<div class="table-responsive">{% include 'bookkeeping/includes/balance_short.html' with data=balance_short %}</div>
+{% blocktranslate asvar year_title with year=request.user.selected_year %}{{ year }} year{% endblocktranslate %}
+<div class="overview-grid">
+    <div class="overview-grid__column">
+        <c-panel table :title="year_title">
+            <div class="table-responsive">{% include 'bookkeeping/includes/balance_short.html' with title=balance_short.title data=balance_short.data highlight=balance_short.highlight %}</div>
+        </c-panel>
 
-<c-panel table title="{% translate 'Without incomes' %}">
-    <div class="table-responsive">{% include 'bookkeeping/includes/no_incomes.html' %}</div>
-    <p class="mt-3">
-        <b>€</b> - {% translate 'Money in accounts' %}<br>
-        <b>F</b> - {% translate 'Funds/Stocks' %}<br>
-        <b>P</b> - {% translate 'Pension funds' %}
-    </p>
-</c-panel>
+        <c-panel table x-data="{ open:false }">
+            <c-slot name="title_control"><a role="button" class="panel__toggle" @click="open = ! open" hx-get="{% url 'bookkeeping:forecast' %}" hx-target="#forecast" hx-trigger="click once" hx-indicator="#indicator">{% translate 'Forecast' %} <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i></a></c-slot>
+            <div id="forecast" x-show="open"></div>
+        </c-panel>
+    </div>
 
-{% if debts %}
-<c-panel table title="{% translate 'Debts' %}">
-    <div class="table-responsive">{% include 'bookkeeping/includes/debts_table.html' %}</div>
-</c-panel>
-{% endif %}
+    <div class="overview-grid__column">
+        <c-panel table title="{% translate 'Without incomes' %}">
+            <div class="table-responsive">{% include 'bookkeeping/includes/no_incomes.html' %}</div>
+            <p class="mt-3">
+                <b>€</b> - {% translate 'Money in accounts' %}<br>
+                <b>F</b> - {% translate 'Funds/Stocks' %}<br>
+                <b>P</b> - {% translate 'Pension funds' %}
+            </p>
+        </c-panel>
+    </div>
+
+    <div class="overview-grid__column">
+        {% if debts %}
+        <c-panel table title="{% translate 'Debts' %}">
+            <div class="table-responsive">{% include 'bookkeeping/includes/debts_table.html' %}</div>
+        </c-panel>
+        {% endif %}
+    </div>
+</div>

@@ -69,11 +69,17 @@ def test_an_index_tab_is_the_whole_paper_page_unless_htmx_asks(
     }
 
 
-@pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
-def test_an_index_tab_sends_the_anonymous_to_the_login(client, tab):
-    response = client.get(tab.url)
+@pytest.mark.parametrize(
+    "url",
+    [
+        *(pytest.param(lambda tab=tab: tab.url, id=tab.name) for tab in INDEX_TABS),
+        pytest.param(lambda: reverse("bookkeeping:forecast"), id="forecast"),
+    ],
+)
+def test_an_index_view_sends_the_anonymous_to_the_login(client, url):
+    response = client.get(url())
 
-    assert response.url == f"{reverse('users:login')}?next={tab.url}"
+    assert response.url == f"{reverse('users:login')}?next={url()}"
 
 
 def _add_items(first, last):
@@ -137,7 +143,7 @@ FIGURES = {
     "accounts_total": re.escape(ACCOUNTS_TOTAL.format(state="")),
     # start, end and balance of the year: 6,00 - 1,00 - 1,50 + 70,00 - 90,00
     "year_strip": (
-        rf"<td></td>\s*<td{FIGURE}>-</td>\s*<td{FIGURE}>-16,50</td>\s*"
+        rf"<tr>\s*<td{FIGURE}>-</td>\s*<td{FIGURE}>-16,50</td>\s*"
         rf'<td{FIGURE} data-sign="loss">-16,50</td>'
     ),
     "no_incomes": rf'<td class="text-left">Pinigai, €</td>\s*<td{FIGURE}>-16,50</td>',
@@ -145,8 +151,8 @@ FIGURES = {
     "wealth": CARD.format(label="Turtas", figure="-17"),
     "average_incomes": CARD.format(label="Vidutinės pajamos", figure="6"),
     "average_expenses": CARD.format(label="Vidutinės išlaidos", figure="1"),
-    # its rows: test_overview_debts_table_draws_a_row_per_kind_with_a_debt
-    "debts": PANEL_TITLE.replace("([^<]*)", "Skolos"),
+    # its rows: test_overview_debts_column_stays_and_draws_a_row_per_kind_with_a_debt
+    "debts": r'<h2 class="panel__title">Skolos</h2>',
     # 1,50 of savings over 6,00 of incomes; neither fund has a worth, so no profit
     "saved_share": CARD.format(label="Pajamų dalis pervedama taupymui", figure="25,0"),
     "fund_profit": EMPTY_CARD.format(label="Fondų pelnas"),
@@ -181,6 +187,7 @@ def _borrow():
 
 
 DEBTS_HEAD = ("", "Suma", "Grąžinta", "Liko")
+GRID_COLUMN = '<div class="overview-grid__column">'
 LENT = ("Paskolinta", "90,00", "30,00", "60,00")
 BORROWED = ("Pasiskolinta", "70,00", "20,00", "50,00")
 PANELS = re.compile(PANEL_TITLE + r"(.*?)</section>", re.S)
@@ -210,7 +217,7 @@ def _debts_tables(content):
         pytest.param([], [], id="none"),
     ],
 )
-def test_overview_debts_table_draws_a_row_per_kind_with_a_debt(
+def test_overview_debts_column_stays_and_draws_a_row_per_kind_with_a_debt(
     client_logged, debts, tables
 ):
     for debt in debts:
@@ -218,7 +225,31 @@ def test_overview_debts_table_draws_a_row_per_kind_with_a_debt(
 
     content = tab_fragment(client_logged, INDEX_TABS["overview"].url)
 
-    assert _debts_tables(content) == tables
+    # with no open debt the grid keeps its third column
+    assert (_debts_tables(content), content.count(GRID_COLUMN)) == (tables, 3)
+
+
+def test_overview_draws_the_year_strip_in_its_panel_and_the_forecast_folded(
+    client_logged,
+):
+    content = tab_fragment(client_logged, INDEX_TABS["overview"].url)
+    year_strip = [
+        (re.findall(BOXED_TABLE, body), cell_texts(body))
+        for body in _panels(content, "1999 metai")
+    ]
+
+    # the year's three figures, under its titles; the forecast waits for its click
+    forecast = [body.strip() for body in _panels(content, "Prognozė")]
+
+    assert (year_strip, forecast) == (
+        [
+            (
+                ["main striped hover"],
+                [["1999 pradžioje", "1999 pabaigoje", "Balansas"], ["-", "-", "-"]],
+            )
+        ],
+        ['<div id="forecast" x-show="open"></div>'],
+    )
 
 
 LEGACY_CLASSES = (
@@ -241,7 +272,12 @@ LEGACY_CLASSES = (
     "tab, titles, tables, totals, bare_cells",
     [
         pytest.param(
-            "overview", ["Sąskaitos", "Be pajamų", "Skolos"], 4, 1, [], id="overview"
+            "overview",
+            ["Sąskaitos", "1999 metai", "Prognozė", "Be pajamų", "Skolos"],
+            4,
+            1,
+            [],
+            id="overview",
         ),
         # Fund A and the pension: no worth, so no check date
         pytest.param(
@@ -267,11 +303,12 @@ def test_index_tables_wear_the_skin_and_no_legacy_class(
     boxed = re.findall(BOXED_TABLE, content)
     total_rows = re.findall(r'<tr class="(main__total)">', content)
     rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", content, re.S)
+    # a row's first cell is its name, unless it holds a figure (the Year strip's)
     bare = [
         cell
         for row in rows
-        for cell in re.findall(r"<td([^>]*)>", row)[1:]
-        if "main__figure" not in cell
+        for at, (cell, text) in enumerate(re.findall(r"<td([^>]*)>([^<]*)", row))
+        if "main__figure" not in cell and (at or re.fullmatch(r"[-\d.,]+", text))
     ]
     legacy = re.findall(rf'class="[^"]*\b({"|".join(LEGACY_CLASSES)})\b', content)
 
@@ -568,7 +605,7 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
             lambda: reverse("bookkeeping:forecast"),
             [_signed_year],
             r"<td([^>]*)>",
-            ["", FIGURE, FIGURE, f'{FIGURE} data-sign="loss"'],
+            [FIGURE, FIGURE, f'{FIGURE} data-sign="loss"'],
             id="forecast",
         ),
     ],

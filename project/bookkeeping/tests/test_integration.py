@@ -4,6 +4,7 @@ import pytest
 from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -27,6 +28,7 @@ CHART_ROOTS = (
 GAIN, HARM = "rgb(31, 107, 74)", "rgb(125, 39, 51)"
 INK, INK_FAINT = "rgb(22, 34, 43)", "rgb(139, 151, 159)"
 INK_MUTED = "rgb(90, 106, 117)"
+YEAR_STRIP = ".overview-grid__column:first-child .panel:first-child"
 EXPENSE_PARTS = "#chart-expenses-container .highcharts-data-label span"
 HAIR, HAIR_SOFT = "rgb(207, 214, 218)", "rgb(225, 230, 232)"
 DATA = "0.0862745 0.411765 0.607843"  # --skin-data's channels in `color(srgb)`
@@ -295,6 +297,53 @@ class BookkeepingIndex(TestCase, Browser):
             ["Pajamos: 0€", "Išlaidos: 400€"],
         )
 
+    def test_the_overview_panels_stand_in_three_columns_from_992_and_one_below(self):
+        placed = {}
+        for width in (992, 991):
+            self.open_at(INDEX_TABS["overview"].url, width)
+            placed[width] = self.browser.execute_script(
+                "const [a, b, c] = [...document.querySelectorAll("
+                "  '.overview-grid__column')].map(col => col.getBoundingClientRect());"
+                " return {beside: a.top === b.top && b.top === c.top"
+                "  && a.right < b.left && b.right < c.left,"
+                " stacked: a.bottom <= b.top && b.bottom <= c.top,"
+                " middle_widest: b.width > a.width"
+                "  && Math.round(a.width) === Math.round(c.width)};"
+            )
+
+        # no open debt: the third column is empty and keeps its track
+        assert placed == {
+            992: {"beside": True, "stacked": False, "middle_widest": True},
+            991: {"beside": False, "stacked": True, "middle_widest": False},
+        }
+
+    def test_the_forecast_title_opens_and_folds_its_table_and_loads_it_once(self):
+        self.open_at(INDEX_TABS["overview"].url, 1500)
+        title = self.browser.find_element(By.CSS_SELECTOR, ".panel__toggle")
+        seen = []
+        for _press in range(4):
+            self.wait_two_frames()
+            seen.append(
+                self.browser.execute_script(
+                    "const icon = document.querySelector('.panel__toggle i');"
+                    " const table = document.querySelector('#forecast table');"
+                    " const fetched = performance.getEntriesByType('resource')"
+                    "  .filter(e => e.name.includes(arguments[0])).length;"
+                    " return [icon.classList.contains('bi-chevron-up'),"
+                    "  icon.getBoundingClientRect().width > 0,"
+                    "  !!table && table.checkVisibility(), fetched];",
+                    reverse("bookkeeping:forecast"),
+                )
+            )
+            # the title's word, not its chevron (Q54)
+            ActionChains(self.browser).move_to_element_with_offset(
+                title, -title.size["width"] // 2 + 5, 0
+            ).click().perform()
+            self.wait_until_idle()
+
+        folded, opened = [False, True, False, 1], [True, True, True, 1]
+        assert seen == [[False, True, False, 0], opened, folded, opened]
+
     def test_a_signed_figure_is_gain_or_harm_text_and_a_zero_is_not(self):
         for title, have in (("Even", 10000), ("Gain", 15000), ("Loss", 5000)):
             account = AccountFactory(title=title)
@@ -310,7 +359,7 @@ class BookkeepingIndex(TestCase, Browser):
             # Even + Gain + Loss: a zero with no data-cell to paint it faint
             delta_total="#accounts tfoot td:last-child",
             # the year strip's end, not highlighted: a figure, not a sign
-            year_end="#last td:nth-child(3)",
+            year_end=f"{YEAR_STRIP} td:nth-child(2)",
         )
         # a signed total keeps its colour on the skin's ink total row (Q35)
         account = AccountFactory(title="Gain 2")

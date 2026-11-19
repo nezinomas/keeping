@@ -112,7 +112,10 @@ def switch_a_into_b(*, kind="funds", a_closed=None, switched=130000):
 
 FIGURE = ' class="main__figure"'
 # a Panel's title, and a table's class inside its scroll box
-PANEL_TITLE = r'<h2 class="panel__title">([^<]*)</h2>\s*'
+PANEL_TITLE = (
+    r'<h2 class="panel__title">(?:<a\b[^>]*>)?([^<]*?)\s*'
+    r"(?:<i\b[^>]*></i></a>)?</h2>\s*"
+)
 BOXED_TABLE = r'<div class="table-responsive">\s*<table class="([^"]*)"'
 
 

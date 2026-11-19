@@ -40,6 +40,7 @@
 @use 'skin/expenses_table';
 @use 'skin/month_table';
 @use 'skin/chart';
+@use 'skin/overview_grid';
 @use 'skin/search';
 @use 'skin/pagination';
 // as *: its default namespace would clash with components/quick_add's

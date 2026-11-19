@@ -263,9 +263,13 @@ msgstr "Delta"
 msgid "No record of account amount"
 msgstr "Nėra įrašo apie sąskaitos lėšas"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\balance_short.html:11
+#: .\project\bookkeeping\templates\bookkeeping\tab_overview.html:19
 msgid "Forecast"
 msgstr "Prognozė"
+
+#, python-format
+msgid "%(year)s year"
+msgstr "%(year)s metai"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:14
 msgid "Market value"

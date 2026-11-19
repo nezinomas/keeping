@@ -40,6 +40,22 @@ def _render(source: str, **context) -> str:
             '<i class="bi bi-question-circle"></i></span></h2>',
             id="hint",
         ),
+        pytest.param(
+            '<c-panel table title="Suvartota" subtitle="Antraštė" id="breakdown">'
+            "slot</c-panel>",
+            '<section class="panel panel--table" id="breakdown">\n'
+            '    <h2 class="panel__title">Suvartota</h2>\n'
+            '    <p class="panel__subtitle">Antraštė</p>',
+            id="table-keeps-the-rest",
+        ),
+        # a title that is a control: the slot carries its text, the Panel its state
+        pytest.param(
+            '<c-panel x-data="{ open:false }"><c-slot name="title_control">'
+            '<a role="button">Prognozė</a></c-slot>slot</c-panel>',
+            '<section class="panel" x-data="{ open:false }">\n'
+            '    <h2 class="panel__title"><a role="button">Prognozė</a></h2>',
+            id="title-control",
+        ),
     ],
 )
 def test_a_panel_draws_what_it_is_given(source, markup):
@@ -52,17 +68,6 @@ def test_the_slot_renders_after_the_title():
     assert content.index("panel__title") < content.index("<p>Body</p>")
 
 
-def test_a_table_panel_keeps_its_title_subtitle_and_id():
-    content = _render(
-        '<c-panel table title="Suvartota" subtitle="Antraštė" id="breakdown">'
-        "slot</c-panel>"
-    )
-
-    assert '<section class="panel panel--table" id="breakdown">' in content
-    assert '<h2 class="panel__title">Suvartota</h2>' in content
-    assert '<p class="panel__subtitle">Antraštė</p>' in content
-
-
 @pytest.mark.parametrize(
     "markup",
     [
@@ -70,6 +75,8 @@ def test_a_table_panel_keeps_its_title_subtitle_and_id():
         pytest.param("panel__subtitle", id="subtitle"),
         pytest.param("panel__hint", id="hint"),
         pytest.param("panel--table", id="table"),
+        # a page's own `title_control` is not the slot
+        pytest.param('<h2 class="panel__title">Tituliniai', id="title-control"),
     ],
 )
 def test_a_panel_draws_nothing_it_is_not_given(markup):
@@ -79,6 +86,7 @@ def test_a_panel_draws_nothing_it_is_not_given(markup):
         subtitle="Puslapio",
         hint="Puslapio",
         table="Puslapio",
+        title_control="Tituliniai",
     )
 
     assert markup not in content

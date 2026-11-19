@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.utils import http_htmx_response, wants_fragment
 from ..core.mixins.formset import FormsetMixin
+from ..core.mixins.kwargs import TodayMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -148,11 +149,11 @@ class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     balance_sync = staticmethod(balance_sources.sync_pensions)
 
 
-class Forecast(TemplateViewMixin):
+class Forecast(TodayMixin, TemplateViewMixin):
     template_name = "bookkeeping/includes/forecast.html"
 
     def get_context_data(self, **kwargs):
-        context = services.forecast.load_service(self.request.user, date.today())
+        context = services.forecast.load_service(self.request.user, self.today)
 
         return super().get_context_data(**kwargs) | context
 
