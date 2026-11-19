@@ -117,19 +117,6 @@ a.button-outline-success {
 }
 
 
-.button-refresh::before {
-    font-family: 'Glyphicons Halflings';
-    content:"\e031";
-}
-
-
-.main thead th {
-    :has(.button-refresh) {
-        font-weight: 50;
-    }
-}
-
-
 .transparent {
     background-color: transparent;
 }

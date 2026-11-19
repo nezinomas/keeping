@@ -89,16 +89,3 @@
         }
     }
 }
-
-.year-expenses .no-categories {
-    width: 90%;
-}
-
-[data-check="mismatch"] {
-    background-color: $negative!important;
-    color: #fff;
-
-    &:before {
-        content: "!  ";
-    }
-}
