@@ -238,21 +238,28 @@ LEGACY_CLASSES = (
 
 
 @pytest.mark.parametrize(
-    "tab, titles, tables, totals, undated",
+    "tab, titles, tables, totals, bare_cells",
     [
         pytest.param(
-            "overview", ["Sąskaitos", "Be pajamų", "Skolos"], 4, 1, 0, id="overview"
+            "overview", ["Sąskaitos", "Be pajamų", "Skolos"], 4, 1, [], id="overview"
         ),
         # Fund A and the pension: no worth, so no check date
-        pytest.param("funds", ["Fondai", "Pensijos"], 2, 2, 2, id="funds"),
-        # each table's average and total rows
         pytest.param(
-            "balance", ["Balansas", "Išlaidų statistika"], 2, 4, 0, id="balance"
+            "funds",
+            ["Fondai", "Pensijos"],
+            2,
+            2,
+            [' class="main__date" data-cell="empty"'] * 2,
+            id="funds",
+        ),
+        # each table's average and total rows; the average row's End of year label
+        pytest.param(
+            "balance", ["Balansas", "Išlaidų statistika"], 2, 4, [""], id="balance"
         ),
     ],
 )
 def test_index_tables_wear_the_skin_and_no_legacy_class(
-    tab_contents, tab, titles, tables, totals, undated
+    tab_contents, tab, titles, tables, totals, bare_cells
 ):
     content = tab_contents[tab]
 
@@ -272,7 +279,7 @@ def test_index_tables_wear_the_skin_and_no_legacy_class(
         titles,
         ["main striped hover"] * tables,
         ["main__total"] * totals,
-        [' class="main__date" data-cell="empty"'] * undated,
+        bare_cells,
         [],
     )
 
@@ -628,8 +635,17 @@ def test_balance_table_hides_its_debt_columns_until_asked(client_logged):
     table = content[content.index('id="table-balance"') :].partition("</table>")[0]
     rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S)
 
+    assert re.search(r'<table\b[^>]*x-data="\{ open:false \}"', table)
     # the debts group's head, then its four columns in every row
     assert [len(re.findall(r'<t[hd]\b[^>]*x-show="open"', row)) for row in rows] == [
         1,
         *[4] * 15,
     ]
+
+
+def test_balance_tables_end_of_year_label_is_a_label_cell(client_logged):
+    content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
+    table = content[content.index('id="table-balance"') :].partition("</table>")[0]
+
+    # like Vidurkis beside it: a row name's face, not a figure's
+    assert re.findall(r"<td\b[^>]*>\s*Metų pabaigoje", table) == ["<td>Metų pabaigoje"]
