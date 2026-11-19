@@ -557,6 +557,32 @@ class BookkeepingIndex(TestCase, Browser):
         }
         assert lines == 1
 
+    def test_funds_tables_rule_where_each_column_group_starts(self):
+        SavingFactory()
+        PensionFactory()
+        self.open_at(INDEX_TABS["funds"].url, 1500)
+
+        # per table and row, each cell with a left rule, by position from 1, and its
+        # colour; no width: a scaled display snaps 1px to a device pixel
+        ruled = self.browser.execute_script(
+            "return [...document.querySelectorAll('.panel table.main')].map(t =>"
+            " [...t.querySelectorAll('tr')].map(tr =>"
+            " [...tr.children].flatMap((c, i) => {"
+            " const s = getComputedStyle(c);"
+            " return s.borderLeftStyle === 'solid' ? [[i + 1, s.borderLeftColor]] : [];"
+            " })));"
+        )
+        # the band: five group heads, both Pervesta (not Parduota), row three's
+        # columns 2, 4, 6, 10, 12; the foot's market value spans two cells
+        band = [
+            [[i, HAIR] for i in (2, 3, 4, 5, 6)],
+            [[1, HAIR], [2, HAIR]],
+            [[i, HAIR] for i in (2, 4, 6, 10, 12)],
+        ]
+        row = [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 12)]
+        foot = [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 11)]
+        assert ruled == [[*band, row, foot]] * 2
+
     def _looks(self, **cells):
         """Each cell's colour, and whether its background is its row's first cell's."""
         return self.browser.execute_script(
