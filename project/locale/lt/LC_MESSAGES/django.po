@@ -89,6 +89,14 @@ msgstr "Taupymas"
 msgid "Incomes and Expenses"
 msgstr "Pajamos ir išlaidos"
 
+#: .\project\bookkeeping\templates\bookkeeping\tab_charts.html:8
+msgid "Balance per month"
+msgstr "Balansas per mėnesį"
+
+#: .\project\bookkeeping\services\index\presenters.py:167
+msgid "so far"
+msgstr "iki šiol"
+
 #: .\project\bookkeeping\services\chart_summary.py:53
 #: .\project\bookkeeping\services\chart_summary.py:71
 #: .\project\bookkeeping\services\chart_summary.py:94

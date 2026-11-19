@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 from ....core.lib.money_cells import amount, percent
 from ....core.lib.stat_card import Card, EmptyStatCard, StatCard
 from ....core.lib.translation import month_names
+from ....core.lib.year_boundary import YearBoundary
 from ....debts.models import Debt
 from ....debts.services.model_services import DebtModelService
 from ....users.models import User
@@ -27,13 +28,7 @@ INDEX_COLUMNS = (
     "balance",
     "money_flow",
 )
-
-
-def cash_flow_check(cash_flow: int, accounts_balance: int) -> str:
-    state = ""
-    if cash_flow != accounts_balance:
-        state = "mismatch"
-    return state
+MONTHS = range(1, 13)
 
 
 def year_strip_titles(year: int) -> list[str]:
@@ -59,7 +54,10 @@ class IndexContextBuilder:
         }
 
     def check_cash_flow(self, accounts_balance: int) -> str:
-        return cash_flow_check(self._balance.amount_end, accounts_balance)
+        state = ""
+        if self._balance.amount_end != accounts_balance:
+            state = "mismatch"
+        return state
 
     def balance_short_context(self) -> dict:
         start = self._balance.amount_start
@@ -131,27 +129,59 @@ def load_service(user: User, today: date) -> IndexContextBuilder:
 
 
 @dataclass(frozen=True)
-class IncomesExpensesChart:
-    """Grafikai's incomes-against-expenses chart, month by month."""
+class MonthCharts:
+    """Grafikai's two month charts: the year's incomes and expenses, month by month."""
 
     incomes: list[int]
     expenses: list[int]
+    months_with_rows: frozenset[int]
+    boundary: YearBoundary
 
     @classmethod
-    def load(cls, user: User) -> "IncomesExpensesChart":
+    def load(cls, user: User, today: date) -> "MonthCharts":
         provider = IndexDataProvider(user)
         data = provider.get_incomes_and_expenses()
         df = MakeDataFrame.for_year(provider.year, data, ("incomes", "expenses")).data
-        return cls(df["incomes"].to_list(), df["expenses"].to_list())
+        return cls(
+            df["incomes"].to_list(),
+            df["expenses"].to_list(),
+            frozenset(row["date"].month for row in data),
+            YearBoundary(provider.year, today),
+        )
 
     def context(self) -> dict:
         return {
             "categories": list(month_names().values()),
-            "incomes": self.incomes,
+            "incomes": self._drawn(self.incomes),
             "incomes_title": _("Incomes"),
-            "expenses": self.expenses,
+            "incomes_average": self._average(self.incomes),
+            "expenses": self._drawn(self.expenses),
             "expenses_title": _("Expenses"),
+            "expenses_average": self._average(self.expenses),
+            "current_month": [
+                self.boundary.is_current and month == self.boundary.today.month
+                for month in MONTHS
+            ],
+            "balance_title": _("Balance"),
+            "average_title": _("Average"),
+            "so_far": _("so far"),
         }
+
+    def _drawn(self, sums: list[int]) -> list[int | None]:
+        """A month not yet reached is Highcharts' gap, unless it already holds rows."""
+        return [
+            figure
+            if month <= self.boundary.months_elapsed or month in self.months_with_rows
+            else None
+            for month, figure in zip(MONTHS, sums, strict=True)
+        ]
+
+    def _average(self, sums: list[int]) -> int:
+        """Over the months reached; a year not begun has none, and averages 0."""
+        reached = self.boundary.months_elapsed
+        if not reached:
+            return 0
+        return round(sum(sums[:reached]) / reached)
 
 
 @dataclass(frozen=True)

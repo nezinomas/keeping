@@ -102,7 +102,9 @@ class TabCharts(IndexTabMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            "chart_balance": services.index.IncomesExpensesChart.load(user).context(),
+            "chart_balance": services.index.MonthCharts.load(
+                user, date.today()
+            ).context(),
             "chart_expenses": services.expenses.load_service(user).chart_context(),
         }
 

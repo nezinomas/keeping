@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from ....accounts.tests.factories import AccountBalanceFactory, AccountFactory
-from ....core.lib.translation import month_names
 from ....debts.models import Debt
 from ....debts.tests.factories import (
     BorrowFactory,
@@ -16,9 +15,8 @@ from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
 from ...services.index.presenters import (
     DebtsTable,
-    IncomesExpensesChart,
     IndexContextBuilder,
-    cash_flow_check,
+    MonthCharts,
 )
 from ...services.index.providers import IndexDataProvider
 
@@ -41,22 +39,78 @@ def test_balance_short_context_data(end, data):
     assert actual["highlight"] == [False, False, True]
 
 
+GAP = [None] * 8
+MONTH_NAMES = [
+    "Sausis",
+    "Vasaris",
+    "Kovas",
+    "Balandis",
+    "Gegužė",
+    "Birželis",
+    "Liepa",
+    "Rugpjūtis",
+    "Rugsėjis",
+    "Spalis",
+    "Lapkritis",
+    "Gruodis",
+]
+
+
 @pytest.mark.django_db
-def test_incomes_expenses_chart_reads_the_year_s_incomes_and_expenses_by_month(
-    main_user,
-):
-    IncomeFactory(date=date(1999, 1, 1), price=50)
-    ExpenseFactory(date=date(1999, 2, 1), price=10)
+@pytest.mark.parametrize(
+    "today, months",
+    [
+        pytest.param(
+            date(2000, 1, 1),
+            {
+                "incomes": [120] + [0] * 11,
+                "incomes_average": 10,
+                "expenses": [0, 24] + [0] * 9 + [36],
+                "expenses_average": 5,
+                "current_month": [False] * 12,
+            },
+            id="past_year_every_month_and_none_current",
+        ),
+        pytest.param(
+            date(1999, 3, 31),
+            {
+                "incomes": [120, 0, 0, *GAP, 0],
+                "incomes_average": 40,
+                "expenses": [0, 24, 0, *GAP, 36],
+                "expenses_average": 8,
+                "current_month": [False, False, True] + [False] * 9,
+            },
+            id="this_year_to_march_and_december_holding_rows",
+        ),
+        pytest.param(
+            date(1998, 6, 1),
+            {
+                "incomes": [120, 0, None, *GAP, 0],
+                "incomes_average": 0,
+                "expenses": [0, 24, None, *GAP, 36],
+                "expenses_average": 0,
+                "current_month": [False] * 12,
+            },
+            id="coming_year_only_months_holding_rows",
+        ),
+    ],
+)
+def test_incomes_expenses_chart_reads_the_months_reached(main_user, today, months):
+    IncomeFactory(date=date(1999, 1, 1), price=120)
+    ExpenseFactory(date=date(1999, 2, 1), price=24)
+    ExpenseFactory(date=date(1999, 12, 1), price=36)
     IncomeFactory(date=date(2000, 1, 1), price=70)
 
-    actual = IncomesExpensesChart.load(main_user).context()
+    actual = MonthCharts.load(main_user, today).context()
 
     assert actual == {
-        "categories": list(month_names().values()),
-        "incomes": [50] + [0] * 11,
+        "categories": MONTH_NAMES,
         "incomes_title": "Pajamos",
-        "expenses": [0, 10] + [0] * 10,
         "expenses_title": "Išlaidos",
+        "balance_title": "Balansas",
+        "average_title": "Vidurkis",
+        "so_far": "iki šiol",
+        **months,
     }
 
 
@@ -181,25 +235,23 @@ def mock_year_balance(mocker):
     return mock
 
 
-def test_index_context_builder_balance_context(mock_year_balance):
+@pytest.mark.parametrize(
+    "accounts_balance, state",
+    [
+        pytest.param(1600, "", id="equal"),
+        pytest.param(1599, "mismatch", id="differ"),
+    ],
+)
+def test_balance_context_checks_the_year_end_cash_flow_against_the_accounts(
+    mock_year_balance, accounts_balance, state
+):
     builder = IndexContextBuilder(balance=mock_year_balance)
-    actual = builder.balance_context(accounts_balance=1500)
+    actual = builder.balance_context(accounts_balance=accounts_balance)
 
     assert actual == {
         "data": [100, 200, 300],
         "total_row": 600,
         "amount_end": 1600,
         "avg_row": 200,
-        "cash_flow_check": "mismatch",
+        "cash_flow_check": state,
     }
-
-
-@pytest.mark.parametrize(
-    "cash_flow, accounts_balance, state",
-    [
-        pytest.param(100000, 100000, "", id="equal"),
-        pytest.param(100000, 99999, "mismatch", id="differ"),
-    ],
-)
-def test_cash_flow_check(cash_flow, accounts_balance, state):
-    assert cash_flow_check(cash_flow, accounts_balance) == state

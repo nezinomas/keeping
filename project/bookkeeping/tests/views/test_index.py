@@ -2,6 +2,7 @@ import re
 from datetime import date
 
 import pytest
+import time_machine
 from django.urls import reverse
 
 from ....accounts.models import AccountBalance
@@ -469,6 +470,7 @@ def test_only_the_charts_tab_draws_each_chart_and_its_data(tab_contents):
     }
 
 
+@time_machine.travel("1999-02-15")
 def test_view_index_renders_its_chart_data(client_logged):
     ExpenseFactory(date=date(1999, 1, 1), price=100)
 
@@ -476,7 +478,11 @@ def test_view_index_renders_its_chart_data(client_logged):
     balance = script_json(content, "chart-balance-data")
     expenses = script_json(content, "chart-expenses-data")
 
-    assert balance["expenses"][0] == 100
+    # today's month is the selected year's current month, the next one not reached
+    assert (balance["expenses"][:3], balance["current_month"][:3]) == (
+        [100, 0, None],
+        [False, True, False],
+    )
     assert [point["y"] for point in expenses] == [100]
 
 
