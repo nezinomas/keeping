@@ -15,25 +15,25 @@
     <tr>
         <td>{{ item.date|date:"F"|title }}</td>
         {% for category in ctx.categories %}
-        {% with item|get_item:category as val %}<td class="main__figure" data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>{% endwith %}
+        {% with item|get_item:category as val %}<c-figure-cell :value="val" />{% endwith %}
         {% endfor %}
-        <td class="main__figure" data-cell="{{total_column.total|cell_state}}">{{total_column.total|price|cellformat}}</td>
+        <c-figure-cell :value="total_column.total" />
     </tr>
     {% endfor %}
     <c-slot name="foot">
         <tr class="main__total">
             <td>{% translate 'Average' %}</td>
             {% for category in ctx.categories %}{% with ctx.avg_row|get_item:category as val %}
-            <td class="main__figure" data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>
+            <c-figure-cell :value="val" />
             {% endwith %}{% endfor %}
-            <td class="main__figure" data-cell="{{ctx.avg|cell_state}}">{{ctx.avg|price|cellformat}}</td>
+            <c-figure-cell :value="ctx.avg" />
         </tr>
         <tr class="main__total">
             <td>{% translate 'Total' %}</td>
             {% for category in ctx.categories %}{% with ctx.total_row|get_item:category as val %}
-            <td class="main__figure" data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>
+            <c-figure-cell :value="val" />
             {% endwith %}{% endfor %}
-            <td class="main__figure" data-cell="{{ctx.total|cell_state}}">{{ctx.total|price|cellformat}}</td>
+            <c-figure-cell :value="ctx.total" />
         </tr>
     </c-slot>
 </c-paper-table>

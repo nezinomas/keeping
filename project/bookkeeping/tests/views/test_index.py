@@ -342,6 +342,37 @@ def test_expenses_by_type_head_cuts_a_long_type_and_tips_it_whole(client_logged)
     assert head == [("Expense Type", "Expense…"), ("Laisvalaikis", "Laisval…")]
 
 
+def test_expenses_by_type_table_draws_each_cell(client_logged):
+    food, rent = (ExpenseTypeFactory(title=title) for title in ("Food", "Rent"))
+    ExpenseFactory(expense_type=food, price=20000, date=date(1999, 1, 1))
+    ExpenseFactory(expense_type=rent, price=40000, date=date(1999, 1, 1))
+    ExpenseFactory(expense_type=rent, price=70000, date=date(1999, 2, 1))
+
+    content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
+    (panel,) = _panels(content, "Išlaidų statistika")
+    rows = [
+        (
+            re.findall(r"<td>([^<]*)</td>", row),
+            re.findall(
+                r'<td class="main__figure" data-cell="([^"]*)">([^<]*)</td>', row
+            ),
+        )
+        for row in re.findall(
+            r"<tr\b[^>]*>(.*?)</tr>", panel.partition("</thead>")[2], re.S
+        )
+    ]
+
+    # each figure cell with its state; the factory's expense name brings its own
+    # type, with no expense; a type averages over its months, the year over twelve
+    none = ("empty", "-")
+    assert [*rows[:2], *rows[-2:]] == [
+        (["Sausis"], [none, ("", "200,00"), ("", "400,00"), ("", "600,00")]),
+        (["Vasaris"], [none, none, ("", "700,00"), ("", "700,00")]),
+        (["Vidurkis"], [none, ("", "200,00"), ("", "550,00"), ("", "108,33")]),
+        (["Viso"], [none, ("", "200,00"), ("", "1.100,00"), ("", "1.300,00")]),
+    ]
+
+
 def _accounts_and_debts(content):
     return (table_titled(content, "Sąskaitos"), *_panels(content, "Skolos"))
 
