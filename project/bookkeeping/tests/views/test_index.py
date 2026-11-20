@@ -476,11 +476,11 @@ def test_view_index_renders_its_chart_data(client_logged):
     ExpenseFactory(date=date(1999, 1, 1), price=100)
 
     content = tab_fragment(client_logged, INDEX_TABS["charts"].url)
-    balance = script_json(content, "month-charts-data")
+    month_charts = script_json(content, "month-charts-data")
     expenses = script_json(content, "chart-expenses-data")
 
     # today's month is the selected year's current month, the next one not reached
-    assert (balance["expenses"][:3], balance["current_month"][:3]) == (
+    assert (month_charts["expenses"][:3], month_charts["current_month"][:3]) == (
         [100, 0, None],
         [False, True, False],
     )
