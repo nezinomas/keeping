@@ -200,6 +200,21 @@ class BookkeepingIndex(TestCase, Browser):
             ["circle", "diamond"],
         )
 
+    def test_a_line_whose_average_is_nought_draws_no_rule(self):
+        # a year with no expenses: its line lies at nought, read against no rule (Q122)
+        IncomeFactory(price=120000)
+        self.open_at(INDEX_TABS["charts"].url, 1500)
+
+        drawn = self.browser.execute_script(
+            f"{LOOK}"
+            " const lines = '#chart-incomes-expenses-container ';"
+            " return {rules: look(lines + '.highcharts-plot-line', 'stroke'),"
+            " rule_labels: [...document.querySelectorAll(lines + '.chart-rule-label')]"
+            "  .map(l => l.textContent)};"
+        )
+
+        assert drawn == {"rules": [[DATA_RGB]], "rule_labels": ["Vidurkis: 100€"]}
+
     def test_the_balance_chart_draws_each_month_s_balance_against_a_zero_rule(self):
         IncomeFactory(price=50000)
         ExpenseFactory(price=20000)
