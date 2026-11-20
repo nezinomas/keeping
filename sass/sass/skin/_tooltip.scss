@@ -71,26 +71,15 @@ $tip-gap: 8px;
         margin: $tip-gap;
     }
 
-    .tip.top::before {
-        position-area: top;
-    }
-
+    // the two sides a paper page draws. Under its trigger, or over it when there is
+    // no room under; beside its trigger, wrapping into the room there
     .tip.bottom::before {
         position-area: bottom;
-    }
-
-    .tip.left::before {
-        position-area: left;
+        position-try-fallbacks: flip-block;
     }
 
     .tip.right::before {
         position-area: right;
-    }
-
-    // no room above or below the trigger: the bubble opens on the other side; one
-    // beside its trigger wraps into the room there instead
-    .tip:is(.top, .bottom)::before {
-        position-try-fallbacks: flip-block;
     }
 
     // a scroll box's edge fade is a mask, and a mask cuts what leaves the box: the
@@ -107,25 +96,11 @@ $tip-gap: 8px;
         width: max-content;
     }
 
-    .tip.top::before {
-        bottom: 100%;
-        left: 50%;
-        margin-bottom: $tip-gap;
-        transform: translateX(-50%);
-    }
-
     .tip.bottom::before {
         top: 100%;
         left: 50%;
         margin-top: $tip-gap;
         transform: translateX(-50%);
-    }
-
-    .tip.left::before {
-        right: 100%;
-        top: 50%;
-        margin-right: $tip-gap;
-        transform: translateY(-50%);
     }
 
     .tip.right::before {
