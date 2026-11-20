@@ -61,16 +61,12 @@ function paperMoney(value) {
     return Highcharts.numberFormat(value, 0);
 }
 
-function paperThousands() {
-    return paperMoney(this.value);
-}
-
 // A money axis, its ticks far enough apart that two never print alike in thousands,
 // as a step of 50 would ("0,2k" for both 150 and 200).
 function paperMoneyAxis() {
     return {
         title: { text: "" },
-        labels: { formatter: paperThousands },
+        labels: { formatter() { return paperMoney(this.value); } },
         tickPixelInterval: 120,
     };
 }
