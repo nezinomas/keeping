@@ -331,7 +331,8 @@ def test_expenses_by_type_head_cuts_a_long_type_and_tips_it_whole(client_logged)
         cell
         for panel in _panels(content, "Išlaidų statistika")
         for cell in re.findall(
-            r'<th><span class="tip bottom" data-tip="([^"]*)">([^<]*)</span></th>',
+            r'<th><span class="tip bottom" tabindex="0" data-tip="([^"]*)"'
+            r' aria-description="\1">([^<]*)</span></th>',
             panel.partition("</thead>")[0],
         )
     ]

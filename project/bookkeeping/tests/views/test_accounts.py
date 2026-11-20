@@ -104,7 +104,8 @@ def test_every_table_refreshes_every_balance(client_logged):
     icons = [
         re.findall(
             r'<th class="([^"]*)"[^>]*>\s*<span class="tip right"'
-            r' data-tip="([^"]*)">\s*<a href="#" role="button" hx-get="([^"]*)">',
+            r' data-tip="([^"]*)">\s*<a href="#" role="button" hx-get="([^"]*)"'
+            r' aria-label="\2">',
             table_titled(content, title),
         )
         for content, title in (

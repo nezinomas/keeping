@@ -43,7 +43,8 @@ def test_no_incomes_head_names_its_figure_under_the_panel_title(
     assert re.findall(
         PANEL_TITLE
         + r'<div class="table-responsive">\s*'
-        + r"<table\b[^>]*>\s*<thead>\s*<tr>\s*<th[^>]*><span[^>]*>([^<]*)</span>",
+        + r"<table\b[^>]*>\s*<thead>\s*<tr>\s*"
+        + r'<th class="text-left"><span[^>]*>([^<]*)</span>',
         content,
     ) == [("Be pajamų", "Nebūtinos išlaidos 200")]
 
@@ -69,15 +70,23 @@ def test_no_incomes_panel_keeps_its_legend_under_the_table(client_logged):
 
 def test_no_incomes_tip_lists_the_unnecessary_expenses(client_logged, unnecessary):
     content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
-    tip = re.search(
-        r'<span class="tip[^"]*" data-tip="(Nebūtinos išlaidos[^"]*)"', content
-    ).group(1)
+    tips = re.findall(
+        r'<span class="tip bottom w100" tabindex="0" data-tip="(Nebūtinos išlaidos[^"]*)"'
+        r' aria-description="([^"]*)"',
+        content,
+    )
 
-    assert tip.splitlines() == [
-        "Nebūtinos išlaidos, kurių galima atsisakyti:",
-        "- XXX",
-        "- YYY",
-        "- Taupymas",
+    # the bubble's lines, and the one sentence a screen reader is given
+    assert [(tip.splitlines(), said) for tip, said in tips] == [
+        (
+            [
+                "Nebūtinos išlaidos, kurių galima atsisakyti:",
+                "- XXX",
+                "- YYY",
+                "- Taupymas",
+            ],
+            "Nebūtinos išlaidos, kurių galima atsisakyti: XXX, YYY, Taupymas",
+        )
     ]
 
 

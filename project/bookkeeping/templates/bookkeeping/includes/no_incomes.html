@@ -4,9 +4,9 @@
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="text-left"><span class="tip right w100" data-tip="{% translate 'Unnecessary expenses that can be avoided' %}:
+            <th class="text-left"><span class="tip bottom w100" tabindex="0" data-tip="{% translate 'Unnecessary expenses that can be avoided' %}:
 {% for i in not_use %}- {{ i }}
-{% endfor %}">{% translate 'Unnecessary expenses' %} {{ save_sum|price|floatformat:'0g' }}</span></th>
+{% endfor %}" aria-description="{% translate 'Unnecessary expenses that can be avoided' %}: {{ not_use|join:', ' }}">{% translate 'Unnecessary expenses' %} {{ save_sum|price|floatformat:'0g' }}</span></th>
             <th>€ + F</th>
             <th>€ + F + P</th>
         </tr>

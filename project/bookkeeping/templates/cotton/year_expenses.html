@@ -7,7 +7,7 @@
     <c-slot name="head">
         <tr>
             <th>{{ year|title }}</th>
-            {% for category in ctx.categories %}<th><span class="tip bottom" data-tip="{{ category }}">{{ category|truncatechars:8 }}</span></th>{% endfor %}
+            {% for category in ctx.categories %}<th><span class="tip bottom" tabindex="0" data-tip="{{ category }}" aria-description="{{ category }}">{{ category|truncatechars:8 }}</span></th>{% endfor %}
             <th>{% translate 'Total' %}</th>
         </tr>
     </c-slot>

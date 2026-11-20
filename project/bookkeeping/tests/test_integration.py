@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import date
 
@@ -15,6 +16,7 @@ from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
 from ...expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeFactory
+from ...journals.tests.factories import JournalFactory
 from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..tabs import INDEX_TABS
@@ -43,6 +45,12 @@ TINT_FADED = "color(srgb 0.0862745 0.411765 0.607843 / 0.0768628)"
 DATA_FADED = "color(srgb 0.0862745 0.411765 0.607843 / 0.35)"
 HARM_FADED = "color(srgb 0.490196 0.152941 0.2 / 0.35)"
 CLEAR = "rgba(0, 0, 0, 0)"
+PAPER = "rgb(255, 255, 255)"
+BODY_FACE = (
+    '"Segoe UI Variable Text", "Segoe UI", -apple-system, "Helvetica Neue", Arial,'
+    " sans-serif"
+)
+NO_INCOMES_TIP = "th > .tip[data-tip^='Nebūtinos išlaidos']"
 WASH = "rgba(232, 194, 26, 0.3)"
 # CSS's named colours, `transparent` and `currentcolor` among them
 NAMED_COLOURS = """
@@ -112,6 +120,59 @@ def page_overflow(browser):
         "const page = document.documentElement;"
         " return page.scrollWidth - page.clientWidth;"
     )
+
+
+# a ::before has no rect: a point in a drawn bubble answers with its .tip, every
+# fourth pixel to find it and each pixel of its rim for its edges. Whole is within 2px
+FIND_TIP = "const tip = document.querySelector(arguments[0]);"
+TIP_BUBBLE = (
+    FIND_TIP
+    + """
+    const own = tip.getBoundingClientRect();
+    const drawn = (x, y) => document.elementFromPoint(x, y) === tip
+        && !(x >= own.left - 1 && x <= own.right + 1
+            && y >= own.top - 1 && y <= own.bottom + 1);
+    let at = null;
+    const grow = (x, y) => {
+        at ??= {left: x, top: y, right: x + 1, bottom: y + 1};
+        at.left = Math.min(at.left, x); at.right = Math.max(at.right, x + 1);
+        at.top = Math.min(at.top, y); at.bottom = Math.max(at.bottom, y + 1);
+    };
+    for (let y = 0; y < innerHeight; y += 4) {
+        for (let x = 0; x < innerWidth; x += 4) if (drawn(x, y)) grow(x, y);
+    }
+    const found = {...at};
+    for (let y = found.top - 4; at && y < found.bottom + 4; y++) {
+        for (let x = found.left - 4; x < found.right + 4; x++) {
+            const inside = x > found.left && x < found.right - 1
+                && y > found.top && y < found.bottom - 1;
+            if (!inside && drawn(x, y)) grow(x, y);
+        }
+    }
+    const bubble = getComputedStyle(tip, '::before');
+    const [width, height] = [bubble.width, bubble.height].map(parseFloat);
+    const lines = (height - parseFloat(bubble.paddingTop)
+        - parseFloat(bubble.paddingBottom)) / parseFloat(bubble.lineHeight);
+    const box = tip.closest('.table-responsive');
+    const edge = box.getBoundingClientRect();
+    const page = document.documentElement;
+    return {
+        lines: Math.round(lines),
+        whole: !!at && Math.abs(at.right - at.left - width) < 2
+            && Math.abs(at.bottom - at.top - height) < 2,
+        below_its_header: !!at
+            && at.top >= tip.closest('th').getBoundingClientRect().bottom,
+        gap_is_8px: !!at && Math.abs(at.top - own.bottom - 8) < 2,
+        in_the_window: !!at && at.left >= 0 && at.top >= 0
+            && at.right <= innerWidth && at.bottom <= innerHeight,
+        leaves_its_box: !!at && (at.left < edge.left || at.top < edge.top
+            || at.right > edge.right || at.bottom > edge.bottom),
+        box_scrolls: box.scrollWidth > box.clientWidth
+            || box.scrollHeight > box.clientHeight,
+        page_overflow: page.scrollWidth - page.clientWidth,
+    };
+"""
+)
 
 
 @pytest.mark.webtest
@@ -658,6 +719,137 @@ class BookkeepingIndex(TestCase, Browser):
             [True, True],
         )
 
+    def test_the_unnecessary_expenses_tip_opens_whole_under_its_header(self):
+        # six types and Taupymas: a list taller than its table
+        journal = JournalFactory()
+        types = [ExpenseTypeFactory(title=f"Type {n}") for n in range(6)]
+        journal.unnecessary_savings = True
+        journal.unnecessary_expenses = json.dumps([t.pk for t in types])
+        journal.save()
+        read = {}
+        for width in (1500, 360):
+            self.open_at(INDEX_TABS["overview"].url, width)
+            self.browser.execute_script(
+                FIND_TIP + " tip.scrollIntoView({block: 'center'});", NO_INCOMES_TIP
+            )
+            hidden = self.browser.execute_script(TIP_BUBBLE, NO_INCOMES_TIP)
+            self.browser.execute_script(FIND_TIP + " tip.focus();", NO_INCOMES_TIP)
+            read[width] = (
+                [hidden["box_scrolls"], hidden["page_overflow"]],
+                self._tip_opens(NO_INCOMES_TIP),
+                self.browser.execute_script(TIP_BUBBLE, NO_INCOMES_TIP),
+            )
+
+        whole = {
+            "lines": 8,
+            "whole": True,
+            "below_its_header": True,
+            "gap_is_8px": True,
+            "in_the_window": True,
+            "leaves_its_box": True,
+            "box_scrolls": False,
+            "page_overflow": 0,
+        }
+        assert read == dict.fromkeys((1500, 360), ([False, 0], True, whole))
+
+    def test_a_tip_at_the_edge_of_a_scrolled_table_opens_whole_past_it(self):
+        long = "Type 6, the long one of eight"
+        for n in range(1, 9):
+            ExpenseTypeFactory(title=long if n == 6 else f"Type {n}")
+        tip = f".tip[data-tip='{long}']"
+        self.open_at(INDEX_TABS["balance"].url, 360)
+        scrolled = self.browser.execute_script(
+            FIND_TIP + " tip.scrollIntoView({block: 'center', inline: 'end'});"
+            " tip.focus({preventScroll: true});"
+            " const box = tip.closest('.table-responsive');"
+            " return [box.scrollLeft > 0,"
+            "  box.scrollLeft + box.clientWidth < box.scrollWidth];",
+            tip,
+        )
+        read = self.browser.execute_script(TIP_BUBBLE, tip)
+
+        # scrolled, and not to its end, where a box fades its edge: that mask would
+        # cut the bubble where it leaves the box
+        assert (scrolled, read) == (
+            [True, True],
+            {
+                "lines": 1,
+                "whole": True,
+                "below_its_header": True,
+                "gap_is_8px": True,
+                "in_the_window": True,
+                "leaves_its_box": True,
+                "box_scrolls": True,
+                "page_overflow": 0,
+            },
+        )
+
+    def test_a_tip_with_no_room_under_its_header_opens_over_it_and_the_dock(self):
+        self.open_at(INDEX_TABS["overview"].url, 1500)
+        find_header = (
+            FIND_TIP + " const header = tip.closest('th').getBoundingClientRect();"
+        )
+        header_bottom = self.browser.execute_script(
+            find_header + " return header.bottom;", NO_INCOMES_TIP
+        )
+        # the window ends 2px under the header, so the dock lies over it
+        self.browser.execute_cdp_cmd(
+            "Emulation.setDeviceMetricsOverride",
+            {
+                "width": 1500,
+                "height": round(header_bottom) + 2,
+                "deviceScaleFactor": 1,
+                "mobile": False,
+            },
+        )
+        placed = self.browser.execute_script(
+            find_header + " tip.focus({preventScroll: true});"
+            " const middle = (header.left + header.right) / 2;"
+            " const dock = document.querySelector('.quick-add').getBoundingClientRect();"
+            " const at = y => document.elementsFromPoint(middle, y);"
+            " return [innerHeight - header.bottom < 3,"
+            "  at(dock.top + 3).some(e => e.matches('.quick-add')),"
+            "  at(dock.top + 3)[0] === tip, at(header.top - 20)[0] === tip];",
+            NO_INCOMES_TIP,
+        )
+
+        # no room under the header; 3px into the dock the bubble lies over it, and
+        # 20px over the header it is drawn too
+        assert placed == [True, True, True, True]
+
+    def test_every_tip_opens_on_focus_in_the_paper_look(self):
+        journal = JournalFactory()
+        journal.unnecessary_savings = True
+        journal.save()
+        AccountWorthFactory()
+        self.open_at(INDEX_TABS["overview"].url, 1500)
+        # a header's icon (its link takes the focus), a body cell's name, a header's
+        # list
+        tips = {
+            "refresh": ("#accounts th .tip", "#accounts th .tip a"),
+            "check": ("#accounts td .tip", "#accounts td .tip"),
+            "unnecessary": (NO_INCOMES_TIP, NO_INCOMES_TIP),
+        }
+        looks = {}
+        for name, (tip, focused) in tips.items():
+            self.browser.execute_script(
+                "document.querySelector(arguments[0]).focus();", focused
+            )
+            looks[name] = [
+                self._tip_opens(tip),
+                *self.browser.execute_script(
+                    FIND_TIP + " const b = getComputedStyle(tip, '::before');"
+                    " return [b.backgroundColor, b.color, b.fontFamily, b.textShadow,"
+                    "  b.boxShadow, getComputedStyle(tip, '::after').content];",
+                    tip,
+                ),
+            ]
+
+        # ink on paper in the body face, no shadow, and no arrow after it
+        assert looks == dict.fromkeys(
+            tips, [True, INK, PAPER, BODY_FACE, "none", "none", "none"]
+        )
+
     def test_the_funds_tables_start_their_figures_at_one_x(self):
         # the longest fund name, beside a short pension name
         SavingFactory(saving_type=SavingTypeFactory(title=LONGEST_FUND))
@@ -710,6 +902,15 @@ class BookkeepingIndex(TestCase, Browser):
         row = [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 12)]
         foot = [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 11)]
         assert ruled == [[*band, row, foot]] * 2
+
+    def _tip_opens(self, selector: str) -> bool:
+        # its box, not its opacity: a minimized Chrome draws no frame, so the fade
+        # never runs
+        return self.browser.execute_script(
+            "return getComputedStyle("
+            "  document.querySelector(arguments[0]), '::before').display === 'block';",
+            selector,
+        )
 
     def _looks(self, **cells):
         """Each cell's colour, and whether its background is its row's first cell's."""
