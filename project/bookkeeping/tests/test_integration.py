@@ -235,6 +235,10 @@ class BookkeepingIndex(TestCase, Browser):
                 " legend: document.querySelectorAll(box + '.highcharts-legend-item')"
                 "  .length};"
             )
+            drawn[width]["zero_at"] = self.read_chart(
+                "chart-balance-container",
+                "return c.yAxis[0].plotLinesAndBands.map(rule => rule.options.value);",
+            )
 
         # one column a month, a month at nought in the tint; a figure is muted, off a
         # month at nought, and below 768px left to the tooltip
@@ -242,6 +246,7 @@ class BookkeepingIndex(TestCase, Browser):
             "columns": [[TINT, YEAR_0], [HARM_SOFT, HARM]] + [[TINT, YEAR_0]] * 10,
             "figures": [["0,3k", INK_MUTED], ["-1,5k", INK_MUTED]],
             "zero": [[INK]],
+            "zero_at": [0],
             "series": 1,
             "legend": 0,
         }
