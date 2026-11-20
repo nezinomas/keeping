@@ -8,6 +8,65 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from ...users.tests.factories import UserFactory
 
+# a tip's bubble is a ::before, with no rect: a point in a drawn one answers with
+# its .tip, every fourth pixel to find it and each pixel of its rim for its edges
+FIND_TIP = "const tip = document.querySelector(arguments[0]);"
+TIP_BOX = (
+    FIND_TIP
+    + """
+    const own = tip.getBoundingClientRect();
+    const drawn = (x, y) => document.elementFromPoint(x, y) === tip
+        && !(x >= own.left - 1 && x <= own.right + 1
+            && y >= own.top - 1 && y <= own.bottom + 1);
+    let at = null;
+    const grow = (x, y) => {
+        at ??= {left: x, top: y, right: x + 1, bottom: y + 1};
+        at.left = Math.min(at.left, x); at.right = Math.max(at.right, x + 1);
+        at.top = Math.min(at.top, y); at.bottom = Math.max(at.bottom, y + 1);
+    };
+    for (let y = 0; y < innerHeight; y += 4) {
+        for (let x = 0; x < innerWidth; x += 4) if (drawn(x, y)) grow(x, y);
+    }
+    const found = {...at};
+    for (let y = found.top - 4; at && y < found.bottom + 4; y++) {
+        for (let x = found.left - 4; x < found.right + 4; x++) {
+            const inside = x > found.left && x < found.right - 1
+                && y > found.top && y < found.bottom - 1;
+            if (!inside && drawn(x, y)) grow(x, y);
+        }
+    }
+    const bubble = getComputedStyle(tip, '::before');
+    const [width, height] = [bubble.width, bubble.height].map(parseFloat);
+    const lines = (height - parseFloat(bubble.paddingTop)
+        - parseFloat(bubble.paddingBottom)) / parseFloat(bubble.lineHeight);
+"""
+)
+# the bundle as a browser without anchor positioning reads it: the anchored rules
+# gone, the `@supports not` ones lifted out of their query. Returns the queries met
+NO_ANCHORING = """
+    let met = 0;
+    const unanchor = (parent) => {
+        for (let i = parent.cssRules.length - 1; i >= 0; i--) {
+            const rule = parent.cssRules[i];
+            const query = rule instanceof CSSSupportsRule ? rule.conditionText : '';
+            if (!query.includes('anchor-scope')) {
+                if (rule.cssRules) unanchor(rule);
+                continue;
+            }
+            const lifted = [...rule.cssRules].map(inner => inner.cssText).reverse();
+            parent.deleteRule(i);
+            if (query.startsWith('not')) {
+                lifted.forEach(text => parent.insertRule(text, i));
+            }
+            met++;
+        }
+    };
+    [...document.styleSheets]
+        .filter(sheet => (sheet.href || '').includes('paper.min.css'))
+        .forEach(unanchor);
+    return met;
+"""
+
 
 class Browser(StaticLiveServerTestCase):
     @classmethod

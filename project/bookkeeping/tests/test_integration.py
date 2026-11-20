@@ -13,7 +13,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
-from ...core.tests.test_integration_browser import Browser
+from ...core.tests.test_integration_browser import (
+    FIND_TIP,
+    NO_ANCHORING,
+    TIP_BOX,
+    Browser,
+)
 from ...expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeFactory
 from ...journals.tests.factories import JournalFactory
@@ -122,37 +127,11 @@ def page_overflow(browser):
     )
 
 
-# a ::before has no rect: a point in a drawn bubble answers with its .tip, every
-# fourth pixel to find it and each pixel of its rim for its edges. Whole is within 2px
-FIND_TIP = "const tip = document.querySelector(arguments[0]);"
+# a header tip's bubble against its cell, its scroll box, the window and the page;
+# whole within 2px, since the points are whole pixels and its edges are not
 TIP_BUBBLE = (
-    FIND_TIP
+    TIP_BOX
     + """
-    const own = tip.getBoundingClientRect();
-    const drawn = (x, y) => document.elementFromPoint(x, y) === tip
-        && !(x >= own.left - 1 && x <= own.right + 1
-            && y >= own.top - 1 && y <= own.bottom + 1);
-    let at = null;
-    const grow = (x, y) => {
-        at ??= {left: x, top: y, right: x + 1, bottom: y + 1};
-        at.left = Math.min(at.left, x); at.right = Math.max(at.right, x + 1);
-        at.top = Math.min(at.top, y); at.bottom = Math.max(at.bottom, y + 1);
-    };
-    for (let y = 0; y < innerHeight; y += 4) {
-        for (let x = 0; x < innerWidth; x += 4) if (drawn(x, y)) grow(x, y);
-    }
-    const found = {...at};
-    for (let y = found.top - 4; at && y < found.bottom + 4; y++) {
-        for (let x = found.left - 4; x < found.right + 4; x++) {
-            const inside = x > found.left && x < found.right - 1
-                && y > found.top && y < found.bottom - 1;
-            if (!inside && drawn(x, y)) grow(x, y);
-        }
-    }
-    const bubble = getComputedStyle(tip, '::before');
-    const [width, height] = [bubble.width, bubble.height].map(parseFloat);
-    const lines = (height - parseFloat(bubble.paddingTop)
-        - parseFloat(bubble.paddingBottom)) / parseFloat(bubble.lineHeight);
     const box = tip.closest('.table-responsive');
     const edge = box.getBoundingClientRect();
     const page = document.documentElement;
@@ -170,6 +149,25 @@ TIP_BUBBLE = (
         box_scrolls: box.scrollWidth > box.clientWidth
             || box.scrollHeight > box.clientHeight,
         page_overflow: page.scrollWidth - page.clientWidth,
+    };
+"""
+)
+# where the bubble lies against its trigger: under it or beside it, 8px away, its
+# middle on the trigger's
+TIP_AGAINST_ITS_TRIGGER = (
+    TIP_BOX
+    + """
+    const under = !!at && at.top >= own.bottom - 1;
+    const gap = under ? at.top - own.bottom : at.left - own.right;
+    const off = under
+        ? at.left + at.right - own.left - own.right
+        : at.top + at.bottom - own.top - own.bottom;
+    return {
+        position: bubble.position,
+        lines: Math.round(lines),
+        side: !at ? 'none' : under ? 'under' : 'beside',
+        gap_is_8px: !!at && Math.abs(gap - 8) < 2,
+        middle_on_its_trigger: !!at && Math.abs(off) < 4,
     };
 """
 )
@@ -816,6 +814,34 @@ class BookkeepingIndex(TestCase, Browser):
         # no room under the header; 3px into the dock the bubble lies over it, and
         # 20px over the header it is drawn too
         assert placed == [True, True, True, True]
+
+    def test_a_browser_without_anchoring_opens_a_tip_against_its_trigger(self):
+        journal = JournalFactory()
+        journal.unnecessary_savings = True
+        journal.save()
+        AccountWorthFactory()
+        self.open_at(INDEX_TABS["overview"].url, 1500)
+        queries = self.browser.execute_script(NO_ANCHORING)
+        read = {}
+        for name, tip in (("check", "#accounts td .tip"), ("list", NO_INCOMES_TIP)):
+            self.browser.execute_script(
+                FIND_TIP + " tip.scrollIntoView({block: 'center'});"
+                " tip.focus({preventScroll: true});",
+                tip,
+            )
+            read[name] = self.browser.execute_script(TIP_AGAINST_ITS_TRIGGER, tip)
+
+        # one anchored query and two without; a Check on one line beside its
+        # account, the list's two lines under its header
+        against = {"position": "absolute", "gap_is_8px": True}
+        against |= {"middle_on_its_trigger": True}
+        assert (queries, read) == (
+            3,
+            {
+                "check": against | {"side": "beside", "lines": 1},
+                "list": against | {"side": "under", "lines": 2},
+            },
+        )
 
     def test_every_tip_opens_on_focus_in_the_paper_look(self):
         journal = JournalFactory()
