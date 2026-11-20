@@ -95,7 +95,7 @@ MONTH_NAMES = [
         ),
     ],
 )
-def test_incomes_expenses_chart_reads_the_months_reached(main_user, today, months):
+def test_month_charts_read_the_months_reached(main_user, today, months):
     IncomeFactory(date=date(1999, 1, 1), price=120)
     ExpenseFactory(date=date(1999, 2, 1), price=24)
     ExpenseFactory(date=date(1999, 12, 1), price=36)
