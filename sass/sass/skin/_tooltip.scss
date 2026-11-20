@@ -1,0 +1,137 @@
+@use "../abstracts/variables" as *;
+
+// the bubble's margin: its distance from its trigger, and from the window's edge
+// when the browser slides it back in
+$tip-gap: 8px;
+
+// one feature query, for the tip and for whatever places one (the Panel's hint)
+@mixin anchored {
+    @supports (anchor-scope: --tip) {
+        @content;
+    }
+}
+
+@mixin unanchored {
+    @supports not (anchor-scope: --tip) {
+        @content;
+    }
+}
+
+.tip {
+    display: inline-block;
+    position: relative;
+    font-style: normal;
+}
+
+.tip::before {
+    content: attr(data-tip);
+    // no box while hidden: it widens no scroll box, and each opening places it
+    // afresh, where a kept box holds the place it had before its table scrolled
+    display: none;
+    position: absolute;
+    // over the quick-add dock (900), under the nav's menu (999)
+    z-index: 950;
+    box-sizing: border-box;
+    padding: 0.3rem 0.75rem 0.55rem;
+    border-radius: 3px;
+    background: $ink;
+    color: $paper;
+    font-family: $body;
+    font-size: small;
+    font-weight: 300;
+    line-height: 1.1em;
+    text-align: left;
+    white-space: pre-wrap;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, display 0.3s allow-discrete;
+}
+
+// :focus-within: a tip around a link opens while its link holds the focus
+.tip:is(:hover, :focus-within)::before {
+    display: block;
+    opacity: 1;
+
+    @starting-style {
+        opacity: 0;
+    }
+}
+
+// anchored, the bubble leaves its trigger's box: no scroll box cuts it, and the
+// browser slides it back inside the window
+@include anchored {
+    .tip {
+        anchor-name: --tip;
+        // every tip shares the name; the scope ties each bubble to its own trigger
+        anchor-scope: --tip;
+    }
+
+    .tip::before {
+        position: fixed;
+        position-anchor: --tip;
+        margin: $tip-gap;
+    }
+
+    .tip.top::before {
+        position-area: top;
+    }
+
+    .tip.bottom::before {
+        position-area: bottom;
+    }
+
+    .tip.left::before {
+        position-area: left;
+    }
+
+    .tip.right::before {
+        position-area: right;
+    }
+
+    // no room above or below the trigger: the bubble opens on the other side; one
+    // beside its trigger wraps into the room there instead
+    .tip:is(.top, .bottom)::before {
+        position-try-fallbacks: flip-block;
+    }
+
+    // a scroll box's edge fade is a mask, and a mask cuts what leaves the box: the
+    // fade goes while a tip in the box is open
+    .paper-skin :is(.table-responsive, .month-table):has(.tip:is(:hover, :focus-within)) {
+        animation: none;
+    }
+}
+
+// a browser without anchor positioning opens the bubble against its trigger, on
+// one line, where a scroll box may cut it
+@include unanchored {
+    .tip::before {
+        width: max-content;
+    }
+
+    .tip.top::before {
+        bottom: 100%;
+        left: 50%;
+        margin-bottom: $tip-gap;
+        transform: translateX(-50%);
+    }
+
+    .tip.bottom::before {
+        top: 100%;
+        left: 50%;
+        margin-top: $tip-gap;
+        transform: translateX(-50%);
+    }
+
+    .tip.left::before {
+        right: 100%;
+        top: 50%;
+        margin-right: $tip-gap;
+        transform: translateY(-50%);
+    }
+
+    .tip.right::before {
+        left: 100%;
+        top: 50%;
+        margin-left: $tip-gap;
+        transform: translateY(-50%);
+    }
+}

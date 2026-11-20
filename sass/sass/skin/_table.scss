@@ -291,6 +291,7 @@ $group-rule-colours: (band: $hair, body: $hair-soft);
     // has no scroll timeline to run on, so it draws no fade
     .table-responsive,
     .month-table {
+        // off while a tip in the box is open: skin/_tooltip.scss
         animation: table-edge linear both;
         animation-timeline: scroll(self inline);
     }

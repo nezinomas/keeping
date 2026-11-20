@@ -1,6 +1,7 @@
 @use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 @use "tokens";
+@use "tooltip";
 
 .paper-skin .panel {
     @include tokens.panel;
@@ -20,26 +21,23 @@
 
     margin: 0 0 10px;
 
-    // a phone has no room beside the hint, so the tip opens under the title
-    @include phone {
-        position: relative;
+    // a phone has no room beside the hint, so the tip opens under the title; an
+    // anchored bubble finds that room itself (.panel__hint below)
+    @include tooltip.unanchored {
+        @include phone {
+            position: relative;
 
-        .panel__hint {
-            position: static;
+            .panel__hint {
+                position: static;
 
-            &::before {
-                top: 100%;
-                left: 0;
-                right: 0;
-                min-width: 0;
-                margin: 8px 0 0;
-                transform: none;
-                // over the table's sticky first column (z-index 1)
-                z-index: 2;
-            }
-
-            &::after {
-                display: none;
+                &::before {
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    width: auto;
+                    margin: tooltip.$tip-gap 0 0;
+                    transform: none;
+                }
             }
         }
     }
@@ -57,23 +55,10 @@
     cursor: help;
 
     &::before {
-        font-family: $body;
         white-space: normal;
-        min-width: 18rem;
-        background: $ink;
-        color: $paper;
-        text-shadow: none;
-        box-shadow: none;
-    }
-
-    &.right::after {
-        border-right-color: $ink;
-    }
-
-    &:focus::before,
-    &:focus::after {
-        visibility: visible;
-        opacity: 1;
+        width: 18rem;
+        // too wide for a phone's room beside the hint: it opens under it
+        position-try-fallbacks: bottom;
     }
 }
 

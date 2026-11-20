@@ -20,7 +20,6 @@
 @use 'components/forms';
 @use 'components/modal';
 @use 'components/quick_add';
-@use 'components/tooltip';
 @use 'components/icons';
 @use 'components/utilities';
 
@@ -31,6 +30,7 @@
 @use 'skin/buttons' as *;
 @use 'skin/notice';
 @use 'skin/sheet';
+@use 'skin/tooltip';
 @use 'skin/panel';
 @use 'skin/subnav';
 @use 'skin/filter_line';
