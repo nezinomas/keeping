@@ -130,8 +130,8 @@ msgstr "Pajamos"
 msgid "Expenses"
 msgstr "Išlaidos"
 
-#: .\project\bookkeeping\templates\cotton\year_balance.html:46
-#: .\project\bookkeeping\templates\cotton\year_expenses.html:25
+#: .\project\bookkeeping\templates\cotton\year_balance.html:44
+#: .\project\bookkeeping\templates\cotton\year_expenses.html:23
 msgid "Average"
 msgstr "Vidurkis"
 

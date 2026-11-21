@@ -605,14 +605,12 @@ class BookkeepingIndex(TestCase, Browser):
     def test_balance_head_groups_its_columns_beside_a_bordered_toggle(self):
         toggle = self.balance_toggle()
         # without a border the toggle reads as a header label (Q63), and an action
-        # reads in the body face (sass.md *Type*); the first group is blank under the
-        # Panel's title (Q62), the others centred over their columns
+        # reads in the body face (sass.md *Type*); the groups centre over their columns
         looks = self.browser.execute_script(
             "const groups = document.querySelector('#table-balance thead tr').cells;"
             " const toggle = getComputedStyle(arguments[0]);"
             " return [toggle.borderTopStyle, toggle.borderTopColor,"
             " toggle.fontFamily.split(',')[0],"
-            " groups[0].textContent.trim(),"
             " ...[groups[1], groups[2]].map(c => getComputedStyle(c).textAlign)];",
             toggle,
         )
@@ -621,7 +619,6 @@ class BookkeepingIndex(TestCase, Browser):
             "solid",
             HAIR,
             '"Segoe UI Variable Text"',
-            "",
             "center",
             "center",
         ]
