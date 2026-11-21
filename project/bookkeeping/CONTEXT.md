@@ -26,9 +26,9 @@ expenses-by-type chart beside the balance-per-month chart (above it below 1200px
 the incomes-and-expenses chart under both. Each is fetched and reloaded
 whole, on every event that changes it; a closed tab reads fresh data when opened.
 The Quick-add bar offers each Worth form as a pill on its own tab: *Sąskaitų faktas* on
-Apžvalga, *Fondų faktas* and *Pensijų faktas* on Fondai. The refresh icon in the title
-of the Account balances, Funds and Pensions tables syncs every balance row of every
-year and reloads the tab.
+Apžvalga, *Fondų faktas* and *Pensijų faktas* on Fondai. The refresh icon in the first
+header cell of the Account balances, Funds and Pensions tables syncs every balance row
+of every year and reloads the tab.
 *Grafikai* also names a navbar item, a different page.
 _Avoid_: section, panel, page
 
