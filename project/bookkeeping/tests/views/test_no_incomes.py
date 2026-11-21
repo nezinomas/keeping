@@ -31,9 +31,9 @@ def _mark(main_user, titles, savings=False):
     return types
 
 
-def _cut(expense_type, main_user):
+def _cut(expense_type, main_user, price=120000):
     with quiet_build(main_user):
-        ExpenseFactory(expense_type=expense_type, price=120000, date=date(1999, 5, 1))
+        ExpenseFactory(expense_type=expense_type, price=price, date=date(1999, 5, 1))
 
 
 @pytest.fixture(name="unnecessary")
@@ -64,7 +64,12 @@ def _cuts_an_expense(main_user):
     _cut(*_mark(main_user, ["XXX"]), main_user)
 
 
-# the six whole months before the view's today hold the cut expense: 1.200,00 / 6
+def _cuts_a_cent(main_user):
+    _cut(*_mark(main_user, ["XXX"]), main_user, price=1)
+
+
+# the six whole months before the view's today hold the cut expense: 1.200,00 / 6;
+# a cent over six months is a cut that rounds to 0, drawn "0", not "–" (Q193)
 @time_machine.travel("1999-06-15")
 @pytest.mark.parametrize(
     "journal, figure, hints",
@@ -72,6 +77,7 @@ def _cuts_an_expense(main_user):
         pytest.param(_marks_nothing, "–", [], id="nothing-marked"),
         pytest.param(_marks_a_type_never_spent_on, "–", [CUTS], id="nothing-cut"),
         pytest.param(_cuts_an_expense, "200", [CUTS], id="a-cut"),
+        pytest.param(_cuts_a_cent, "0", [CUTS], id="a-cut-rounding-to-0"),
     ],
 )
 def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
