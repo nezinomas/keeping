@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 
 from ...accounts.models import AccountBalance
@@ -640,6 +641,35 @@ class BookkeepingIndex(TestCase, Browser):
 
         hidden, opened = ([7], "Rodyti skolas"), ([11], "Slėpti skolas")
         assert shown == [hidden, opened, hidden]
+
+    def test_each_title_toggle_is_a_tab_stop_that_enter_presses(self):
+        toggles = {
+            "overview": (".panel__toggle", "#forecast table"),
+            "balance": (".main__toggle", "#table-balance thead th[x-show]"),
+        }
+        pressed = {}
+        for tab, (toggle, opened) in toggles.items():
+            self.open_at(INDEX_TABS[tab].url, 1500)
+            # a link with no href reads tabIndex 0 and still takes no focus
+            tab_stop = self.browser.execute_script(
+                "const toggle = document.querySelector(arguments[0]);"
+                " toggle.focus();"
+                " return document.activeElement === toggle && toggle.tabIndex === 0;",
+                toggle,
+            )
+            ActionChains(self.browser).send_keys(Keys.ENTER).perform()
+            self.wait_until_idle()
+            self.wait_two_frames()
+            pressed[tab] = [
+                tab_stop,
+                self.browser.execute_script(
+                    "const opened = document.querySelector(arguments[0]);"
+                    " return !!opened && opened.checkVisibility();",
+                    opened,
+                ),
+            ]
+
+        assert pressed == {"overview": [True, True], "balance": [True, True]}
 
     def test_insert_clears_each_worth_row(self):
         AccountFactory(title="Account 0")

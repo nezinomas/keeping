@@ -7,7 +7,7 @@
             <th colspan="2" class="text-center">{% translate 'Savings' %}</th>
             <th colspan="4" class="text-center" x-show="open">{% translate 'Debts' %}</th>
             <th>
-                <a role="button" class="main__toggle" @click="open = ! open" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></a>
+                <a role="button" class="main__toggle" tabindex="0" @click="open = ! open" @keydown.enter="$el.click()" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></a>
             </th>
         </tr>
         <tr>
