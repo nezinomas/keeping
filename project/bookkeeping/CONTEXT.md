@@ -127,8 +127,9 @@ expenses, balance, savings, the cash flow *Pinigų srautas*), then the average a
 total rows, whose *Pinigų srautas* cell is the year-end cash flow. The average row
 divides each column's sum over the months reached by their count: January to this
 month while the year runs, all twelve once it is over, none before it starts; a later
-month's rows count in the total, not in the average. *Rodyti skolas*
-shows the debts' columns. A month-by-row table, not a Month table, so it has no
+month's rows count in the total, not in the average. The *Skolos* Switch on its title
+line shows the debts' columns; a vertical rule starts *Taupymas*, *Skolos* and *Pinigų
+srautas*. A month-by-row table, not a Month table, so it has no
 quarter band.
 _Avoid_: year balance, Month table
 

@@ -25,6 +25,14 @@ The rule for a new page:
 [paper-migration §11](../../.plans/playbooks/paper-migration.md).
 _Avoid_: bare panel, frameless panel, table card
 
+**Switch**:
+A two-state control that shows or hides part of a Panel: a track and its label,
+`<c-switch model="open">label</c-switch>`, a `<button role="switch">` whose
+`aria-checked` and press follow the caller's Alpine variable `model`. The caller owns
+the `x-data` and the `x-show`s; on a Panel title it sits in the `title_control` slot,
+wrapped in `.panel__control`, at the line's right end. Drawn in ink, off and on.
+_Avoid_: toggle, checkbox, show/hide link
+
 **Sort header**:
 A table's head cell that orders the table by its column: a link to the table's url
 with `order=<key>`, plain text when that order is the one shown. `<c-sort-th>` takes a
