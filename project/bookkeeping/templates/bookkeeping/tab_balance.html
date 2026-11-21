@@ -1,6 +1,7 @@
 {% load i18n %}
 
-<c-panel table id="table-balance" title="{% translate 'Balance' %}">
+<c-panel table id="table-balance" x-data="{ open:false }" title="{% translate 'Balance' %}">
+    <c-slot name="title_control"><span class="panel__control"><c-switch model="open">{% translate 'Debts' %}</c-switch></span></c-slot>
     <div class="table-responsive"><c-year-balance :ctx="balance" /></div>
 </c-panel>
 

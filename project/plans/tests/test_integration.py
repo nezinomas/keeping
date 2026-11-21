@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from ...core.tests.test_integration_browser import (
     FIND_TIP,
+    INK_MUTED,
     NO_ANCHORING,
     TIP_BOX,
     Browser,
@@ -52,6 +53,16 @@ class Plans(Browser):
             "not anchored": under
             | {"position": "absolute", "width": title, "spans_its_title": True},
         }
+
+    def test_the_hint_reads_muted_under_a_help_cursor(self):
+        self.open_at(reverse("plans:tab_expenses"), 1500)
+
+        look = self.browser.execute_script(
+            FIND_TIP + " const s = getComputedStyle(tip); return [s.color, s.cursor];",
+            HINT,
+        )
+
+        assert look == [INK_MUTED, "help"]
 
     def _open_hint(self):
         self.browser.execute_script(

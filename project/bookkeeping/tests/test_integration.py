@@ -16,6 +16,7 @@ from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import (
     FIND_TIP,
+    INK_MUTED,
     NO_ANCHORING,
     TIP_BOX,
     Browser,
@@ -40,7 +41,6 @@ CHART_ROOTS = (
 LONGEST_FUND = "VALL - Vanguard FTSE GLB AL-CAP ETF"
 GAIN, HARM = "rgb(31, 107, 74)", "rgb(125, 39, 51)"
 INK, INK_FAINT = "rgb(22, 34, 43)", "rgb(139, 151, 159)"
-INK_MUTED = "rgb(90, 106, 117)"
 YEAR_STRIP = ".overview-grid__column:first-child .panel:first-child"
 EXPENSE_PARTS = "#chart-expenses-container .highcharts-data-label text"
 HAIR, HAIR_SOFT = "rgb(207, 214, 218)", "rgb(225, 230, 232)"
@@ -58,6 +58,39 @@ BODY_FACE = (
 )
 NO_INCOMES_TIP = "th > .tip[data-tip^='Nebūtinos išlaidos']"
 WASH = "rgba(232, 194, 26, 0.3)"
+DEBTS_SWITCH = "#table-balance .switch"
+# the switch at arguments[0]: its colours and face, its button's box against its
+# track and label, the track's pill and its knob's box inside it, to 0.1px
+SWITCH_LOOK = """
+    const own = document.querySelector(arguments[0]);
+    const track = own.querySelector('.switch__track');
+    const knob = own.querySelector('.switch__knob');
+    const label = own.querySelector('.switch__label');
+    const [b, t, k, l] = [own, track, knob, label]
+        .map(e => e.getBoundingClientRect());
+    const [s, ts, ks, ls] = [own, track, knob, label].map(e => getComputedStyle(e));
+    const px = v => Math.round(v * 10) / 10;
+    return {
+        colours: [ts.backgroundColor, ks.backgroundColor, ls.color,
+            s.backgroundColor],
+        face: [ls.fontFamily.split(',')[0], ls.fontSize, ls.fontWeight],
+        border: s.borderTopStyle,
+        track: [px(t.width), px(t.height), ts.borderRadius],
+        knob: [ks.borderRadius, px(k.left - t.left), px(k.top - t.top),
+            px(k.width), px(k.height)],
+        gap: px(l.left - t.right),
+        hugs: Math.abs(b.left - t.left) < 0.5 && Math.abs(b.right - l.right) < 0.5
+            && Math.abs(b.height - Math.max(t.height, l.height)) < 0.5,
+        middle: Math.abs(t.top + t.bottom - l.top - l.bottom) < 1,
+    };
+"""
+# focus the page's tab stop just before the one at arguments[0]
+FOCUS_THE_STOP_BEFORE = (
+    "const stops = [...document.querySelectorAll("
+    "  'a[href], button, input, select, textarea, [tabindex]')]"
+    "  .filter(e => e.tabIndex >= 0 && e.checkVisibility());"
+    " stops[stops.indexOf(document.querySelector(arguments[0])) - 1].focus();"
+)
 # CSS's named colours, `transparent` and `currentcolor` among them
 NAMED_COLOURS = """
     aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue
@@ -576,72 +609,78 @@ class BookkeepingIndex(TestCase, Browser):
             ("differ", "balance"): [WASH, '"! "'],
         }
 
-    def test_balance_head_groups_its_columns_beside_a_bordered_toggle(self):
-        toggle = self.balance_toggle()
-        # without a border the toggle reads as a header label (Q63), and an action
-        # reads in the body face (sass.md *Type*); the groups centre over their columns
-        looks = self.browser.execute_script(
-            "const groups = document.querySelector('#table-balance thead tr').cells;"
-            " const toggle = getComputedStyle(arguments[0]);"
-            " return [toggle.borderTopStyle, toggle.borderTopColor,"
-            " toggle.fontFamily.split(',')[0],"
-            " ...[groups[1], groups[2]].map(c => getComputedStyle(c).textAlign)];",
-            toggle,
-        )
-
-        assert looks == [
-            "solid",
-            HAIR,
-            '"Segoe UI Variable Text"',
-            "center",
-            "center",
-        ]
-
-    def test_the_balance_toggle_shows_and_hides_the_debts(self):
-        toggle = self.balance_toggle()
-        shown = []
-        for _press in range(3):
-            self.wait_two_frames()
-            # each row's visible cells span every column, the group row's too
-            spans = self.browser.execute_script(
-                "const rows = document.querySelector('#table-balance table').rows;"
-                " return [...new Set([...rows].map(row => [...row.cells]"
-                ".filter(c => c.checkVisibility())"
-                ".reduce((sum, c) => sum + c.colSpan, 0)))];"
-            )
-            shown.append((spans, toggle.text))
-            toggle.click()
-
-        hidden, opened = ([7], "Rodyti skolas"), ([11], "Slėpti skolas")
-        assert shown == [hidden, opened, hidden]
-
-    def test_each_title_toggle_is_a_tab_stop_that_enter_presses(self):
-        toggles = {
-            "balance": (".main__toggle", "#table-balance thead th[x-show]"),
-        }
+    def test_the_debts_switch_is_a_tab_stop_that_enter_space_and_a_click_press(self):
+        IncomeFactory()
         pressed = {}
-        for tab, (toggle, opened) in toggles.items():
-            self.open_at(INDEX_TABS[tab].url, 1500)
-            # a link with no href reads tabIndex 0 and still takes no focus
+        for width in (1500, 360):
+            self.open_at(INDEX_TABS["balance"].url, width)
+            self.browser.execute_script(FOCUS_THE_STOP_BEFORE, DEBTS_SWITCH)
+            ActionChains(self.browser).send_keys(Keys.TAB).perform()
             tab_stop = self.browser.execute_script(
-                "const toggle = document.querySelector(arguments[0]);"
-                " toggle.focus();"
-                " return document.activeElement === toggle && toggle.tabIndex === 0;",
-                toggle,
+                "return document.activeElement.matches(arguments[0]);", DEBTS_SWITCH
             )
-            ActionChains(self.browser).send_keys(Keys.ENTER).perform()
+            reads = [self._debts_switch()]
+            for press in (Keys.ENTER, Keys.SPACE, None):
+                if press:
+                    ActionChains(self.browser).send_keys(press).perform()
+                else:
+                    self.browser.find_element(By.CSS_SELECTOR, DEBTS_SWITCH).click()
+                self.wait_two_frames()
+                reads.append(self._debts_switch())
+            # a Worth save's reload draws it afresh, off (Q173)
+            self.browser.execute_script("htmx.trigger(document.body, 'reload');")
             self.wait_until_idle()
             self.wait_two_frames()
-            pressed[tab] = [
-                tab_stop,
-                self.browser.execute_script(
-                    "const opened = document.querySelector(arguments[0]);"
-                    " return !!opened && opened.checkVisibility();",
-                    opened,
-                ),
-            ]
+            reads.append(self._debts_switch())
+            pressed[width] = (tab_stop, reads)
 
-        assert pressed == {"balance": [True, True]}
+        # visible cells span every column; Space scrolls nothing, and the switch
+        # stays in the window, at the right end of Balansas' line (Q168, Q175)
+        closed = {
+            "checked": "false",
+            "spans": [7],
+            "in_view": True,
+            "on_the_title_line": True,
+            "scroll_y": 0,
+            "page_scrolls": True,
+        }
+        opened = closed | {"checked": "true", "spans": [11]}
+        assert pressed == dict.fromkeys(
+            (1500, 360), (True, [closed, opened, closed, opened, closed])
+        )
+
+    def test_the_debts_switch_draws_an_ink_track_its_knob_and_its_label(self):
+        self.open_at(INDEX_TABS["balance"].url, 1500)
+        looks = []
+        for _press in range(2):
+            looks.append(self.browser.execute_script(SWITCH_LOOK, DEBTS_SWITCH))
+            self.browser.find_element(By.CSS_SELECTOR, DEBTS_SWITCH).click()
+            self.wait_two_frames()
+        self.browser.execute_script(FOCUS_THE_STOP_BEFORE, DEBTS_SWITCH)
+        ActionChains(self.browser).send_keys(Keys.TAB).perform()
+        ring = self.browser.execute_script(
+            "const s = getComputedStyle(document.querySelector(arguments[0]));"
+            " return [s.outlineStyle, s.outlineColor, s.outlineOffset];",
+            DEBTS_SWITCH,
+        )
+
+        # a hair track off, an ink one on, the knob paper: no hue (Q175); the knob
+        # inset 0.1rem at the track's left, then its right
+        off = {
+            "colours": [HAIR, PAPER, INK, CLEAR],
+            "face": ['"Bahnschrift SemiCondensed"', "13px", "400"],
+            "border": "none",
+            "track": [25.6, 14.4, "7.2px"],
+            "knob": ["50%", 1.6, 1.6, 11.2, 11.2],
+            "gap": 6.4,
+            "hugs": True,
+            "middle": True,
+        }
+        on = off | {
+            "colours": [INK, PAPER, INK, CLEAR],
+            "knob": ["50%", 12.8, 1.6, 11.2, 11.2],
+        }
+        assert (looks, ring) == ([off, on], ["solid", INK, "2px"])
 
     def test_insert_clears_each_worth_row(self):
         AccountFactory(title="Account 0")
@@ -715,6 +754,21 @@ class BookkeepingIndex(TestCase, Browser):
             dict.fromkeys((tab.name for tab in INDEX_TABS), 0),
             [True, True],
         )
+
+    def test_the_no_incomes_head_mutes_its_cut_and_its_hint_under_a_help_cursor(self):
+        journal = JournalFactory()
+        journal.unnecessary_expenses = json.dumps([ExpenseTypeFactory().pk])
+        journal.save()
+        self.open_at(INDEX_TABS["overview"].url, 1500)
+
+        looks = self.browser.execute_script(
+            LOOK + " return [...look('th > .main__figure--muted', 'color'),"
+            " ...look(arguments[0], 'color', 'cursor')];",
+            NO_INCOMES_TIP,
+        )
+
+        # the cut and the "?" beside the label, both muted (Q166, Q177)
+        assert looks == [[INK_MUTED], [INK_MUTED, "help"]]
 
     def test_the_unnecessary_expenses_tip_opens_whole_under_its_header(self):
         # six types and Taupymas: a list taller than its table
@@ -916,23 +970,30 @@ class BookkeepingIndex(TestCase, Browser):
         }
         assert lines == 1
 
-    def test_funds_tables_rule_where_each_column_group_starts(self):
+    def test_index_tables_rule_where_each_column_group_starts(self):
         SavingFactory()
         PensionFactory()
-        self.open_at(INDEX_TABS["funds"].url, 1500)
+        ruled = {}
+        for tab, tables in (
+            ("funds", ".panel table.main"),
+            ("balance", "#table-balance table"),
+        ):
+            self.open_at(INDEX_TABS[tab].url, 1500)
+            # per table and row, each cell with a left rule, by position from 1, and
+            # its colour; no width: a scaled display snaps 1px to a device pixel
+            ruled[tab] = self.browser.execute_script(
+                "return [...document.querySelectorAll(arguments[0])].map(t =>"
+                " [...t.querySelectorAll('tr')].map(tr =>"
+                " [...tr.children].flatMap((c, i) => {"
+                " const s = getComputedStyle(c);"
+                " return s.borderLeftStyle === 'solid'"
+                "  ? [[i + 1, s.borderLeftColor]] : [];"
+                " })));",
+                tables,
+            )
 
-        # per table and row, each cell with a left rule, by position from 1, and its
-        # colour; no width: a scaled display snaps 1px to a device pixel
-        ruled = self.browser.execute_script(
-            "return [...document.querySelectorAll('.panel table.main')].map(t =>"
-            " [...t.querySelectorAll('tr')].map(tr =>"
-            " [...tr.children].flatMap((c, i) => {"
-            " const s = getComputedStyle(c);"
-            " return s.borderLeftStyle === 'solid' ? [[i + 1, s.borderLeftColor]] : [];"
-            " })));"
-        )
-        # the band: five group heads, both Pervesta (not Parduota), row three's
-        # columns 2, 4, 6, 10, 12; the foot's market value spans two cells
+        # funds, the band: five group heads, both Pervesta (not Parduota), row
+        # three's columns 2, 4, 6, 10, 12; the foot's market value spans two cells
         band = [
             [[i, HAIR] for i in (2, 3, 4, 5, 6)],
             [[1, HAIR], [2, HAIR]],
@@ -940,7 +1001,14 @@ class BookkeepingIndex(TestCase, Browser):
         ]
         row = [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 12)]
         foot = [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 11)]
-        assert ruled == [[*band, row, foot]] * 2
+        # balance: Taupymas, Skolos and Pinigų srautas, the hidden debts included,
+        # from the band through twelve months and two foot rows (not Parduota)
+        balance_band = [[[i, HAIR] for i in (2, 3, 4)], [[i, HAIR] for i in (5, 7, 11)]]
+        balance_row = [[i, HAIR_SOFT] for i in (5, 7, 11)]
+        assert ruled == {
+            "funds": [[*band, row, foot]] * 2,
+            "balance": [[*balance_band, *[balance_row] * 14]],
+        }
 
     def _tip_opens(self, selector: str) -> bool:
         # its box, not its opacity: a minimized Chrome draws no frame, so the fade
@@ -984,11 +1052,30 @@ class BookkeepingIndex(TestCase, Browser):
             selector,
         )
 
-    def balance_toggle(self):
-        self.open_at(INDEX_TABS["balance"].url, 1500)
-
-        return self.browser.find_element(
-            By.CSS_SELECTOR, "#table-balance a[role=button]"
+    def _debts_switch(self) -> dict:
+        """Its state, the debt columns it shows, whether it is in the window and at
+        its title line's right end, and how far the page has scrolled and can."""
+        return self.browser.execute_script(
+            "const own = document.querySelector(arguments[0]);"
+            " const at = own.getBoundingClientRect();"
+            " const title = own.closest('.panel__title');"
+            " const line_box = title.getBoundingClientRect();"
+            " const line = document.createRange();"
+            " line.selectNodeContents(title.firstChild);"
+            " const text = line.getBoundingClientRect();"
+            " const page = document.documentElement;"
+            " const rows = document.querySelector('#table-balance table').rows;"
+            " return {checked: own.getAttribute('aria-checked'),"
+            " spans: [...new Set([...rows].map(row => [...row.cells]"
+            "  .filter(c => c.checkVisibility())"
+            "  .reduce((sum, c) => sum + c.colSpan, 0)))],"
+            " in_view: at.left >= 0 && at.top >= 0"
+            "  && at.right <= page.clientWidth && at.bottom <= innerHeight,"
+            " on_the_title_line: at.top < text.bottom && at.bottom > text.top"
+            "  && Math.abs(at.right - line_box.right) < 2,"
+            " scroll_y: scrollY,"
+            " page_scrolls: page.scrollHeight > innerHeight};",
+            DEBTS_SWITCH,
         )
 
     def press_the_pill(self, url_name):
@@ -1061,6 +1148,19 @@ class BookkeepingMonthDetailedAndSummary(TestCase, Browser):
             body,
             body,
         ]
+
+    def test_a_sortable_header_draws_the_paper_arrow(self):
+        IncomeFactory()
+        self.open_at(reverse("bookkeeping:detailed"), 1280)
+
+        arrows = self.browser.execute_script(
+            "return [...document.querySelectorAll('.sortable-header-row th > a')]"
+            "  .map(a => getComputedStyle(a, '::before'))"
+            "  .map(s => [s.fontFamily, s.content]);"
+        )
+
+        # Bootstrap Icons' chevron-expand, not the legacy Glyphicons sort (Q190)
+        assert set(map(tuple, arrows)) == {("bootstrap-icons", '""')}
 
     def test_month_table_fades_its_edge_only_while_it_scrolls(self):
         IncomeFactory()

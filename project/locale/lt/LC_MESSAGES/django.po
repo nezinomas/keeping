@@ -465,18 +465,11 @@ msgstr "Metai"
 msgid "Remaining"
 msgstr "Liko"
 
-#: .\project\bookkeeping\templates\cotton\year_balance.html:11
+#: .\project\bookkeeping\templates\bookkeeping\tab_balance.html:4
+#: .\project\bookkeeping\templates\cotton\year_balance.html:8
 #: .\project\templates\base.html:87
 msgid "Debts"
 msgstr "Skolos"
-
-#: .\project\bookkeeping\templates\cotton\year_balance.html:13
-msgid "Hide debts"
-msgstr "Slėpti skolas"
-
-#: .\project\bookkeeping\templates\cotton\year_balance.html:13
-msgid "Show debts"
-msgstr "Rodyti skolas"
 
 #: .\project\bookkeeping\templates\cotton\year_balance.html:23
 #: .\project\debts\models.py:13 .\project\debts\templates\debts\index.html:15

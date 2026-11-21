@@ -43,6 +43,11 @@
     }
 }
 
+.panel__title:has(> .panel__control) {
+    display: flex;
+    justify-content: space-between;
+}
+
 .panel__subtitle {
     font-family: $body;
     font-size: 0.8125rem;

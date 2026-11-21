@@ -95,19 +95,23 @@ def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
         re.S,
     )
 
-    # the label and the figure outside the tip; only the "?" opens one
+    # the label, then the muted figure, then the "?": only the "?" opens a tip
     assert [
         (
-            re.findall(r"^([^<]*?) <span", head),
-            re.findall(
-                r'<span class="main__figure main__figure--muted">([^<]*)<', head
-            ),
-            re.findall(r'class="([^"]*\btip\b[^"]*)"', head),
-            re.findall(HINT, head),
+            label,
+            cut,
+            re.findall(r'class="([^"]*\btip\b[^"]*)"', after),
+            re.findall(HINT, after),
         )
         for title, head in heads
         if title == "Be pajamų"
-    ] == [(["Nebūtinos išlaidos"], [figure], ["hint tip bottom"] * len(hints), hints)]
+        for label, cut, after in re.findall(
+            r'^([^<]*?) <span class="main__figure main__figure--muted">([^<]*)</span>'
+            r"(.*)",
+            head,
+            re.S,
+        )
+    ] == [("Nebūtinos išlaidos", figure, ["hint tip bottom"] * len(hints), hints)]
 
 
 def test_no_incomes_panel_keeps_its_legend_under_the_table(client_logged):

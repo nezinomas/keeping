@@ -1,27 +1,25 @@
 {% load i18n %}
 
-<c-paper-table class="main striped hover" x-data="{ open:false }">
+<c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
             <th colspan="4"></th>
-            <th colspan="2" class="text-center">{% translate 'Savings' %}</th>
-            <th colspan="4" class="text-center" x-show="open">{% translate 'Debts' %}</th>
-            <th>
-                <a role="button" class="main__toggle" tabindex="0" @click="open = ! open" @keydown.enter="$el.click()" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></a>
-            </th>
+            <th colspan="2" class="text-center main__group-start">{% translate 'Savings' %}</th>
+            <th colspan="4" class="text-center main__group-start" x-show="open">{% translate 'Debts' %}</th>
+            <th class="main__group-start"></th>
         </tr>
         <tr>
             <th>{{ year|title }}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
             <th>{% translate 'Balance' %}</th>
-            <th>{% translate 'Invested' %}</th>
+            <th class="main__group-start">{% translate 'Invested' %}</th>
             <th>{% translate 'Sold' %}</th>
-            <th x-show="open">{% translate 'Borrow' %}</th>
+            <th class="main__group-start" x-show="open">{% translate 'Borrow' %}</th>
             <th x-show="open">{% translate 'Borrow return' %}</th>
             <th x-show="open">{% translate 'Lend' %}</th>
             <th x-show="open">{% translate 'Lend return' %}</th>
-            <th>{% translate 'Money flow' %}</th>
+            <th class="main__group-start">{% translate 'Money flow' %}</th>
         </tr>
     </c-slot>
     {% for item in ctx.data %}
@@ -30,13 +28,13 @@
         <c-figure-cell :value="item.incomes" />
         <c-figure-cell :value="item.expenses" />
         <c-figure-cell :value="item.balance" signed />
-        <c-figure-cell :value="item.savings" />
+        <c-figure-cell :value="item.savings" group />
         <c-figure-cell :value="item.savings_close" />
-        <c-figure-cell :value="item.borrow" show="open" />
+        <c-figure-cell :value="item.borrow" show="open" group />
         <c-figure-cell :value="item.borrow_return" show="open" />
         <c-figure-cell :value="item.lend" show="open" />
         <c-figure-cell :value="item.lend_return" show="open" />
-        <c-figure-cell :value="item.money_flow" />
+        <c-figure-cell :value="item.money_flow" group />
     </tr>
     {% endfor %}
     <c-slot name="foot">
@@ -45,26 +43,26 @@
             <c-figure-cell :value="ctx.avg_row.incomes" />
             <c-figure-cell :value="ctx.avg_row.expenses" />
             <td class="main__figure"></td>
-            <c-figure-cell :value="ctx.avg_row.savings" />
+            <c-figure-cell :value="ctx.avg_row.savings" group />
             <c-figure-cell :value="ctx.avg_row.savings_close" />
-            <c-figure-cell :value="ctx.avg_row.borrow" show="open" />
+            <c-figure-cell :value="ctx.avg_row.borrow" show="open" group />
             <c-figure-cell :value="ctx.avg_row.borrow_return" show="open" />
             <c-figure-cell :value="ctx.avg_row.lend" show="open" />
             <c-figure-cell :value="ctx.avg_row.lend_return" show="open" />
-            <td>{% translate "End of year" %}</td>
+            <td class="main__group-start">{% translate "End of year" %}</td>
         </tr>
         <tr class="main__total">
             <td>{% translate 'Total' %}</td>
             <c-figure-cell :value="ctx.total_row.incomes" />
             <c-figure-cell :value="ctx.total_row.expenses" />
             <c-figure-cell :value="ctx.total_row.balance" signed />
-            <c-figure-cell :value="ctx.total_row.savings" />
+            <c-figure-cell :value="ctx.total_row.savings" group />
             <c-figure-cell :value="ctx.total_row.savings_close" />
-            <c-figure-cell :value="ctx.total_row.borrow" show="open" />
+            <c-figure-cell :value="ctx.total_row.borrow" show="open" group />
             <c-figure-cell :value="ctx.total_row.borrow_return" show="open" />
             <c-figure-cell :value="ctx.total_row.lend" show="open" />
             <c-figure-cell :value="ctx.total_row.lend_return" show="open" />
-            <c-figure-cell :value="ctx.amount_end" signed check="{{ ctx.cash_flow_check }}" />
+            <c-figure-cell :value="ctx.amount_end" signed check="{{ ctx.cash_flow_check }}" group />
         </tr>
     </c-slot>
 </c-paper-table>

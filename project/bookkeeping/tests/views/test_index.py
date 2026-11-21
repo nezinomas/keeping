@@ -47,7 +47,8 @@ pytestmark = pytest.mark.django_db
 
 CASH_FLOW_CELL = r'<td[^>]*data-check="[^"]*">'
 YEAR_END = (
-    '<td class="main__figure" data-sign="gain" data-cell="" data-check="{state}">'
+    '<td class="main__figure main__group-start" data-sign="gain" data-cell=""'
+    ' data-check="{state}">'
 )
 ACCOUNTS_TOTAL = '<td class="main__figure" data-cell="" data-check="{state}">'
 
@@ -183,7 +184,7 @@ FIGURES = {
         rf"<td>Sausis</td>(?:\s*<td[^>]*>[^<]*</td>){{2}}\s*"
         rf'<td{FIGURE} data-sign="gain" data-cell="">5,00</td>'
     ),
-    "year_end": rf'<td{FIGURE} data-sign="\w+" data-cell="" data-check="">',
+    "year_end": rf'<td{GROUP_FIGURE} data-sign="\w+" data-cell="" data-check="">',
     # January's expense in its type's column; the month balance's January reads 6,00
     "expenses_by_type": rf'<td>Sausis</td>\s*<td{FIGURE} data-cell="">1,00</td>',
 }
@@ -289,7 +290,7 @@ LEGACY_CLASSES = (
 
 
 @pytest.mark.parametrize(
-    "tab, titles, tables, totals, bare_cells",
+    "tab, titles, tables, totals, non_figure_cells",
     [
         pytest.param(
             "overview",
@@ -310,12 +311,17 @@ LEGACY_CLASSES = (
         ),
         # each table's average and total rows; the average row's End of year label
         pytest.param(
-            "balance", ["Balansas", "Išlaidų statistika"], 2, 4, [""], id="balance"
+            "balance",
+            ["Balansas", "Išlaidų statistika"],
+            2,
+            4,
+            [' class="main__group-start"'],
+            id="balance",
         ),
     ],
 )
 def test_index_tables_wear_the_skin_and_no_legacy_class(
-    tab_contents, tab, titles, tables, totals, bare_cells
+    tab_contents, tab, titles, tables, totals, non_figure_cells
 ):
     content = tab_contents[tab]
 
@@ -324,7 +330,7 @@ def test_index_tables_wear_the_skin_and_no_legacy_class(
     total_rows = re.findall(r'<tr class="(main__total)">', content)
     rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", content, re.S)
     # a row's first cell is its name, unless it holds a figure (the Year strip's)
-    bare = [
+    non_figures = [
         cell
         for row in rows
         for at, (cell, text) in enumerate(re.findall(r"<td([^>]*)>([^<]*)", row))
@@ -332,11 +338,11 @@ def test_index_tables_wear_the_skin_and_no_legacy_class(
     ]
     legacy = re.findall(rf'class="[^"]*\b({"|".join(LEGACY_CLASSES)})\b', content)
 
-    assert (drawn, boxed, total_rows, bare, legacy) == (
+    assert (drawn, boxed, total_rows, non_figures, legacy) == (
         titles,
         ["main striped hover"] * tables,
         ["main__total"] * totals,
-        bare_cells,
+        non_figure_cells,
         [],
     )
 
@@ -425,7 +431,8 @@ def test_index_tables_unsigned_money_cells_carry_their_cell_state(
         (attrs, text)
         for table in tables(tab_contents[tab])
         for attrs, text in re.findall(
-            r'<td class="main__figure"([^>]*)>([-\d.,]+)</td>', table
+            r'<td class="main__figure(?: main__group-start)?"([^>]*)>([-\d.,]+)</td>',
+            table,
         )
         if "data-sign" not in attrs
     ]
@@ -586,7 +593,7 @@ def test_balance_tables_name_their_columns_and_foot_rows(client_logged):
         for table in re.findall(r"<table\b.*?</table>", content, re.S)
     ]
 
-    # the toggle's words are Alpine's, read by the webtest; no expense type, no column
+    # no expense type, no column
     assert labels == [
         (
             ["", "Taupymas", "Skolos", ""]
@@ -767,22 +774,56 @@ def test_balance_table_draws_each_column(client_logged, main_user):
     ]
 
 
-def test_balance_table_hides_its_debt_columns_until_asked(client_logged):
+def test_balance_table_hides_its_debt_columns_until_its_switch_asks(client_logged):
+    content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
+    attrs, panel = re.search(
+        r'<section\b(?=[^>]*\bid="table-balance")([^>]*)>(.*?)</section>', content, re.S
+    ).groups()
+    title = re.search(r'<h2 class="panel__title">(.*?)</h2>', panel, re.S).group(1)
+    table = re.search(r"<table\b.*?</table>", panel, re.S).group(0)
+    rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S)
+
+    # the Panel holds the state its title's switch and its table's columns share
+    assert (
+        re.findall(r'\bx-data="([^"]*)"', attrs),
+        title.partition("<")[0],
+        re.findall(
+            r'<button\b(?=[^>]*\brole="switch")(?=[^>]*@click="open = ! open")[^>]*>'
+            r'.*?<span class="switch__label">([^<]*)</span>',
+            title,
+            re.S,
+        ),
+        re.findall(r"<table\b[^>]*x-data|main__toggle|Rodyti skolas", panel),
+        # the debts group's head, then its four columns in every row
+        [len(re.findall(r'<t[hd]\b[^>]*x-show="open"', row)) for row in rows],
+    ) == (["{ open:false }"], "Balansas", ["Skolos"], [], [1, *[4] * 15])
+
+
+def test_balance_table_rules_where_each_column_group_starts(client_logged):
     content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
     table = content[content.index('id="table-balance"') :].partition("</table>")[0]
     rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S)
 
-    assert re.search(r'<table\b[^>]*x-data="\{ open:false \}"', table)
-    # the debts group's head, then its four columns in every row
-    assert [len(re.findall(r'<t[hd]\b[^>]*x-show="open"', row)) for row in rows] == [
-        1,
-        *[4] * 15,
+    # per row, each cell starting a group, by its position from 0
+    starts = [
+        [
+            at
+            for at, cell in enumerate(re.findall(r"<t[hd]\b([^>]*)>", row))
+            if re.search(r'class="[^"]*\bmain__group-start\b', cell)
+        ]
+        for row in rows
     ]
 
+    # the band: Taupymas, Skolos and the cell over Pinigų srautas; then Investuota,
+    # Pasiskolinta and Pinigų srautas in every row, and not Parduota
+    assert starts == [[1, 2, 3], *[[4, 6, 10]] * 15]
 
-def test_balance_tables_end_of_year_label_is_a_label_cell(client_logged):
+
+def test_balance_tables_end_of_year_label_is_a_plain_cell_not_a_figure(client_logged):
     content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
     table = content[content.index('id="table-balance"') :].partition("</table>")[0]
 
-    # like Vidurkis beside it: a row name's face, not a figure's
-    assert re.findall(r"<td\b[^>]*>\s*Metų pabaigoje", table) == ["<td>Metų pabaigoje"]
+    # like Vidurkis beside it: a row name's face, not a figure's; it starts a group
+    assert re.findall(r"<td\b([^>]*)>\s*Metų pabaigoje", table) == [
+        ' class="main__group-start"'
+    ]
