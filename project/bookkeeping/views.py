@@ -47,14 +47,17 @@ class TabOverview(TodayMixin, IndexTabMixin, TemplateViewMixin):
         index = services.index.load_service(user, self.today)
         debts = services.index.DebtsTable.load(user)
         accounts = services.accounts.load_service(user, year)
+        accounts_total = accounts["total_row"]["balance"]
 
         return {
             **super().get_context_data(**kwargs),
             **accounts,
-            "cash_flow_check": index.check_cash_flow(accounts["total_row"]["balance"]),
+            "cash_flow_check": index.check_cash_flow(accounts_total),
             "balance_short": index.balance_short_context(),
             **no_incomes.load_service(user, year, self.today),
-            "cards": index.cards(services.wealth.load_service(user, year)),
+            "cards": index.cards(
+                services.wealth.load_service(user, year, accounts_total)
+            ),
             "forecast": services.forecast.load_service(user, self.today),
             "debts": debts.debts_context(),
         }

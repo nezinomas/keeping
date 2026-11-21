@@ -21,12 +21,13 @@ def _wealth_and_averages():
     # the accounts end at 4 800,00 - 1 000,00 = 3 800,00; their Worth is not read
     IncomeFactory(price=500000)
     ExpenseFactory(price=20000)
-    # the next year's money differs, so a figure read for the wrong year shows
+    # the next year's money and fund differ, so a figure read for the wrong year shows
     IncomeFactory(date=date(2000, 1, 1), price=7000)
     AccountWorthFactory(price=390000)
     fund = SavingTypeFactory()
     buy(fund, 100000)
     worth(fund, 130000)
+    worth(fund, 150000, year=2000)
     pension = PensionTypeFactory()
     PensionFactory(pension_type=pension, price=60000, fee=0)
     PensionWorthFactory(pension_type=pension, price=70000)

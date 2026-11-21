@@ -1,3 +1,4 @@
+from ....users.models import User
 from .dtos import WealthDto
 from .providers import WealthDataProvider
 
@@ -19,5 +20,7 @@ class WealthPresenter:
         )
 
 
-def load_service(user, year: int) -> WealthPresenter:
-    return WealthPresenter(WealthDataProvider(user, year).get_wealth_data())
+def load_service(user: User, year: int, account_balance: int) -> WealthPresenter:
+    return WealthPresenter(
+        WealthDataProvider(user, year).get_wealth_data(account_balance)
+    )

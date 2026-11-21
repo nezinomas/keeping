@@ -92,7 +92,7 @@ def _add_items(first, last):
 
 
 # Balansas' cap holds its one read of the accounts, the Cash-flow check's other side
-QUERY_CAPS = {"overview": 29, "funds": 11, "balance": 16, "charts": 8}
+QUERY_CAPS = {"overview": 28, "funds": 11, "balance": 16, "charts": 8}
 
 
 @pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
@@ -111,6 +111,17 @@ def test_an_index_tab_queries_stay_under_its_cap_and_do_not_grow(
 
     assert two == six
     assert six <= QUERY_CAPS[tab.name]
+
+
+def test_overview_reads_the_accounts_balances_for_no_card_of_its_own(client_logged):
+    reads = count_queries(
+        lambda: client_logged.get(INDEX_TABS["overview"].url),
+        containing='FROM "accounts_accountbalance"',
+    )
+
+    # the Year strip's and the forecast's start, the accounts table, Be pajamų; the
+    # wealth Cards take the accounts table's total
+    assert reads == 4
 
 
 @pytest.fixture(name="tab_contents")

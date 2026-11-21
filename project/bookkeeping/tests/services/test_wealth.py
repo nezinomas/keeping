@@ -12,37 +12,51 @@ from ..signals.helpers import buy, sell, worth
 pytestmark = pytest.mark.django_db
 
 
-def _wealth(user):
-    return WealthDataProvider(user, 1999).get_wealth_data()
+def _wealth(user, account_balance=0):
+    return WealthDataProvider(user, 1999).get_wealth_data(account_balance)
 
 
-def test_provider_empty_year_is_the_database_default_zero(main_user):
-    obj = _wealth(main_user)
+def _saving_balance(dto):
+    return dto.saving_balance
 
-    balances = (obj.account_balance, obj.saving_balance, obj.pension_balance)
 
-    assert [(balance, type(balance)) for balance in balances] == [(0, int)] * 3
+def _pension_balance(dto):
+    return dto.pension_balance
 
 
 @pytest.mark.parametrize(
-    "factory, field, total",
+    "builds, field, total",
     [
+        # an empty year reads the database's default, an int zero
+        pytest.param([], _saving_balance, 0, id="funds-empty"),
+        pytest.param([], _pension_balance, 0, id="pensions-empty"),
+        pytest.param([SavingBalanceFactory] * 2, _saving_balance, 50, id="funds"),
+        pytest.param([PensionBalanceFactory] * 2, _pension_balance, 50, id="pensions"),
         pytest.param(
-            AccountBalanceFactory, lambda dto: dto.account_balance, 250, id="accounts"
-        ),
-        pytest.param(
-            SavingBalanceFactory, lambda dto: dto.saving_balance, 50, id="funds"
-        ),
-        pytest.param(
-            PensionBalanceFactory, lambda dto: dto.pension_balance, 50, id="pensions"
+            [
+                lambda: PensionBalanceFactory(market_value=100, sold_since_check=40),
+                lambda: PensionBalanceFactory(market_value=25),
+            ],
+            _pension_balance,
+            25,
+            id="pensions-a-stale-worth-as-zero",
         ),
     ],
 )
-def test_provider_sums_each_balance(main_user, factory, field, total):
-    factory()
-    factory()
+def test_provider_sums_each_balance(main_user, builds, field, total):
+    for build in builds:
+        build()
 
-    assert field(_wealth(main_user)) == total
+    balance = field(_wealth(main_user))
+
+    assert (balance, type(balance)) == (total, int)
+
+
+def test_provider_counts_the_accounts_total_it_is_handed(main_user):
+    # the year's balance row is not what counts: the total handed in is
+    AccountBalanceFactory()
+
+    assert _wealth(main_user, account_balance=7).account_balance == 7
 
 
 @pytest.mark.parametrize(
@@ -87,13 +101,6 @@ def test_provider_counts_a_fund_with_a_stale_worth_as_zero(main_user, kind):
         stale_fund(kind=kind)
 
     assert _wealth(main_user).saving_balance == 0
-
-
-def test_provider_counts_a_pension_balance_with_a_stale_worth_as_zero(main_user):
-    PensionBalanceFactory(market_value=100, sold_since_check=40)
-    PensionBalanceFactory(market_value=25)
-
-    assert _wealth(main_user).pension_balance == 25
 
 
 def test_provider_counts_a_fresh_worth_after_the_sell(main_user):
