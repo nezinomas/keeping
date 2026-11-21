@@ -20,6 +20,13 @@
     color: $ink;
 }
 
+// A table header's text, and a Switch's label beside a title.
+@mixin header {
+    font-family: $display;
+    font-size: 0.8125rem;
+    font-weight: 400;
+}
+
 // A small label a level above what it names; 12px is the floor for capitals in the
 // narrow face, the quarter band's 11px aside.
 @mixin caps($size: 0.75rem) {

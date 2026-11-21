@@ -1,0 +1,5 @@
+<c-vars model="" />
+<button type="button" role="switch" class="switch" :aria-checked="{{ model }} ? 'true' : 'false'" @click="{{ model }} = ! {{ model }}">
+    <span class="switch__track" aria-hidden="true"><span class="switch__knob"></span></span>
+    <span class="switch__label">{{ slot }}</span>
+</button>

@@ -1,0 +1,47 @@
+@use "../abstracts/variables" as *;
+@use "tokens";
+
+// no hue: a control is not coloured for being one (sass.md *Colour*)
+.switch {
+    @include tokens.header;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0;
+    background: none;
+    border: 0;
+
+    &:focus-visible {
+        outline: 2px solid $ink;
+        outline-offset: 2px;
+    }
+}
+
+.switch__track {
+    position: relative;
+    width: 1.6rem;
+    height: 0.9rem;
+    border-radius: 0.45rem;
+    background: $hair;
+}
+
+.switch__knob {
+    position: absolute;
+    top: 0.1rem;
+    left: 0.1rem;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: $paper;
+}
+
+.switch[aria-checked="true"] {
+    .switch__track {
+        background: $ink;
+    }
+
+    .switch__knob {
+        left: 0.8rem;
+    }
+}

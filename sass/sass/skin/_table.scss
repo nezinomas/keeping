@@ -52,9 +52,8 @@ $group-rule-colours: (band: $hair, body: $hair-soft);
         }
 
         thead th {
-            font-family: $display;
-            font-size: 0.8125rem;
-            font-weight: 400;
+            @include tokens.header;
+
             color: $ink;
             background: $band;
         }
