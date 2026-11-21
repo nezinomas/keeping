@@ -249,7 +249,9 @@ def test_overview_draws_the_year_strip_and_the_forecast_each_in_its_panel(
         (
             title,
             # a fold or a fetch would mark the Panel's section, title or body
-            re.findall(r"\b(x-[\w.-]+|hx-[\w-]+|@[\w.-]+|id)=", section),
+            re.findall(
+                r"(?<![\w:.-])(x-[\w.:-]+|hx-[\w:-]+|@[\w.:-]+|:[\w.-]+|id)=", section
+            ),
             re.findall(BOXED_TABLE, section),
             cell_texts(section),
         )

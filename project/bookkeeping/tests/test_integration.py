@@ -782,6 +782,9 @@ class BookkeepingIndex(TestCase, Browser):
         )
 
     def test_a_tip_with_no_room_under_its_header_opens_over_it_and_the_dock(self):
+        journal = JournalFactory()
+        journal.unnecessary_savings = True
+        journal.save()
         self.open_at(INDEX_TABS["overview"].url, 1500)
         find_header = (
             FIND_TIP + " const header = tip.closest('th').getBoundingClientRect();"
@@ -801,7 +804,8 @@ class BookkeepingIndex(TestCase, Browser):
         )
         placed = self.browser.execute_script(
             find_header + " tip.focus({preventScroll: true});"
-            " const middle = (header.left + header.right) / 2;"
+            " const own = tip.getBoundingClientRect();"
+            " const middle = (own.left + own.right) / 2;"
             " const dock = document.querySelector('.quick-add').getBoundingClientRect();"
             " const at = y => document.elementsFromPoint(middle, y);"
             " return [innerHeight - header.bottom < 3,"
@@ -831,7 +835,7 @@ class BookkeepingIndex(TestCase, Browser):
             read[name] = self.browser.execute_script(TIP_AGAINST_ITS_TRIGGER, tip)
 
         # one anchored query and two without; a Check on one line beside its
-        # account, the list's two lines under its header
+        # account, the list's two lines under its "?"
         against = {"position": "absolute", "gap_is_8px": True}
         against |= {"middle_on_its_trigger": True}
         assert (queries, read) == (
@@ -842,14 +846,14 @@ class BookkeepingIndex(TestCase, Browser):
             },
         )
 
-    def test_every_tip_opens_on_focus_in_the_paper_look(self):
+    def test_tab_in_a_tip_cell_stops_on_its_trigger_and_opens_a_paper_tip(self):
         journal = JournalFactory()
         journal.unnecessary_savings = True
         journal.save()
         AccountWorthFactory()
         self.open_at(INDEX_TABS["overview"].url, 1500)
         # a header's icon (its link takes the focus), a body cell's name, a header's
-        # list
+        # "?" after its label and sum
         tips = {
             "refresh": ("#accounts th .tip", "#accounts th .tip a"),
             "check": ("#accounts td .tip", "#accounts td .tip"),
@@ -857,10 +861,19 @@ class BookkeepingIndex(TestCase, Browser):
         }
         looks = {}
         for name, (tip, focused) in tips.items():
+            # Tab from the cell's start: nothing before the trigger is a stop
             self.browser.execute_script(
-                "document.querySelector(arguments[0]).focus();", focused
+                FIND_TIP + " const cell = tip.closest('th, td');"
+                " cell.tabIndex = -1; cell.focus();",
+                tip,
             )
+            ActionChains(self.browser).send_keys(Keys.TAB).perform()
             looks[name] = [
+                self.browser.execute_script(
+                    "return document.activeElement"
+                    "  === document.querySelector(arguments[0]);",
+                    focused,
+                ),
                 self._tip_opens(tip),
                 *self.browser.execute_script(
                     FIND_TIP + " const b = getComputedStyle(tip, '::before');"
@@ -870,9 +883,10 @@ class BookkeepingIndex(TestCase, Browser):
                 ),
             ]
 
-        # ink on paper in the body face, no shadow, and no arrow after it
+        # the focus on the trigger, its tip open: ink on paper in the body face, no
+        # shadow, and no arrow after it
         assert looks == dict.fromkeys(
-            tips, [True, INK, PAPER, BODY_FACE, "none", "none", "none"]
+            tips, [True, True, INK, PAPER, BODY_FACE, "none", "none", "none"]
         )
 
     def test_the_funds_tables_start_their_figures_at_one_x(self):

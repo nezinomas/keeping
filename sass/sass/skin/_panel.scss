@@ -51,9 +51,6 @@
 }
 
 .panel__hint {
-    color: $ink-muted;
-    cursor: help;
-
     &::before {
         white-space: normal;
         width: 18rem;

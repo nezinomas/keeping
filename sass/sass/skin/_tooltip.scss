@@ -23,6 +23,12 @@ $tip-gap: 8px;
     font-style: normal;
 }
 
+// the circled "?" that opens a tip: a Panel's hint, a header's list
+.hint {
+    color: $ink-muted;
+    cursor: help;
+}
+
 .tip::before {
     content: attr(data-tip);
     // no box while hidden: it widens no scroll box, and each opening places it

@@ -358,19 +358,20 @@ msgstr "Data"
 msgid "Day"
 msgstr "Diena"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:8
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:7
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:9
 msgid "Unnecessary expenses that can be avoided"
 msgstr "Nebūtinos išlaidos, kurių galima atsisakyti"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:34
+#: .\project\bookkeeping\templates\bookkeeping\tab_overview.html:27
 msgid "Money in accounts"
 msgstr "Sąskaitose esantys pinigai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:35
+#: .\project\bookkeeping\templates\bookkeeping\tab_overview.html:28
 msgid "Funds/Stocks"
 msgstr "Fondai/Akcijos"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:36
+#: .\project\bookkeeping\templates\bookkeeping\tab_overview.html:29
 msgid "Pension funds"
 msgstr "Pensijų fondai"
 
@@ -2873,6 +2874,7 @@ msgctxt "borrow button"
 msgid "Borrow"
 msgstr "Pasiskolinti"
 
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:7
 msgid "Unnecessary expenses"
 msgstr "Nebūtinos išlaidos"
 

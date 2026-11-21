@@ -119,6 +119,11 @@ $group-rule-colours: (band: $hair, body: $hair-soft);
             white-space: nowrap;
         }
 
+        // a figure beside a label, not a column's: a header's sum
+        .main__figure--muted {
+            color: $ink-muted;
+        }
+
         tbody tr.main__group td {
             padding-top: 1.5 * $gap;
             padding-bottom: 0.5rem;
@@ -236,8 +241,8 @@ $group-rule-colours: (band: $hair, body: $hair-soft);
             gap: 0.35rem;
 
             &::before {
-                font-family: 'Glyphicons Halflings';
-                content: "\e113";
+                font-family: bootstrap-icons;
+                content: "\f286";
                 font-size: 8px;
             }
         }

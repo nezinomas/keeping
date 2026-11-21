@@ -4,26 +4,18 @@
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="text-left"><span class="tip bottom w100" tabindex="0" data-tip="{% translate 'Unnecessary expenses that can be avoided' %}:
+            <th class="text-left">{% translate 'Unnecessary expenses' %} <span class="main__figure main__figure--muted">{% if save_sum %}{{ save_sum|price|floatformat:'0g' }}{% else %}–{% endif %}</span>{% if not_use %} <span class="hint tip bottom" tabindex="0" data-tip="{% translate 'Unnecessary expenses that can be avoided' %}:
 {% for i in not_use %}- {{ i }}
-{% endfor %}" aria-description="{% translate 'Unnecessary expenses that can be avoided' %}: {{ not_use|join:', ' }}">{% translate 'Unnecessary expenses' %} {{ save_sum|price|floatformat:'0g' }}</span></th>
+{% endfor %}" aria-label="{% translate 'Unnecessary expenses that can be avoided' %}" aria-description="{% translate 'Unnecessary expenses that can be avoided' %}: {{ not_use|join:', ' }}"><i class="bi bi-question-circle"></i></span>{% endif %}</th>
             <th>€ + F</th>
             <th>€ + F + P</th>
         </tr>
     </c-slot>
     {% for obj in no_incomes %}
     <tr>
-        {% if obj.price %}
-            {% firstof obj.money_fund|price|floatformat:'2g' as money_fund %}
-            {% firstof obj.money_fund_pension|price|floatformat:'2g' as money_fund_pension %}
-        {% else %}
-            {% firstof obj.money_fund|floatformat:'1g' as money_fund %}
-            {% firstof obj.money_fund_pension|floatformat:'1g' as money_fund_pension %}
-        {% endif %}
-
         <td class="text-left">{{obj.title}}</td>
-        <td class="main__figure">{{money_fund}}</td>
-        <td class="main__figure">{{money_fund_pension}}</td>
+        {% include 'bookkeeping/includes/no_incomes_figure.html' with value=obj.money_fund price=obj.price %}
+        {% include 'bookkeeping/includes/no_incomes_figure.html' with value=obj.money_fund_pension price=obj.price %}
     </tr>
     {% endfor %}
 </c-paper-table>

@@ -20,34 +20,88 @@ from ..signals.helpers import buy, worth
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture(name="unnecessary")
-def fixture_unnecessary(main_user):
+def _mark(main_user, titles, savings=False):
+    """The journal marks a new expense type per title unnecessary; its types."""
     j = JournalFactory()
     with quiet_build(main_user):
-        e1 = ExpenseTypeFactory(title="XXX")
-        e2 = ExpenseTypeFactory(title="YYY")
-        SavingTypeFactory()
-
-        j.unnecessary_savings = True
-        j.unnecessary_expenses = json.dumps([e1.pk, e2.pk])
+        types = [ExpenseTypeFactory(title=title) for title in titles]
+        j.unnecessary_savings = savings
+        j.unnecessary_expenses = json.dumps([t.pk for t in types])
         j.save()
-        ExpenseFactory(expense_type=e1, price=120000, date=date(1999, 5, 1))
+    return types
+
+
+def _cut(expense_type, main_user):
+    with quiet_build(main_user):
+        ExpenseFactory(expense_type=expense_type, price=120000, date=date(1999, 5, 1))
+
+
+@pytest.fixture(name="unnecessary")
+def fixture_unnecessary(main_user):
+    with quiet_build(main_user):
+        SavingTypeFactory()
+    cut, _ = _mark(main_user, ["XXX", "YYY"], savings=True)
+    _cut(cut, main_user)
+
+
+HINT = (
+    r'<span class="hint tip bottom" tabindex="0" data-tip="Nebūtinos išlaidos[^"]*"'
+    r' aria-label="([^"]*)" aria-description="[^"]*">'
+    r'<i class="bi bi-question-circle"></i></span>'
+)
+CUTS = "Nebūtinos išlaidos, kurių galima atsisakyti"
+
+
+def _marks_nothing(main_user):
+    pass
+
+
+def _marks_a_type_never_spent_on(main_user):
+    _mark(main_user, ["XXX"])
+
+
+def _cuts_an_expense(main_user):
+    _cut(*_mark(main_user, ["XXX"]), main_user)
 
 
 # the six whole months before the view's today hold the cut expense: 1.200,00 / 6
 @time_machine.travel("1999-06-15")
-def test_no_incomes_head_names_its_figure_under_the_panel_title(
-    client_logged, unnecessary
+@pytest.mark.parametrize(
+    "journal, figure, hints",
+    [
+        pytest.param(_marks_nothing, "–", [], id="nothing-marked"),
+        pytest.param(_marks_a_type_never_spent_on, "–", [CUTS], id="nothing-cut"),
+        pytest.param(_cuts_an_expense, "200", [CUTS], id="a-cut"),
+    ],
+)
+def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
+    client_logged, main_user, journal, figure, hints
 ):
-    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+    journal(main_user)
 
-    assert re.findall(
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+    heads = re.findall(
         PANEL_TITLE
         + r'<div class="table-responsive">\s*'
         + r"<table\b[^>]*>\s*<thead>\s*<tr>\s*"
-        + r'<th class="text-left"><span[^>]*>([^<]*)</span>',
+        + r'<th class="text-left">(.*?)</th>',
         content,
-    ) == [("Be pajamų", "Nebūtinos išlaidos 200")]
+        re.S,
+    )
+
+    # the label and the figure outside the tip; only the "?" opens one
+    assert [
+        (
+            re.findall(r"^([^<]*?) <span", head),
+            re.findall(
+                r'<span class="main__figure main__figure--muted">([^<]*)<', head
+            ),
+            re.findall(r'class="([^"]*\btip\b[^"]*)"', head),
+            re.findall(HINT, head),
+        )
+        for title, head in heads
+        if title == "Be pajamų"
+    ] == [(["Nebūtinos išlaidos"], [figure], ["hint tip bottom"] * len(hints), hints)]
 
 
 def test_no_incomes_panel_keeps_its_legend_under_the_table(client_logged):
@@ -72,8 +126,8 @@ def test_no_incomes_panel_keeps_its_legend_under_the_table(client_logged):
 def test_no_incomes_tip_lists_the_unnecessary_expenses(client_logged, unnecessary):
     content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
     tips = re.findall(
-        r'<span class="tip bottom w100" tabindex="0" data-tip="(Nebūtinos išlaidos[^"]*)"'
-        r' aria-description="([^"]*)"',
+        r'<span class="hint tip bottom" tabindex="0" data-tip="(Nebūtinos išlaidos[^"]*)"'
+        r' aria-label="[^"]*" aria-description="([^"]*)">',
         content,
     )
 

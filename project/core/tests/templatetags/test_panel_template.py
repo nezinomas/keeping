@@ -35,7 +35,7 @@ def _render(source: str, **context) -> str:
         ),
         pytest.param(
             '<c-panel title="Būtinos" hint="Kodėl būtinos">slot</c-panel>',
-            '<h2 class="panel__title">Būtinos <span class="panel__hint tip right" '
+            '<h2 class="panel__title">Būtinos <span class="panel__hint hint tip right" '
             'tabindex="0" data-tip="Kodėl būtinos" aria-label="Kodėl būtinos">'
             '<i class="bi bi-question-circle"></i></span></h2>',
             id="hint",
