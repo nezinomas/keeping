@@ -39,21 +39,38 @@ def test_fee_only_purchase_counts_its_fee_in_the_saving():
     assert actual.fee == 100
 
 
-def test_account_is_debited_prices_only_beside_fee_only_purchases(main_user):
-    with quiet_build(main_user):
-        account = AccountFactory(title="SEB")
-        SavingFactory(account=account, price=20000, fee=0)
-        SavingFactory(account=account, price=0, fee=100)
-        SavingFactory(account=account, price=0, fee=100)
-
-    SavingFactory(account=account, price=10000, fee=100)
-
-    assert _account_balance(account).expenses == 30000
-
-
+# the account holds 10,00 of incomes; (its expenses, its balance) once the last saves
 @pytest.mark.parametrize(
     "fee_sources, seeded, last, expected",
     [
+        pytest.param(
+            {"VALL": SavingType.FeeSource.ACCOUNT},
+            [],
+            ("VALL", 200, 3),
+            (203, 797),
+            id="is-debited-with-the-price",
+        ),
+        pytest.param(
+            {"VALL": SavingType.FeeSource.ACCOUNT},
+            [],
+            ("VALL", 0, 100),
+            (100, 900),
+            id="only-purchase-debits-its-fee",
+        ),
+        pytest.param(
+            {"VALL": SavingType.FeeSource.INVESTMENT},
+            [],
+            ("VALL", 0, 100),
+            (0, 1000),
+            id="fee-only-purchase-charged-to-the-investment",
+        ),
+        pytest.param(
+            {"VALL": SavingType.FeeSource.INVESTMENT},
+            [("VALL", 20000, 0), ("VALL", 0, 100), ("VALL", 0, 100)],
+            ("VALL", 10000, 100),
+            (30000, -29000),
+            id="prices-only-beside-fee-only-purchases",
+        ),
         pytest.param(
             {
                 "A": SavingType.FeeSource.INVESTMENT,
@@ -61,7 +78,7 @@ def test_account_is_debited_prices_only_beside_fee_only_purchases(main_user):
             },
             [("A", 200, 3)],
             ("B", 600, 1),
-            800,
+            (800, 200),
             id="two-types-charging-the-investment",
         ),
         pytest.param(
@@ -71,7 +88,7 @@ def test_account_is_debited_prices_only_beside_fee_only_purchases(main_user):
             },
             [("VALL", 200, 3), ("Fund", 600, 1)],
             ("VALL", 0, 2),
-            805,
+            (805, 195),
             id="one-type-charging-the-account",
         ),
     ],
@@ -81,6 +98,7 @@ def test_one_account_is_debited_each_price_and_the_fees_its_types_charge_it(
 ):
     with quiet_build(main_user):
         account = AccountFactory(title="IB")
+        IncomeFactory(account=account, price=1000)
         saving_types = {
             title: SavingTypeFactory(title=title, fee_source=fee_source)
             for title, fee_source in fee_sources.items()
@@ -95,7 +113,8 @@ def test_one_account_is_debited_each_price_and_the_fees_its_types_charge_it(
         account=account, saving_type=saving_types[title], price=price, fee=fee
     )
 
-    assert _account_balance(account).expenses == expected
+    actual = _account_balance(account)
+    assert (actual.expenses, actual.balance) == expected
 
 
 @pytest.mark.parametrize(
@@ -127,10 +146,8 @@ def test_a_purchase_debits_its_account_and_profits_the_worth_less_price_and_fee(
         saving_type = SavingTypeFactory(title="VALL")
         for price in incomes:
             IncomeFactory(account=account, price=price)
-        for price, fee in purchases:
-            SavingFactory(
-                account=account, saving_type=saving_type, price=price, fee=fee
-            )
+    for price, fee in purchases:
+        SavingFactory(account=account, saving_type=saving_type, price=price, fee=fee)
     worth(saving_type, worth_price)
 
     actual_account = _account_balance(account)
@@ -153,9 +170,9 @@ def test_finbee_fee_only_rows_paid_from_two_accounts(main_user):
         finbee = SavingTypeFactory(title="Finbee")
         IncomeFactory(account=seb, price=5000)
         IncomeFactory(account=revolut, price=5000)
-        SavingFactory(account=seb, saving_type=finbee, price=1000, fee=0)
-        SavingFactory(account=seb, saving_type=finbee, price=0, fee=100)
-        SavingFactory(account=revolut, saving_type=finbee, price=0, fee=100)
+    SavingFactory(account=seb, saving_type=finbee, price=1000, fee=0)
+    SavingFactory(account=seb, saving_type=finbee, price=0, fee=100)
+    SavingFactory(account=revolut, saving_type=finbee, price=0, fee=100)
     worth(finbee, 1200)
 
     assert _account_balance(seb).balance == 4000
@@ -206,56 +223,15 @@ def test_saving_a_saving_type_leaves_every_balance_unchanged(main_user):
     assert _table(SavingBalance) == savings
 
 
-@pytest.mark.parametrize(
-    "fee_source, price, fee, expected",
-    [
-        pytest.param(
-            SavingType.FeeSource.ACCOUNT,
-            200,
-            3,
-            (203, 797),
-            id="is_debited_with_the_price",
-        ),
-        pytest.param(
-            SavingType.FeeSource.ACCOUNT,
-            0,
-            100,
-            (100, 900),
-            id="only_purchase_debits_its_fee",
-        ),
-        pytest.param(
-            SavingType.FeeSource.INVESTMENT,
-            0,
-            100,
-            (0, 1000),
-            id="fee_only_purchase_charged_to_the_investment",
-        ),
-    ],
-)
-def test_account_is_debited_the_fee_only_when_its_type_charges_the_account(
-    main_user, fee_source, price, fee, expected
-):
-    with quiet_build(main_user):
-        account = AccountFactory(title="IB")
-        IncomeFactory(account=account, price=1000)
-        vall = SavingTypeFactory(title="VALL", fee_source=fee_source)
-
-    SavingFactory(account=account, saving_type=vall, price=price, fee=fee)
-
-    actual = _account_balance(account)
-    assert (actual.expenses, actual.balance) == expected
-
-
 def test_fee_source_does_not_change_the_saving_balance(main_user):
     balances = {}
     for title, fee_source in (
         ("A", SavingType.FeeSource.INVESTMENT),
         ("B", SavingType.FeeSource.ACCOUNT),
     ):
-        with quiet_build(main_user):
-            saving_type = SavingTypeFactory(title=title, fee_source=fee_source)
-            SavingFactory(saving_type=saving_type, price=200, fee=3)
-            SavingFactory(saving_type=saving_type, price=0, fee=1)
+        saving_type = SavingTypeFactory(title=title, fee_source=fee_source)
+        SavingFactory(saving_type=saving_type, price=200, fee=3)
+        SavingFactory(saving_type=saving_type, price=0, fee=1)
         worth(saving_type, 210)
         balances[title] = (
             SavingBalance.objects.filter(saving_type=saving_type)
