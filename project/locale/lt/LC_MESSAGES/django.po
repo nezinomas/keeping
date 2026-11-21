@@ -154,7 +154,7 @@ msgstr "Nieko nerasta"
 msgid "No records on day %(day)s"
 msgstr "%(day)s dieną įrašų nėra"
 
-#: .\project\bookkeeping\services\expenses.py:44
+#: .\project\bookkeeping\services\expenses.py:46
 msgid "No expenses"
 msgstr "Išlaidų nėra"
 

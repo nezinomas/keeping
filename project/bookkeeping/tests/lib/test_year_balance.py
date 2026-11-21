@@ -136,21 +136,22 @@ def test_months_balance_total_row(data, amount_start):
 def test_months_balance_average(data, amount_start):
     balance = YearBalance(data=data, amount_start=amount_start, today=TODAY)
 
+    # each column's year over twelve months, the year being over
     expect = {
-        "incomes": 90,
-        "expenses": 15,
-        "balance": 82.5,
-        "savings": 1,
-        "savings_close": 5,
-        "borrow": 25,
-        "borrow_return": 15,
-        "lend": 10,
-        "lend_return": 5,
-        "money_flow": 164.58,
+        "incomes": 15,
+        "expenses": 1.25,
+        "balance": 13.75,
+        "savings": 1 / 12,
+        "savings_close": 5 / 12,
+        "borrow": 25 / 12,
+        "borrow_return": 1.25,
+        "lend": 10 / 12,
+        "lend_return": 5 / 12,
+        "money_flow": 1975 / 12,
     }
 
-    assert expect == pytest.approx(balance.average, rel=1e-2)
-    assert (balance.avg_incomes, balance.avg_expenses) == (90, 15)
+    assert balance.average == pytest.approx(expect)
+    assert (balance.avg_incomes, balance.avg_expenses) == (15, 1.25)
 
 
 def test_amount_end(data, amount_start):
@@ -258,36 +259,31 @@ def test_balance_series_read_their_column_and_money_flow_runs_from_the_start(
     assert actual == expect
 
 
-@pytest.mark.parametrize(
-    "average, column",
-    [
-        pytest.param(lambda b: b.avg_incomes, "incomes", id="avg_incomes_none"),
-        pytest.param(lambda b: b.avg_expenses, "expenses", id="avg_expenses_none"),
-    ],
-)
-def test_avg_of_an_all_zero_column_is_zero(data, average, column):
-    data.data = data.data.with_columns(pl.col(column) * 0)
+def test_averages_of_a_year_with_no_rows_are_zero(data):
+    data.data = pl.DataFrame()
 
-    actual = average(YearBalance(data=data, amount_start=0, today=TODAY))
+    balance = YearBalance(data=data, amount_start=0, today=TODAY)
 
-    assert actual == 0
+    assert (balance.avg_incomes, balance.avg_expenses) == (0, 0)
 
 
+# 180 in over January and February; 1, 2 and 3 out, March's left out until reached
 @pytest.mark.parametrize(
     "today, expect",
     [
-        pytest.param(date(1999, 2, 1), 1.5, id="current_year"),
-        pytest.param(date(2000, 2, 1), 2, id="not_current_year"),
+        pytest.param(date(1999, 2, 1), (90, 1.5), id="running-of-two"),
+        pytest.param(date(2000, 2, 1), (15, 0.5), id="past-of-twelve"),
+        pytest.param(date(1998, 2, 1), (0, 0), id="not-begun"),
     ],
 )
-def test_avg_expenses_counts_months_up_to_today(data, today, expect):
+def test_averages_divide_by_the_months_the_year_has_reached(data, today, expect):
     data.data[0, "expenses"] = 1
     data.data[1, "expenses"] = 2
     data.data[2, "expenses"] = 3
 
-    actual = YearBalance(data=data, amount_start=0, today=today).avg_expenses
+    balance = YearBalance(data=data, amount_start=0, today=today)
 
-    assert actual == expect
+    assert (balance.avg_incomes, balance.avg_expenses) == expect
 
 
 def test_balance_money_flow_subtracts_account_charged_savings_fees(data, amount_start):

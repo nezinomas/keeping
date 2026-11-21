@@ -13,7 +13,7 @@ def fixture_balance():
         total_row={"T1": 1, "T2": 85},
         total_column={},
         balance=[],
-        average={"T1": 5, "T2": 425},
+        average_over=lambda months: {"T1": 1 / months, "T2": 85 / months},
     )
 
 
@@ -23,7 +23,7 @@ def test_chart_data(balance):
         {"name": "T1", "y": 1},
     ]
 
-    obj = ExpenseService(data=balance)
+    obj = ExpenseService(data=balance, months=4)
     actual = obj.chart_context()
 
     assert expect == actual
@@ -35,7 +35,7 @@ def test_chart_data_none(balance):
 
     expect = [{"name": "Išlaidų nėra", "y": 0}]
 
-    obj = ExpenseService(data=balance)
+    obj = ExpenseService(data=balance, months=4)
     actual = obj.chart_context()
 
     assert expect == actual
@@ -47,7 +47,7 @@ def test_chart_no_data(balance):
 
     expect = [{"name": "X", "y": 0}]
 
-    obj = ExpenseService(data=balance)
+    obj = ExpenseService(data=balance, months=4)
     actual = obj.chart_context()
 
     assert expect == actual
@@ -65,7 +65,7 @@ def test_chart_keeps_a_long_title_whole(balance, total_row):
     balance.types = ["X" * 12]
     balance.total_row = total_row
 
-    obj = ExpenseService(data=balance)
+    obj = ExpenseService(data=balance, months=4)
     actual = obj.chart_context()
 
     assert actual[0]["name"] == "X" * 12
@@ -76,11 +76,12 @@ def test_table_context(balance):
     balance.balance = [{"T1": 1}]
     balance.total_column = [1]
 
-    actual = ExpenseService(data=balance).table_context()
+    actual = ExpenseService(data=balance, months=4).table_context()
 
     assert actual["categories"] == ["T1", "T2"]
     assert list(actual["data"]) == [({"T1": 1}, 1)]
     assert actual["total"] == 86
     assert actual["total_row"] == {"T1": 1, "T2": 85}
-    assert actual["avg"] == pytest.approx(86 / 12)
-    assert actual["avg_row"] == {"T1": 5, "T2": 425}
+    # each type's sum over the four months, and their averages added up
+    assert actual["avg"] == 21.5
+    assert actual["avg_row"] == {"T1": 0.25, "T2": 21.25}

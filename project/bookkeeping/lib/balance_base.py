@@ -47,39 +47,17 @@ class BalanceBase:
 
         return {} if self.is_empty(df) else df.to_dicts()[0]
 
-    @property
-    def average(self) -> dict[str, float]:
-        """Calculate mean of every column, null values ignored
-
-        Returns:
-            dict[str, float]
-        """
-
+    def average_over(self, months: int) -> dict[str, float]:
+        """Each column's sum to the year's `months`-th month, over those months: an
+        empty month counts, a later one does not, and a year not begun averages 0."""
         if self.is_empty(self._data):
             return {}
 
-        cols = self._data.select(pl.exclude("date")).columns
+        reached = self._data.filter(pl.col("date").dt.month() <= months)
+        means = reached.select(pl.exclude("date").sum() / max(months, 1))
 
-        def col_sum(col_name) -> pl.Expr:
-            return pl.col(col_name).sum()
-
-        def count_not_nulls(col_name):
-            return pl.col(col_name).filter(pl.col(col_name) != 0).count()
-
-        df = (
-            self._data.select(cols)
-            .lazy()
-            .fill_null(0)
-            .with_columns(
-                [
-                    pl.when(col_sum(col_name) != 0)
-                    .then(col_sum(col_name) / count_not_nulls(col_name))
-                    .otherwise(pl.lit(0))
-                    for col_name in cols
-                ]
-            )
-        ).collect()
-        return {} if self.is_empty(df) else df.to_dicts()[0]
+        # a frame of dates alone has no column to average
+        return {} if self.is_empty(means) else means.to_dicts()[0]
 
     def is_empty(self, df: pl.DataFrame) -> bool:
         return df.is_empty() if isinstance(df, pl.DataFrame) else True

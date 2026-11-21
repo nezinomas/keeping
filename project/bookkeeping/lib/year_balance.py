@@ -38,23 +38,17 @@ class YearBalance(BalanceBase):
         return YearBoundary(self.year, self._today).is_coming
 
     @property
+    def average(self) -> dict[str, float]:
+        """Over the months the year has reached: all twelve once it is over."""
+        return self.average_over(YearBoundary(self.year, self._today).months_elapsed)
+
+    @property
     def avg_incomes(self) -> float:
-        return super().average.get("incomes", 0)
+        return self.average.get("incomes", 0)
 
     @property
     def avg_expenses(self) -> float:
-        boundary = YearBoundary(self.year, self._today)
-
-        # a year still running averages over the months it has reached; a
-        # finished one falls through to the base average over months with data
-        if boundary.is_current:
-            months = boundary.end_date.month
-            df = self._data.select(
-                pl.col("expenses").filter(pl.col("date").dt.month() <= months).sum()
-            )
-            return df[0, 0] / months
-
-        return super().average.get("expenses", 0)
+        return self.average.get("expenses", 0)
 
     @property
     def borrow_data(self) -> list[float]:

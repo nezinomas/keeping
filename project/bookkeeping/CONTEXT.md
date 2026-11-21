@@ -37,7 +37,8 @@ One figure at the head of an Index Tab, the skin's `StatCard`, in ink: whole eur
 Two figures differ: the Saved share is a percent, and a profit under 0,50 EUR either
 way keeps its cents ("0,30", "-0,30"), so it never reads "0". No Card is a new
 figure: each is one the page draws today. Apžvalga: *Pinigai* and *Turtas* (the wealth service's), *Vidutinės
-pajamos* and *Vidutinės išlaidos* (the year's averages). Fondai: the Saved share
+pajamos* and *Vidutinės išlaidos* (the year's averages, as the Month balance table's
+average row). Fondai: the Saved share
 (the savings service's, one decimal, the banner's figure before it), then
 *Fondų pelnas* and *Pensijų pelnas*, the profit sum of the Funds table and of the
 Pensions table, each with its percent as the note, one decimal. A Card with nothing to
@@ -115,14 +116,18 @@ _Avoid_: debt mini-tables, borrow / lend tables
 **Month balance table**:
 Balansas' Table Panel *Balansas*: the year by month, a row per month (incomes,
 expenses, balance, savings, the cash flow *Pinigų srautas*), then the average and
-total rows, whose *Pinigų srautas* cell is the year-end cash flow; *Rodyti skolas*
+total rows, whose *Pinigų srautas* cell is the year-end cash flow. The average row
+divides each column's sum over the months reached by their count: January to this
+month while the year runs, all twelve once it is over, none before it starts; a later
+month's rows count in the total, not in the average. *Rodyti skolas*
 shows the debts' columns. A month-by-row table, not a Month table, so it has no
 quarter band.
 _Avoid_: year balance, Month table
 
 **Expenses-by-type table**:
 Balansas' Table Panel *Išlaidų statistika*: the year's expenses by expense type, a row
-per month, a column per type, then the average and total rows. A month-by-row table,
+per month, a column per type, then the average and total rows, the average divided as
+the Month balance table's, so the types' averages add up to its last cell. A month-by-row table,
 not a Month table. How a type name too long for its column reads is the builder's
 (design §5).
 _Avoid_: year expenses (the include), Type table (Detailed's Išlaidos table, and core's

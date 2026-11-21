@@ -39,11 +39,13 @@ def _wealth_and_averages():
     PensionWorthFactory(pension_type=pension, price=70000)
 
 
-# a year not started draws its wealth, and its averages empty
+# one month holds the year's 5 000,00 in and 200,00 out; an average divides them by
+# the months reached, and a year not started draws its wealth and its averages empty
 @pytest.mark.parametrize(
     "today, averages",
     [
-        pytest.param("2000-06-01", ["5.000", "200"], id="past"),
+        pytest.param("2000-06-01", ["417", "17"], id="past-of-twelve"),
+        pytest.param("1999-06-01", ["833", "33"], id="running-of-six"),
         pytest.param("1998-06-01", ["&mdash;", "&mdash;"], id="not-started"),
     ],
 )

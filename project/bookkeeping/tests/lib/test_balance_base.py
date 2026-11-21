@@ -43,35 +43,29 @@ def test_balance(before, df, expected):
     assert obj.balance == expected
 
 
+MONTHS = pl.DataFrame(
+    {
+        "date": [date(1999, month, 1) for month in (1, 2, 3, 4)],
+        "x": [11, None, 0, 22],
+        "y": [21, 21, 21, 0],
+    }
+)
+
+
 @pytest.mark.parametrize(
-    "data, expected",
+    "data, months, expected",
     [
-        pytest.param(ARR, {"x": 11, "y": 21}, id="zero-months-not-counted"),
-        pytest.param(pl.DataFrame({"x": [11, 22]}), {"x": 16.5}, id="all-months"),
-        pytest.param(
-            pl.DataFrame({"x": [0, 11, 0, 22]}), {"x": 16.5}, id="zeros-skipped"
-        ),
-        pytest.param(
-            pl.DataFrame({"x": [None, 11, 22]}), {"x": 16.5}, id="null-skipped"
-        ),
-        pytest.param(
-            pl.DataFrame({"x": pl.Series([0, None], dtype=pl.Float32)}),
-            {"x": 0},
-            id="no-value",
-        ),
-        pytest.param(
-            pl.DataFrame({"t1": [11, 22], "t2": [0, 0]}),
-            {"t1": 16.5, "t2": 0},
-            id="all-zero-column",
-        ),
-        pytest.param(pl.DataFrame(), {}, id="empty"),
-        pytest.param(None, {}, id="none"),
+        pytest.param(MONTHS, 4, {"x": 8.25, "y": 15.75}, id="empty-months-count"),
+        pytest.param(MONTHS, 1, {"x": 11, "y": 21}, id="later-months-left-out"),
+        pytest.param(MONTHS, 0, {"x": 0, "y": 0}, id="year-not-begun"),
+        pytest.param(MONTHS.select("date"), 4, {}, id="dates-alone"),
+        pytest.param(pl.DataFrame(), 4, {}, id="empty"),
     ],
 )
-def test_average_is_the_mean_of_each_column_over_its_months_with_a_value(
-    data, expected
+def test_average_over_divides_each_columns_sum_to_a_month_by_those_months(
+    data, months, expected
 ):
-    actual = BalanceBase(data).average
+    actual = BalanceBase(data).average_over(months)
 
     assert actual == pytest.approx(expected)
 

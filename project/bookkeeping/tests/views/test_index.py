@@ -153,8 +153,9 @@ FIGURES = {
     "no_incomes": rf'<td class="text-left">Pinigai, €</td>\s*<td{FIGURE}>-16,50</td>',
     "money": CARD.format(label="Pinigai", figure="-17"),
     "wealth": CARD.format(label="Turtas", figure="-17"),
-    "average_incomes": CARD.format(label="Vidutinės pajamos", figure="6"),
-    "average_expenses": CARD.format(label="Vidutinės išlaidos", figure="1"),
+    # 6,00 in and 1,00 out over the twelve months of a year that is over
+    "average_incomes": CARD.format(label="Vidutinės pajamos", figure="1"),
+    "average_expenses": CARD.format(label="Vidutinės išlaidos", figure="0"),
     # its rows: test_overview_debts_column_stays_and_draws_a_row_per_kind_with_a_debt
     "debts": r'<h2 class="panel__title">Skolos</h2>',
     # 1,50 of savings over 6,00 of incomes; neither fund has a worth, so no profit
@@ -344,13 +345,23 @@ def test_expenses_by_type_head_cuts_a_long_type_and_tips_it_whole(client_logged)
     assert head == [("Expense Type", "Expense…"), ("Laisvalaikis", "Laisval…")]
 
 
-def test_expenses_by_type_table_draws_each_cell(client_logged):
+@pytest.mark.parametrize(
+    "today, averages",
+    [
+        pytest.param("2000-06-01", ["16,67", "166,67", "183,33"], id="past-of-twelve"),
+        # March is not reached: its 900,00 is in no average
+        pytest.param("1999-02-15", ["100,00", "550,00", "650,00"], id="running-of-two"),
+    ],
+)
+def test_expenses_by_type_table_draws_each_cell(client_logged, today, averages):
     food, rent = (ExpenseTypeFactory(title=title) for title in ("Food", "Rent"))
     ExpenseFactory(expense_type=food, price=20000, date=date(1999, 1, 1))
     ExpenseFactory(expense_type=rent, price=40000, date=date(1999, 1, 1))
     ExpenseFactory(expense_type=rent, price=70000, date=date(1999, 2, 1))
+    ExpenseFactory(expense_type=rent, price=90000, date=date(1999, 3, 1))
 
-    content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
+    with time_machine.travel(today, tick=False):
+        content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
     (panel,) = _panels(content, "Išlaidų statistika")
     rows = [
         (
@@ -365,13 +376,13 @@ def test_expenses_by_type_table_draws_each_cell(client_logged):
     ]
 
     # each figure cell with its state; the factory's expense name brings its own
-    # type, with no expense; a type averages over its months, the year over twelve
+    # type, with no expense; each average divides by the months the year has reached
     none = ("empty", "-")
     assert [*rows[:2], *rows[-2:]] == [
         (["Sausis"], [none, ("", "200,00"), ("", "400,00"), ("", "600,00")]),
         (["Vasaris"], [none, none, ("", "700,00"), ("", "700,00")]),
-        (["Vidurkis"], [none, ("", "200,00"), ("", "550,00"), ("", "108,33")]),
-        (["Viso"], [none, ("", "200,00"), ("", "1.100,00"), ("", "1.300,00")]),
+        (["Vidurkis"], [none, *[("", average) for average in averages]]),
+        (["Viso"], [none, ("", "200,00"), ("", "2.000,00"), ("", "2.200,00")]),
     ]
 
 
@@ -721,10 +732,12 @@ def test_balance_table_draws_each_column(client_logged):
         "30,00",
     ]
     figures = [*moves[:2], "800,00", *moves[2:]]
+    # each move over the twelve months of a year that is over
+    averages = ["83,33", "16,67", "", "25,00", "4,17", "5,83", "1,67", "7,50", "2,50"]
     # January, then the average and total rows
     assert [rows[2], rows[-2], rows[-1]] == [
         ["Sausis", *figures, "540,00"],
-        ["Vidurkis", *moves[:2], "", *moves[2:], "Metų pabaigoje"],
+        ["Vidurkis", *averages, "Metų pabaigoje"],
         ["Viso", *figures, "540,00"],
     ]
 

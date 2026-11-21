@@ -89,7 +89,9 @@ class TabBalance(TodayMixin, IndexTabMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             "year": year,
             "balance": index.balance_context(accounts["total_row"]["balance"]),
-            "expenses": services.expenses.load_service(user).table_context(),
+            "expenses": services.expenses.load_service(
+                user, self.today
+            ).table_context(),
         }
 
 
@@ -102,7 +104,9 @@ class TabCharts(TodayMixin, IndexTabMixin, TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             "month_charts": services.index.MonthCharts.load(user, self.today).context(),
-            "chart_expenses": services.expenses.load_service(user).chart_context(),
+            "chart_expenses": services.expenses.load_service(
+                user, self.today
+            ).chart_context(),
         }
 
 
