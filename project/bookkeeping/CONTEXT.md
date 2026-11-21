@@ -36,16 +36,21 @@ _Avoid_: section, panel, page
 One figure at the head of an Index Tab, the skin's `StatCard`, in ink: whole euros.
 Two figures differ: the Saved share is a percent, and a profit under 0,50 EUR either
 way keeps its cents ("0,30", "-0,30"), so it never reads "0". No Card is a new
-figure: each is one the page draws today. Apžvalga: *Pinigai* and *Turtas* (the wealth service's), *Vidutinės
+figure: each is one the page draws today. Apžvalga: *Pinigai* and *Turtas* (the wealth
+service's, its accounts part the Account balances table's total), *Vidutinės
 pajamos* and *Vidutinės išlaidos* (the year's averages, as the Month balance table's
 average row). Fondai: the Saved share
 (the savings service's, one decimal, the banner's figure before it), then
 *Fondų pelnas* and *Pensijų pelnas*, the profit sum of the Funds table and of the
-Pensions table, each with its percent as the note, one decimal. A Card with nothing to
-show draws the StatCard's empty form, never a zero: the Saved share in a year with no
-incomes, the two averages in a year not yet started, *Fondų pelnas* and *Pensijų
-pelnas* when their table's total profit is zero (no rows, or neither gain nor
-loss); a loss draws its figure with its minus. Fondai
+Pensions table, each with its percent as the note, one decimal. A figure of 0
+(*Pinigai*, *Turtas*, an average in a running year with nothing in it) draws "–" as its
+figure; one of these under 0,50 EUR either way rounds to a whole 0 and draws "0", never
+"-0". A
+Saved share of 0 draws "0,0". A Card with nothing to show draws the StatCard's empty
+form: the Saved share in a year with no incomes, the two averages in a year not yet
+started, *Fondų pelnas* and *Pensijų pelnas* when their table's total profit is zero
+(no rows, no row with a fresh worth, or gains and losses that cancel); a loss draws its
+figure with its minus. Fondai
 always draws its three Cards.
 _Avoid_: banner, tile, widget, KPI
 
@@ -96,7 +101,7 @@ accounts' money carried into the year (their balance rows' past sum); *pabaigoje
 the year-end cash flow, that start plus the year's flow, the same figure as the
 Cash-flow check's Balansas cell, not an accounts total; *Balansas* is end less start.
 It sits in a Panel titled with the selected year (*2026 metai*). The Forecast, under
-the same three titles: its own Panel, folded; loaded on the first open.
+the same three titles: its own Panel, drawn with the tab.
 _Avoid_: summary, header row
 
 **No-incomes table**:
