@@ -73,17 +73,11 @@ def test_an_index_tab_is_the_whole_paper_page_unless_htmx_asks(
     }
 
 
-@pytest.mark.parametrize(
-    "url",
-    [
-        *(pytest.param(lambda tab=tab: tab.url, id=tab.name) for tab in INDEX_TABS),
-        pytest.param(lambda: reverse("bookkeeping:forecast"), id="forecast"),
-    ],
-)
-def test_an_index_view_sends_the_anonymous_to_the_login(client, url):
-    response = client.get(url())
+@pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
+def test_an_index_view_sends_the_anonymous_to_the_login(client, tab):
+    response = client.get(tab.url)
 
-    assert response.url == f"{reverse('users:login')}?next={url()}"
+    assert response.url == f"{reverse('users:login')}?next={tab.url}"
 
 
 def _add_items(first, last):
@@ -98,7 +92,7 @@ def _add_items(first, last):
 
 
 # Balansas' cap holds its one read of the accounts, the Cash-flow check's other side
-QUERY_CAPS = {"overview": 23, "funds": 11, "balance": 16, "charts": 8}
+QUERY_CAPS = {"overview": 29, "funds": 11, "balance": 16, "charts": 8}
 
 
 @pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
@@ -236,27 +230,33 @@ def test_overview_debts_column_stays_and_draws_a_row_per_kind_with_a_debt(
     assert (_debts_tables(content), content.count(GRID_COLUMN)) == (tables, 3)
 
 
-def test_overview_draws_the_year_strip_in_its_panel_and_the_forecast_folded(
+def test_overview_draws_the_year_strip_and_the_forecast_each_in_its_panel(
     client_logged,
 ):
     content = tab_fragment(client_logged, INDEX_TABS["overview"].url)
-    year_strip = [
-        (re.findall(BOXED_TABLE, body), cell_texts(body))
-        for body in _panels(content, "1999 metai")
+    panels = [
+        (
+            title,
+            # a fold or a fetch would mark the Panel's section, title or body
+            re.findall(r"\b(x-[\w.-]+|hx-[\w-]+|@[\w.-]+|id)=", section),
+            re.findall(BOXED_TABLE, section),
+            cell_texts(section),
+        )
+        for section, title in re.findall(
+            r'(<section\b[^>]*>\s*<h2 class="panel__title">(.*?)</h2>.*?</section>)',
+            content,
+            re.S,
+        )
+        if "1999 metai" in title or "Prognozė" in title
     ]
+    heads = ["1999 pradžioje", "1999 pabaigoje", "Balansas"]
 
-    # the year's three figures, under its titles; the forecast waits for its click
-    forecast = [body.strip() for body in _panels(content, "Prognozė")]
-
-    assert (year_strip, forecast) == (
-        [
-            (
-                ["main striped hover"],
-                [["1999 pradžioje", "1999 pabaigoje", "Balansas"], ["-", "-", "-"]],
-            )
-        ],
-        ['<div id="forecast" x-show="open"></div>'],
-    )
+    # an empty journal: three dashes under the Year strip's titles in each; the
+    # forecast comes with the tab under a plain title, nothing folded or fetched
+    assert panels == [
+        ("1999 metai", [], ["main striped hover"], [heads, ["-", "-", "-"]]),
+        ("Prognozė", [], ["main striped hover"], [heads, ["-", "-", "-"]]),
+    ]
 
 
 LEGACY_CLASSES = (
@@ -281,7 +281,7 @@ LEGACY_CLASSES = (
         pytest.param(
             "overview",
             ["Sąskaitos", "1999 metai", "Prognozė", "Be pajamų", "Skolos"],
-            4,
+            5,
             1,
             [],
             id="overview",
@@ -679,12 +679,13 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
             [f'{FIGURE} data-sign="loss" data-cell=""'],
             id="year-total",
         ),
-        # only the highlighted balance is signed, not the start or the end
+        # only the forecast's highlighted balance is signed, not the start or the end
         pytest.param(
-            lambda: reverse("bookkeeping:forecast"),
+            lambda: INDEX_TABS["overview"].url,
             [_signed_year],
+            r"(?s)Prognozė</h2>.*?<td([^>]*)>[^<]*</td>\s*<td([^>]*)>[^<]*</td>\s*"
             r"<td([^>]*)>",
-            [FIGURE, FIGURE, f'{FIGURE} data-sign="loss"'],
+            [(FIGURE, FIGURE, f'{FIGURE} data-sign="loss"')],
             id="forecast",
         ),
     ],

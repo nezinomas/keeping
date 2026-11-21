@@ -35,6 +35,7 @@ def _tab_view(view_class):
         with (
             patch.object(services.index, "load_service"),
             patch.object(services.expenses, "load_service"),
+            patch.object(services.forecast, "load_service"),
         ):
             return view_for(rf, user, view_class).get_context_data()
 

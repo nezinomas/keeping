@@ -15,9 +15,8 @@
             <div class="table-responsive">{% include 'bookkeeping/includes/balance_short.html' with title=balance_short.title data=balance_short.data highlight=balance_short.highlight %}</div>
         </c-panel>
 
-        <c-panel table x-data="{ open:false }">
-            <c-slot name="title_control"><a role="button" class="panel__toggle" tabindex="0" @click="open = ! open" @keydown.enter="$el.click()" hx-get="{% url 'bookkeeping:forecast' %}" hx-target="#forecast" hx-trigger="click once" hx-indicator="#indicator">{% translate 'Forecast' %} <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i></a></c-slot>
-            <div id="forecast" x-show="open"></div>
+        <c-panel table title="{% translate 'Forecast' %}">
+            <div class="table-responsive">{% include 'bookkeeping/includes/balance_short.html' with title=forecast.title data=forecast.data highlight=forecast.highlight %}</div>
         </c-panel>
     </div>
 

@@ -271,7 +271,7 @@ msgstr "Delta"
 msgid "No record of account amount"
 msgstr "Nėra įrašo apie sąskaitos lėšas"
 
-#: .\project\bookkeeping\templates\bookkeeping\tab_overview.html:19
+#: .\project\bookkeeping\templates\bookkeeping\tab_overview.html:18
 msgid "Forecast"
 msgstr "Prognozė"
 

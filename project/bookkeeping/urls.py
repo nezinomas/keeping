@@ -32,7 +32,6 @@ urlpatterns = [
         views.PensionsWorthNew.as_view(),
         name="pensions_worth_new",
     ),
-    path("bookkeeping/forecast/", views.Forecast.as_view(), name="forecast"),
     path("detailed/", views.TabIncomes.as_view(), name="detailed"),
     path("detailed/incomes/", views.TabIncomes.as_view(), name="detailed_incomes"),
     path("detailed/savings/", views.TabSavings.as_view(), name="detailed_savings"),

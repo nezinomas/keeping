@@ -55,6 +55,7 @@ class TabOverview(TodayMixin, IndexTabMixin, TemplateViewMixin):
             "balance_short": index.balance_short_context(),
             **no_incomes.load_service(user, year, self.today),
             "cards": index.cards(services.wealth.load_service(user, year)),
+            "forecast": services.forecast.load_service(user, self.today),
             "debts": debts.debts_context(),
         }
 
@@ -150,15 +151,6 @@ class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     url = reverse_lazy("bookkeeping:pensions_worth_new")
     hx_trigger_django = "reload"
     balance_sync = staticmethod(balance_sources.sync_pensions)
-
-
-class Forecast(TodayMixin, TemplateViewMixin):
-    template_name = "bookkeeping/includes/forecast.html"
-
-    def get_context_data(self, **kwargs):
-        context = services.forecast.load_service(self.request.user, self.today)
-
-        return super().get_context_data(**kwargs) | context
 
 
 class Month(MonthMixin, TemplateViewMixin):

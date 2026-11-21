@@ -507,33 +507,6 @@ class BookkeepingIndex(TestCase, Browser):
             991: {"beside": False, "stacked": True, "middle_widest": False},
         }
 
-    def test_the_forecast_title_opens_and_folds_its_table_and_loads_it_once(self):
-        self.open_at(INDEX_TABS["overview"].url, 1500)
-        title = self.browser.find_element(By.CSS_SELECTOR, ".panel__toggle")
-        seen = []
-        for _press in range(4):
-            self.wait_two_frames()
-            seen.append(
-                self.browser.execute_script(
-                    "const icon = document.querySelector('.panel__toggle i');"
-                    " const table = document.querySelector('#forecast table');"
-                    " const fetched = performance.getEntriesByType('resource')"
-                    "  .filter(e => e.name.includes(arguments[0])).length;"
-                    " return [icon.classList.contains('bi-chevron-up'),"
-                    "  icon.getBoundingClientRect().width > 0,"
-                    "  !!table && table.checkVisibility(), fetched];",
-                    reverse("bookkeeping:forecast"),
-                )
-            )
-            # the title's word, not its chevron (Q54)
-            ActionChains(self.browser).move_to_element_with_offset(
-                title, -title.size["width"] // 2 + 5, 0
-            ).click().perform()
-            self.wait_until_idle()
-
-        folded, opened = [False, True, False, 1], [True, True, True, 1]
-        assert seen == [[False, True, False, 0], opened, folded, opened]
-
     def test_a_signed_figure_is_gain_or_harm_text_and_a_zero_is_not(self):
         for title, have in (("Even", 10000), ("Gain", 15000), ("Loss", 5000)):
             account = AccountFactory(title=title)
@@ -644,7 +617,6 @@ class BookkeepingIndex(TestCase, Browser):
 
     def test_each_title_toggle_is_a_tab_stop_that_enter_presses(self):
         toggles = {
-            "overview": (".panel__toggle", "#forecast table"),
             "balance": (".main__toggle", "#table-balance thead th[x-show]"),
         }
         pressed = {}
@@ -669,7 +641,7 @@ class BookkeepingIndex(TestCase, Browser):
                 ),
             ]
 
-        assert pressed == {"overview": [True, True], "balance": [True, True]}
+        assert pressed == {"balance": [True, True]}
 
     def test_insert_clears_each_worth_row(self):
         AccountFactory(title="Account 0")
