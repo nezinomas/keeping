@@ -6,7 +6,7 @@ from ....savings.tests.factories import SavingBalanceFactory, SavingTypeFactory
 from ...services.wealth.dtos import WealthDto
 from ...services.wealth.presenters import WealthPresenter
 from ...services.wealth.providers import WealthDataProvider
-from ..helper import stale_fund
+from ..helper import quiet_build, stale_fund
 from ..signals.helpers import buy, sell, worth
 
 pytestmark = pytest.mark.django_db
@@ -65,23 +65,26 @@ def _fund_bought_in_1999(closed=None):
 
 
 def test_provider_closed_fund_with_a_sell_counts_no_worth(main_user):
-    fund = _fund_bought_in_1999(closed=1999)
-    sell(fund, 90000)
-    worth(fund, 95000)
+    with quiet_build(main_user):
+        fund = _fund_bought_in_1999(closed=1999)
+        sell(fund, 90000)
+        worth(fund, 95000)
 
     assert _wealth(main_user).saving_balance == 0
 
 
 def test_provider_fund_without_a_close_counts_its_worth(main_user):
-    fund = _fund_bought_in_1999()
-    worth(fund, 95000)
+    with quiet_build(main_user):
+        fund = _fund_bought_in_1999()
+        worth(fund, 95000)
 
     assert _wealth(main_user).saving_balance == 95000
 
 
 @pytest.mark.parametrize("kind", ["funds", "pensions"])
 def test_provider_counts_a_fund_with_a_stale_worth_as_zero(main_user, kind):
-    stale_fund(kind=kind)
+    with quiet_build(main_user):
+        stale_fund(kind=kind)
 
     assert _wealth(main_user).saving_balance == 0
 
@@ -94,7 +97,8 @@ def test_provider_counts_a_pension_balance_with_a_stale_worth_as_zero(main_user)
 
 
 def test_provider_counts_a_fresh_worth_after_the_sell(main_user):
-    fund = stale_fund()
-    worth(fund, 60000)
+    with quiet_build(main_user):
+        fund = stale_fund()
+        worth(fund, 60000)
 
     assert _wealth(main_user).saving_balance == 60000

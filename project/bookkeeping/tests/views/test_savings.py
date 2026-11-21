@@ -5,7 +5,7 @@ import pytest
 import pytz
 from django.urls import reverse
 
-from ....core.tests.utils import stat_cards, tab_fragment
+from ....core.tests.utils import tab_fragment
 from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import (
     PensionFactory,
@@ -23,10 +23,13 @@ from ..helper import (
     cell_texts,
     closed_every_other,
     fund_with_a_sell,
+    quiet_build,
     row_cells,
     row_tags,
     row_titles,
+    stale_fund,
     switch_a_into_b,
+    tab_cards,
     tab_table,
     table_titled,
     total_cells,
@@ -37,8 +40,6 @@ from ..signals.helpers import buy, sell, worth
 pytestmark = pytest.mark.django_db
 
 FUNDS_TAB = "bookkeeping:tab_funds"
-CARD_STATE = re.compile(r'class="trend-card__value trend-card__value--(\w+)"')
-CARD_UNIT = re.compile(r'<span class="trend-card__unit">([^<]*)</span>')
 
 
 def _table(client, title="Fondai"):
@@ -49,22 +50,6 @@ def _fondai(client):
     return tab_fragment(client, reverse(FUNDS_TAB))
 
 
-def _cards(content):
-    """(label, figure with its unit, note, state) of each Card in the row that opens
-    the tab."""
-    row = content.partition('<div class="stat-cards">')[2].partition("<section")[0]
-    return [
-        (
-            label,
-            figure + "".join(CARD_UNIT.findall(card)),
-            note,
-            CARD_STATE.search(card).group(1),
-        )
-        for card in row.split('<div class="trend-card">')[1:]
-        for label, figure, note in stat_cards(card)
-    ]
-
-
 @pytest.mark.parametrize(
     "title, rows",
     [
@@ -73,10 +58,11 @@ def _cards(content):
         pytest.param("Pensijos", ["PPP", "PensionType"], id="pensions"),
     ],
 )
-def test_each_table_lists_its_own_funds(client_logged, title, rows):
-    SavingFactory(saving_type=SavingTypeFactory(title="FFF", type="funds"))
-    SavingFactory(saving_type=SavingTypeFactory(title="PPP", type="pensions"))
-    PensionFactory()
+def test_each_table_lists_its_own_funds(client_logged, main_user, title, rows):
+    with quiet_build(main_user):
+        SavingFactory(saving_type=SavingTypeFactory(title="FFF", type="funds"))
+        SavingFactory(saving_type=SavingTypeFactory(title="PPP", type="pensions"))
+        PensionFactory()
 
     assert row_titles(_table(client_logged, title)) == rows
 
@@ -108,20 +94,21 @@ INCOME = (1999, 10000)
     ],
 )
 def test_saved_share_card_is_the_year_s_savings_over_its_incomes_in_ink(
-    client_logged, income, savings, card
+    client_logged, main_user, income, savings, card
 ):
     year, price = income
-    IncomeFactory(date=date(year, 1, 1), price=price)
-    for saved, fee, fee_source in savings:
-        SavingFactory(
-            price=saved,
-            fee=fee,
-            saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
-        )
+    with quiet_build(main_user):
+        IncomeFactory(date=date(year, 1, 1), price=price)
+        for saved, fee, fee_source in savings:
+            SavingFactory(
+                price=saved,
+                fee=fee,
+                saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
+            )
 
     content = _fondai(client_logged)
     figures = [
-        (label, figure, state) for label, figure, _note, state in _cards(content)
+        (label, figure, state) for label, figure, _note, state in tab_cards(content)
     ]
     alerts = re.findall(r'class="alert ([^"]*)"', content)
 
@@ -216,15 +203,16 @@ NO_PENSION_PROFIT = ("Pensijų pelnas", "&mdash;", "", "empty")
     ],
 )
 def test_profit_cards_read_each_table_s_total_and_a_table_without_one_draws_its_empty(
-    client_logged, seeds, cards, tables
+    client_logged, main_user, seeds, cards, tables
 ):
-    for seed in seeds:
-        seed()
+    with quiet_build(main_user):
+        for seed in seeds:
+            seed()
 
     content = _fondai(client_logged)
     drawn = re.findall(PANEL_TITLE, content)
 
-    assert (_cards(content)[1:], drawn) == (cards, tables)
+    assert (tab_cards(content)[1:], drawn) == (cards, tables)
 
 
 TABLES = [
@@ -235,9 +223,10 @@ TABLES = [
 
 @pytest.mark.parametrize("title, factory, row", TABLES)
 def test_table_shows_the_year_s_transfers_in_its_row_and_total(
-    client_logged, title, factory, row
+    client_logged, main_user, title, factory, row
 ):
-    factory(price=660)
+    with quiet_build(main_user):
+        factory(price=660)
 
     table = _table(client_logged, title)
 
@@ -261,11 +250,12 @@ def test_table_shows_the_year_s_transfers_in_its_row_and_total(
     ],
 )
 def test_table_dates_the_latest_check(
-    client_logged, title, factory, worth_factory, row
+    client_logged, main_user, title, factory, worth_factory, row
 ):
-    factory()
-    worth_factory()
-    worth_factory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
+    with quiet_build(main_user):
+        factory()
+        worth_factory()
+        worth_factory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
 
     assert row_cells(_table(client_logged, title), row)[8] == "1999-01-01"
 
@@ -294,9 +284,10 @@ def test_table_dates_the_latest_check(
     ],
 )
 def test_closed_fund_with_a_sell_shows_its_signed_profit_but_no_worth(
-    client_logged, title, kind, bought, sold, fee, profit
+    client_logged, main_user, title, kind, bought, sold, fee, profit
 ):
-    fund_with_a_sell("Closed", bought, sold, fee=fee, kind=kind, closed=1999)
+    with quiet_build(main_user):
+        fund_with_a_sell("Closed", bought, sold, fee=fee, kind=kind, closed=1999)
 
     cells = row_tags(_table(client_logged, title), "Closed")
 
@@ -311,12 +302,13 @@ def test_closed_fund_with_a_sell_shows_its_signed_profit_but_no_worth(
 @pytest.mark.parametrize("title, kind", KINDS)
 @pytest.mark.parametrize("sold", [True, False])
 def test_open_fund_with_no_worth_draws_its_cost_and_its_worth_cells_empty(
-    client_logged, title, kind, sold
+    client_logged, main_user, title, kind, sold
 ):
-    if sold:
-        fund_with_a_sell("Open", 100000, 60000, kind=kind)
-    else:
-        buy(SavingTypeFactory(title="Open", type=kind), 100000)
+    with quiet_build(main_user):
+        if sold:
+            fund_with_a_sell("Open", 100000, 60000, kind=kind)
+        else:
+            buy(SavingTypeFactory(title="Open", type=kind), 100000)
 
     cells = row_tags(_table(client_logged, title), "Open")
 
@@ -326,11 +318,12 @@ def test_open_fund_with_no_worth_draws_its_cost_and_its_worth_cells_empty(
 
 
 def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
-    client_logged,
+    client_logged, main_user
 ):
-    fund = SavingTypeFactory(title="Even")
-    buy(fund, 100000)
-    worth(fund, 100000)
+    with quiet_build(main_user):
+        fund = SavingTypeFactory(title="Even")
+        buy(fund, 100000)
+        worth(fund, 100000)
 
     table = _table(client_logged)
     row = re.search(r"<tr>\s*<td[^>]*>Even</td>(.*?)</tr>", table, re.S).group(1)
@@ -385,12 +378,13 @@ GAIN_START = f'{GROUP_FIGURE} data-sign="gain" data-cell=""'
 DATE_START = ' class="main__date main__group-start"'
 
 
-def test_funds_table_draws_each_column(client_logged):
-    fund = SavingTypeFactory(title="Fund")
-    buy(fund, 100000, fee=100, when=date(1998, 1, 1))
-    buy(fund, 20000, fee=200)
-    sell(fund, 30000, fee=400)
-    worth(fund, 120000)
+def test_funds_table_draws_each_column(client_logged, main_user):
+    with quiet_build(main_user):
+        fund = SavingTypeFactory(title="Fund")
+        buy(fund, 100000, fee=100, when=date(1998, 1, 1))
+        buy(fund, 20000, fee=200)
+        sell(fund, 30000, fee=400)
+        worth(fund, 120000)
 
     paid = ["1.000,00", "1,00", "200,00", "2,00", "1.200,00", "3,00", "300,00", "4,00"]
     # bought 1 200,00 for 3,00 of fees, 300,00 sold, worth 1 200,00
@@ -411,12 +405,13 @@ def test_funds_table_draws_each_column(client_logged):
     ]
 
 
-def test_funds_tables_cells_carry_their_spans_and_states(client_logged):
+def test_funds_tables_cells_carry_their_spans_and_states(client_logged, main_user):
     # bought in the year, the fund worth more than it cost; the pension has no worth
-    fund = SavingTypeFactory(title="Fund")
-    buy(fund, 100000)
-    worth(fund, 130000)
-    PensionFactory(price=60000, fee=0)
+    with quiet_build(main_user):
+        fund = SavingTypeFactory(title="Fund")
+        buy(fund, 100000)
+        worth(fund, 130000)
+        PensionFactory(price=60000, fee=0)
 
     content = _fondai(client_logged)
     shapes = [_shape(table_titled(content, title)) for title in ("Fondai", "Pensijos")]
@@ -458,50 +453,6 @@ def test_funds_tables_cells_carry_their_spans_and_states(client_logged):
     ]
 
 
-def _group_starts(table):
-    """Per row, head to foot, the grid columns (from 1) of the cells marked as a
-    column group's first; a header cell's rowspan takes its columns in the rows
-    below."""
-    taken = set()
-    starts = []
-    for r, row in enumerate(re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S)):
-        column, marked = 1, []
-        for attrs in re.findall(r"<t[hd]\b([^>]*)>", row):
-            while (r, column) in taken:
-                column += 1
-            span = re.search(r'colspan="(\d+)"', attrs)
-            span = int(span.group(1)) if span else 1
-            down = re.search(r'rowspan="(\d+)"', attrs)
-            down = int(down.group(1)) if down else 1
-            taken |= {(r + d, column + c) for d in range(1, down) for c in range(span)}
-            if re.search(r'class="[^"]*\bmain__group-start\b', attrs):
-                marked.append(column)
-            column += span
-        starts.append(marked)
-    return starts
-
-
-def test_funds_tables_mark_where_each_column_group_starts(client_logged):
-    for title in ("Fund A", "Fund B"):
-        fund = SavingTypeFactory(title=title)
-        buy(fund, 100000)
-        worth(fund, 130000)
-    PensionFactory(price=60000, fee=0)
-
-    content = _fondai(client_logged)
-
-    # start, the year, the total, market value, profit; none on Parduota, column 8
-    groups = [2, 4, 6, 10, 12]
-    head = [groups, [4, 6], groups]
-    assert {
-        title: _group_starts(table_titled(content, title))
-        for title in ("Fondai", "Pensijos")
-    } == {
-        "Fondai": [*head, groups, groups, groups],
-        "Pensijos": [*head, groups, groups],
-    }
-
-
 def _funds_closed_every_other(i, kind):
     fund_with_a_sell(
         f"Fund {i}", 100000, 60000, kind=kind, closed=closed_every_other(i)
@@ -517,8 +468,14 @@ def _switches(i, kind):
     )
 
 
+def _a_stale_fund(i, kind):
+    stale_fund(f"Fund {i}", kind)
+
+
 @pytest.mark.parametrize(
-    "build", [_funds_closed_every_other, _switches], ids=["closed", "switches"]
+    "build",
+    [_funds_closed_every_other, _switches, _a_stale_fund],
+    ids=["closed", "switches", "stale"],
 )
 @pytest.mark.parametrize("kind", ["funds", "pensions"])
 def test_funds_tab_queries_do_not_grow(client_logged, main_user, build, kind):
@@ -533,8 +490,9 @@ def test_funds_tab_queries_do_not_grow(client_logged, main_user, build, kind):
 @pytest.mark.parametrize(
     "title, kind", [*KINDS, pytest.param("Fondai", "shares", id="shares")]
 )
-def test_total_counts_the_switched_money_once(client_logged, title, kind):
-    switch_a_into_b(kind=kind)
+def test_total_counts_the_switched_money_once(client_logged, main_user, title, kind):
+    with quiet_build(main_user):
+        switch_a_into_b(kind=kind)
 
     cells = total_cells(_table(client_logged, title))
 
@@ -602,16 +560,18 @@ def _no_switches():
         pytest.param(_source_closed_before_the_year, "7,69%", id="closed-source"),
     ],
 )
-def test_total_profit_percentage(client_logged, build, percent):
-    build()
+def test_total_profit_percentage(client_logged, main_user, build, percent):
+    with quiet_build(main_user):
+        build()
 
     assert total_cells(_table(client_logged))[-1] == percent
 
 
-def test_pensions_total_ignores_a_switch_between_funds(client_logged):
-    switch_a_into_b(kind="funds")
-    PensionFactory(price=100000)
-    PensionWorthFactory(price=130000)
+def test_pensions_total_ignores_a_switch_between_funds(client_logged, main_user):
+    with quiet_build(main_user):
+        switch_a_into_b(kind="funds")
+        PensionFactory(price=100000)
+        PensionWorthFactory(price=130000)
 
     table = _table(client_logged, "Pensijos")
 

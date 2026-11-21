@@ -9,7 +9,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from ...core.tests.utils import tab_fragment
+from ...core.tests.utils import stat_cards, tab_fragment
 from ...savings.models import SavingType
 from ...savings.tests.factories import SavingTypeFactory
 from ...transactions.tests.factories import SavingChangeFactory
@@ -79,6 +79,26 @@ def row_cells(content, title):
     return [text for _attrs, text in row_tags(content, title)]
 
 
+CARD_STATE = re.compile(r'class="trend-card__value trend-card__value--(\w+)"')
+CARD_UNIT = re.compile(r'<span class="trend-card__unit">([^<]*)</span>')
+
+
+def tab_cards(content):
+    """(label, figure with its unit, note, state) of each Card in the row that opens
+    the tab."""
+    row = content.partition('<div class="stat-cards">')[2].partition("<section")[0]
+    return [
+        (
+            label,
+            figure + "".join(CARD_UNIT.findall(card)),
+            note,
+            CARD_STATE.search(card).group(1),
+        )
+        for card in row.split('<div class="trend-card">')[1:]
+        for label, figure, note in stat_cards(card)
+    ]
+
+
 def cell_texts(table):
     """Each row's cells as text, tags and spacing gone: head, body and foot."""
     return [
@@ -94,6 +114,20 @@ def script_json(content, script_id):
     found = re.search(rf'<script id="{script_id}"[^>]*>(.*?)</script>', content, re.S)
     assert found, f"no <script id={script_id}>"
     return json.loads(found.group(1))
+
+
+def switch_after_a_gain():
+    """A bought for 1 000,00, worth 1 300,00 on 1 March and switched whole to B in
+    June; B worth 1 400,00 at the year end."""
+    a = SavingTypeFactory(title="A")
+    b = SavingTypeFactory(title="B")
+    buy(a, 100000)
+    worth(a, 130000, month=3, day=1)
+    SavingChangeFactory(
+        from_account=a, to_account=b, price=130000, fee=0, date=date(1999, 6, 1)
+    )
+    worth(b, 140000)
+    return a, b
 
 
 def switch_a_into_b(*, kind="funds", a_closed=None, switched=130000):

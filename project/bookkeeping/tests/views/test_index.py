@@ -120,15 +120,16 @@ def test_an_index_tab_queries_stay_under_its_cap_and_do_not_grow(
 
 
 @pytest.fixture(name="tab_contents")
-def fixture_tab_contents(client_logged):
-    BorrowFactory(price=7000)
-    LendFactory(price=9000)
-    SavingFactory(saving_type=SavingTypeFactory(title="Fund A"))
-    PensionFactory()
-    ExpenseFactory(date=date(1999, 1, 1), price=100)
-    IncomeFactory(price=600)
-    # the next year's money differs, so a figure read for the wrong year shows
-    IncomeFactory(date=date(2000, 1, 1), price=5000)
+def fixture_tab_contents(client_logged, main_user):
+    with quiet_build(main_user):
+        BorrowFactory(price=7000)
+        LendFactory(price=9000)
+        SavingFactory(saving_type=SavingTypeFactory(title="Fund A"))
+        PensionFactory()
+        ExpenseFactory(date=date(1999, 1, 1), price=100)
+        IncomeFactory(price=600)
+        # the next year's money differs, so a figure read for the wrong year shows
+        IncomeFactory(date=date(2000, 1, 1), price=5000)
 
     return {tab.name: tab_fragment(client_logged, tab.url) for tab in INDEX_TABS}
 
@@ -223,10 +224,11 @@ def _debts_tables(content):
     ],
 )
 def test_overview_debts_column_stays_and_draws_a_row_per_kind_with_a_debt(
-    client_logged, debts, tables
+    client_logged, main_user, debts, tables
 ):
-    for debt in debts:
-        debt()
+    with quiet_build(main_user):
+        for debt in debts:
+            debt()
 
     content = tab_fragment(client_logged, INDEX_TABS["overview"].url)
 
@@ -353,12 +355,15 @@ def test_expenses_by_type_head_cuts_a_long_type_and_tips_it_whole(client_logged)
         pytest.param("1999-02-15", ["100,00", "550,00", "650,00"], id="running-of-two"),
     ],
 )
-def test_expenses_by_type_table_draws_each_cell(client_logged, today, averages):
-    food, rent = (ExpenseTypeFactory(title=title) for title in ("Food", "Rent"))
-    ExpenseFactory(expense_type=food, price=20000, date=date(1999, 1, 1))
-    ExpenseFactory(expense_type=rent, price=40000, date=date(1999, 1, 1))
-    ExpenseFactory(expense_type=rent, price=70000, date=date(1999, 2, 1))
-    ExpenseFactory(expense_type=rent, price=90000, date=date(1999, 3, 1))
+def test_expenses_by_type_table_draws_each_cell(
+    client_logged, main_user, today, averages
+):
+    with quiet_build(main_user):
+        food, rent = (ExpenseTypeFactory(title=title) for title in ("Food", "Rent"))
+        ExpenseFactory(expense_type=food, price=20000, date=date(1999, 1, 1))
+        ExpenseFactory(expense_type=rent, price=40000, date=date(1999, 1, 1))
+        ExpenseFactory(expense_type=rent, price=70000, date=date(1999, 2, 1))
+        ExpenseFactory(expense_type=rent, price=90000, date=date(1999, 3, 1))
 
     with time_machine.travel(today, tick=False):
         content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
@@ -601,16 +606,17 @@ def _accounts_hold_less():
     ],
 )
 def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
-    client_logged, fee_source, skews, equal, state
+    client_logged, main_user, fee_source, skews, equal, state
 ):
-    IncomeFactory(price=100000)
-    # the next year's accounts hold more, so a check reading them is never equal
-    IncomeFactory(date=date(2000, 1, 1), price=5000)
-    SavingFactory(
-        price=20000,
-        fee=300,
-        saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
-    )
+    with quiet_build(main_user):
+        IncomeFactory(price=100000)
+        # the next year's accounts hold more, so a check reading them is never equal
+        IncomeFactory(date=date(2000, 1, 1), price=5000)
+        SavingFactory(
+            price=20000,
+            fee=300,
+            saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
+        )
     for skew in skews:
         skew()
 
@@ -684,10 +690,11 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
     ],
 )
 def test_view_a_signed_figure_carries_its_sign_and_a_zero_carries_none(
-    client_logged, url, builds, cells, attrs
+    client_logged, main_user, url, builds, cells, attrs
 ):
-    for build in builds:
-        build()
+    with quiet_build(main_user):
+        for build in builds:
+            build()
 
     content = tab_fragment(client_logged, url())
 
@@ -695,12 +702,15 @@ def test_view_a_signed_figure_carries_its_sign_and_a_zero_carries_none(
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
-def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_source):
-    SavingFactory(
-        price=20000,
-        fee=300,
-        saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
-    )
+def test_view_index_savings_column_shows_the_invested_price(
+    client_logged, main_user, fee_source
+):
+    with quiet_build(main_user):
+        SavingFactory(
+            price=20000,
+            fee=300,
+            saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
+        )
 
     content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
     january = row_cells(content[content.index('id="table-balance"') :], "Sausis")
@@ -708,13 +718,14 @@ def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_s
     assert january[3] == "200,00"
 
 
-def test_balance_table_draws_each_column(client_logged):
-    IncomeFactory(price=100000)
-    ExpenseFactory(price=20000)
-    SavingFactory(price=30000, fee=0)
-    SavingCloseFactory(price=5000, fee=0)
-    _borrow()
-    _lend()
+def test_balance_table_draws_each_column(client_logged, main_user):
+    with quiet_build(main_user):
+        IncomeFactory(price=100000)
+        ExpenseFactory(price=20000)
+        SavingFactory(price=30000, fee=0)
+        SavingCloseFactory(price=5000, fee=0)
+        _borrow()
+        _lend()
 
     content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
     table = content[content.index('id="table-balance"') :].partition("</table>")[0]

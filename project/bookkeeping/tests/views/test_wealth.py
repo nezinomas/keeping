@@ -4,23 +4,16 @@ import pytest
 import time_machine
 from django.urls import reverse
 
-from ....core.tests.utils import stat_cards, tab_fragment
+from ....core.tests.utils import tab_fragment
 from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.tests.factories import SavingTypeFactory
 from ..factories import AccountWorthFactory, PensionWorthFactory
+from ..helper import quiet_build, tab_cards
 from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
-
-
-def _cards(client):
-    """(title, value) of each Card in the row that opens the tab."""
-    content = tab_fragment(client, reverse("bookkeeping:tab_overview"))
-    head = content.partition('id="accounts"')[0]
-    row = head.partition('<div class="stat-cards">')[2]
-    return [(title, value) for title, value, _note in stat_cards(row)]
 
 
 def _wealth_and_averages():
@@ -50,14 +43,15 @@ def _wealth_and_averages():
     ],
 )
 def test_apzvalga_cards_read_the_wealth_and_the_averages(
-    client_logged, today, averages
+    client_logged, main_user, today, averages
 ):
-    _wealth_and_averages()
+    with quiet_build(main_user):
+        _wealth_and_averages()
 
     with time_machine.travel(today, tick=False):
-        cards = _cards(client_logged)
+        content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
 
-    assert cards == [
+    assert [(label, figure) for label, figure, _note, _state in tab_cards(content)] == [
         ("Pinigai", "5.100"),
         ("Turtas", "5.800"),
         ("Vidutinės pajamos", averages[0]),

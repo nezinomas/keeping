@@ -5,7 +5,6 @@ import pytest
 from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping import balance_sources
-from ....bookkeeping.tests.factories import SavingWorthFactory
 from ....bookkeeping.tests.helper import quiet_build
 from ....core.lib.db_sync import SAVING_FIELDS
 from ....core.tests.utils import count_queries
@@ -14,7 +13,7 @@ from ....savings.models import SavingBalance, SavingType
 from ....savings.services.model_services import SavingModelService
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
-from .helpers import balance, worth_date
+from .helpers import balance, worth
 
 pytestmark = pytest.mark.django_db
 
@@ -30,17 +29,6 @@ def _table(model):
     )
 
 
-def test_fee_only_purchase_leaves_the_account_untouched():
-    account = AccountFactory(title="SEB")
-    IncomeFactory(account=account, price=1000)
-
-    SavingFactory(account=account, price=0, fee=100)
-
-    actual = _account_balance(account)
-    assert actual.expenses == 0
-    assert actual.balance == 1000
-
-
 def test_fee_only_purchase_counts_its_fee_in_the_saving():
     saving_type = SavingTypeFactory(title="Finbee")
 
@@ -51,75 +39,124 @@ def test_fee_only_purchase_counts_its_fee_in_the_saving():
     assert actual.fee == 100
 
 
-def test_account_is_debited_prices_only_beside_fee_only_purchases():
-    account = AccountFactory(title="SEB")
+def test_account_is_debited_prices_only_beside_fee_only_purchases(main_user):
+    with quiet_build(main_user):
+        account = AccountFactory(title="SEB")
+        SavingFactory(account=account, price=20000, fee=0)
+        SavingFactory(account=account, price=0, fee=100)
+        SavingFactory(account=account, price=0, fee=100)
 
-    SavingFactory(account=account, price=20000, fee=0)
-    SavingFactory(account=account, price=0, fee=100)
-    SavingFactory(account=account, price=0, fee=100)
     SavingFactory(account=account, price=10000, fee=100)
 
     assert _account_balance(account).expenses == 30000
 
 
-def test_one_account_paying_two_saving_types_is_debited_both_prices():
-    account = AccountFactory(title="IB")
+@pytest.mark.parametrize(
+    "fee_sources, seeded, last, expected",
+    [
+        pytest.param(
+            {
+                "A": SavingType.FeeSource.INVESTMENT,
+                "B": SavingType.FeeSource.INVESTMENT,
+            },
+            [("A", 200, 3)],
+            ("B", 600, 1),
+            800,
+            id="two-types-charging-the-investment",
+        ),
+        pytest.param(
+            {
+                "VALL": SavingType.FeeSource.ACCOUNT,
+                "Fund": SavingType.FeeSource.INVESTMENT,
+            },
+            [("VALL", 200, 3), ("Fund", 600, 1)],
+            ("VALL", 0, 2),
+            805,
+            id="one-type-charging-the-account",
+        ),
+    ],
+)
+def test_one_account_is_debited_each_price_and_the_fees_its_types_charge_it(
+    main_user, fee_sources, seeded, last, expected
+):
+    with quiet_build(main_user):
+        account = AccountFactory(title="IB")
+        saving_types = {
+            title: SavingTypeFactory(title=title, fee_source=fee_source)
+            for title, fee_source in fee_sources.items()
+        }
+        for title, price, fee in seeded:
+            SavingFactory(
+                account=account, saving_type=saving_types[title], price=price, fee=fee
+            )
 
+    title, price, fee = last
     SavingFactory(
-        account=account, saving_type=SavingTypeFactory(title="A"), price=200, fee=3
-    )
-    SavingFactory(
-        account=account, saving_type=SavingTypeFactory(title="B"), price=600, fee=1
+        account=account, saving_type=saving_types[title], price=price, fee=fee
     )
 
-    assert _account_balance(account).expenses == 800
+    assert _account_balance(account).expenses == expected
 
 
-def test_profit_subtracts_the_fee_once():
-    saving_type = SavingTypeFactory(title="Fund")
-    SavingFactory(saving_type=saving_type, price=200, fee=3)
+@pytest.mark.parametrize(
+    "incomes, purchases, worth_price, expected_account, expected_saving",
+    [
+        pytest.param(
+            [],
+            [(200, 3)],
+            210,
+            (200, -200),
+            (200, 3, 210, 7, 3.5),
+            id="fee-once",
+        ),
+        pytest.param(
+            [85000],
+            [(20300, 300), (60128, 128)],
+            80100,
+            (80428, 4572),
+            (80428, 428, 80100, -756, -0.94),
+            id="fee-inside-the-price",
+        ),
+    ],
+)
+def test_a_purchase_debits_its_account_and_profits_the_worth_less_price_and_fee(
+    main_user, incomes, purchases, worth_price, expected_account, expected_saving
+):
+    with quiet_build(main_user):
+        account = AccountFactory(title="IB")
+        saving_type = SavingTypeFactory(title="VALL")
+        for price in incomes:
+            IncomeFactory(account=account, price=price)
+        for price, fee in purchases:
+            SavingFactory(
+                account=account, saving_type=saving_type, price=price, fee=fee
+            )
+    worth(saving_type, worth_price)
 
-    SavingWorthFactory(saving_type=saving_type, price=210, date=worth_date())
+    actual_account = _account_balance(account)
+    assert (actual_account.expenses, actual_account.balance) == expected_account
 
-    actual = balance(saving_type)
-    assert actual.incomes == 200
-    assert actual.fee == 3
-    assert actual.market_value == 210
-    assert actual.profit_sum == 7
-    assert actual.profit_proc == 3.5
-
-
-def test_fee_entered_inside_the_price_is_subtracted_again_from_profit():
-    ib = AccountFactory(title="Interactive Brokers")
-    vall = SavingTypeFactory(title="VALL")
-    IncomeFactory(account=ib, price=85000)
-
-    SavingFactory(account=ib, saving_type=vall, price=20300, fee=300)
-    SavingFactory(account=ib, saving_type=vall, price=60128, fee=128)
-    SavingWorthFactory(saving_type=vall, price=80100, date=worth_date())
-
-    account = _account_balance(ib)
-    assert account.expenses == 80428
-    assert account.balance == 4572
-
-    saving = balance(vall)
-    assert saving.incomes == 80428
-    assert saving.fee == 428
-    assert saving.profit_sum == -756
-    assert saving.profit_proc == -0.94
+    saving = balance(saving_type)
+    assert (
+        saving.incomes,
+        saving.fee,
+        saving.market_value,
+        saving.profit_sum,
+        saving.profit_proc,
+    ) == expected_saving
 
 
-def test_finbee_fee_only_rows_paid_from_two_accounts():
-    seb = AccountFactory(title="SEB")
-    revolut = AccountFactory(title="Revolut")
-    finbee = SavingTypeFactory(title="Finbee")
-    IncomeFactory(account=seb, price=5000)
-    IncomeFactory(account=revolut, price=5000)
-
-    SavingFactory(account=seb, saving_type=finbee, price=1000, fee=0)
-    SavingFactory(account=seb, saving_type=finbee, price=0, fee=100)
-    SavingFactory(account=revolut, saving_type=finbee, price=0, fee=100)
-    SavingWorthFactory(saving_type=finbee, price=1200, date=worth_date())
+def test_finbee_fee_only_rows_paid_from_two_accounts(main_user):
+    with quiet_build(main_user):
+        seb = AccountFactory(title="SEB")
+        revolut = AccountFactory(title="Revolut")
+        finbee = SavingTypeFactory(title="Finbee")
+        IncomeFactory(account=seb, price=5000)
+        IncomeFactory(account=revolut, price=5000)
+        SavingFactory(account=seb, saving_type=finbee, price=1000, fee=0)
+        SavingFactory(account=seb, saving_type=finbee, price=0, fee=100)
+        SavingFactory(account=revolut, saving_type=finbee, price=0, fee=100)
+    worth(finbee, 1200)
 
     assert _account_balance(seb).balance == 4000
     assert _account_balance(revolut).balance == 5000
@@ -154,11 +191,12 @@ def test_other_journal_purchase_does_not_reach_this_journal(main_user, second_us
     assert _account_balance(theirs).expenses == 900
 
 
-def test_saving_a_saving_type_leaves_every_balance_unchanged():
-    account = AccountFactory(title="IB")
-    saving_type = SavingTypeFactory(title="VALL")
-    SavingFactory(account=account, saving_type=saving_type, price=200, fee=3)
-    SavingWorthFactory(saving_type=saving_type, price=210, date=worth_date())
+def test_saving_a_saving_type_leaves_every_balance_unchanged(main_user):
+    with quiet_build(main_user):
+        account = AccountFactory(title="IB")
+        saving_type = SavingTypeFactory(title="VALL")
+        SavingFactory(account=account, saving_type=saving_type, price=200, fee=3)
+        worth(saving_type, 210)
     accounts, savings = _table(AccountBalance), _table(SavingBalance)
 
     saving_type.title = "VALL renamed"
@@ -169,43 +207,56 @@ def test_saving_a_saving_type_leaves_every_balance_unchanged():
 
 
 @pytest.mark.parametrize(
-    "price, fee, expect",
+    "fee_source, price, fee, expected",
     [
-        pytest.param(200, 3, 203, id="is_debited_with_the_price"),
-        pytest.param(0, 100, 100, id="only_purchase_debits_its_fee"),
+        pytest.param(
+            SavingType.FeeSource.ACCOUNT,
+            200,
+            3,
+            (203, 797),
+            id="is_debited_with_the_price",
+        ),
+        pytest.param(
+            SavingType.FeeSource.ACCOUNT,
+            0,
+            100,
+            (100, 900),
+            id="only_purchase_debits_its_fee",
+        ),
+        pytest.param(
+            SavingType.FeeSource.INVESTMENT,
+            0,
+            100,
+            (0, 1000),
+            id="fee_only_purchase_charged_to_the_investment",
+        ),
     ],
 )
-def test_account_charged_fee_is_debited(price, fee, expect):
-    account = AccountFactory(title="IB")
-    vall = SavingTypeFactory(title="VALL", fee_source=SavingType.FeeSource.ACCOUNT)
+def test_account_is_debited_the_fee_only_when_its_type_charges_the_account(
+    main_user, fee_source, price, fee, expected
+):
+    with quiet_build(main_user):
+        account = AccountFactory(title="IB")
+        IncomeFactory(account=account, price=1000)
+        vall = SavingTypeFactory(title="VALL", fee_source=fee_source)
 
     SavingFactory(account=account, saving_type=vall, price=price, fee=fee)
 
-    assert _account_balance(account).expenses == expect
+    actual = _account_balance(account)
+    assert (actual.expenses, actual.balance) == expected
 
 
-def test_one_account_paying_both_fee_sources():
-    account = AccountFactory(title="IB")
-    vall = SavingTypeFactory(title="VALL", fee_source=SavingType.FeeSource.ACCOUNT)
-    fund = SavingTypeFactory(title="Fund")
-
-    SavingFactory(account=account, saving_type=vall, price=200, fee=3)
-    SavingFactory(account=account, saving_type=fund, price=600, fee=1)
-    SavingFactory(account=account, saving_type=vall, price=0, fee=2)
-
-    assert _account_balance(account).expenses == 805
-
-
-def test_fee_source_does_not_change_the_saving_balance():
+def test_fee_source_does_not_change_the_saving_balance(main_user):
     balances = {}
     for title, fee_source in (
         ("A", SavingType.FeeSource.INVESTMENT),
         ("B", SavingType.FeeSource.ACCOUNT),
     ):
-        saving_type = SavingTypeFactory(title=title, fee_source=fee_source)
-        SavingFactory(saving_type=saving_type, price=200, fee=3)
-        SavingFactory(saving_type=saving_type, price=0, fee=1)
-        SavingWorthFactory(saving_type=saving_type, price=210, date=worth_date())
+        with quiet_build(main_user):
+            saving_type = SavingTypeFactory(title=title, fee_source=fee_source)
+            SavingFactory(saving_type=saving_type, price=200, fee=3)
+            SavingFactory(saving_type=saving_type, price=0, fee=1)
+        worth(saving_type, 210)
         balances[title] = (
             SavingBalance.objects.filter(saving_type=saving_type)
             .order_by("year")
@@ -216,10 +267,11 @@ def test_fee_source_does_not_change_the_saving_balance():
     assert list(balances["A"]) == list(balances["B"])
 
 
-def test_switching_a_types_fee_source_re_syncs_its_account():
-    account = AccountFactory(title="IB")
-    vall = SavingTypeFactory(title="VALL")
-    SavingFactory(account=account, saving_type=vall, price=200, fee=3)
+def test_switching_a_types_fee_source_re_syncs_its_account(main_user):
+    with quiet_build(main_user):
+        account = AccountFactory(title="IB")
+        vall = SavingTypeFactory(title="VALL")
+        SavingFactory(account=account, saving_type=vall, price=200, fee=3)
     assert _account_balance(account).expenses == 200
 
     vall.fee_source = SavingType.FeeSource.ACCOUNT
@@ -239,8 +291,9 @@ def test_switching_a_type_re_syncs_only_its_own_journal(main_user, second_user, 
         fee_source=SavingType.FeeSource.ACCOUNT,
     )
     SavingFactory(account=theirs, saving_type=their_type, price=900, fee=9)
-    mine = SavingTypeFactory(title="My VALL")
-    SavingFactory(account=AccountFactory(title="Mine"), saving_type=mine)
+    with quiet_build(main_user):
+        mine = SavingTypeFactory(title="My VALL")
+        SavingFactory(account=AccountFactory(title="Mine"), saving_type=mine)
     assert _account_balance(theirs).expenses == 909
     # a re-sync of their journal would put 909 back
     AccountBalance.objects.filter(account=theirs).update(expenses=1)
@@ -263,7 +316,7 @@ def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
     SavingFactory(account=seb, saving_type=finbee, price=1000, date=date(1998, 1, 1))
     SavingFactory(account=seb, saving_type=finbee, price=0, fee=100)
     SavingFactory(account=ib, saving_type=fund, price=200, fee=3)
-    SavingWorthFactory(saving_type=fund, price=310, date=worth_date())
+    worth(fund, 310)
     # last, so a signal it fails to send is not covered by a later one
     SavingChangeFactory(from_account=finbee, to_account=fund, price=100, fee=5)
     accounts, savings = _table(AccountBalance), _table(SavingBalance)

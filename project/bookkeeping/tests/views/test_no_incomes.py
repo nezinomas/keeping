@@ -14,23 +14,24 @@ from ....expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ....journals.tests.factories import JournalFactory
 from ....savings.tests.factories import SavingTypeFactory
 from ...lib import no_incomes
-from ..helper import PANEL_TITLE, row_cells, stale_fund
+from ..helper import PANEL_TITLE, quiet_build, row_cells, stale_fund
 from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(name="unnecessary")
-def fixture_unnecessary():
+def fixture_unnecessary(main_user):
     j = JournalFactory()
-    e1 = ExpenseTypeFactory(title="XXX")
-    e2 = ExpenseTypeFactory(title="YYY")
-    SavingTypeFactory()
+    with quiet_build(main_user):
+        e1 = ExpenseTypeFactory(title="XXX")
+        e2 = ExpenseTypeFactory(title="YYY")
+        SavingTypeFactory()
 
-    j.unnecessary_savings = True
-    j.unnecessary_expenses = json.dumps([e1.pk, e2.pk])
-    j.save()
-    ExpenseFactory(expense_type=e1, price=120000, date=date(1999, 5, 1))
+        j.unnecessary_savings = True
+        j.unnecessary_expenses = json.dumps([e1.pk, e2.pk])
+        j.save()
+        ExpenseFactory(expense_type=e1, price=120000, date=date(1999, 5, 1))
 
 
 # the six whole months before the view's today hold the cut expense: 1.200,00 / 6
@@ -119,9 +120,10 @@ def test_template_month_value():
     [("funds", -30000), ("shares", -30000), ("pensions", -100000)],
 )
 def test_a_fresh_worth_counts_by_its_fund_type(main_user, kind, money_fund):
-    fund = SavingTypeFactory(title="Fresh", type=kind)
-    buy(fund, 100000)
-    worth(fund, 70000, month=3, day=1)
+    with quiet_build(main_user):
+        fund = SavingTypeFactory(title="Fresh", type=kind)
+        buy(fund, 100000)
+        worth(fund, 70000, month=3, day=1)
 
     actual = no_incomes.load_service(main_user, 1999, date(1999, 6, 1))["no_incomes"][0]
 
@@ -131,7 +133,8 @@ def test_a_fresh_worth_counts_by_its_fund_type(main_user, kind, money_fund):
 
 @pytest.mark.parametrize("kind", ["funds", "pensions"])
 def test_a_stale_worth_counts_as_zero(main_user, kind):
-    stale_fund(kind=kind)
+    with quiet_build(main_user):
+        stale_fund(kind=kind)
 
     account_sum = AccountBalance.objects.filter(year=1999).aggregate(
         Sum("balance", default=0)
