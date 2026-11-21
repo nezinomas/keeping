@@ -290,9 +290,8 @@ Highcharts.setOptions({
             borderColor: "var(--skin-paper)",
             // Highcharts rounds column corners from v11; the paper skin's are square
             borderRadius: 0,
-            // `paperFixEdges` starts the range after the first category's centre and
-            // ends it before the last's, which would leave their columns out of the
-            // value axis' extremes
+            // `paperFixEdges` cuts the range inside the first and last category, which
+            // would leave their columns out of the value axis' extremes
             getExtremesFromAll: true,
         },
     },

@@ -25,6 +25,10 @@ table, the Debts table; *Fondai*: three Cards, the Funds table, the Pensions tab
 expenses-by-type chart beside the balance-per-month chart (above it below 1200px), then
 the incomes-and-expenses chart under both. Each is fetched and reloaded
 whole, on every event that changes it; a closed tab reads fresh data when opened.
+The Quick-add bar offers each Worth form as a pill on its own tab: *Sąskaitų faktas* on
+Apžvalga, *Fondų faktas* and *Pensijų faktas* on Fondai. The refresh icon in the title
+of the Account balances, Funds and Pensions tables syncs every balance row of every
+year and reloads the tab.
 *Grafikai* also names a navbar item, a different page.
 _Avoid_: section, panel, page
 
@@ -99,7 +103,7 @@ Apžvalga's Table Panel *Be pajamų*: how long the money lasts without incomes. 
 the money, the months it lasts with spending unchanged, and after cutting the
 unnecessary expenses; columns € + F and € + F + P, with the € / F / P legend. Its first
 header cell, the monthly sum those cuts save, is labelled *Nebūtinos išlaidos*.
-_Avoid_: no_incomes (that is the endpoint), survival table
+_Avoid_: no_incomes (that is the module), survival table
 
 **Debts table**:
 Apžvalga's Table Panel *Skolos*: one row per Debt type with an open Debt, *Paskolinta*

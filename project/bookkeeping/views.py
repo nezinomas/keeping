@@ -38,14 +38,13 @@ class IndexTabMixin(CoreTabViewMixin):
         return str(self.request.user.selected_year())
 
 
-class TabOverview(IndexTabMixin, TemplateViewMixin):
+class TabOverview(TodayMixin, IndexTabMixin, TemplateViewMixin):
     tab = INDEX_TABS["overview"]
 
     def get_context_data(self, **kwargs):
         user = self.request.user
         year = user.selected_year()
-        today = date.today()
-        index = services.index.load_service(user, today)
+        index = services.index.load_service(user, self.today)
         debts = services.index.DebtsTable.load(user)
         accounts = services.accounts.load_service(user, year)
 
@@ -54,7 +53,7 @@ class TabOverview(IndexTabMixin, TemplateViewMixin):
             **accounts,
             "cash_flow_check": index.check_cash_flow(accounts["total_row"]["balance"]),
             "balance_short": index.balance_short_context(),
-            **no_incomes.load_service(user, year, today),
+            **no_incomes.load_service(user, year, self.today),
             "cards": index.cards(services.wealth.load_service(user, year)),
             "debts": debts.debts_context(),
         }
@@ -77,13 +76,13 @@ class TabFunds(IndexTabMixin, TemplateViewMixin):
         }
 
 
-class TabBalance(IndexTabMixin, TemplateViewMixin):
+class TabBalance(TodayMixin, IndexTabMixin, TemplateViewMixin):
     tab = INDEX_TABS["balance"]
 
     def get_context_data(self, **kwargs):
         user = self.request.user
         year = user.selected_year()
-        index = services.index.load_service(user, date.today())
+        index = services.index.load_service(user, self.today)
         accounts = services.accounts.load_service(user, year)
 
         return {
@@ -94,7 +93,7 @@ class TabBalance(IndexTabMixin, TemplateViewMixin):
         }
 
 
-class TabCharts(IndexTabMixin, TemplateViewMixin):
+class TabCharts(TodayMixin, IndexTabMixin, TemplateViewMixin):
     tab = INDEX_TABS["charts"]
 
     def get_context_data(self, **kwargs):
@@ -102,9 +101,7 @@ class TabCharts(IndexTabMixin, TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            "month_charts": services.index.MonthCharts.load(
-                user, date.today()
-            ).context(),
+            "month_charts": services.index.MonthCharts.load(user, self.today).context(),
             "chart_expenses": services.expenses.load_service(user).chart_context(),
         }
 

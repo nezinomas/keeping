@@ -12,6 +12,7 @@ from ....core.tests.utils import (
     paper_page_parts,
     quick_add_pills,
     tab_fragment,
+    view_for,
 )
 from ....debts.tests.factories import (
     BorrowFactory,
@@ -26,6 +27,7 @@ from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingCloseFactory
 from ...tabs import INDEX_TABS
+from ...views import TabCharts, TabOverview
 from ..factories import AccountWorthFactory
 from ..helper import (
     BOXED_TABLE,
@@ -517,6 +519,26 @@ def test_view_index_renders_its_chart_data(client_logged):
         [False, True, False],
     )
     assert [point["y"] for point in expenses] == [100]
+
+
+@pytest.mark.parametrize(
+    ("view_class", "read", "average"),
+    [
+        (TabOverview, lambda context: context["cards"][3].value, "150"),
+        (TabOverview, lambda context: context["avg_expenses"], 10000),
+        (TabCharts, lambda context: context["month_charts"]["expenses_average"], 15000),
+    ],
+    ids=["card-of-4-months", "no-incomes-of-the-last-6", "chart-of-4-months"],
+)
+def test_an_index_tab_averages_over_the_months_its_views_today_reached(
+    rf, main_user, view_class, read, average
+):
+    ExpenseFactory(price=60000, date=date(1999, 1, 6))
+    view = view_for(rf, main_user, view_class)
+    # apart from the clock, so a read of the clock shows
+    view.today = date(1999, 4, 10)
+
+    assert read(view.get_context_data()) == average
 
 
 def test_balance_tables_name_their_columns_and_foot_rows(client_logged):
