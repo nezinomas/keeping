@@ -108,7 +108,10 @@ _Avoid_: summary, header row
 Apžvalga's Table Panel *Be pajamų*: how long the money lasts without incomes. Rows:
 the money, the months it lasts with spending unchanged, and after cutting the
 unnecessary expenses; columns € + F and € + F + P, with the € / F / P legend. Its first
-header cell, the monthly sum those cuts save, is labelled *Nebūtinos išlaidos*.
+header cell reads *Nebūtinos išlaidos*, then the monthly sum those cuts save, muted,
+then a "?" whose tip lists the cuts. A journal that marks nothing unnecessary draws a
+muted "–" for the sum and no "?"; one whose marked expenses cost nothing in the six
+months draws the "–" and the "?".
 _Avoid_: no_incomes (that is the module), survival table
 
 **Debts table**:
