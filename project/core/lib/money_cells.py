@@ -12,7 +12,7 @@ def amount(cents: int, places: str = "0g") -> str:
 
 
 def percent(figure: float) -> str:
-    """A percent in one decimal, without its sign."""
+    """A percent in one decimal, without its "%"."""
     return floatformat(figure, "1g")
 
 
@@ -27,12 +27,12 @@ def share(cents: int, total: int) -> str:
     if cents == total:
         return "100%"
 
-    percent = cents / total * 100
+    part = cents / total * 100
 
-    if percent < 0.5:
+    if part < 0.5:
         return "< 1%"
 
-    if percent >= 99.5:
+    if part >= 99.5:
         return "> 99%"
 
-    return f"{floatformat(percent, '0')}%"
+    return f"{floatformat(part, '0')}%"

@@ -446,11 +446,11 @@ msgstr "Rodyti kitą grafiką"
 msgid "Percentage of income saved"
 msgstr "Pajamų dalis pervedama taupymui"
 
-#: .\project\bookkeeping\services\index\presenters.py:104
+#: .\project\bookkeeping\services\index\presenters.py:115
 msgid "Fund profit"
 msgstr "Fondų pelnas"
 
-#: .\project\bookkeeping\services\index\presenters.py:105
+#: .\project\bookkeeping\services\index\presenters.py:116
 msgid "Pension profit"
 msgstr "Pensijų pelnas"
 
