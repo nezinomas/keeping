@@ -26,11 +26,12 @@ The rule for a new page:
 _Avoid_: bare panel, frameless panel, table card
 
 **Switch**:
-A two-state control that shows or hides part of a Panel: a track and its label,
+A two-state control that shows or hides part of a page: a track and its label,
 `<c-switch model="open">label</c-switch>`, a `<button role="switch">` whose
 `aria-checked` and press follow the caller's Alpine variable `model`. The caller owns
 the `x-data` and the `x-show`s; on a Panel title it sits in the `title_control` slot,
-wrapped in `.panel__control`, at the line's right end. Drawn in ink, off and on.
+wrapped in `.panel__control`, at the line's right end; in a Closed fold, above the
+closed table. Drawn in ink, off and on.
 _Avoid_: toggle, checkbox, show/hide link
 
 **Sort header**:
@@ -68,10 +69,11 @@ _Avoid_: accounts table, list
 
 **Closed fold**:
 An Owner table of the owners open in the viewed year, or the shared notice when none is,
-above a button that unfolds a second Owner table of those closed before it, the button
-drawn only when one is (Sąskaitos, Fondai; II pakopos fondai passes no closed rows, so
-it never draws one). [`core/closed_fold.html`](templates/core/closed_fold.html)
-takes `rows`, `closed_rows`, `header`, `url_name` and the button's `label`;
+above a Switch that unfolds a second Owner table of those closed before it, the Switch
+drawn only when one is, off on every load, in line with the table's names (Sąskaitos,
+Fondai; II pakopos fondai passes no closed rows, so it never draws one).
+[`core/closed_fold.html`](templates/core/closed_fold.html)
+takes `rows`, `closed_rows`, `header`, `url_name` and the Switch's `label`;
 `ClosedFoldTabMixin` (`core/mixins/tabs.py`) reads both lists for a tab.
 _Avoid_: accordion, scope, show closed, archive
 

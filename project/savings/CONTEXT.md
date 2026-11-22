@@ -65,5 +65,5 @@ _Avoid_: page, section, view, panel
 The Funds Tab's second table: the Funds closed before the viewed year,
 struck through, captioned *uždaryta* and its year. Folded below the open ones — those
 not closed, or closed in the viewed year or later — behind the *Uždaryti fondai*
-button.
+switch.
 _Avoid_: archived, inactive, hidden funds
