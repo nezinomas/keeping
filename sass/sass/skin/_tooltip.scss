@@ -62,6 +62,12 @@ $tip-gap: 8px;
     }
 }
 
+// a mouse press leaves the focus on a balance table's refresh icon after the tab's
+// reload; its tip then opens on the hover alone, the keyboard's focus keeping it
+.tip:has(> .refresh-icon:focus:not(:focus-visible)):not(:hover)::before {
+    display: none;
+}
+
 // anchored, the bubble leaves its trigger's box: no scroll box cuts it, and the
 // browser slides it back inside the window
 @include anchored {

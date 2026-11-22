@@ -5,7 +5,7 @@
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="text-left"><c-regenerate-balances /> {% translate 'Accounts' %}</th>
+            <th class="text-left"><c-regenerate-balances id="refresh-accounts" /> {% translate 'Accounts' %}</th>
             <th>{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>

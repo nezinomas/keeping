@@ -100,12 +100,14 @@ def test_every_table_refreshes_every_balance(client_logged):
         tab_fragment(client_logged, reverse(url_name)) for url_name in (OVERVIEW, FUNDS)
     )
 
-    # the icon opens the title's header cell; a funds table's carries its name width
+    # the icon opens the title's header cell; a funds table's carries its name width.
+    # Its own id per table: the tab's reload gives the focus back to that id
     icons = [
         re.findall(
             r'<th class="([^"]*)"[^>]*>\s*<span class="tip right"'
-            r' data-tip="([^"]*)">\s*<a href="#" role="button" hx-get="([^"]*)"'
-            r' aria-label="\2">',
+            r' data-tip="([^"]*)">\s*<(\w+) type="(\w+)" id="([^"]*)"'
+            r' class="refresh-icon" hx-(\w+)="([^"]*)"[^>]*\baria-label="\2">'
+            r'\s*<i class="bi bi-arrow-repeat me-1">',
             table_titled(content, title),
         )
         for content, title in (
@@ -115,6 +117,13 @@ def test_every_table_refreshes_every_balance(client_logged):
         )
     ]
 
-    tip = ("Bus atnaujinti visų metų balansai.", url)
-    named = ("text-left funds-table__name", *tip)
-    assert icons == [[("text-left", *tip)], [named], [named]]
+    tip = "Bus atnaujinti visų metų balansai."
+    named = ("text-left funds-table__name", tip)
+    assert icons == [
+        [(*head, "button", "button", f"refresh-{kind}", "post", url)]
+        for head, kind in (
+            (("text-left", tip), "accounts"),
+            (named, "savings"),
+            (named, "pensions"),
+        )
+    ]

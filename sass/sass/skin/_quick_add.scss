@@ -174,9 +174,9 @@ body:has(.paper-skin) {
 
             // an act opens a form, not a page: a button, drawn as the links beside it
             > button {
+                @include tokens.bare-button;
+
                 width: 100%;
-                border: 0;
-                background: none;
                 line-height: inherit;
                 text-align: left;
                 cursor: pointer;

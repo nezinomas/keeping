@@ -4,7 +4,7 @@
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="text-left funds-table__name" rowspan="2"><c-regenerate-balances /> {{ title }}</th>
+            <th class="text-left funds-table__name" rowspan="2"><c-regenerate-balances id="{{ refresh_id }}" /> {{ title }}</th>
             <th rowspan="2" colspan="2" class="text-center main__group-start">{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
             <th colspan="2" class="text-center main__group-start">{{ request.user.selected_year }}</th>
             <th colspan="4" class="text-center main__group-start">{% translate 'Total' %}</th>

@@ -3,6 +3,7 @@ from datetime import date
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django.views import View
 
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.utils import http_htmx_response, wants_fragment
@@ -114,8 +115,10 @@ class TabCharts(TodayMixin, IndexTabMixin, TemplateViewMixin):
         }
 
 
-class RegenerateBalances(TemplateViewMixin):
-    def get(self, request, *args, **kwargs):
+class RegenerateBalances(View):
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
         for sync in (
             balance_sources.sync_accounts,
             balance_sources.sync_savings,

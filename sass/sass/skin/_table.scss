@@ -182,6 +182,19 @@ $group-rule-colours: (band: $hair, body: $hair-soft);
             color: $ink-muted;
         }
 
+        // a balance table's refresh icon: a button drawn as the icon alone, in
+        // $ink-muted as the edit column's, $ink under the pointer
+        .refresh-icon {
+            @include tokens.bare-button;
+
+            padding: 0;
+            color: $ink-muted;
+
+            &:hover {
+                color: $ink;
+            }
+        }
+
         .delete-col a {
             color: $harm;
         }

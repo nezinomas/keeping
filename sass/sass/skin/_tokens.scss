@@ -69,6 +69,13 @@
     }
 }
 
+// A button drawn as its content alone: the browser's border and grey face dropped.
+// Its padding stays the caller's.
+@mixin bare-button {
+    border: 0;
+    background: none;
+}
+
 // A striped row on a cell that others scroll under: the stripe as an image over
 // an opaque colour, so nothing shows through.
 @mixin opaque-stripe {

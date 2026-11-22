@@ -58,6 +58,10 @@ BODY_FACE = (
 )
 NO_INCOMES_TIP = "th > .tip[data-tip^='Nebūtinos išlaidos']"
 WASH = "rgba(232, 194, 26, 0.3)"
+# the page's uncaught errors, gathered into window.errors from here on
+CATCH_ERRORS = (
+    " window.errors = []; addEventListener('error', e => errors.push(e.message));"
+)
 DEBTS_SWITCH = "#table-balance .switch"
 # the switch at arguments[0]: its colours and face, its button's box against its
 # track and label, the track's pill and its knob's box inside it, to 0.1px
@@ -906,10 +910,10 @@ class BookkeepingIndex(TestCase, Browser):
         journal.save()
         AccountWorthFactory()
         self.open_at(INDEX_TABS["overview"].url, 1500)
-        # a header's icon (its link takes the focus), a body cell's name, a header's
+        # a header's icon (its button takes the focus), a body cell's name, a header's
         # "?" after its label and sum
         tips = {
-            "refresh": ("#accounts th .tip", "#accounts th .tip a"),
+            "refresh": ("#accounts th .tip", "#accounts th .tip button"),
             "check": ("#accounts td .tip", "#accounts td .tip"),
             "unnecessary": (NO_INCOMES_TIP, NO_INCOMES_TIP),
         }
@@ -942,6 +946,56 @@ class BookkeepingIndex(TestCase, Browser):
         assert looks == dict.fromkeys(
             tips, [True, True, INK, PAPER, BODY_FACE, "none", "none", "none"]
         )
+
+    def test_space_on_the_refresh_icon_posts_once_and_gives_the_focus_back(self):
+        AccountWorthFactory()
+        self.open_at(INDEX_TABS["overview"].url, 1500)
+        # each request htmx sends, and the tab's content marked: a reload drops it
+        self.browser.execute_script(
+            "const cell = document.querySelector('#accounts th .tip').closest('th');"
+            " cell.tabIndex = -1; cell.focus();"
+            " window.sent = [];"
+            + CATCH_ERRORS
+            + " document.addEventListener('htmx:before:request', e => {"
+            "  const r = e.detail.ctx.request;"
+            "  sent.push([r.method, new URL(r.action, location).pathname,"
+            "   !!new Headers(r.headers).get('X-CSRFToken')]); });"
+            " document.querySelector('#accounts').dataset.stale = '';"
+        )
+        ActionChains(self.browser).send_keys(Keys.TAB).send_keys(Keys.SPACE).perform()
+        self.wait_until_idle()
+
+        assert self.browser.execute_script(
+            "return [sent, !!document.querySelector('#accounts[data-stale]'),"
+            " document.activeElement.id, errors];"
+        ) == [
+            [
+                ["POST", reverse("bookkeeping:regenerate_balances"), True],
+                ["GET", INDEX_TABS["overview"].url, False],
+            ],
+            False,
+            "refresh-accounts",
+            [],
+        ]
+
+    def test_the_refresh_icon_is_muted_and_a_mouse_focus_leaves_its_tip_shut(self):
+        AccountWorthFactory()
+        self.open_at(INDEX_TABS["overview"].url, 1500)
+
+        # a mouse press leaves the focus on the icon after the reload; only a
+        # keyboard's focus keeps its tip open off the hover
+        looks = self.browser.execute_script(
+            "const icon = document.getElementById('refresh-accounts');"
+            " const s = getComputedStyle(icon);"
+            " const tip = () => getComputedStyle(icon.closest('.tip'), '::before')"
+            "  .display;"
+            " icon.focus({focusVisible: false}); const mouse = tip(); icon.blur();"
+            " icon.focus({focusVisible: true}); const keys = tip();"
+            " return [s.color, s.borderTopStyle, s.backgroundColor, s.padding,"
+            "  mouse, keys];"
+        )
+
+        assert looks == [INK_MUTED, "none", CLEAR, "0px", "none", "block"]
 
     def test_the_funds_tables_start_their_figures_at_one_x(self):
         # the longest fund name, beside a short pension name
@@ -1095,9 +1149,9 @@ class BookkeepingIndex(TestCase, Browser):
         drawn_on_load = self.browser.execute_script(
             f"const drawn = document.querySelectorAll('{CHART_ROOTS}');"
             " drawn.forEach(root => root.dataset.drawnOnLoad = '');"
-            " window.draws = 0; window.errors = [];"
-            " addEventListener('error', e => errors.push(e.message));"
-            " Highcharts.addEvent(Highcharts.Chart, 'load', () => window.draws++);"
+            " window.draws = 0;"
+            + CATCH_ERRORS
+            + " Highcharts.addEvent(Highcharts.Chart, 'load', () => window.draws++);"
             " htmx.trigger(document.body, 'reload');"
             " return drawn.length;"
         )
@@ -1178,9 +1232,8 @@ class BookkeepingMonthDetailedAndSummary(TestCase, Browser):
         # the summary draws a .sticky-table and loads no sticky-table-headers.js
         self.open(reverse("bookkeeping:summary_savings_and_incomes"))
         self.browser.execute_script(
-            "window.errors = [];"
-            " addEventListener('error', e => errors.push(e.message));"
-            f" htmx.ajax('GET', '{reverse('incomes:new')}', '#mainModal');"
+            CATCH_ERRORS
+            + f" htmx.ajax('GET', '{reverse('incomes:new')}', '#mainModal');"
         )
         self.wait_until_idle()
 
