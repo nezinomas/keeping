@@ -7,6 +7,9 @@ $font-size: 0.7rem;
 
 // --- 2. Layout & Transitions ---
 $gap: 0.75rem;
+// a paper table cell's side padding, where a row's name starts; halved for a phone's name
+$cell-inset: $gap;
+$name-inset-phone: 0.5 * $gap;
 $modal-border-radius: 0.25rem;
 $modal-header-bg: rgba(0, 0, 0, 0.02);
 $modal-border-color: rgba(0, 0, 0, 0.175);

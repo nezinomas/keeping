@@ -42,7 +42,7 @@ $group-rule-colours: (band: $hair, body: $hair-soft);
 
         // zero specificity, so the markup's .text-left / .text-center still win
         :where(th, td) {
-            padding: 0.35rem $gap;
+            padding: 0.35rem $cell-inset;
             text-align: right;
             vertical-align: middle;
         }
@@ -86,8 +86,8 @@ $group-rule-colours: (band: $hair, body: $hair-soft);
             }
 
             .main__name {
-                padding-left: 0.5 * $gap;
-                padding-right: 0.5 * $gap;
+                padding-left: $name-inset-phone;
+                padding-right: $name-inset-phone;
             }
 
             td.main__name {

@@ -16,9 +16,9 @@ ANY_URL = r'([^"]*)'
 
 
 def row_start(url=r'[^"]*'):
-    """The pattern of a list row's start tag whose double-click opens `url` in the
-    modal; pass `ANY_URL` to capture the url."""
-    return rf'<tr hx-get="{url}" hx-trigger="dblclick" hx-target="#mainModal"'
+    """`edit_row_opening` as a pattern, `url` a regex (its fixed text holds none):
+    pass `ANY_URL` to capture the url."""
+    return edit_row_opening(url)
 
 
 ROW = re.compile(row_start(ANY_URL) + r"[^>]*>(.*?)</tr>", re.DOTALL)
@@ -81,35 +81,67 @@ FOLD_PART = re.compile(
     r'<table class="main striped hover sticky-table"(?P<attrs>[^>]*)>'
     r"(?P<body>.*?)</table>"
     r'|<div class="alert">\s*(?P<notice>[^<]*?)\s*</div>'
-    r'|(?P<scope><div x-data="\{ shown: false \}">\s*)?'
-    r'<nav class="filter-line"(?P<nav_attrs>[^>]*)>(?P<nav>.*?)</nav>',
+    r'|<div class="closed-fold" x-data="\{ shown: false \}">(?P<head>.*?)(?=<table)'
+    r'|(?P<filter_line><nav class="filter-line"[^>]*>.*?</nav>)'
+    r'|(?P<switch><button\b[^>]*role="switch".*?</button>)',
     re.DOTALL,
 )
 FOLDED = ' x-show="shown" x-cloak'
-FOLD_BUTTON = "the fold's button"
+FOLD_SWITCH = "the fold's switch"
 OTHER_FILTER_LINE = "another filter line"
+OTHER_SWITCH = "another switch"
+# a Switch's <button> attributes and its label
+SWITCH = re.compile(
+    r"<button\b([^>]*)>\s*"
+    r'<span class="switch__track" aria-hidden="true">'
+    r'<span class="switch__knob"></span></span>\s*'
+    r'<span class="switch__label">([^<]*)</span>\s*</button>'
+)
+ATTRIBUTE = re.compile(r'([:@\w-]+)="([^"]*)"')
+
+
+def switch_attributes(model):
+    """A Switch's <button> attributes when it presses the Alpine variable `model`."""
+    return {
+        "type": "button",
+        "role": "switch",
+        "class": "switch",
+        ":aria-checked": f"{model} ? 'true' : 'false'",
+        "@click": f"{model} = ! {model}",
+    }
+
+
+def switches(content):
+    """(attributes, label) of each Switch in `content`."""
+    return [
+        (dict(ATTRIBUTE.findall(attrs)), label)
+        for attrs, label in SWITCH.findall(content)
+    ]
+
+
+def _is_fold_switch(head, label):
+    """Whether the fold's head is its switch alone, labelled `label`."""
+    if not SWITCH.fullmatch(head.strip()):
+        return False
+    return switches(head) == [(switch_attributes("shown"), label)]
 
 
 def closed_fold(content, label):
-    """The tab's tables, notice and filter lines, in page order; `label` is the
-    button that unfolds the closed owners."""
-    button = re.compile(
-        r'\s*<button type="button" class="filter-line__item" @click="shown = ! shown"'
-        r""" :aria-current="shown \? 'true' : null">"""
-        + re.escape(label)
-        + r"</button>\s*"
-    )
+    """The tab's tables, notice, the fold's head, and any filter line or switch
+    outside it, in page order; `label` is the switch that unfolds the closed owners,
+    and a head holding anything else reads as its markup."""
     parts = []
     for part in FOLD_PART.finditer(content):
         if part["notice"] is not None:
             parts.append(part["notice"])
-        elif part["nav"] is not None:
-            scoped = part["scope"] and not part["nav_attrs"]
+        elif part["head"] is not None:
             parts.append(
-                FOLD_BUTTON
-                if scoped and button.fullmatch(part["nav"])
-                else OTHER_FILTER_LINE
+                FOLD_SWITCH if _is_fold_switch(part["head"], label) else part["head"]
             )
+        elif part["filter_line"] is not None:
+            parts.append(OTHER_FILTER_LINE)
+        elif part["switch"] is not None:
+            parts.append(OTHER_SWITCH)
         else:
             parts.append(
                 (

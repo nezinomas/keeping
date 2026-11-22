@@ -11,7 +11,7 @@ from django.urls import reverse
 from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping.tests.helper import quiet_build
 from ...core.tests.utils import (
-    FOLD_BUTTON,
+    FOLD_SWITCH,
     FOLDED,
     PAPER_PARTS,
     clean_content,
@@ -221,14 +221,27 @@ def _accounts_tab(content):
     return closed_fold(content, "Uždarytos sąskaitos")
 
 
+# (title, order, closed) of each of the user's accounts
+ACCOUNTS = [
+    ("Zeta", 1, None),
+    ("Beta", 2, 2024),
+    ("Alpha", 2, None),
+    ("Edge", 3, 2022),
+    ("Old", 1, 2021),
+    ("Young", 1, 2019),
+    ("Ancient", 3, 2021),
+]
+
+
 @pytest.mark.parametrize(
-    "year, parts",
+    "year, accounts, parts",
     [
         pytest.param(
             2022,
+            ACCOUNTS,
             [
                 ("", HEADER, ["Zeta", "Alpha", "Beta", "Edge"]),
-                FOLD_BUTTON,
+                FOLD_SWITCH,
                 (
                     FOLDED,
                     HEADER,
@@ -243,6 +256,7 @@ def _accounts_tab(content):
         ),
         pytest.param(
             2019,
+            ACCOUNTS,
             [
                 (
                     "",
@@ -252,41 +266,34 @@ def _accounts_tab(content):
             ],
             id="none_closed_before",
         ),
+        pytest.param(
+            1999,
+            [("Old", 1, 1998)],
+            [
+                "1999 metais įrašų nėra.",
+                FOLD_SWITCH,
+                (
+                    FOLDED,
+                    HEADER,
+                    ['<s>Old</s> <span class="main__closed">uždaryta 1998</span>'],
+                ),
+            ],
+            id="none_open",
+        ),
     ],
 )
-def test_the_accounts_tab_lists_the_open_then_folds_the_closed(
-    client_logged, main_user, second_user, year, parts
+def test_the_accounts_tab_draws_the_open_or_the_notice_then_folds_the_closed(
+    client_logged, main_user, second_user, year, accounts, parts
 ):
     main_user.year = year
     main_user.save()
-    AccountFactory(title="Zeta", order=1)
-    AccountFactory(title="Beta", order=2, closed=2024)
-    AccountFactory(title="Alpha", order=2)
-    AccountFactory(title="Edge", order=3, closed=2022)
-    AccountFactory(title="Old", order=1, closed=2021)
-    AccountFactory(title="Young", order=1, closed=2019)
-    AccountFactory(title="Ancient", order=3, closed=2021)
+    for title, order, closed in accounts:
+        AccountFactory(title=title, order=order, closed=closed)
     AccountFactory(title="Foreign", order=1, journal=second_user.journal)
 
     content = client_logged.get(TAB_ACCOUNTS).content.decode()
 
     assert _accounts_tab(content) == parts
-
-
-def test_no_open_account_draws_the_notice_above_the_closed_ones(client_logged):
-    AccountFactory(title="Old", closed=1998)
-
-    content = tab_fragment(client_logged, TAB_ACCOUNTS)
-
-    assert _accounts_tab(content) == [
-        "1999 metais įrašų nėra.",
-        FOLD_BUTTON,
-        (
-            FOLDED,
-            HEADER,
-            ['<s>Old</s> <span class="main__closed">uždaryta 1998</span>'],
-        ),
-    ]
 
 
 # each row's tab, what builds it, and the forms its buttons open, in column order

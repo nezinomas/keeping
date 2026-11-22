@@ -1,3 +1,4 @@
+@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 @use "tokens";
 
@@ -43,5 +44,15 @@
 
     .switch__knob {
         left: 0.8rem;
+    }
+}
+
+// over the closed table, its track starts where the table's names do (Q200)
+.closed-fold > .switch {
+    margin-bottom: $gap;
+    margin-left: $cell-inset;
+
+    @include phone {
+        margin-left: $name-inset-phone;
     }
 }
