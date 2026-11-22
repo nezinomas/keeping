@@ -6,7 +6,8 @@ from django.urls import reverse
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import Select, WebDriverWait
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
@@ -55,14 +56,20 @@ class Expenses(Browser):
         self.wait_until_idle()
 
     def _select(self, expense_type, expense_name, account):
-        for field, option in [
-            ("expense_type", expense_type),
-            ("expense_name", expense_name),
-            ("account", account),
-        ]:
-            Select(self.browser.find_element(By.ID, f"id_{field}")).select_by_value(
-                f"{option.pk}"
+        self._select_by_pk("expense_type", expense_type)
+        # the type's names arrive over htmx
+        WebDriverWait(self.browser, 10).until(
+            ec.presence_of_element_located(
+                (By.CSS_SELECTOR, f'#id_expense_name option[value="{expense_name.pk}"]')
             )
+        )
+        self._select_by_pk("expense_name", expense_name)
+        self._select_by_pk("account", account)
+
+    def _select_by_pk(self, field, instance):
+        Select(self.browser.find_element(By.ID, f"id_{field}")).select_by_value(
+            f"{instance.pk}"
+        )
 
     def _fill_selects(self):
         account = AccountFactory()
