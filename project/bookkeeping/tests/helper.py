@@ -26,12 +26,12 @@ WORTH_VIEWS = (views.AccountsWorthNew, views.SavingsWorthNew, views.PensionsWort
 
 
 def worth_form(form_class, user, *, today, now, **kwargs):
-    funds = {view.form_class: view.category_service_class for view in WORTH_VIEWS}
+    owners = {view.form_class: view.owner_service_class for view in WORTH_VIEWS}
     return form_class(
         user=user,
         today=today,
         now=now,
-        funds=funds[form_class](user).items(),
+        owners=owners[form_class](user).items(),
         **kwargs,
     )
 

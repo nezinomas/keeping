@@ -1,7 +1,7 @@
 from django.db import models
 
-from ..core.fund_balance import FundBalance
 from ..core.models import TitleAbstract
+from ..core.profit_balance import ProfitBalance
 from ..journals.models import Journal
 
 
@@ -42,9 +42,9 @@ class Pension(models.Model):
         return self.pension_type.journal
 
 
-class PensionBalance(FundBalance):
-    fund_field = "pension_type"
-    fund_closed_lookup = "pension_type__closed"
+class PensionBalance(ProfitBalance):
+    owner_field = "pension_type"
+    owner_closed_lookup = "pension_type__closed"
 
     pension_type = models.ForeignKey(
         PensionType, on_delete=models.CASCADE, related_name="pensions_balance"
@@ -57,5 +57,5 @@ class PensionBalance(FundBalance):
         return self.pension_type.title
 
     @property
-    def fund(self) -> PensionType:
+    def owner(self) -> PensionType:
         return self.pension_type

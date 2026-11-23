@@ -9,7 +9,7 @@ from ...core.services.signals_service import journal_user
 from ...users.models import User
 
 
-class BaseTypeFormSet(BaseModelFormSet):
+class BaseOwnerFormSet(BaseModelFormSet):
     # Only writes new rows: a posted id, any journal's or none, is never read.
     def initial_form_count(self):
         return 0
@@ -22,7 +22,7 @@ class BaseTypeFormSet(BaseModelFormSet):
         if any(self.errors):
             return
 
-        relation_name = self.model.fund_field
+        relation_name = self.model.owner_field
         seen_items = {}
         duplicate_msg = self.form.duplicate_message
 
@@ -49,7 +49,7 @@ class BaseTypeFormSet(BaseModelFormSet):
 class FormsetMixin:
     template_name = "core/generic_formset.html"
     service_class: type
-    category_service_class: type
+    owner_service_class: type
     balance_sync: Callable[[User], None]
 
     @cached_property
@@ -61,8 +61,8 @@ class FormsetMixin:
         return self.service_instance.objects.model
 
     @cached_property
-    def funds(self):
-        return list(self.category_service_class(self.request.user).items())
+    def owners(self):
+        return list(self.owner_service_class(self.request.user).items())
 
     @cached_property
     def now(self):
@@ -70,20 +70,20 @@ class FormsetMixin:
 
     def get_form_kwargs(self, **kwargs):
         return super().get_form_kwargs(**kwargs) | {
-            "funds": self.funds,
+            "owners": self.owners,
             "now": self.now,
         }
 
     def formset_initial(self):
-        fund_field = self.model_class.fund_field
+        owner_field = self.model_class.owner_field
 
-        return [{fund_field: item} for item in self.funds]
+        return [{owner_field: item} for item in self.owners]
 
     def formset_class(self, extra):
         return modelformset_factory(
             model=self.model_class,
             form=self.get_formset_class(),
-            formset=BaseTypeFormSet,
+            formset=BaseOwnerFormSet,
             extra=extra,
         )
 

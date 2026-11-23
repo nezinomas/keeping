@@ -2,8 +2,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.fund_balance import FundBalance
 from ..core.models import TitleAbstract
+from ..core.profit_balance import ProfitBalance
 from ..core.validators import TITLE_VALIDATORS
 from ..journals.models import Journal
 
@@ -73,9 +73,9 @@ class Saving(models.Model):
         return self.saving_type.journal
 
 
-class SavingBalance(FundBalance):
-    fund_field = "saving_type"
-    fund_closed_lookup = "saving_type__closed"
+class SavingBalance(ProfitBalance):
+    owner_field = "saving_type"
+    owner_closed_lookup = "saving_type__closed"
 
     saving_type = models.ForeignKey(
         SavingType, on_delete=models.CASCADE, related_name="savings_balance"
@@ -88,5 +88,5 @@ class SavingBalance(FundBalance):
         return self.saving_type.title
 
     @property
-    def fund(self) -> SavingType:
+    def owner(self) -> SavingType:
         return self.saving_type

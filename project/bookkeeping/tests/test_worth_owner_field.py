@@ -11,6 +11,6 @@ from ..models import AccountWorth, PensionWorth, SavingWorth
         (PensionWorth, "pension_type"),
     ],
 )
-def test_worth_model_names_its_fund_field(model, name):
-    assert model.fund_field == name
+def test_worth_model_names_its_owner_field(model, name):
+    assert model.owner_field == name
     assert model._meta.get_field(name).many_to_one

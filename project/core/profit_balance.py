@@ -5,12 +5,14 @@ from .lib.db_sync import SAVING_FIELDS
 from .mixins.shows_profit import ShowsProfitMixin
 
 
-class FundBalance(ShowsProfitMixin, models.Model):
-    """A Fund's balance row for a year: the Savings and the Pension funds keep one each.
+class ProfitBalance(ShowsProfitMixin, models.Model):
+    """An Owner's balance row for a year that can show a profit: a Fund's
+    (`SavingBalance`) or a Pension fund's (`PensionBalance`).
 
-    A subclass adds the Fund's foreign key and names it in `fund_field`, `fund` and
-    `fund_closed_lookup`."""
+    A subclass adds the Owner's foreign key, names it in `owner_field`, returns the
+    Owner from `owner` and names its closing year's lookup in `owner_closed_lookup`."""
 
+    owner_field: str
     sync_fields = SAVING_FIELDS
 
     year = models.PositiveIntegerField(

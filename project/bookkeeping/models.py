@@ -6,7 +6,7 @@ from ..savings.models import SavingType
 
 
 class SavingWorth(models.Model):
-    fund_field = "saving_type"
+    owner_field = "saving_type"
 
     date = models.DateTimeField()
     price = models.PositiveIntegerField()
@@ -27,7 +27,7 @@ class SavingWorth(models.Model):
 
 
 class AccountWorth(models.Model):
-    fund_field = "account"
+    owner_field = "account"
 
     date = models.DateTimeField()
     price = models.PositiveIntegerField()
@@ -48,7 +48,7 @@ class AccountWorth(models.Model):
 
 
 class PensionWorth(models.Model):
-    fund_field = "pension_type"
+    owner_field = "pension_type"
 
     date = models.DateTimeField()
     price = models.PositiveIntegerField()

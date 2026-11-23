@@ -199,7 +199,9 @@ _Avoid_: category (that is the frame's `category_id`, not the word), type
 
 **Balance row**:
 One owner's money for one year: `AccountBalance`, `SavingBalance` or
-`PensionBalance`. Derived, never entered: a save or delete of anything that moves
+`PensionBalance`, each naming its owner's key in `owner_field`. The last two share
+core's abstract `ProfitBalance`, a row that can show a profit, which returns its owner
+from `owner`. Derived, never entered: a save or delete of anything that moves
 an owner's money re-syncs the whole journal's rows of that kind. An owner's years run
 from its first row to the journal's last year plus one. A pension type's rows are built
 like a fund's, by `SavingBalanceRows` in `lib/balance_rows.py`.

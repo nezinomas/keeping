@@ -131,7 +131,7 @@ class RegenerateBalances(View):
 
 class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     service_class = AccountWorthModelService
-    category_service_class = AccountModelService
+    owner_service_class = AccountModelService
     form_class = forms.AccountWorthForm
     modal_form_title = _("Worth of accounts")
     url = reverse_lazy("bookkeeping:accounts_worth_new")
@@ -141,7 +141,7 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
 
 class SavingsWorthNew(FormsetMixin, CreateViewMixin):
     service_class = SavingWorthModelService
-    category_service_class = SavingTypeModelService
+    owner_service_class = SavingTypeModelService
     form_class = forms.SavingWorthForm
     modal_form_title = _("Worth of savings")
     url = reverse_lazy("bookkeeping:savings_worth_new")
@@ -151,7 +151,7 @@ class SavingsWorthNew(FormsetMixin, CreateViewMixin):
 
 class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     service_class = PensionWorthModelService
-    category_service_class = PensionTypeModelService
+    owner_service_class = PensionTypeModelService
     form_class = forms.PensionWorthForm
     modal_form_title = _("Worth of pensions")
     url = reverse_lazy("bookkeeping:pensions_worth_new")

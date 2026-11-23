@@ -34,7 +34,7 @@
     </c-slot>
     {% for item in object_list %}
     <tr>
-        <td class="text-left funds-table__name">{{ item.fund }}</td>
+        <td class="text-left funds-table__name">{{ item.owner }}</td>
         <c-figure-cell :value="item.past_amount" group />
         <c-figure-cell :value="item.past_fee" />
         <c-figure-cell :value="item.per_year_incomes" group />

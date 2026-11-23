@@ -45,7 +45,7 @@ class BalanceSynchronizer:
         service = model_service_class(self.user)
 
         self.model = service.objects.model
-        self.fk_field = self.model._meta.get_field(self.model.fund_field).attname
+        self.fk_field = self.model._meta.get_field(self.model.owner_field).attname
         self.fields = self.model.sync_fields
 
         self.df = df

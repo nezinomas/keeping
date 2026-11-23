@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from ...mixins.formset import BaseTypeFormSet, FormsetMixin
+from ...mixins.formset import BaseOwnerFormSet, FormsetMixin
 from ..utils import setup_view
 
 
@@ -29,7 +29,7 @@ class StubFormsetView(FormsetMixin):
 
 
 @pytest.mark.parametrize(
-    "category_service, fund_field, expect",
+    "owner_service, owner_field, expect",
     [
         pytest.param(
             OnePensionService, "pension_type", [{"pension_type": "P1"}], id="one_item"
@@ -49,26 +49,26 @@ class StubFormsetView(FormsetMixin):
         ),
     ],
 )
-def test_formset_initial_keys_each_item_by_the_service_models_fund_field(
-    fake_request, category_service, fund_field, expect
+def test_formset_initial_keys_each_item_by_the_service_models_owner_field(
+    fake_request, owner_service, owner_field, expect
 ):
     service_instance = Mock()
-    service_instance.objects.model = Mock(fund_field=fund_field)
+    service_instance.objects.model = Mock(owner_field=owner_field)
 
     view = setup_view(StubFormsetView(), fake_request)
-    view.category_service_class = category_service
+    view.owner_service_class = owner_service
     view.service_class = Mock(return_value=service_instance)
 
     assert view.formset_initial() == expect
 
 
-def test_clean_without_a_fund_field_raises(mocker):
-    mocker.patch.object(BaseTypeFormSet, "__init__", return_value=None)
+def test_clean_without_an_owner_field_raises(mocker):
+    mocker.patch.object(BaseOwnerFormSet, "__init__", return_value=None)
     mocker.patch.object(
-        BaseTypeFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
+        BaseOwnerFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
     )
-    formset = BaseTypeFormSet()
+    formset = BaseOwnerFormSet()
     formset.model = mocker.Mock(spec=[])
 
-    with pytest.raises(AttributeError, match="fund_field"):
+    with pytest.raises(AttributeError, match="owner_field"):
         formset.clean()
