@@ -34,10 +34,10 @@ _Avoid_: section, panel, page
 
 **Card**:
 One figure at the head of an Index Tab, the skin's `StatCard`, in ink: whole euros.
-Two figures differ: the Saved share is a percent, and a profit under 0,50 EUR either
-way keeps its cents ("0,30", "-0,30"), so it never reads "0". No Card is a new
-figure: each is one the page draws today. Apžvalga: *Pinigai* and *Turtas* (the wealth
-service's, its accounts part the Account balances table's total), *Vidutinės
+Two figures differ: the Saved share is a percent (its note euros with cents), and a
+profit under 0,50 EUR either way keeps its cents ("0,30", "-0,30"), so it never reads
+"0". No Card is a new figure: each is one the page draws today. Apžvalga: *Pinigai*
+and *Turtas* (the wealth service's, its accounts part the Account balances table's total), *Vidutinės
 pajamos* and *Vidutinės išlaidos* (the year's averages, as the Month balance table's
 average row). Fondai: the Saved share
 (the savings service's, one decimal, the banner's figure before it), then
@@ -73,6 +73,9 @@ account to its Worth, not two totals), balance check, reconciliation
 What the year's Savings took of its incomes, in percent: the Savings into every Fund,
 of every Fund kind (*Pensijos*, III pillar, included), over the incomes' total. A
 Pension (II pillar) is not counted. The first Fondai Card, in plain ink at any value.
+Its note is the share's numerator, the year's Savings in euros with cents
+(`1.234,56 €`), drawn in a year with no incomes too, under the empty Card, when it
+has Savings; a year with neither draws the empty Card alone.
 Computed in the savings service, not the template.
 _Avoid_: savings rate, saved %, banner
 

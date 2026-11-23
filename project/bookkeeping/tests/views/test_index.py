@@ -43,7 +43,6 @@ from ..helper import (
     table_titled,
     total_cells,
 )
-from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
@@ -166,8 +165,12 @@ FIGURES = {
     "average_expenses": CARD.format(label="Vidutinės išlaidos", figure="0"),
     # its rows: test_overview_debts_column_stays_and_draws_a_row_per_kind_with_a_debt
     "debts": r'<h2 class="panel__title">Skolos</h2>',
-    # 1,50 of savings over 6,00 of incomes; neither fund has a worth, so no profit
-    "saved_share": CARD.format(label="Pajamų dalis pervedama taupymui", figure="25,0"),
+    # 1,50 of savings over 6,00 of incomes, the 1,50 its note; neither fund has a
+    # worth, so no profit
+    "saved_share": (
+        CARD.format(label="Pajamų dalis pervedama taupymui", figure="25,0")
+        + r'[^\n]*\s*<div class="trend-card__note">1,50 €</div>'
+    ),
     "fund_profit": EMPTY_CARD.format(label="Fondų pelnas"),
     "pension_profit": EMPTY_CARD.format(label="Pensijų pelnas"),
     # nothing before the year, then the year's transfer
@@ -674,9 +677,6 @@ def test_view_index_year_end_and_accounts_cells_equal_or_marked_mismatch(
 
 
 def _signed_year():
-    fund = SavingTypeFactory(title="Up")
-    buy(fund, 100000)
-    worth(fund, 150000)
     # Even holds what it should; the year's balance is -20,00
     even = AccountFactory(title="Even")
     IncomeFactory(account=even, price=1000)
@@ -684,33 +684,17 @@ def _signed_year():
     ExpenseFactory(price=3000)
 
 
-FOOT_END = r"\s*</tr>\s*</tfoot>"
-GAIN_PROFIT = ' data-sign="gain" data-cell=""'
-
-
+# the funds tables' signed totals: test_funds_tables_cells_carry_their_spans_and_states
 @pytest.mark.parametrize(
-    "url, builds, cells, attrs",
+    "tab, builds, cells, attrs",
     [
         # an empty year: every figure a zero
         *(
-            pytest.param(
-                lambda tab=tab: INDEX_TABS[tab].url,
-                [],
-                r"<td[^>]*data-sign",
-                [],
-                id=f"zero-{tab}",
-            )
+            pytest.param(tab, [], r"<td[^>]*data-sign", [], id=f"zero-{tab}")
             for tab in ("overview", "balance")
         ),
         pytest.param(
-            lambda: INDEX_TABS["funds"].url,
-            [_signed_year],
-            rf"<td([^>]*)>[^<]*</td>\s*<td([^>]*)>[^<]*</td>{FOOT_END}",
-            [(f"{GROUP_FIGURE}{GAIN_PROFIT}", f"{FIGURE}{GAIN_PROFIT}")],
-            id="profit-totals",
-        ),
-        pytest.param(
-            lambda: INDEX_TABS["balance"].url,
+            "balance",
             [_signed_year],
             # the total row's, not the month's balance of the same figure
             r"(?s)<td>Viso</td>.*?<td([^>]*)>-20,00</td>",
@@ -719,7 +703,7 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
         ),
         # only the forecast's highlighted balance is signed, not the start or the end
         pytest.param(
-            lambda: INDEX_TABS["overview"].url,
+            "overview",
             [_signed_year],
             r"(?s)Prognozė</h2>.*?<td([^>]*)>[^<]*</td>\s*<td([^>]*)>[^<]*</td>\s*"
             r"<td([^>]*)>",
@@ -729,13 +713,13 @@ GAIN_PROFIT = ' data-sign="gain" data-cell=""'
     ],
 )
 def test_view_a_signed_figure_carries_its_sign_and_a_zero_carries_none(
-    client_logged, main_user, url, builds, cells, attrs
+    client_logged, main_user, tab, builds, cells, attrs
 ):
     with quiet_build(main_user):
         for build in builds:
             build()
 
-    content = tab_fragment(client_logged, url())
+    content = tab_fragment(client_logged, INDEX_TABS[tab].url)
 
     assert re.findall(cells, content) == attrs
 

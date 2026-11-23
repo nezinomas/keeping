@@ -1,6 +1,8 @@
 from django.db.models import Sum
+from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext as _
 
+from ...core.lib.convert_price import int_cents_to_float
 from ...core.lib.money_cells import percent
 from ...core.lib.stat_card import Card, EmptyStatCard, StatCard
 from ...incomes.services.model_services import IncomeModelService
@@ -46,12 +48,22 @@ def table_total_row(user, year: int, types, rows, saving_rows) -> dict:
 
 
 def saved_share(savings_total: int, incomes_total: int) -> Card:
-    """What the year's savings took of its incomes; empty with no incomes."""
+    """What the year's savings took of its incomes, the savings' sum as the note;
+    empty with no incomes, and with no note when there are no savings either."""
     title = _("Percentage of income saved")
-    if not incomes_total:
+    if not incomes_total and not savings_total:
         return EmptyStatCard(title)
 
-    return StatCard(title, value=percent(savings_total / incomes_total * 100), unit="%")
+    note = f"{floatformat(int_cents_to_float(savings_total), '2g')} €"
+    if not incomes_total:
+        return EmptyStatCard(title, note=note)
+
+    return StatCard(
+        title,
+        value=percent(savings_total / incomes_total * 100),
+        unit="%",
+        note=note,
+    )
 
 
 def _year_sum(service, year: int) -> int:
