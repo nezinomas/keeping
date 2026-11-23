@@ -1,15 +1,8 @@
 import re
 
 import pytest
-from django.template import engines
-from django_cotton.compiler_regex import CottonCompiler
 
-
-def _render(source: str, context: dict) -> str:
-    # only the cotton loader rewrites <c-…>, so a string runs its compiler by hand
-    processed = CottonCompiler().process(source)
-    return engines["django"].from_string(processed).render(context)
-
+from ..utils import render_cotton
 
 # a tab page's context holds its own `tab`, which must not reach a pill without one
 PAGE = {"url": "/url/", "tab": "data"}
@@ -32,7 +25,7 @@ PILL = 'class="quick-add__pill" hx-get="/url/" hx-target="#mainModal">Naujas</bu
     ],
 )
 def test_the_pill_loads_its_url_into_the_modal(source, expected):
-    assert expected in _render(source, PAGE)
+    assert expected in render_cotton(source, **PAGE)
 
 
 @pytest.mark.parametrize(
@@ -52,21 +45,21 @@ def test_the_pill_loads_its_url_into_the_modal(source, expected):
     ],
 )
 def test_the_link_is_an_anchor_with_the_pill_look(source, expected):
-    content = _render(source, PAGE)
+    content = render_cotton(source, **PAGE)
 
     assert expected in content
     assert "hx-get" not in content
 
 
 def test_the_attrs_land_on_the_bar_root():
-    content = _render('<c-quick-add id="x">slot</c-quick-add>', {})
+    content = render_cotton('<c-quick-add id="x">slot</c-quick-add>')
 
     assert '<div class="quick-add" id="x">' in content
 
 
 def test_the_slot_follows_the_count_inside_the_pills():
-    content = _render(
-        "<c-quick-add><i>slot</i></c-quick-add>", {"yday": 275, "ydays": 365}
+    content = render_cotton(
+        "<c-quick-add><i>slot</i></c-quick-add>", yday=275, ydays=365
     )
 
     assert content.index("275") < content.index('<div class="quick-add__pills">')
@@ -85,7 +78,7 @@ def test_the_slot_follows_the_count_inside_the_pills():
     ],
 )
 def test_the_sheet_slot_sits_above_the_bar(source, expected):
-    content = _render(source, {})
+    content = render_cotton(source)
     above_the_bar = re.search(
         r'<div class="quick-add"[^>]*>(.*?)<div class="quick-add__bar">', content, re.S
     )
@@ -94,6 +87,6 @@ def test_the_sheet_slot_sits_above_the_bar(source, expected):
 
 
 def test_the_count_reads_the_day_of_the_year():
-    content = _render("<c-day-of-year />", {"yday": 275, "ydays": 365})
+    content = render_cotton("<c-day-of-year />", yday=275, ydays=365)
 
     assert '<div class="day-of-year"><span>275 / <b>365</b></span></div>' in content

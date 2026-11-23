@@ -1,6 +1,7 @@
 @use "sass:list";
 @use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
+@use "tokens";
 
 .paper-skin {
     .heat-card {
@@ -81,8 +82,7 @@
                 }
 
                 &:focus-visible {
-                    outline: 2px solid $ink;
-                    outline-offset: 2px;
+                    @include tokens.focus-ring;
                 }
             }
         }

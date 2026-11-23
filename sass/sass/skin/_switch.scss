@@ -14,8 +14,7 @@
     padding: 0;
 
     &:focus-visible {
-        outline: 2px solid $ink;
-        outline-offset: 2px;
+        @include tokens.focus-ring;
     }
 }
 

@@ -5,13 +5,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from ...core.tests.test_integration_browser import Browser
+from ...core.tests.test_integration_browser import INK_MUTED, Browser
 from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 
 OVERVIEW_CHART = "#chart-overview-container"
-INK_MUTED = "rgb(90, 106, 117)"  # --skin-ink-muted
 HARM = "rgb(125, 39, 51)"  # --skin-harm
 
 

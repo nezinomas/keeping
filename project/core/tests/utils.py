@@ -1,7 +1,9 @@
 import re
 
 from django.db import connection
+from django.template import engines
 from django.test.utils import CaptureQueriesContext
+from django_cotton.compiler_regex import CottonCompiler
 
 PICKER_SCRIPT = r'<script[^>]*src="[^"]*/js/([a-z]+-picker\.js)"'
 STICKY_HEADERS = r'<script nonce="[^"]*" src="/static/js/sticky-table-headers.js">'
@@ -195,6 +197,12 @@ def stat_card_values(content):
 
 def stat_card_tooltips(content):
     return TOOLTIP.findall(content)
+
+
+def render_cotton(source, **context):
+    # only the cotton loader rewrites <c-...>, so a string runs its compiler by hand
+    processed = CottonCompiler().process(source)
+    return engines["django"].from_string(processed).render(context)
 
 
 def count_queries(run, starting_with="", containing=""):

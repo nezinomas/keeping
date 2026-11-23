@@ -12,6 +12,12 @@
     border-radius: 0;
 }
 
+// A control's keyboard focus: an ink ring clear of its edge.
+@mixin focus-ring {
+    outline: 2px solid $ink;
+    outline-offset: 2px;
+}
+
 // A Panel's or a table's title.
 @mixin title {
     font-family: $display;

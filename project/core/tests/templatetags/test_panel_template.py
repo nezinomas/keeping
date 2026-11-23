@@ -1,13 +1,6 @@
 import pytest
-from django.template import engines
-from django_cotton.compiler_regex import CottonCompiler
 
-
-def _render(source: str, **context) -> str:
-    # <c-…> tags are only rewritten by the cotton loader when a template is
-    # loaded by name; run the same compiler by hand to render one from a string.
-    processed = CottonCompiler().process(source)
-    return engines["django"].from_string(processed).render(context)
+from ..utils import render_cotton
 
 
 @pytest.mark.parametrize(
@@ -48,22 +41,24 @@ def _render(source: str, **context) -> str:
             '    <p class="panel__subtitle">Antraštė</p>',
             id="table-keeps-the-rest",
         ),
-        # a title that is a control: the slot carries its text, the Panel its state
+        # a Switch after the title: the slot carries it, the Panel its state
         pytest.param(
-            '<c-panel x-data="{ open:false }"><c-slot name="title_control">'
-            '<a role="button">Prognozė</a></c-slot>slot</c-panel>',
+            '<c-panel x-data="{ open:false }" title="Balansas">'
+            '<c-slot name="title_control"><span class="panel__control">'
+            '<c-switch model="open">Rodyti</c-switch></span></c-slot>slot</c-panel>',
             '<section class="panel" x-data="{ open:false }">\n'
-            '    <h2 class="panel__title"><a role="button">Prognozė</a></h2>',
+            '    <h2 class="panel__title">Balansas<span class="panel__control">\n'
+            '<button type="button" role="switch"',
             id="title-control",
         ),
     ],
 )
 def test_a_panel_draws_what_it_is_given(source, markup):
-    assert markup in _render(source)
+    assert markup in render_cotton(source)
 
 
 def test_the_slot_renders_after_the_title():
-    content = _render('<c-panel title="Suvartota"><p>Body</p></c-panel>')
+    content = render_cotton('<c-panel title="Suvartota"><p>Body</p></c-panel>')
 
     assert content.index("panel__title") < content.index("<p>Body</p>")
 
@@ -80,7 +75,7 @@ def test_the_slot_renders_after_the_title():
     ],
 )
 def test_a_panel_draws_nothing_it_is_not_given(markup):
-    content = _render(
+    content = render_cotton(
         "<c-panel>slot</c-panel>",
         title="Puslapio",
         subtitle="Puslapio",

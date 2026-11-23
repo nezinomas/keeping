@@ -8,9 +8,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from ...users.tests.factories import UserFactory
 
+INK_MUTED = "rgb(90, 106, 117)"  # --skin-ink-muted
 # a tip's bubble is a ::before, with no rect: a point in a drawn one answers with
 # its .tip, every fourth pixel to find it and each pixel of its rim for its edges
-INK_MUTED = "rgb(90, 106, 117)"
 FIND_TIP = "const tip = document.querySelector(arguments[0]);"
 TIP_BOX = (
     FIND_TIP

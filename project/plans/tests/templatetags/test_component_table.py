@@ -1,9 +1,8 @@
 import re
 
 import pytest
-from django.template import engines
-from django_cotton.compiler_regex import CottonCompiler
 
+from ....core.tests.utils import render_cotton
 from ...services.plan_rows import PlanRow
 
 ALL_WITHIN = ["within"] * 12
@@ -16,11 +15,11 @@ def _remove_line_end(rendered):
 @pytest.fixture(name="table")
 def fixture_table():
     def _func(rows, year=2026):
-        processed = CottonCompiler().process(
-            '<c-plans-table :rows="rows" :year="year" />'
+        return _remove_line_end(
+            render_cotton(
+                '<c-plans-table :rows="rows" :year="year" />', rows=rows, year=year
+            )
         )
-        template = engines["django"].from_string(processed)
-        return _remove_line_end(template.render({"rows": rows, "year": year}))
 
     return _func
 

@@ -16,7 +16,7 @@
     border: 0;
 }
 
-.panel__title {
+.paper-skin .panel__title {
     @include tokens.title;
 
     margin: 0 0 10px;
@@ -48,14 +48,14 @@
     justify-content: space-between;
 }
 
-.panel__subtitle {
+.paper-skin .panel__subtitle {
     font-family: $body;
     font-size: 0.8125rem;
     color: $ink-muted;
     margin: -0.5rem 0 0.8rem;
 }
 
-.panel__hint {
+.paper-skin .panel__hint {
     &::before {
         white-space: normal;
         width: 18rem;

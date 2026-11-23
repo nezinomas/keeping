@@ -56,18 +56,18 @@
     }
 
     .month-table__quarter + .month-table__quarter {
-        @include table.group-rule(band);
+        @include table.group-rule($hair);
     }
 
     // months 4, 7 and 10, after the title column
     $quarter-starts: ":is(:nth-child(5), :nth-child(8), :nth-child(11))";
 
     thead tr:last-child > #{$quarter-starts} {
-        @include table.group-rule(band);
+        @include table.group-rule($hair);
     }
 
     :is(tbody, tfoot) td#{$quarter-starts} {
-        @include table.group-rule(body);
+        @include table.group-rule($hair-soft);
     }
 
     // the first column after December, from the band down
