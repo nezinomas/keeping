@@ -15,11 +15,6 @@ ARR = pl.DataFrame(
 )
 
 
-@pytest.fixture(name="df")
-def fixture_df():
-    return ARR
-
-
 @pytest.mark.parametrize(
     "before",
     [
@@ -30,7 +25,6 @@ def fixture_df():
 @pytest.mark.parametrize(
     "df, expected",
     [
-        (None, []),
         (pl.DataFrame(), []),
         (pl.DataFrame({"t": [11], "date": ["x"]}), [{"t": 11, "date": "x"}]),
     ],
@@ -71,49 +65,34 @@ def test_average_over_divides_each_columns_sum_to_a_month_by_those_months(
 
 
 @pytest.mark.parametrize(
-    "data, expected",
+    "read, expect",
     [
-        (ARR, {"x": 33, "y": 63}),
-        (pl.DataFrame(), {}),
-        (None, {}),
-    ],
-)
-def test_total_row(data, expected):
-    actual = BalanceBase(data).total_row
-
-    assert actual == expected
-
-
-@pytest.mark.parametrize(
-    "data, expect",
-    [
-        (
-            ARR,
+        pytest.param(lambda b: b.total_row, {"x": 33, "y": 63}, id="total-row"),
+        pytest.param(
+            lambda b: b.total_column,
             [
                 {"date": date(1999, 1, 1), "total": 32},
                 {"date": date(1999, 1, 2), "total": 32},
                 {"date": date(1999, 1, 3), "total": 21},
                 {"date": date(1999, 1, 4), "total": 11},
             ],
+            id="total-column",
         ),
-        (None, []),
-        (pl.DataFrame(), []),
+        pytest.param(lambda b: b.total, 96, id="total"),
+        pytest.param(lambda b: b.types, ["x", "y"], id="types"),
     ],
 )
-def test_total_column(data, expect):
-    actual = BalanceBase(data).total_column
-
-    assert actual == expect
+def test_each_figure_of_a_frame(read, expect):
+    assert read(BalanceBase(ARR)) == expect
 
 
-@pytest.mark.parametrize("data, expect", [(ARR, 96), (None, 0), (pl.DataFrame(), 0)])
-def test_total(data, expect):
-    actual = BalanceBase(data).total
-
-    assert actual == expect
-
-
-def test_types(df):
-    actual = BalanceBase(df).types
-
-    assert actual == ["x", "y"]
+@pytest.mark.parametrize(
+    "read, expect",
+    [
+        pytest.param(lambda b: b.total_row, {}, id="total-row"),
+        pytest.param(lambda b: b.total_column, [], id="total-column"),
+        pytest.param(lambda b: b.total, 0, id="total"),
+    ],
+)
+def test_an_empty_frame_has_no_total_row_column_or_sum(read, expect):
+    assert read(BalanceBase(pl.DataFrame())) == expect

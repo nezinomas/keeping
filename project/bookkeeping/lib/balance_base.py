@@ -60,7 +60,7 @@ class BalanceBase:
         return {} if self.is_empty(means) else means.to_dicts()[0]
 
     def is_empty(self, df: pl.DataFrame) -> bool:
-        return df.is_empty() if isinstance(df, pl.DataFrame) else True
+        return df.is_empty()
 
     def sum_cols(self, df: pl.DataFrame, sum_col_name: str = "sum") -> pl.DataFrame:
         if df.shape[1] <= 1:

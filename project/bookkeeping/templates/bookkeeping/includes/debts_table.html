@@ -11,7 +11,7 @@
     </c-slot>
     {% for debt in debts %}
     <tr>
-        <td class="text-left">{{ debt.title }}</td>
+        <td>{{ debt.title }}</td>
         <c-figure-cell :value="debt.debt" />
         <c-figure-cell :value="debt.debt_return" />
         <c-figure-cell :value="debt.remaining" />

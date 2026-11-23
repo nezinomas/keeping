@@ -1,4 +1,5 @@
 from datetime import date
+from functools import cached_property
 
 import polars as pl
 
@@ -11,7 +12,7 @@ class YearBalance(BalanceBase):
     def __init__(self, data: MakeDataFrame, amount_start: int = 0, *, today: date):
         self.year = data.date_range.year
         self._amount_start = amount_start
-        self._today = today
+        self._boundary = YearBoundary(self.year, today)
         self._balance = self._calc_balance_and_money_flow(data.data)
 
         super().__init__(self._balance)
@@ -35,12 +36,12 @@ class YearBalance(BalanceBase):
 
     @property
     def is_coming(self) -> bool:
-        return YearBoundary(self.year, self._today).is_coming
+        return self._boundary.is_coming
 
-    @property
+    @cached_property
     def average(self) -> dict[str, float]:
         """Over the months the year has reached: all twelve once it is over."""
-        return self.average_over(YearBoundary(self.year, self._today).months_elapsed)
+        return self.average_over(self._boundary.months_elapsed)
 
     @property
     def avg_incomes(self) -> float:
@@ -49,22 +50,6 @@ class YearBalance(BalanceBase):
     @property
     def avg_expenses(self) -> float:
         return self.average.get("expenses", 0)
-
-    @property
-    def borrow_data(self) -> list[float]:
-        return self._balance["borrow"].to_list()
-
-    @property
-    def borrow_return_data(self) -> list[float]:
-        return self._balance["borrow_return"].to_list()
-
-    @property
-    def lend_data(self) -> list[float]:
-        return self._balance["lend"].to_list()
-
-    @property
-    def lend_return_data(self) -> list[float]:
-        return self._balance["lend_return"].to_list()
 
     @property
     def money_flow(self) -> list[float]:
