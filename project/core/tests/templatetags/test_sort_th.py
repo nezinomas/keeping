@@ -55,7 +55,7 @@ def test_a_sort_header_draws_nothing_it_is_not_given(source):
         "url": "/puslapio/",
         "target": "#puslapio",
         "align": "left",
-        "column": "title",
+        "column": "total",
     }
 
     assert render_cotton(source, **page) == render_cotton(source)

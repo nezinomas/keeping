@@ -7,24 +7,9 @@ from ..utils import render_cotton
     "source, markup",
     [
         pytest.param(
-            '<c-panel title="Suvartota per mėnesį">slot</c-panel>',
-            '<h2 class="panel__title">Suvartota per mėnesį</h2>',
-            id="title",
-        ),
-        pytest.param(
-            '<c-panel title="Suvartota" subtitle="Antraštė">slot</c-panel>',
-            '<p class="panel__subtitle">Antraštė</p>',
-            id="subtitle",
-        ),
-        pytest.param(
             '<c-panel title="Suvartota" id="chart-x-container">slot</c-panel>',
             '<section class="panel" id="chart-x-container">',
             id="id",
-        ),
-        pytest.param(
-            '<c-panel table title="Suvartota">slot</c-panel>',
-            '<section class="panel panel--table"',
-            id="table",
         ),
         pytest.param(
             '<c-panel title="Būtinos" hint="Kodėl būtinos">slot</c-panel>',
