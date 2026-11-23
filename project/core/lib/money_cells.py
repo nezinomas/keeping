@@ -7,8 +7,13 @@ from .convert_price import int_cents_to_float
 NOTHING = "–"
 
 
+def euros(cents: float, places: str) -> str:
+    """Cents as euros at `places`; 0 stays a figure, where `amount` draws it "–"."""
+    return floatformat(int_cents_to_float(cents), places)
+
+
 def amount(cents: int, places: str = "0g") -> str:
-    return floatformat(int_cents_to_float(cents), places) if cents else NOTHING
+    return euros(cents, places) if cents else NOTHING
 
 
 def rounds_to_zero(figure: float) -> bool:

@@ -1,9 +1,7 @@
 from django.db.models import Sum
-from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext as _
 
-from ...core.lib.convert_price import int_cents_to_float
-from ...core.lib.money_cells import percent
+from ...core.lib.money_cells import euros, percent
 from ...core.lib.stat_card import Card, EmptyStatCard, StatCard
 from ...incomes.services.model_services import IncomeModelService
 from ...savings.models import SavingType
@@ -54,7 +52,7 @@ def saved_share(savings_total: int, incomes_total: int) -> Card:
     if not incomes_total and not savings_total:
         return EmptyStatCard(title)
 
-    note = f"{floatformat(int_cents_to_float(savings_total), '2g')} €"
+    note = f"{euros(savings_total, '2g')} €"
     if not incomes_total:
         return EmptyStatCard(title, note=note)
 

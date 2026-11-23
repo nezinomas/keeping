@@ -3,13 +3,11 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Protocol
 
-from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext, pgettext
 
 from .chart_months import ChartMonths
-from .convert_price import int_cents_to_float
-from .money_cells import amount, share
+from .money_cells import amount, euros, share
 from .stat_card import Card, EmptyStatCard, StatCard
 from .year_boundary import YearBoundary
 
@@ -104,7 +102,7 @@ class OverviewCards:
 
         return StatCard(
             title=title,
-            value=floatformat(int_cents_to_float(total) / months, "0g"),
+            value=euros(total / months, "0g"),
             note=ngettext("%(count)s month", "%(count)s months", months)
             % {"count": months},
             explanation=(_("The year's total divided by the months it has reached"),),

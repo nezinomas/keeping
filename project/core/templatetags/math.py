@@ -6,7 +6,7 @@ register = template.Library()
 
 
 @register.filter
-def price(value: int) -> float:
+def price(value):
     try:
         return int_cents_to_float(value)
     except TypeError:
@@ -14,7 +14,7 @@ def price(value: int) -> float:
 
 
 @register.filter
-def sub(a: int, b: int) -> int:
+def sub(a, b):
     try:
         return a - b
     except TypeError:
