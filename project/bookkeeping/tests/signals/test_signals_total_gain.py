@@ -174,30 +174,6 @@ def test_open_partly_sold_fund_without_a_worth_reads_what_was_taken_out():
 
 
 # ----------------------------------------------------------------------------
-#                                                      closing a type re-syncs
-# ----------------------------------------------------------------------------
-def test_closing_a_pension_type_drops_its_later_rows(main_user):
-    with quiet_build(main_user):
-        pension = PensionTypeFactory(title="Pension")
-        for year in (YEAR, YEAR + 1):
-            PensionFactory(
-                pension_type=pension, price=10000, fee=0, date=date(year, 1, 1)
-            )
-            PensionWorthFactory(
-                pension_type=pension, price=11000, date=worth_date(year=year)
-            )
-    assert PensionBalance.objects.filter(pension_type=pension, year=YEAR + 1).exists()
-
-    pension.closed = YEAR
-    pension.save()
-
-    years = PensionBalance.objects.filter(pension_type=pension).values_list(
-        "year", flat=True
-    )
-    assert max(years) == YEAR
-
-
-# ----------------------------------------------------------------------------
 #                                        a row with nothing taken out is as before
 # ----------------------------------------------------------------------------
 def _no_worth():

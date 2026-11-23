@@ -45,7 +45,8 @@ class BalanceRows(ABC):
     def _make_table(self, df: pl.LazyFrame) -> pl.LazyFrame: ...
 
     def _build_rows(self, sources: BalanceSources) -> pl.LazyFrame:
-        df = self._join_sources(sources)
+        # read once: the year grid and the sync each collect the joined sources again
+        df = self._join_sources(sources).collect().lazy()
 
         # an empty journal has no years to lay the grid over
         if not (sources.incomes or sources.expenses or sources.have):

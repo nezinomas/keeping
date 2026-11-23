@@ -14,9 +14,11 @@ from ....accounts.tests.factories import (
 from ....core.lib.db_sync import ACCOUNT_FIELDS, SAVING_FIELDS, BalanceSynchronizer
 from ....core.tests.utils import count_queries
 from ....incomes.tests.factories import IncomeFactory
+from ....pensions.models import PensionBalance
 from ....pensions.services.model_services import PensionBalanceModelService
 from ....pensions.tests.factories import (
     PensionBalanceFactory,
+    PensionFactory,
     PensionTypeFactory,
 )
 from ....savings.services.model_services import SavingBalanceModelService
@@ -29,57 +31,6 @@ from ....savings.tests.factories import (
 from ...tests.factories import AccountWorthFactory, SavingWorthFactory
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.mark.parametrize(
-    "existing_years, columns, expect",
-    [
-        (
-            [2023, 2022],
-            {
-                "year": [2023, 2024],
-                "incomes": [2000, 3000],
-                "expenses": [1000, 1500],
-                "have": [1000, 1500],
-                "latest_check": [datetime(2023, 1, 2), datetime(2024, 1, 1)],
-                "balance": [1000, 1500],
-                "past": [1, 0],
-                "delta": [1, 0],
-            },
-            [
-                (2023, 2000, timezone.make_aware(datetime(2023, 1, 2))),
-                (2024, 3000, timezone.make_aware(datetime(2024, 1, 1))),
-            ],
-        ),
-        (
-            [],
-            {
-                "year": [2023],
-                "incomes": [1000],
-                "expenses": [500],
-                "have": [500],
-                "latest_check": [None],
-                "balance": [500],
-                "past": [0],
-                "delta": [0],
-            },
-            [(2023, 1000, None)],
-        ),
-    ],
-    ids=["mixed_operations", "null_latest_check"],
-)
-def test_sync_writes_the_account_frame(main_user, existing_years, columns, expect):
-    account = AccountFactory()
-    for year in existing_years:
-        AccountBalanceFactory(year=year, account=account)
-    df = pl.DataFrame(
-        {"category_id": [account.pk] * len(columns["year"]), **columns}
-    ).lazy()
-
-    BalanceSynchronizer(AccountBalanceModelService, main_user, df)
-
-    actual = AccountBalance.objects.order_by("year")
-    assert [(r.year, r.incomes, r.latest_check) for r in actual] == expect
 
 
 class Balances(NamedTuple):
@@ -170,25 +121,6 @@ INSERT_VALUES = {
 }
 
 
-def _empty_frame(kind):
-    columns = ["category_id", "year", *BALANCES[kind].fields]
-    return pl.DataFrame({column: [] for column in columns}).lazy()
-
-
-@pytest.mark.parametrize("kind", BALANCES)
-def test_sync_inserts_a_row_into_an_empty_db(main_user, kind):
-    owner = BALANCES[kind].owner_factory()
-    values = INSERT_VALUES[kind]
-    frame = _frame({(owner.pk, 2023): values}, [(owner.pk, 2023)])
-
-    BalanceSynchronizer(BALANCES[kind].service, main_user, frame)
-
-    assert _balance_rows(kind, main_user) == {
-        (owner.pk, 2023): values
-        | {"latest_check": timezone.make_aware(datetime(2023, 1, 1))}
-    }
-
-
 ACCOUNT_WRITTEN = ACCOUNT_VALUES | {
     "incomes": 2000,
     "expenses": 1000,
@@ -197,57 +129,83 @@ ACCOUNT_WRITTEN = ACCOUNT_VALUES | {
 }
 
 
+def _as_stored(values):
+    stored = dict(values)
+    if values["latest_check"]:
+        stored["latest_check"] = timezone.make_aware(values["latest_check"])
+    return stored
+
+
 @pytest.mark.parametrize(
-    "kind, year, values",
+    "kind, stored_years, years, values",
     [
         pytest.param(
+            "account", (), (2023,), ACCOUNT_VALUES, id="account_into_an_empty_table"
+        ),
+        pytest.param(
+            "saving", (), (2023,), SAVING_VALUES, id="saving_into_an_empty_table"
+        ),
+        pytest.param(
+            "pension", (), (2023,), SAVING_VALUES, id="pension_into_an_empty_table"
+        ),
+        pytest.param(
             "account",
-            2024,
+            (),
+            (2023,),
+            ACCOUNT_VALUES | {"latest_check": None},
+            id="account_with_no_check",
+        ),
+        pytest.param(
+            "account",
+            (1999,),
+            (2024,),
             ACCOUNT_WRITTEN | {"latest_check": datetime(2024, 1, 1)},
             id="account_new_year",
         ),
         pytest.param(
             "account",
-            1999,
+            (1999,),
+            (1999,),
             ACCOUNT_WRITTEN
             | {"latest_check": datetime(2023, 1, 2), "past": 1, "delta": 1},
             id="account_same_year",
         ),
-        pytest.param("saving", 2023, SAVING_VALUES, id="saving_new_year"),
-        pytest.param("saving", 1999, SAVING_VALUES, id="saving_same_year"),
-        pytest.param("pension", 2023, SAVING_VALUES, id="pension_new_year"),
-        pytest.param("pension", 1999, SAVING_VALUES, id="pension_same_year"),
+        pytest.param(
+            "account",
+            (1999, 2000),
+            (2000, 2001),
+            ACCOUNT_WRITTEN | {"latest_check": datetime(2024, 1, 1)},
+            id="account_drops_updates_and_adds_years",
+        ),
+        pytest.param("saving", (1999,), (2023,), SAVING_VALUES, id="saving_new_year"),
+        pytest.param("saving", (1999,), (1999,), SAVING_VALUES, id="saving_same_year"),
+        pytest.param("pension", (1999,), (2023,), SAVING_VALUES, id="pension_new_year"),
+        pytest.param(
+            "pension", (1999,), (1999,), SAVING_VALUES, id="pension_same_year"
+        ),
     ],
 )
-def test_sync_writes_the_frame_over_the_1999_row(main_user, kind, year, values):
+def test_sync_writes_the_frame_as_the_stored_rows(
+    main_user, kind, stored_years, years, values
+):
     balances = BALANCES[kind]
     owner = balances.owner_factory()
-    balances.factory(**{balances.owner_field: owner, "year": 1999})
-    frame = _frame({(owner.pk, year): values}, [(owner.pk, year)])
+    for stored_year in stored_years:
+        balances.factory(**{balances.owner_field: owner, "year": stored_year})
+    rows = {(owner.pk, year): values for year in years}
 
-    BalanceSynchronizer(balances.service, main_user, frame)
+    BalanceSynchronizer(balances.service, main_user, _frame(rows, rows))
 
-    assert _balance_rows(kind, main_user) == {
-        (owner.pk, year): values
-        | {"latest_check": timezone.make_aware(values["latest_check"])}
-    }
+    assert _balance_rows(kind, main_user) == {key: _as_stored(values) for key in rows}
 
 
-@pytest.mark.parametrize("years", [(1999,), (2023, 2024)], ids=["one_row", "two_rows"])
+@pytest.mark.parametrize(
+    "kept", [[(0, 2000), (1, 1999)], []], ids=["some_rows", "no_row"]
+)
 @pytest.mark.parametrize("kind", BALANCES)
-def test_sync_empty_frame_deletes_every_row(main_user, kind, years):
-    for year in years:
-        BALANCES[kind].factory(year=year)
-
-    BalanceSynchronizer(BALANCES[kind].service, main_user, _empty_frame(kind))
-
-    assert _balance_rows(kind, main_user) == {}
-
-
-@pytest.mark.parametrize("kind", BALANCES)
-def test_sync_deletes_only_the_rows_it_drops(main_user, kind):
-    a, b = _owners_with_balances(kind, 2)
-    keep = {(a.pk, 2000), (b.pk, 1999)}
+def test_sync_deletes_the_rows_the_frame_drops(main_user, kind, kept):
+    owners = _owners_with_balances(kind, 2)
+    keep = {(owners[i].pk, year) for i, year in kept}
     before = _balance_rows(kind, main_user)
 
     BalanceSynchronizer(BALANCES[kind].service, main_user, _frame(before, keep))
@@ -255,17 +213,36 @@ def test_sync_deletes_only_the_rows_it_drops(main_user, kind):
     assert _balance_rows(kind, main_user) == {key: before[key] for key in keep}
 
 
+def _deleting(kind, user, owners):
+    return _frame(_balance_rows(kind, user), {(owner.pk, 2000) for owner in owners})
+
+
+def _inserting_into_an_empty_table(kind, user, owners):
+    BALANCES[kind].service(user).objects.all().delete()
+    rows = {(owner.pk, 2023): INSERT_VALUES[kind] for owner in owners}
+    return _frame(rows, rows)
+
+
+def _updating(kind, user, owners):
+    rows = {key: INSERT_VALUES[kind] for key in _balance_rows(kind, user)}
+    return _frame(rows, rows)
+
+
+@pytest.mark.parametrize(
+    "frame_of",
+    [_deleting, _inserting_into_an_empty_table, _updating],
+    ids=["delete", "insert", "update"],
+)
 @pytest.mark.parametrize("kind", BALANCES)
-def test_sync_delete_query_count_does_not_grow(main_user, kind):
+def test_sync_query_count_does_not_grow(main_user, kind, frame_of):
     service = BALANCES[kind].service
 
-    def queries_deleting(count):
+    def queries_syncing(count):
         service(main_user).objects.all().delete()
-        keep = {(owner.pk, 2000) for owner in _owners_with_balances(kind, count)}
-        frame = _frame(_balance_rows(kind, main_user), keep)
+        frame = frame_of(kind, main_user, _owners_with_balances(kind, count))
         return count_queries(lambda: BalanceSynchronizer(service, main_user, frame))
 
-    assert queries_deleting(2) == queries_deleting(6)
+    assert queries_syncing(2) == queries_syncing(6)
 
 
 def _years(model, **owner):
@@ -328,17 +305,28 @@ def test_a_first_worth_equal_to_the_stored_amount_stores_its_check(
     assert balance_model.objects.get(year=1999, **owner).latest_check == worth.date
 
 
-def test_closing_and_reopening_an_account_resyncs_its_years():
-    seb = AccountFactory(title="SEB")
-    IncomeFactory(account=seb, price=100, date=date(1999, 1, 1))
-    # another account's row carries the journal's years on to 2002
-    IncomeFactory(account=AccountFactory(title="IB"), price=50, date=date(2001, 1, 1))
-    assert _years(AccountBalance, account=seb) == [1999, 2000, 2001, 2002]
+@pytest.mark.parametrize(
+    "owner_factory, entry_factory, balance_model, owner_field",
+    [
+        (AccountFactory, IncomeFactory, AccountBalance, "account"),
+        (PensionTypeFactory, PensionFactory, PensionBalance, "pension_type"),
+    ],
+    ids=["account", "pension"],
+)
+def test_closing_and_reopening_an_owner_resyncs_its_years(
+    owner_factory, entry_factory, balance_model, owner_field
+):
+    owner = owner_factory(title="SEB")
+    entry_factory(price=100, date=date(1999, 1, 1), **{owner_field: owner})
+    # another owner's row carries the journal's years on to 2002
+    other = owner_factory(title="IB")
+    entry_factory(price=50, date=date(2001, 1, 1), **{owner_field: other})
+    assert _years(balance_model, **{owner_field: owner}) == [1999, 2000, 2001, 2002]
 
-    seb.closed = 1999
-    seb.save()
-    assert _years(AccountBalance, account=seb) == [1999]
+    owner.closed = 1999
+    owner.save()
+    assert _years(balance_model, **{owner_field: owner}) == [1999]
 
-    seb.closed = None
-    seb.save()
-    assert _years(AccountBalance, account=seb) == [1999, 2000, 2001, 2002]
+    owner.closed = None
+    owner.save()
+    assert _years(balance_model, **{owner_field: owner}) == [1999, 2000, 2001, 2002]

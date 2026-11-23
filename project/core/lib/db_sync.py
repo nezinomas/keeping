@@ -3,6 +3,7 @@ from django.db import transaction as django_transaction
 from django.utils import timezone
 
 from ...users.models import User
+from .balance_rows import KEYS
 
 ACCOUNT_FIELDS = [
     "incomes",
@@ -31,109 +32,90 @@ SAVING_FIELDS = [
 ]
 
 
-def _is_empty(frame: pl.LazyFrame) -> bool:
-    return frame.limit(1).collect().is_empty()
-
-
 class BalanceSynchronizer:
-    KEY_FIELDS = ["category_id", "year"]
-
     def __init__(self, model_service_class, user: User, df: pl.LazyFrame) -> None:
-        self.model_service_class = model_service_class
-        self.user = user
+        self.service = model_service_class(user)
 
-        service = model_service_class(self.user)
-
-        self.model = service.objects.model
+        self.model = self.service.objects.model
         self.fk_field = self.model._meta.get_field(self.model.owner_field).attname
         self.fields = self.model.sync_fields
 
-        self.df = df
+        self.df = df.collect()
         self.df_db = self._get_existing_records()
 
         self.sync()
 
-    def _get_existing_records(self) -> pl.LazyFrame:
+    def _get_existing_records(self) -> pl.DataFrame:
         records = [
-            *self.model_service_class(self.user).objects.values(
-                "id", self.fk_field, "year", *self.fields
-            )
+            *self.service.objects.values("id", self.fk_field, "year", *self.fields)
         ]
         if not records:
-            return pl.LazyFrame()
+            return pl.DataFrame()
 
-        df_db = pl.from_dicts(records).lazy().rename({self.fk_field: "category_id"})
-        if "latest_check" in df_db.collect_schema().names():
-            df_db = df_db.with_columns(
+        return (
+            pl.from_dicts(records)
+            .rename({self.fk_field: "category_id"})
+            .with_columns(
                 pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
             )
+        )
 
-        return df_db
+    def _identify_operations(self) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
+        empty_df = pl.DataFrame()
 
-    def _identify_operations(self) -> tuple[pl.LazyFrame, pl.LazyFrame, pl.LazyFrame]:
-        empty_df = pl.LazyFrame()
-
-        if _is_empty(self.df_db):
+        if self.df_db.is_empty():
             return self.df, empty_df, empty_df
 
-        if _is_empty(self.df):
+        if self.df.is_empty():
             return empty_df, empty_df, self.df_db
 
         return self._insert_df(), self._update_df(), self._delete_df()
 
-    def _delete_df(self) -> pl.LazyFrame:
-        df_keys = self.df.select(self.KEY_FIELDS).unique()
-        return self.df_db.join(df_keys, on=self.KEY_FIELDS, how="anti")
+    def _delete_df(self) -> pl.DataFrame:
+        df_keys = self.df.select(KEYS).unique()
+        return self.df_db.join(df_keys, on=KEYS, how="anti")
 
-    def _insert_df(self) -> pl.LazyFrame:
+    def _insert_df(self) -> pl.DataFrame:
         return self.df.join(
-            self.df_db.lazy().select(self.KEY_FIELDS),
-            on=self.KEY_FIELDS,
+            self.df_db.select(KEYS),
+            on=KEYS,
             how="anti",
         )
 
-    def _update_df(self) -> pl.LazyFrame:
-        common = self.df.join(self.df_db, on=self.KEY_FIELDS, how="inner", suffix="_db")
+    def _update_df(self) -> pl.DataFrame:
+        common = self.df.join(self.df_db, on=KEYS, how="inner", suffix="_db")
 
         return common.filter(
             pl.any_horizontal(
                 [pl.col(f).ne_missing(pl.col(f"{f}_db")) for f in self.fields]
             )
-        ).select(self.df.collect_schema().names())
+        ).select(self.df.columns)
 
-    def _delete_records(self, data: pl.LazyFrame) -> None:
-        df = data.collect()
-
-        if df.is_empty():
+    def _delete_records(self, data: pl.DataFrame) -> None:
+        if data.is_empty():
             return
 
-        self.model_service_class(self.user).objects.filter(
-            id__in=df["id"].to_list()
-        ).delete()
+        self.service.objects.filter(id__in=data["id"].to_list()).delete()
 
-    def _insert_records(self, data: pl.LazyFrame) -> None:
-        df = data.collect()
-
-        if df.is_empty():
+    def _insert_records(self, data: pl.DataFrame) -> None:
+        if data.is_empty():
             return
 
-        objects = [self.model(**self._row_fields(row)) for row in df.to_dicts()]
-        self.model_service_class(self.user).objects.bulk_create(objects)
+        objects = [self.model(**self._row_fields(row)) for row in data.to_dicts()]
+        self.service.objects.bulk_create(objects)
 
-    def _update_records(self, data: pl.LazyFrame) -> None:
-        if _is_empty(data):
+    def _update_records(self, data: pl.DataFrame) -> None:
+        if data.is_empty():
             return
 
-        df_map = self.df_db.select(["id", "year", "category_id"])
+        df_map = self.df_db.select("id", *KEYS)
 
-        updates_with_id = (
-            data.join(df_map, on=self.KEY_FIELDS, how="left").collect().to_dicts()
-        )
+        updates_with_id = data.join(df_map, on=KEYS, how="left").to_dicts()
 
         objects = [
             self.model(id=row["id"], **self._row_fields(row)) for row in updates_with_id
         ]
-        self.model_service_class(self.user).objects.bulk_update(objects, self.fields)
+        self.service.objects.bulk_update(objects, self.fields)
 
     def _row_fields(self, row: dict) -> dict:
         fields = {field: row[field] for field in self.fields}
