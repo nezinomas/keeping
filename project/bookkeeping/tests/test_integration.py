@@ -994,15 +994,15 @@ class BookkeepingIndex(TestCase, Browser):
             [],
         ]
 
-    def test_the_refresh_icon_is_muted_and_a_mouse_focus_leaves_its_tip_shut(self):
+    def test_the_refresh_icon_inks_and_its_mouse_focused_tip_opens_only_on_hover(self):
         AccountWorthFactory()
         self.open_at(INDEX_TABS["overview"].url, 1500)
 
         # a mouse press leaves the focus on the icon after the reload; only a
         # keyboard's focus keeps its tip open off the hover
+        icon = "const icon = document.getElementById('refresh-accounts');"
         looks = self.browser.execute_script(
-            "const icon = document.getElementById('refresh-accounts');"
-            " const s = getComputedStyle(icon);"
+            icon + " const s = getComputedStyle(icon);"
             " const tip = () => getComputedStyle(icon.closest('.tip'), '::before')"
             "  .display;"
             " icon.focus({focusVisible: false}); const mouse = tip(); icon.blur();"
@@ -1010,8 +1010,26 @@ class BookkeepingIndex(TestCase, Browser):
             " return [s.color, s.borderTopStyle, s.backgroundColor, s.padding,"
             "  mouse, keys];"
         )
+        # the minimized webtest Chrome fires no hover: DevTools forces one
+        self.force_hover("#refresh-accounts")
+        hovered_icon = self.browser.execute_script(
+            icon + " return getComputedStyle(icon).color;"
+        )
+        self.force_hover(".tip:has(> #refresh-accounts)")
+        # the tip's display transitions: read once it has settled
+        hovered_tip = self.browser.execute_async_script(
+            icon + " const done = arguments[0];"
+            " icon.blur(); icon.focus({focusVisible: false});"
+            " const tip = icon.closest('.tip');"
+            " Promise.all(tip.getAnimations({subtree: true}).map(a => a.finished))"
+            "  .then(() => done(getComputedStyle(tip, '::before').display));"
+        )
 
-        assert looks == [INK_MUTED, "none", CLEAR, "0px", "none", "block"]
+        assert (looks, hovered_icon, hovered_tip) == (
+            [INK_MUTED, "none", CLEAR, "0px", "none", "block"],
+            INK,
+            "block",
+        )
 
     def test_the_funds_tables_start_their_figures_at_one_x(self):
         # the longest fund name, beside a short pension name
@@ -1113,6 +1131,17 @@ class BookkeepingIndex(TestCase, Browser):
             " return {top: r.top, bottom: r.bottom, left: r.left, right: r.right,"
             "  width: r.width}; });",
             selector,
+        )
+
+    def force_hover(self, selector: str):
+        """DevTools holds `:hover` on the element, as a pointer resting on it."""
+        cdp = self.browser.execute_cdp_cmd
+        root = cdp("DOM.getDocument", {})["root"]["nodeId"]
+        node = cdp("DOM.querySelector", {"nodeId": root, "selector": selector})
+        cdp("CSS.enable", {})
+        cdp(
+            "CSS.forcePseudoState",
+            {"nodeId": node["nodeId"], "forcedPseudoClasses": ["hover"]},
         )
 
     def widest_expense_figure_inside(self) -> bool:
