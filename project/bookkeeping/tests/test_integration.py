@@ -417,6 +417,22 @@ class BookkeepingIndex(TestCase, Browser):
             ),
         )
 
+    def test_the_widest_expense_figure_ends_inside_its_chart_after_load_and_a_reload(
+        self,
+    ):
+        # on a phone: the room is laid out on load; once a long type's name joins,
+        # the bar leaves its figure no room of its own, and the reload redraws it
+        ExpenseFactory(expense_type=ExpenseTypeFactory(title="Big"), price=10000000)
+        self.open_at(INDEX_TABS["charts"].url, 360)
+        on_load = self.widest_expense_figure_inside()
+        ExpenseFactory(
+            expense_type=ExpenseTypeFactory(title="Laisvalaikis ir pramogos"),
+            price=9000000,
+        )
+        self._reload()
+
+        assert (on_load, self.widest_expense_figure_inside()) == (True, True)
+
     def test_the_money_axes_read_from_100_in_thousands_either_way(self):
         self._open_charts_with_two_types(1500)
 
@@ -1097,6 +1113,16 @@ class BookkeepingIndex(TestCase, Browser):
             " return {top: r.top, bottom: r.bottom, left: r.left, right: r.right,"
             "  width: r.width}; });",
             selector,
+        )
+
+    def widest_expense_figure_inside(self) -> bool:
+        return self.browser.execute_script(
+            "const box = document.querySelector('#chart-expenses-container svg')"
+            "  .getBoundingClientRect();"
+            f" const ends = [...document.querySelectorAll('{EXPENSE_PARTS}')]"
+            "  .filter(f => f.textContent)"
+            "  .map(f => f.getBoundingClientRect().right);"
+            " return ends.length > 0 && Math.max(...ends) <= box.right;"
         )
 
     def _texts(self, selector: str) -> list[str]:
