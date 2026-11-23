@@ -25,44 +25,17 @@
     {% for item in ctx.data %}
     <tr>
         <td>{{item.date|date:"F"|title}}</td>
-        <c-figure-cell :value="item.incomes" />
-        <c-figure-cell :value="item.expenses" />
-        <c-figure-cell :value="item.balance" signed />
-        <c-figure-cell :value="item.savings" group />
-        <c-figure-cell :value="item.savings_close" />
-        <c-figure-cell :value="item.borrow" show="open" group />
-        <c-figure-cell :value="item.borrow_return" show="open" />
-        <c-figure-cell :value="item.lend" show="open" />
-        <c-figure-cell :value="item.lend_return" show="open" />
-        <c-figure-cell :value="item.money_flow" group />
+        <c-month-balance-row :row="item" />
     </tr>
     {% endfor %}
     <c-slot name="foot">
         <tr class="main__total">
             <td>{% translate 'Average' %}</td>
-            <c-figure-cell :value="ctx.avg_row.incomes" />
-            <c-figure-cell :value="ctx.avg_row.expenses" />
-            <td class="main__figure"></td>
-            <c-figure-cell :value="ctx.avg_row.savings" group />
-            <c-figure-cell :value="ctx.avg_row.savings_close" />
-            <c-figure-cell :value="ctx.avg_row.borrow" show="open" group />
-            <c-figure-cell :value="ctx.avg_row.borrow_return" show="open" />
-            <c-figure-cell :value="ctx.avg_row.lend" show="open" />
-            <c-figure-cell :value="ctx.avg_row.lend_return" show="open" />
-            <td class="main__group-start">{% translate "End of year" %}</td>
+            <c-month-balance-row :row="ctx.avg_row" blank_balance end_label="{% translate 'End of year' %}" />
         </tr>
         <tr class="main__total">
             <td>{% translate 'Total' %}</td>
-            <c-figure-cell :value="ctx.total_row.incomes" />
-            <c-figure-cell :value="ctx.total_row.expenses" />
-            <c-figure-cell :value="ctx.total_row.balance" signed />
-            <c-figure-cell :value="ctx.total_row.savings" group />
-            <c-figure-cell :value="ctx.total_row.savings_close" />
-            <c-figure-cell :value="ctx.total_row.borrow" show="open" group />
-            <c-figure-cell :value="ctx.total_row.borrow_return" show="open" />
-            <c-figure-cell :value="ctx.total_row.lend" show="open" />
-            <c-figure-cell :value="ctx.total_row.lend_return" show="open" />
-            <c-figure-cell :value="ctx.amount_end" signed check="{{ ctx.cash_flow_check }}" group />
+            <c-month-balance-row :row="ctx.total_row" :flow="ctx.amount_end" check="{{ ctx.cash_flow_check }}" />
         </tr>
     </c-slot>
 </c-paper-table>

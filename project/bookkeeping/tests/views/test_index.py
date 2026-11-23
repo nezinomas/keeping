@@ -32,6 +32,7 @@ from ..factories import AccountWorthFactory
 from ..helper import (
     BOXED_TABLE,
     FIGURE,
+    FIGURE_HOOK,
     GROUP_FIGURE,
     PANEL_TITLE,
     cell_texts,
@@ -45,12 +46,11 @@ from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
-CASH_FLOW_CELL = r'<td[^>]*data-check="[^"]*">'
-YEAR_END = (
-    '<td class="main__figure main__group-start" data-sign="gain" data-cell=""'
-    ' data-check="{state}">'
-)
-ACCOUNTS_TOTAL = '<td class="main__figure" data-cell="" data-check="{state}">'
+# a Cash-flow check cell's attributes after its figure hook
+CASH_FLOW_CELL = rf'<td{FIGURE_HOOK}([^>]*data-check="[^"]*")>'
+YEAR_END = ' data-sign="gain" data-cell="" data-check="{state}"'
+ACCOUNTS_CHECK = ' data-cell="" data-check="{state}"'
+ACCOUNTS_TOTAL = f'<td class="main__figure"{ACCOUNTS_CHECK}>'
 
 
 @pytest.mark.parametrize("tab", INDEX_TABS, ids=lambda tab: tab.name)
@@ -157,7 +157,7 @@ FIGURES = {
         rf"<tr>\s*<td{FIGURE}>-</td>\s*<td{FIGURE}>-16,50</td>\s*"
         rf'<td{FIGURE} data-sign="loss">-16,50</td>'
     ),
-    "no_incomes": rf'<td class="text-left">Pinigai, €</td>\s*<td{FIGURE}>-16,50</td>',
+    "no_incomes": rf"<td>Pinigai, €</td>\s*<td{FIGURE}>-16,50</td>",
     "money": CARD.format(label="Pinigai", figure="-17"),
     "wealth": CARD.format(label="Turtas", figure="-17"),
     # 6,00 in and 1,00 out over the twelve months of a year that is over
@@ -184,7 +184,7 @@ FIGURES = {
         rf"<td>Sausis</td>(?:\s*<td[^>]*>[^<]*</td>){{2}}\s*"
         rf'<td{FIGURE} data-sign="gain" data-cell="">5,00</td>'
     ),
-    "year_end": rf'<td{GROUP_FIGURE} data-sign="\w+" data-cell="" data-check="">',
+    "year_end": rf'<td{FIGURE_HOOK} data-sign="\w+" data-cell="" data-check="">',
     # January's expense in its type's column; the month balance's January reads 6,00
     "expenses_by_type": rf'<td>Sausis</td>\s*<td{FIGURE} data-cell="">1,00</td>',
 }
@@ -309,13 +309,14 @@ LEGACY_CLASSES = (
             [' class="main__date main__group-start" data-cell="empty"'] * 2,
             id="funds",
         ),
-        # each table's average and total rows; the average row's End of year label
+        # each table's average and total rows; the End of year label is no figure:
+        # test_balance_tables_end_of_year_label_is_a_plain_cell_not_a_figure
         pytest.param(
             "balance",
             ["Balansas", "Išlaidų statistika"],
             2,
             4,
-            [' class="main__group-start"'],
+            [],
             id="balance",
         ),
     ],
@@ -329,12 +330,14 @@ def test_index_tables_wear_the_skin_and_no_legacy_class(
     boxed = re.findall(BOXED_TABLE, content)
     total_rows = re.findall(r'<tr class="(main__total)">', content)
     rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", content, re.S)
-    # a row's first cell is its name, unless it holds a figure (the Year strip's)
+    # a cell past the name that holds no word, or any that reads as a figure (the
+    # Year strip's first cell is a figure); a word is a label
     non_figures = [
         cell
         for row in rows
         for at, (cell, text) in enumerate(re.findall(r"<td([^>]*)>([^<]*)", row))
-        if "main__figure" not in cell and (at or re.fullmatch(r"[-\d.,]+", text))
+        if "main__figure" not in cell
+        and (at and not re.search(r"[^\W\d_]", text) or re.fullmatch(r"[-\d.,]+", text))
     ]
     legacy = re.findall(rf'class="[^"]*\b({"|".join(LEGACY_CLASSES)})\b', content)
 
@@ -431,7 +434,7 @@ def test_index_tables_unsigned_money_cells_carry_their_cell_state(
         (attrs, text)
         for table in tables(tab_contents[tab])
         for attrs, text in re.findall(
-            r'<td class="main__figure(?: main__group-start)?"([^>]*)>([-\d.,]+)</td>',
+            rf"<td{FIGURE_HOOK}([^>]*)>([-\d.,]+)</td>",
             table,
         )
         if "data-sign" not in attrs
@@ -588,18 +591,21 @@ def test_balance_tables_name_their_columns_and_foot_rows(client_logged):
                     r"<th\b[^>]*>(.*?)</th>", table.partition("</thead>")[0], re.S
                 )
             ],
-            re.findall(r"<td[^>]*>([^<\d,.-]+)</td>", table.partition("<tfoot>")[2]),
+            re.findall(
+                r"<tr\b[^>]*>\s*<td[^>]*>([^<]*)</td>", table.partition("<tfoot>")[2]
+            ),
         )
         for table in re.findall(r"<table\b.*?</table>", content, re.S)
     ]
 
-    # no expense type, no column
+    # no expense type, no column; each foot row's name, its first cell (the End of
+    # year label is test_balance_tables_end_of_year_label_is_a_plain_cell_not_a_figure's)
     assert labels == [
         (
             ["", "Taupymas", "Skolos", ""]
             + ["1999", "Pajamos", "Išlaidos", "Balansas", "Investuota", "Parduota"]
             + ["Pasiskolinta", "Grąžinau", "Paskolinta", "Grąžino", "Pinigų srautas"],
-            ["Vidurkis", "Metų pabaigoje", "Viso"],
+            ["Vidurkis", "Viso"],
         ),
         (["1999", "Viso"], ["Vidurkis", "Viso"]),
     ]
@@ -651,7 +657,7 @@ def test_view_index_year_end_and_accounts_cells_equal_or_marked_mismatch(
         re.findall(CASH_FLOW_CELL, balance + overview),
     ) == (
         equal,
-        [YEAR_END.format(state=state), ACCOUNTS_TOTAL.format(state=state)],
+        [YEAR_END.format(state=state), ACCOUNTS_CHECK.format(state=state)],
     )
 
 
@@ -766,10 +772,11 @@ def test_balance_table_draws_each_column(client_logged, main_user):
     figures = [*moves[:2], "800,00", *moves[2:]]
     # each move over the twelve months of a year that is over
     averages = ["83,33", "16,67", "", "25,00", "4,17", "5,83", "1,67", "7,50", "2,50"]
-    # January, then the average and total rows
-    assert [rows[2], rows[-2], rows[-1]] == [
+    # January, then the average and total rows; the average's last cell is its label:
+    # test_balance_tables_end_of_year_label_is_a_plain_cell_not_a_figure
+    assert [rows[2], rows[-2][:-1], rows[-1]] == [
         ["Sausis", *figures, "540,00"],
-        ["Vidurkis", *averages, "Metų pabaigoje"],
+        ["Vidurkis", *averages],
         ["Viso", *figures, "540,00"],
     ]
 

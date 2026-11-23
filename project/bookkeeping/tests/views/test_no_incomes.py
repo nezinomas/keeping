@@ -44,12 +44,12 @@ def fixture_unnecessary(main_user):
     _cut(cut, main_user)
 
 
+# its text: test_no_incomes_tip_lists_the_unnecessary_expenses
 HINT = (
-    r'<span class="hint tip bottom" tabindex="0" data-tip="Nebūtinos išlaidos[^"]*"'
-    r' aria-label="([^"]*)" aria-description="[^"]*">'
+    r'<span class="hint tip bottom" tabindex="0" data-tip="[^"]*"'
+    r' aria-label="[^"]*" aria-description="[^"]*">'
     r'<i class="bi bi-question-circle"></i></span>'
 )
-CUTS = "Nebūtinos išlaidos, kurių galima atsisakyti"
 
 
 def _marks_nothing(main_user):
@@ -72,16 +72,16 @@ def _cuts_a_cent(main_user):
 # a cent over six months is a cut that rounds to 0, drawn "0", not "–" (Q193)
 @time_machine.travel("1999-06-15")
 @pytest.mark.parametrize(
-    "journal, figure, hints",
+    "journal, figure, hint_count",
     [
-        pytest.param(_marks_nothing, "–", [], id="nothing-marked"),
-        pytest.param(_marks_a_type_never_spent_on, "–", [CUTS], id="nothing-cut"),
-        pytest.param(_cuts_an_expense, "200", [CUTS], id="a-cut"),
-        pytest.param(_cuts_a_cent, "0", [CUTS], id="a-cut-rounding-to-0"),
+        pytest.param(_marks_nothing, "–", 0, id="nothing-marked"),
+        pytest.param(_marks_a_type_never_spent_on, "–", 1, id="nothing-cut"),
+        pytest.param(_cuts_an_expense, "200", 1, id="a-cut"),
+        pytest.param(_cuts_a_cent, "0", 1, id="a-cut-rounding-to-0"),
     ],
 )
 def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
-    client_logged, main_user, journal, figure, hints
+    client_logged, main_user, journal, figure, hint_count
 ):
     journal(main_user)
 
@@ -90,7 +90,7 @@ def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
         PANEL_TITLE
         + r'<div class="table-responsive">\s*'
         + r"<table\b[^>]*>\s*<thead>\s*<tr>\s*"
-        + r'<th class="text-left">(.*?)</th>',
+        + r"<th>(.*?)</th>",
         content,
         re.S,
     )
@@ -101,7 +101,7 @@ def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
             label,
             cut,
             re.findall(r'class="([^"]*\btip\b[^"]*)"', after),
-            re.findall(HINT, after),
+            len(re.findall(HINT, after)),
         )
         for title, head in heads
         if title == "Be pajamų"
@@ -111,7 +111,7 @@ def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
             head,
             re.S,
         )
-    ] == [("Nebūtinos išlaidos", figure, ["hint tip bottom"] * len(hints), hints)]
+    ] == [("Nebūtinos išlaidos", figure, ["hint tip bottom"] * hint_count, hint_count)]
 
 
 def test_no_incomes_panel_keeps_its_legend_under_the_table(client_logged):
@@ -137,25 +137,22 @@ def test_no_incomes_tip_lists_the_unnecessary_expenses(client_logged, unnecessar
     content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
     tips = re.findall(
         r'<span class="hint tip bottom" tabindex="0" data-tip="(Nebūtinos išlaidos[^"]*)"'
-        r' aria-label="[^"]*" aria-description="([^"]*)">',
+        r' aria-label="([^"]*)" aria-description="([^"]*)">',
         content,
     )
 
-    # the bubble's lines, and the one sentence a screen reader is given
-    assert [(tip.splitlines(), said) for tip, said in tips] == [
+    # the bubble's lines, the hint's name and the one sentence a screen reader is given
+    cuts = "Nebūtinos išlaidos, kurių galima atsisakyti"
+    assert [(tip.splitlines(), name, said) for tip, name, said in tips] == [
         (
-            [
-                "Nebūtinos išlaidos, kurių galima atsisakyti:",
-                "- XXX",
-                "- YYY",
-                "- Taupymas",
-            ],
-            "Nebūtinos išlaidos, kurių galima atsisakyti: XXX, YYY, Taupymas",
+            [f"{cuts}:", "- XXX", "- YYY", "- Taupymas"],
+            cuts,
+            f"{cuts}: XXX, YYY, Taupymas",
         )
     ]
 
 
-def test_template_month_value():
+def test_no_incomes_money_row_reads_euros_and_a_months_row_one_decimal():
     ctx = {
         "no_incomes": [
             {

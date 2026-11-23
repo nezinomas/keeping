@@ -134,6 +134,8 @@ def switch_a_into_b(
 
 
 FIGURE = ' class="main__figure"'
+# a figure by its hook, whatever class sits beside it (Q194)
+FIGURE_HOOK = ' class="main__figure(?: [^"]*)?"'
 # a figure that starts a column group (sass.md *Tables*, *Column groups*)
 GROUP_FIGURE = ' class="main__figure main__group-start"'
 # a Panel's title, beside the control it may hold, and a table's class inside its

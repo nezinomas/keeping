@@ -130,7 +130,7 @@ msgstr "Pajamos"
 msgid "Expenses"
 msgstr "Išlaidos"
 
-#: .\project\bookkeeping\templates\cotton\year_balance.html:42
+#: .\project\bookkeeping\templates\cotton\year_balance.html:33
 #: .\project\bookkeeping\templates\cotton\year_expenses.html:23
 #: .\project\bookkeeping\services\index\presenters.py:170
 msgid "Average"
@@ -221,7 +221,7 @@ msgstr "Fondai"
 #: .\project\bookkeeping\templates\cotton\detailed_table.html:43
 #: .\project\bookkeeping\templates\cotton\detailed_table.html:49
 #: .\project\bookkeeping\templates\cotton\detailed_table.html:78
-#: .\project\bookkeeping\templates\cotton\year_balance.html:55
+#: .\project\bookkeeping\templates\cotton\year_balance.html:37
 #: .\project\bookkeeping\templates\cotton\year_expenses.html:9 .\project\bookkeeping\templates\cotton\year_expenses.html:30
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:12
 msgid "Total"
@@ -493,7 +493,7 @@ msgstr "Pridėti grąžinimą"
 msgid "Money flow"
 msgstr "Pinigų srautas"
 
-#: .\project\bookkeeping\templates\cotton\year_balance.html:52
+#: .\project\bookkeeping\templates\cotton\year_balance.html:34
 msgid "End of year"
 msgstr "Metų pabaigoje"
 
