@@ -589,6 +589,12 @@ def _gain_passed_on_by_a_closed_fund():
     worth(b, 55000)
 
 
+def _pension_beside_a_funds_switch():
+    switch_a_into_b(a_zeroed=True)
+    PensionFactory(price=100000)
+    PensionWorthFactory(price=130000)
+
+
 @pytest.mark.parametrize(
     "seed, title, total",
     [
@@ -632,6 +638,13 @@ def _gain_passed_on_by_a_closed_fund():
             ("1.300,00", "7,69%"),
             id="closed-source",
         ),
+        # a switch between funds counts nothing in the Pensijos table
+        pytest.param(
+            _pension_beside_a_funds_switch,
+            "Pensijos",
+            ("1.000,00", "30,00%"),
+            id="pensions-beside-a-funds-switch",
+        ),
     ],
 )
 def test_total_counts_the_money_switched_by_the_year_once(
@@ -644,15 +657,3 @@ def test_total_counts_the_money_switched_by_the_year_once(
 
     # the total in, and the profit's percent on that base
     assert (cells[5], cells[-1]) == total
-
-
-def test_pensions_total_ignores_a_switch_between_funds(client_logged, main_user):
-    with quiet_build(main_user):
-        switch_a_into_b(a_zeroed=True)
-        PensionFactory(price=100000)
-        PensionWorthFactory(price=130000)
-
-    table = funds_table(client_logged, "Pensijos")
-
-    assert total_cells(table)[5] == "1.000,00"
-    assert total_cells(table)[-1] == row_cells(table, "PensionType")[-1]
