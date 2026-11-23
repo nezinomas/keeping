@@ -232,6 +232,24 @@ TIP_AGAINST_ITS_TRIGGER = (
 )
 
 
+def _the_longest_names():
+    # a funds table and the accounts table run wider than a phone's column; the
+    # dev DB's longest fund and pension names
+    IncomeFactory()
+    SavingFactory(saving_type=SavingTypeFactory(title=LONGEST_FUND))
+    PensionFactory(pension_type=PensionTypeFactory(title="Artea Ambicingas Index 16+"))
+
+
+def _ten_expense_types():
+    for i in range(10):
+        ExpenseTypeFactory(title=f"Expense Type {i}")
+
+
+def _a_fund_and_a_pension():
+    SavingFactory()
+    PensionFactory()
+
+
 @pytest.mark.webtest
 class BookkeepingIndex(TestCase, Browser):
     def test_a_pressed_nav_act_closes_its_menu(self):
@@ -742,29 +760,39 @@ class BookkeepingIndex(TestCase, Browser):
             " form: !!document.querySelector('#mainModal .modal-form')};"
         ) == {"tab_swaps": 1, "modal_hidden": True, "form": False}
 
-    def _open_with_the_longest_names(self, tab):
-        # a funds table and the accounts table run wider than a phone's column; the
-        # dev DB's longest fund and pension names
-        IncomeFactory()
-        SavingFactory(saving_type=SavingTypeFactory(title=LONGEST_FUND))
-        PensionFactory(
-            pension_type=PensionTypeFactory(title="Artea Ambicingas Index 16+")
-        )
-        self.open_at(INDEX_TABS[tab].url, 360)
-
     @parameterized.expand([(tab.name,) for tab in INDEX_TABS])
     def test_every_index_tab_fits_a_phone(self, tab):
-        self._open_with_the_longest_names(tab)
+        _the_longest_names()
+        self.open_at(INDEX_TABS[tab].url, 360)
 
         assert page_overflow(self.browser) == 0
 
-    def test_the_funds_tables_scroll_in_their_boxes_on_a_phone(self):
-        self._open_with_the_longest_names("funds")
+    @parameterized.expand(
+        [
+            (
+                "funds",
+                _the_longest_names,
+                INDEX_TABS["funds"].url,
+                ".panel .table-responsive",
+                [True, True],
+            ),
+            # a column per type: ten make the table wider than the phone
+            ("month", _ten_expense_types, "/month/", "#month-content", [True]),
+        ]
+    )
+    def test_a_wide_table_scrolls_in_its_box_on_a_phone(
+        self, _, build, url, boxes, scrolls
+    ):
+        build()
+        self.open_at(url, 360)
 
-        assert self.browser.execute_script(
-            "return [...document.querySelectorAll('.panel .table-responsive')]"
-            "  .map(box => box.scrollWidth > box.clientWidth);"
-        ) == [True, True]
+        fit = self.browser.execute_script(
+            "return {width: innerWidth, scrolls: [...document.querySelectorAll("
+            "  arguments[0])].map(box => box.scrollWidth > box.clientWidth)};",
+            boxes,
+        ) | {"page_overflow": page_overflow(self.browser)}
+
+        assert fit == {"width": 360, "page_overflow": 0, "scrolls": scrolls}
 
     def test_the_no_incomes_head_mutes_its_cut_and_its_hint_under_a_help_cursor(self):
         journal = JournalFactory()
@@ -1059,6 +1087,9 @@ class BookkeepingIndex(TestCase, Browser):
             # columns 2, 4, 6, 10, 12; the foot's market value spans two cells
             (
                 "funds",
+                _a_fund_and_a_pension,
+                INDEX_TABS["funds"].url,
+                1500,
                 ".panel table.main",
                 [
                     [
@@ -1075,6 +1106,9 @@ class BookkeepingIndex(TestCase, Browser):
             # foot (not Parduota)
             (
                 "balance",
+                _a_fund_and_a_pension,
+                INDEX_TABS["balance"].url,
+                1500,
                 "#table-balance table",
                 [
                     [
@@ -1084,12 +1118,29 @@ class BookkeepingIndex(TestCase, Browser):
                     ]
                 ],
             ),
+            # Detailed's month table: each quarter's first month, then the rule
+            # closing December, from the band to the foot
+            (
+                "detailed",
+                IncomeFactory,
+                "/detailed/",
+                1280,
+                ".month-table table",
+                [
+                    [
+                        [[3, HAIR], [4, HAIR], [5, HAIR], [6, HAIR]],
+                        [[i, HAIR] for i in (5, 8, 11, 14)],
+                        *[[[i, HAIR_SOFT] for i in (5, 8, 11)] + [[14, HAIR]]] * 2,
+                    ]
+                ],
+            ),
         ]
     )
-    def test_index_tables_rule_where_each_column_group_starts(self, tab, tables, rules):
-        SavingFactory()
-        PensionFactory()
-        self.open_at(INDEX_TABS[tab].url, 1500)
+    def test_tables_rule_where_each_column_group_starts(
+        self, _, build, url, width, tables, rules
+    ):
+        build()
+        self.open_at(url, width)
 
         assert (
             self.browser.execute_script(
@@ -1223,20 +1274,6 @@ class BookkeepingIndex(TestCase, Browser):
 
 @pytest.mark.webtest
 class BookkeepingMonthDetailedAndSummary(TestCase, Browser):
-    def test_month_page_fits_a_phone_and_its_table_scrolls_in_its_box(self):
-        # a column per type: ten make the table wider than the phone
-        for i in range(10):
-            ExpenseTypeFactory(title=f"Expense Type {i}")
-        self.open_at(reverse("bookkeeping:month"), 360)
-
-        overflow = self.browser.execute_script(
-            "const box = document.getElementById('month-content');"
-            " return {width: innerWidth,"
-            " table_scrolls: box.scrollWidth > box.clientWidth};"
-        ) | {"page_overflow": page_overflow(self.browser)}
-
-        assert overflow == {"width": 360, "page_overflow": 0, "table_scrolls": True}
-
     def test_a_month_table_stripes_its_even_rows_and_its_pinned_cell_opaquely(self):
         IncomeFactory()
         IncomeFactory(income_type=IncomeTypeFactory(title="Kitos"))
@@ -1253,24 +1290,6 @@ class BookkeepingMonthDetailedAndSummary(TestCase, Browser):
         assert shades == [
             [[PAPER, "none"], [CLEAR, "none"]],
             [[PAPER, f"linear-gradient({STRIPE}, {STRIPE})"], [STRIPE, "none"]],
-        ]
-
-    def test_month_table_rules_run_from_the_band_to_the_foot(self):
-        IncomeFactory()
-        self.open_at(reverse("bookkeeping:detailed"), 1280)
-
-        ruled = self.browser.execute_script(
-            LEFT_RULES
-            + " return leftRules(document.querySelectorAll('.month-table tr'));"
-        )
-        # each quarter's first month, then the rule closing December
-        quarters = (5, 8, 11)
-        body = [[i, HAIR_SOFT] for i in quarters] + [[14, HAIR]]
-        assert ruled == [
-            [[3, HAIR], [4, HAIR], [5, HAIR], [6, HAIR]],
-            [[i, HAIR] for i in (*quarters, 14)],
-            body,
-            body,
         ]
 
     def test_a_sortable_header_draws_the_paper_arrow(self):

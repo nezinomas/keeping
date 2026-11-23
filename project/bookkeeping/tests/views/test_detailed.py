@@ -61,19 +61,25 @@ def test_view_detailed_sends_a_visitor_to_the_login(client):
     assert response.url == "/login/?next=/detailed/"
 
 
-def test_view_detailed_tab_page_has_the_subnav(client_logged):
-    content = client_logged.get("/detailed/savings/").content.decode("utf-8")
+@pytest.mark.parametrize(
+    "headers, page",
+    [pytest.param({}, True, id="page"), pytest.param(HTMX, False, id="fragment")],
+)
+def test_view_detailed_tab_url_draws_its_page_plainly_and_its_fragment_to_htmx(
+    client_logged, headers, page
+):
+    content = client_logged.get("/detailed/savings/", headers=headers).content.decode()
 
-    assert 'class="subnav"' in content
-    assert "x-data=\"{ tab: 'savings' }\"" in content
-    assert re.search(r'id="tab-savings"[^>]*hx-get="/detailed/savings/"', content)
-
-
-def test_view_detailed_tab_fragment_has_no_subnav(client_logged):
-    content = client_logged.get("/detailed/savings/", headers=HTMX).content.decode()
-
-    assert 'class="subnav"' not in content
-    assert "<html" not in content
+    drawn = {
+        "subnav": '<nav class="subnav">' in content,
+        "any subnav mark": 'class="subnav"' in content,
+        "html": "<html" in content,
+        "open tab": "x-data=\"{ tab: 'savings' }\"" in content,
+        "tab button": bool(
+            re.search(r'id="tab-savings"[^>]*hx-get="/detailed/savings/"', content)
+        ),
+    }
+    assert drawn == dict.fromkeys(drawn, page)
     assert "<title>Detali | Taupymas</title>" in content
 
 
@@ -131,16 +137,22 @@ def test_view_detailed_page_wears_the_paper_bundle(client_logged):
 
 
 @pytest.mark.parametrize(
-    "url_name, tab, title, rows",
+    "url_name, tab, title, rows, panels",
     [
         pytest.param(
-            "bookkeeping:detailed", "incomes", "Pajamos", ["Income Type"], id="opens"
+            "bookkeeping:detailed",
+            "incomes",
+            "Pajamos",
+            ["Income Type"],
+            [],
+            id="opens",
         ),
         pytest.param(
             "bookkeeping:detailed_savings",
             "savings",
             "Taupymas",
             ["Savings"],
+            [],
             id="savings",
         ),
         pytest.param(
@@ -148,13 +160,14 @@ def test_view_detailed_page_wears_the_paper_bundle(client_logged):
             "expenses",
             "Expense Type",
             ["Alpha"],
+            ["Expense Type"],
             id="expenses",
         ),
     ],
 )
 @factory.django.mute_signals(post_save)
 def test_view_detailed_tab_is_open_and_holds_only_its_own_table(
-    client_logged, url_name, tab, title, rows
+    client_logged, url_name, tab, title, rows, panels
 ):
     IncomeFactory()
     SavingFactory()
@@ -165,6 +178,7 @@ def test_view_detailed_tab_is_open_and_holds_only_its_own_table(
     assert re.findall(r"x-data=\"\{ tab: '(\w+)' \}\"", content) == [tab]
     assert re.findall(TITLE_COLUMN.format(title="([^<]*)"), content) == [title]
     assert re.findall(ROW_TITLE.format(title="([^<]*)"), content) == [*rows, "Viso"]
+    assert re.findall(r'<h2 class="panel__title">([^<]*)</h2>', content) == panels
     assert content.count("<table") == 1
 
 
@@ -176,10 +190,10 @@ def test_view_detailed_table_has_a_title_column_and_a_total_column_and_row(
 
     content = client_logged.get("/detailed/incomes/").content.decode()
 
-    assert '<div class="month-table">' in content
-    assert "<th>" in content
-    assert '<th class="month-table__total">' in content
-    assert '<tr class="main__total">' in content
+    assert re.search(r'<div class="month-table">\s*<table class="main ', content)
+    assert re.findall(TITLE_COLUMN.format(title="([^<]*)"), content) == ["Pajamos"]
+    assert re.search(r'<th class="month-table__total">\s*<span>Viso</span>', content)
+    assert re.search(r'<tfoot>\s*<tr class="main__total">\s*<td>Viso</td>', content)
     assert content.count('<td class="main__figure month-table__total">') == 2
 
 
@@ -248,21 +262,23 @@ def test_view_detailed_tab_without_rows_shows_the_alert(client_logged, url_name)
     assert '<section class="panel' not in content
 
 
+SORT_KEYS = ["title", *map(str, range(1, 13)), "total_col"]
+
+
+@pytest.mark.parametrize("order", SORT_KEYS)
 @factory.django.mute_signals(post_save)
-def test_view_detailed_every_header_sorts_but_the_shown_one(client_logged):
+def test_view_detailed_every_header_sorts_but_the_shown_one(client_logged, order):
     IncomeFactory()
     url = "/detailed/incomes/"
-    keys = ["title", *map(str, range(1, 13)), "total_col"]
 
-    for order in keys:
-        content = client_logged.get(url, {"order": order}).content.decode()
+    content = client_logged.get(url, {"order": order}).content.decode()
 
-        expected = [
-            f'<a role="button" hx-get="{url}?order={key}" hx-target="#tab_content">'
-            for key in keys
-        ]
-        expected[keys.index(order)] = "<span>"
-        assert re.findall(r"<th[^>]*>\s*(<span>|<a [^>]*>)", content) == expected
+    expected = [
+        f'<a role="button" hx-get="{url}?order={key}" hx-target="#tab_content">'
+        for key in SORT_KEYS
+    ]
+    expected[SORT_KEYS.index(order)] = "<span>"
+    assert re.findall(r"<th[^>]*>\s*(<span>|<a [^>]*>)", content) == expected
 
 
 @factory.django.mute_signals(post_save)
@@ -281,16 +297,6 @@ def test_view_detailed_a_type_table_sorts_inside_its_own_panel(client_logged):
 
 
 @factory.django.mute_signals(post_save)
-def test_view_detailed_rendered_expenses(client_logged, expenses):
-    content = client_logged.get(
-        reverse("bookkeeping:detailed_expenses")
-    ).content.decode()
-
-    assert ROW_TITLE.format(title="Expense Name") in content
-    assert '<h2 class="panel__title">Expense Type</h2>' in content
-
-
-@factory.django.mute_signals(post_save)
 def test_view_detailed_expenses_one_panel_per_type(client_logged):
     _expense("Alpha", 1, expense_type=ExpenseTypeFactory(title="Beta"))
     _expense("Omega", 1, expense_type=ExpenseTypeFactory(title="Zeta"))
@@ -304,8 +310,6 @@ def test_view_detailed_expenses_one_panel_per_type(client_logged):
     assert '<section class="panel panel--table" id="detailed-zeta">' in content
     assert '<h2 class="panel__title">Beta</h2>' in content
     assert '<h2 class="panel__title">Zeta</h2>' in content
-    first, second = _positions(content, 'id="detailed-beta"', 'id="detailed-zeta"')
-    assert first < second
 
 
 @factory.django.mute_signals(post_save)
@@ -380,8 +384,12 @@ def test_view_detailed_type_fragment_is_the_bare_table(client_logged):
     fragment = client_logged.get(url, headers=HTMX).content.decode()
 
     assert 'id="detailed-' not in fragment
-    assert "month-table" in fragment
-    assert 'hx-target="#detailed-expense-type-table"' in fragment
+    assert re.match(r'\s*<table class="main striped hover">\s*<thead ', fragment)
+    assert '<td class="main__figure month-table__total">' in fragment
+    assert re.search(
+        r'<a role="button" hx-get="[^"]*" hx-target="#detailed-expense-type-table">',
+        fragment,
+    )
     assert '<div class="month-table"' not in fragment
     assert 'class="panel' not in fragment
 
@@ -409,42 +417,63 @@ def test_view_detailed_expenses_render_no_cards(client_logged):
     assert 'class="stat-cards"' not in content
 
 
-@factory.django.mute_signals(post_save)
-def test_view_detailed_expenses_bigger_type_first(client_logged):
-    _expense("a1", 30000, expense_type=ExpenseTypeFactory(title="A"))
-    _expense("b1", 70000, expense_type=ExpenseTypeFactory(title="B"))
-
-    content = _expenses_page(client_logged)
-
-    first, second = _positions(content, 'id="detailed-b"', 'id="detailed-a"')
-    assert first < second
-
-
 @pytest.mark.parametrize(
-    "prices, shares",
+    "types, order",
     [
-        pytest.param((30000, 70000), ["70% metų sumos", "30% metų sumos"], id="whole"),
-        pytest.param(
-            (10, 9990), ["&gt; 99% metų sumos", "&lt; 1% metų sumos"], id="edges"
-        ),
+        # made in the other order, so a tie read by creation would show
+        pytest.param([("Zeta", 1), ("Beta", 1)], ["beta", "zeta"], id="tie_by_title"),
+        pytest.param([("A", 30000), ("B", 70000)], ["b", "a"], id="bigger_first"),
     ],
 )
 @factory.django.mute_signals(post_save)
-def test_view_detailed_expenses_panels_carry_their_share(client_logged, prices, shares):
-    _expense("a1", prices[0], expense_type=ExpenseTypeFactory(title="A"))
-    _expense("b1", prices[1], expense_type=ExpenseTypeFactory(title="B"))
+def test_view_detailed_expenses_panels_run_by_total_then_title(
+    client_logged, types, order
+):
+    for title, price in types:
+        _expense(f"{title} name", price, expense_type=ExpenseTypeFactory(title=title))
 
     content = _expenses_page(client_logged)
 
-    assert re.findall(r'<p class="panel__subtitle">([^<]*)</p>', content) == shares
+    assert (
+        re.findall(r'<section class="panel panel--table" id="detailed-(\w+)">', content)
+        == order
+    )
 
 
+def _two_types(a, b):
+    def build():
+        _expense("a1", a, expense_type=ExpenseTypeFactory(title="A"))
+        _expense("b1", b, expense_type=ExpenseTypeFactory(title="B"))
+
+    return build
+
+
+@pytest.mark.parametrize(
+    "url_name, build, shares",
+    [
+        pytest.param(
+            "bookkeeping:detailed_expenses",
+            _two_types(30000, 70000),
+            ["70% metų sumos", "30% metų sumos"],
+            id="whole",
+        ),
+        pytest.param(
+            "bookkeeping:detailed_expenses",
+            _two_types(10, 9990),
+            ["&gt; 99% metų sumos", "&lt; 1% metų sumos"],
+            id="edges",
+        ),
+        pytest.param("bookkeeping:detailed_incomes", IncomeFactory, [], id="incomes"),
+    ],
+)
 @factory.django.mute_signals(post_save)
-def test_view_detailed_incomes_render_no_shares(client_logged):
-    IncomeFactory()
+def test_view_detailed_panels_carry_a_share_only_on_expenses(
+    client_logged, url_name, build, shares
+):
+    build()
 
-    content = client_logged.get(
-        reverse("bookkeeping:detailed_incomes")
-    ).content.decode()
+    content = client_logged.get(reverse(url_name)).content.decode()
 
-    assert "panel__subtitle" not in content
+    assert re.findall(r'<p class="panel__subtitle">([^<]*)</p>', content) == shares
+    # the bare mark too: no subtitle on any other element
+    assert content.count("panel__subtitle") == len(shares)
