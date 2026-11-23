@@ -38,7 +38,7 @@ def test_accounts_row_tips_its_latest_check_and_reads_its_worth(
 
     # the name's tip, then Turiu: the row's sixth cell
     assert re.findall(
-        r'<span class="tip[^"]*" tabindex="0" data-tip="([^"]*)"'
+        r'<span class="tip right w100" tabindex="0" data-tip="([^"]*)"'
         r' aria-description="\1">Account1</span>\s*</td>'
         r"(?:\s*<td[^>]*>[^<]*</td>){4}\s*<td[^>]*>([^<]*)</td>",
         actual,

@@ -17,7 +17,7 @@
     {% for item in items %}
     <tr>
         <td class="text-left">
-            {% with check=item.latest_check|default_if_none:_('No record of account amount') %}<span class="tip right w100" tabindex="0" data-tip="{{ check }}" aria-description="{{ check }}">{{ item.account.title }}</span>{% endwith %}
+            {% with check=item.latest_check|default_if_none:_('No record of account amount') %}<c-tip side="right" wide text="{{ check }}" description="{{ check }}">{{ item.account.title }}</c-tip>{% endwith %}
         </td>
         <c-figure-cell :value="item.past" />
         <c-figure-cell :value="item.incomes" />
