@@ -686,6 +686,7 @@ def test_plan_update_returns_htmx_response(client_logged, kind, own_data):
         pytest.param(
             DAY, "day-plans", 5, "0,05", id="day_tab_price_converted_in_template"
         ),
+        pytest.param(INCOME, "income-plans", 0, "0,00", id="a_zero_month_reads_cents"),
     ],
 )
 def test_plan_tab_price_converted_in_template(client_logged, kind, panel, price, text):

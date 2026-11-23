@@ -41,6 +41,14 @@ state, never a class: `column="total"` for a Month table's last. A first column 
 state: the skin sets it left.
 _Avoid_: sortable th, sort link, column header
 
+**Month figure**:
+A month's cell in a Month table: `<c-month-figure :value="…">`, the money with cents,
+`0,00` for a month with nothing, where bookkeeping's `<c-figure-cell>` draws `-`; its
+`data-cell` carries the value's state. `class` adds the caller's state class beside
+`main__figure` (plans' `plans-table__over`, a month over its plan), as core names no
+app's class. Detailed's tables and Plans' plan and Calculations tables draw it.
+_Avoid_: month cell, figure td
+
 **Tip**:
 A bubble of text that opens over a trigger on hover or focus: `<c-tip side="bottom"
 text="…">trigger</c-tip>`, a `<span class="tip">` whose `data-tip` the bubble draws.

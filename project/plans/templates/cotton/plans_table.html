@@ -1,6 +1,4 @@
 {% load i18n %}
-{% load math %}
-{% load cell_format %}
 {% load months %}
 
 <div class="month-table">
@@ -23,7 +21,7 @@
         <c-edit-row :url="row.update_url">
             <td>{{ row.title }}</td>
             {% for value, state in row.cells %}
-            <td class="main__figure{% if state == 'over' %} plans-table__over{% endif %}" data-cell="{{value|cell_state}}">{{value|price|cellformat:"0,00"}}</td>
+            <c-month-figure :value="value" class="{% if state == 'over' %}plans-table__over{% endif %}" />
             {% endfor %}
             <c-td-edit :url="row.update_url" />
             <c-td-delete :url="row.delete_url" />

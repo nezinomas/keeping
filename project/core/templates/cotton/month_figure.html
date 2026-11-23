@@ -1,0 +1,3 @@
+<c-vars value="" class="" />
+{# "0,00" for an empty month, where <c-figure-cell> draws "-" #}
+{% load math cell_format %}<td class="main__figure{% if class %} {{ class }}{% endif %}" data-cell="{{ value|cell_state }}">{{ value|price|cellformat:"0,00" }}</td>
