@@ -10,6 +10,7 @@ from ....core.lib.year_boundary import YearBoundary
 from ....debts.models import Debt
 from ....debts.services.model_services import DebtModelService
 from ....users.models import User
+from ...lib.balance_base import BalanceBase
 from ...lib.make_dataframe import MakeDataFrame
 from ...lib.year_balance import YearBalance
 from ..wealth.presenters import WealthPresenter
@@ -134,6 +135,7 @@ class MonthCharts:
 
     incomes: list[int]
     expenses: list[int]
+    averages: dict[str, float]
     months_with_rows: frozenset[int]
     boundary: YearBoundary
 
@@ -142,11 +144,13 @@ class MonthCharts:
         provider = IndexDataProvider(user)
         data = provider.get_incomes_and_expenses()
         df = MakeDataFrame.for_year(provider.year, data, ("incomes", "expenses")).data
+        boundary = YearBoundary(provider.year, today)
         return cls(
             df["incomes"].to_list(),
             df["expenses"].to_list(),
+            BalanceBase(df).average_over(boundary.months_elapsed),
             frozenset(row["date"].month for row in data),
-            YearBoundary(provider.year, today),
+            boundary,
         )
 
     def context(self) -> dict:
@@ -154,10 +158,10 @@ class MonthCharts:
             "categories": list(month_names().values()),
             "incomes": self._drawn(self.incomes),
             "incomes_title": _("Incomes"),
-            "incomes_average": self._average(self.incomes),
+            "incomes_average": round(self.averages["incomes"]),
             "expenses": self._drawn(self.expenses),
             "expenses_title": _("Expenses"),
-            "expenses_average": self._average(self.expenses),
+            "expenses_average": round(self.averages["expenses"]),
             "current_month": [
                 self.boundary.is_current and month == self.boundary.today.month
                 for month in MONTHS
@@ -175,13 +179,6 @@ class MonthCharts:
             else None
             for month, figure in zip(MONTHS, sums, strict=True)
         ]
-
-    def _average(self, sums: list[int]) -> int:
-        """Over the months reached; a year not begun has none, and averages 0."""
-        reached = self.boundary.months_elapsed
-        if not reached:
-            return 0
-        return round(sum(sums[:reached]) / reached)
 
 
 @dataclass(frozen=True)
