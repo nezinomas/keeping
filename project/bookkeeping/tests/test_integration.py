@@ -1292,6 +1292,19 @@ class BookkeepingMonthDetailedAndSummary(TestCase, Browser):
             [[PAPER, f"linear-gradient({STRIPE}, {STRIPE})"], [STRIPE, "none"]],
         ]
 
+    def test_a_month_table_sets_its_name_column_left(self):
+        IncomeFactory()
+        self.open_at(reverse("bookkeeping:detailed"), 1280)
+
+        aligns = self.browser.execute_script(
+            "return [...document.querySelectorAll("
+            "  '.month-table :is(thead tr:last-child, tbody tr, tfoot tr)')]"
+            "  .map(tr => getComputedStyle(tr.children[0]).textAlign);"
+        )
+
+        # the skin alone aligns it: the cells carry no class of their own
+        assert aligns == ["left"] * 3
+
     def test_a_sortable_header_draws_the_paper_arrow(self):
         IncomeFactory()
         self.open_at(reverse("bookkeeping:detailed"), 1280)
