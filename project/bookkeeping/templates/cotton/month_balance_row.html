@@ -1,7 +1,7 @@
 <c-vars row="" :blank_balance="False" end_label="" flow="" />
 <c-figure-cell :value="row.incomes" />
 <c-figure-cell :value="row.expenses" />
-{% if blank_balance %}<td class="main__figure"></td>{% else %}<c-figure-cell :value="row.balance" signed />{% endif %}
+{% if blank_balance %}<c-figure-cell empty />{% else %}<c-figure-cell :value="row.balance" signed />{% endif %}
 <c-figure-cell :value="row.savings" group />
 <c-figure-cell :value="row.savings_close" />
 <c-figure-cell :value="row.borrow" show="open" group />

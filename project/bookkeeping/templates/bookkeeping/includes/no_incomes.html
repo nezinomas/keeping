@@ -4,7 +4,7 @@
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th>{% translate 'Unnecessary expenses' %} <span class="main__figure main__figure--muted">{% if save_sum %}{{ save_sum|price|floatformat:'0g' }}{% else %}–{% endif %}</span>{% if not_use %} <c-tip class="hint" side="bottom" text="{% translate 'Unnecessary expenses that can be avoided' %}:
+            <th>{% translate 'Unnecessary expenses' %} <span class="main__figure main__figure--muted">{% if save_sum %}{{ save_sum|price|floatformat:'0g' }}{% else %}-{% endif %}</span>{% if not_use %} <c-tip class="hint" side="bottom" text="{% translate 'Unnecessary expenses that can be avoided' %}:
 {% for i in not_use %}- {{ i }}
 {% endfor %}" label="{% translate 'Unnecessary expenses that can be avoided' %}" description="{% translate 'Unnecessary expenses that can be avoided' %}: {{ not_use|join:', ' }}"><i class="bi bi-question-circle"></i></c-tip>{% endif %}</th>
             <th>€ + F</th>

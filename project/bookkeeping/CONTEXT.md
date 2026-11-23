@@ -110,8 +110,8 @@ the money, the months it lasts with spending unchanged, and after cutting the
 unnecessary expenses; columns € + F and € + F + P, with the € / F / P legend. Its first
 header cell reads *Nebūtinos išlaidos*, then the monthly sum those cuts save, muted,
 then a "?" whose tip lists the cuts. A journal that marks nothing unnecessary draws a
-muted "–" for the sum and no "?"; one whose marked expenses cost nothing in the six
-months draws the "–" and the "?".
+muted "-" for the sum, the table's empty figure, and no "?"; one whose marked expenses
+cost nothing in the six months draws the "-" and the "?".
 _Avoid_: no_incomes (that is the module), survival table
 
 **Debts table**:

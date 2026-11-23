@@ -11,21 +11,11 @@ from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import PensionFactory
 from ....savings.tests.factories import SavingFactory
 from .. import factories
-from ..helper import FUNDS_TAB, cell_texts, funds_table, tab_table, table_titled
+from ..helper import FUNDS_TAB, cell_texts, tab_table, table_titled
 
 pytestmark = pytest.mark.django_db
 
 OVERVIEW = "bookkeeping:tab_overview"
-FUNDS_HEADER = (
-    r'<th rowspan="2" colspan="2" class="[^"]*">1999 pradžioje</th>\s*'
-    r'<th colspan="2" class="[^"]*">1999</th>'
-)
-
-
-def test_header_reads_the_selected_year(client_logged):
-    PensionFactory()
-
-    assert re.search(FUNDS_HEADER, funds_table(client_logged, "Pensijos"))
 
 
 def test_accounts_table_draws_each_column_under_a_left_title(client_logged):
@@ -39,7 +29,7 @@ def test_accounts_table_draws_each_column_under_a_left_title(client_logged):
     first_cells = re.findall(r"<tr\b[^>]*>\s*<t[hd]([^>]*)>", table)
 
     assert (first_cells, cell_texts(table)) == (
-        [' class="text-left"'] * 3,
+        [""] * 3,
         [
             [
                 "Sąskaitos",
@@ -104,7 +94,7 @@ def test_every_table_refreshes_every_balance(client_logged):
     # Its own id per table: the tab's reload gives the focus back to that id
     icons = [
         re.findall(
-            r'<th class="([^"]*)"[^>]*>\s*<span class="tip right"'
+            r'<th(?: class="([^"]*)")?[^>]*>\s*<span class="tip right"'
             r' data-tip="([^"]*)">\s*<(\w+) type="(\w+)" id="([^"]*)"'
             r' class="refresh-icon" hx-(\w+)="([^"]*)"[^>]*\baria-label="\2">'
             r'\s*<i class="bi bi-arrow-repeat me-1">',
@@ -122,7 +112,7 @@ def test_every_table_refreshes_every_balance(client_logged):
     assert icons == [
         [(*head, "button", "button", f"refresh-{kind}", "post", url)]
         for head, kind in (
-            (("text-left", tip), "accounts"),
+            (("", tip), "accounts"),
             (named, "savings"),
             (named, "pensions"),
         )

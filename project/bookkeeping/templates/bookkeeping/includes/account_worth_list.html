@@ -1,11 +1,9 @@
 {% load i18n %}
-{% load math %}
-{% load cell_format %}
 
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="text-left"><c-regenerate-balances id="refresh-accounts" /> {% translate 'Accounts' %}</th>
+            <th><c-regenerate-balances id="refresh-accounts" /> {% translate 'Accounts' %}</th>
             <th>{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
@@ -16,7 +14,7 @@
     </c-slot>
     {% for item in items %}
     <tr>
-        <td class="text-left">
+        <td>
             {% with check=item.latest_check|default_if_none:_('No record of account amount') %}<c-tip side="right" wide text="{{ check }}" description="{{ check }}">{{ item.account.title }}</c-tip>{% endwith %}
         </td>
         <c-figure-cell :value="item.past" />
@@ -24,18 +22,18 @@
         <c-figure-cell :value="item.expenses" />
         <c-figure-cell :value="item.balance" />
         <c-figure-cell :value="item.have" />
-        <td class="main__figure" data-sign="{{item.delta|sign}}">{{item.delta|price|cellformat:"ok"}}</td>
+        <c-figure-cell :value="item.delta" ok />
     </tr>
     {% endfor %}
     <c-slot name="foot">
         <tr class="main__total">
-            <td class="text-left">{% translate 'Total' %}</td>
+            <td>{% translate 'Total' %}</td>
             <c-figure-cell :value="total_row.past" />
             <c-figure-cell :value="total_row.incomes" />
             <c-figure-cell :value="total_row.expenses" />
             <c-figure-cell :value="total_row.balance" check="{{ cash_flow_check }}" />
             <c-figure-cell :value="total_row.have" />
-            <td class="main__figure"{% if total_row.delta %} data-sign="{{total_row.delta|sign}}"{% endif %}>{{total_row.delta|price|cellformat}}</td>
+            <c-figure-cell :value="total_row.delta" signed />
         </tr>
     </c-slot>
 </c-paper-table>

@@ -69,13 +69,13 @@ def _cuts_a_cent(main_user):
 
 
 # the six whole months before the view's today hold the cut expense: 1.200,00 / 6;
-# a cent over six months is a cut that rounds to 0, drawn "0", not "–" (Q193)
+# a cent over six months is a cut that rounds to 0, drawn "0", not "-" (Q193)
 @time_machine.travel("1999-06-15")
 @pytest.mark.parametrize(
     "journal, figure, hint_count",
     [
-        pytest.param(_marks_nothing, "–", 0, id="nothing-marked"),
-        pytest.param(_marks_a_type_never_spent_on, "–", 1, id="nothing-cut"),
+        pytest.param(_marks_nothing, "-", 0, id="nothing-marked"),
+        pytest.param(_marks_a_type_never_spent_on, "-", 1, id="nothing-cut"),
         pytest.param(_cuts_an_expense, "200", 1, id="a-cut"),
         pytest.param(_cuts_a_cent, "0", 1, id="a-cut-rounding-to-0"),
     ],

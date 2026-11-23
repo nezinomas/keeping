@@ -422,9 +422,9 @@ def _accounts_and_debts(content):
     [
         # Account1's five, the total's five, three for each kind of debt
         pytest.param("overview", _accounts_and_debts, 16, id="overview"),
-        # twelve months of ten figures but January's signed balance, eight in each
-        # foot row; twelve months, the average and the total of one type and its sum
-        pytest.param("balance", lambda content: [content], 119 + 16 + 28, id="balance"),
+        # Balansas: twelve months of ten but January's signed balance, nine averages
+        # (the Balance a dash), eight totals; one type and its sum in 14 rows each
+        pytest.param("balance", lambda content: [content], 119 + 17 + 28, id="balance"),
     ],
 )
 def test_index_tables_unsigned_money_cells_carry_their_cell_state(
@@ -771,7 +771,7 @@ def test_balance_table_draws_each_column(client_logged, main_user):
     ]
     figures = [*moves[:2], "800,00", *moves[2:]]
     # each move over the twelve months of a year that is over
-    averages = ["83,33", "16,67", "", "25,00", "4,17", "5,83", "1,67", "7,50", "2,50"]
+    averages = ["83,33", "16,67", "-", "25,00", "4,17", "5,83", "1,67", "7,50", "2,50"]
     # January, then the average and total rows; the average's last cell is its label:
     # test_balance_tables_end_of_year_label_is_a_plain_cell_not_a_figure
     assert [rows[2], rows[-2][:-1], rows[-1]] == [
