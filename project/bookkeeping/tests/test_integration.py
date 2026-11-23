@@ -742,7 +742,7 @@ class BookkeepingIndex(TestCase, Browser):
             " form: !!document.querySelector('#mainModal .modal-form')};"
         ) == {"tab_swaps": 1, "modal_hidden": True, "form": False}
 
-    def test_every_index_tab_fits_a_phone(self):
+    def _open_with_the_longest_names(self, tab):
         # a funds table and the accounts table run wider than a phone's column; the
         # dev DB's longest fund and pension names
         IncomeFactory()
@@ -750,20 +750,21 @@ class BookkeepingIndex(TestCase, Browser):
         PensionFactory(
             pension_type=PensionTypeFactory(title="Artea Ambicingas Index 16+")
         )
-        overflow = {}
-        for tab in INDEX_TABS:
-            self.open_at(tab.url, 360)
-            overflow[tab.name] = page_overflow(self.browser)
-            if tab.name == "funds":
-                scrolls = self.browser.execute_script(
-                    "return [...document.querySelectorAll('.panel .table-responsive')]"
-                    "  .map(box => box.scrollWidth > box.clientWidth);"
-                )
+        self.open_at(INDEX_TABS[tab].url, 360)
 
-        assert (overflow, scrolls) == (
-            dict.fromkeys((tab.name for tab in INDEX_TABS), 0),
-            [True, True],
-        )
+    @parameterized.expand([(tab.name,) for tab in INDEX_TABS])
+    def test_every_index_tab_fits_a_phone(self, tab):
+        self._open_with_the_longest_names(tab)
+
+        assert page_overflow(self.browser) == 0
+
+    def test_the_funds_tables_scroll_in_their_boxes_on_a_phone(self):
+        self._open_with_the_longest_names("funds")
+
+        assert self.browser.execute_script(
+            "return [...document.querySelectorAll('.panel .table-responsive')]"
+            "  .map(box => box.scrollWidth > box.clientWidth);"
+        ) == [True, True]
 
     def test_the_no_incomes_head_mutes_its_cut_and_its_hint_under_a_help_cursor(self):
         journal = JournalFactory()
@@ -1020,32 +1021,37 @@ class BookkeepingIndex(TestCase, Browser):
             "block",
         )
 
-    def test_the_funds_tables_start_their_figures_at_one_x(self):
+    def _open_funds_with_a_long_and_a_short_name(self, width):
         # the longest fund name, beside a short pension name
         SavingFactory(saving_type=SavingTypeFactory(title=LONGEST_FUND))
         PensionFactory(pension_type=PensionTypeFactory(title="P"))
-        columns = {}
-        for width in (1500, 1280):
-            self.open_at(INDEX_TABS["funds"].url, width)
-            # per table: the name column's width, the second column's left x
-            columns[width] = self.browser.execute_script(
-                "return [...document.querySelectorAll('.panel table.main')].map(t => {"
-                " const name = t.querySelector('tbody td');"
-                " return [name.getBoundingClientRect().width,"
-                " name.nextElementSibling.getBoundingClientRect().left]; });"
-            )
-            if width == 1500:
-                lines = self.browser.execute_script(
-                    "const range = document.createRange();"
-                    " range.selectNodeContents("
-                    "document.querySelector('#savings tbody td'));"
-                    " return range.getClientRects().length;"
-                )
+        self.open_at(INDEX_TABS["funds"].url, width)
 
-        assert {w: c[0] for w, c in columns.items()} == {
-            w: c[1] for w, c in columns.items()
-        }
-        assert lines == 1
+    @parameterized.expand([(1500,), (1280,)])
+    def test_the_funds_tables_start_their_figures_at_one_x(self, width):
+        self._open_funds_with_a_long_and_a_short_name(width)
+
+        # per table: the name column's width, the second column's left x
+        funds, pensions = self.browser.execute_script(
+            "return [...document.querySelectorAll('.panel table.main')].map(t => {"
+            " const name = t.querySelector('tbody td');"
+            " return [name.getBoundingClientRect().width,"
+            " name.nextElementSibling.getBoundingClientRect().left]; });"
+        )
+        assert funds == pensions
+
+    def test_the_longest_fund_name_keeps_one_line_at_1500(self):
+        self._open_funds_with_a_long_and_a_short_name(1500)
+
+        assert (
+            self.browser.execute_script(
+                "const range = document.createRange();"
+                " range.selectNodeContents("
+                "document.querySelector('#savings tbody td'));"
+                " return range.getClientRects().length;"
+            )
+            == 1
+        )
 
     @parameterized.expand(
         [
