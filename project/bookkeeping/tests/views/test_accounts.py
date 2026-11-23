@@ -118,7 +118,7 @@ def test_every_table_refreshes_every_balance(client_logged):
     ]
 
     tip = "Bus atnaujinti visų metų balansai."
-    named = ("text-left funds-table__name", tip)
+    named = ("funds-table__name", tip)
     assert icons == [
         [(*head, "button", "button", f"refresh-{kind}", "post", url)]
         for head, kind in (

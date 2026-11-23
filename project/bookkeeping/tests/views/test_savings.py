@@ -305,7 +305,7 @@ def test_open_fund_with_no_worth_draws_its_cost_and_its_worth_cells_empty(
     ] == [("1.000,00", False), *[("-", True)] * 4]
 
 
-def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
+def test_a_fund_worth_its_cost_reads_a_dash_profit_and_0_percent_on_row_and_total(
     client_logged, main_user
 ):
     with quiet_build(main_user):
@@ -315,12 +315,16 @@ def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
 
     table = funds_table(client_logged)
 
+    # the row and the total row: the profit an unsigned dash, its percent 0% (Q216)
     assert {
-        "row": [attrs for attrs, _text in row_tags(table, "Even")[-2:]],
-        "total": [attrs for attrs, _text in total_tags(table)[-2:]],
+        "row": row_tags(table, "Even")[-2:],
+        "total": total_tags(table)[-2:],
     } == dict.fromkeys(
         ("row", "total"),
-        [f'{GROUP_FIGURE} data-cell="empty"', f'{FIGURE} data-cell="empty"'],
+        [
+            (f'{GROUP_FIGURE} data-cell="empty"', "-"),
+            (f'{FIGURE} data-cell="empty"', "0%"),
+        ],
     )
 
 
@@ -364,7 +368,7 @@ def _shape(table):
 CENTRED = ' class="text-center"'
 CENTRED_START = ' class="text-center main__group-start"'
 START = ' class="main__group-start"'
-NAME = ' class="text-left funds-table__name"'
+NAME = ' class="funds-table__name"'
 # the three header rows: 13 columns under their groups
 HEAD = [
     [
@@ -413,6 +417,23 @@ def test_funds_table_draws_each_column(client_logged, main_user):
         ["Fund", *paid, "1999-12-31", *profit],
         ["Viso", *paid, *profit],
     ]
+
+
+@pytest.mark.parametrize(
+    "title, kind, header",
+    [
+        pytest.param("Fondai", "funds", "Fondas", id="funds"),
+        pytest.param("Pensijos", "pensions", "Pensijų fondas", id="pensions"),
+    ],
+)
+def test_each_table_heads_its_name_column_by_what_it_lists(
+    client_logged, main_user, title, kind, header
+):
+    with quiet_build(main_user):
+        buy(SavingTypeFactory(title="Owner", type=kind), 100000)
+
+    # the third head row's first cell, over the names
+    assert cell_texts(funds_table(client_logged, title))[2][0] == header
 
 
 def test_funds_tables_cells_carry_their_spans_and_states(client_logged, main_user):

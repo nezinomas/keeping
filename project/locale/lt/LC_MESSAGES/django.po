@@ -306,6 +306,10 @@ msgstr "Parduota"
 msgid "Fund"
 msgstr "Fondas"
 
+#: .\project\bookkeeping\templates\bookkeeping\tab_funds.html:16
+msgid "Pension fund"
+msgstr "Pensijų fondas"
+
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:24
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:26
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:28

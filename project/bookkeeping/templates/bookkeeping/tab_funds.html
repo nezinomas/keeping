@@ -1,15 +1,19 @@
+{% load i18n %}
+
 <div class="stat-cards">
     <c-stat-cards :cards="cards" />
 </div>
 
 {% if savings.object_list %}
 <c-panel table id="savings" title="{{ savings.title }}">
-    <div class="table-responsive">{% include 'bookkeeping/includes/funds_table.html' with refresh_id="refresh-savings" title=savings.title object_list=savings.object_list total_row=savings.total_row %}</div>
+    {% translate 'Fund' as name_title %}
+    <div class="table-responsive">{% include 'bookkeeping/includes/funds_table.html' with refresh_id="refresh-savings" title=savings.title name_title=name_title object_list=savings.object_list total_row=savings.total_row %}</div>
 </c-panel>
 {% endif %}
 
 {% if pensions.object_list %}
 <c-panel table title="{{ pensions.title }}">
-    <div class="table-responsive">{% include 'bookkeeping/includes/funds_table.html' with refresh_id="refresh-pensions" title=pensions.title object_list=pensions.object_list total_row=pensions.total_row %}</div>
+    {% translate 'Pension fund' as name_title %}
+    <div class="table-responsive">{% include 'bookkeeping/includes/funds_table.html' with refresh_id="refresh-pensions" title=pensions.title name_title=name_title object_list=pensions.object_list total_row=pensions.total_row %}</div>
 </c-panel>
 {% endif %}

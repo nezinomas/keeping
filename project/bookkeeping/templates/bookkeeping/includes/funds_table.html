@@ -4,7 +4,7 @@
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="text-left funds-table__name" rowspan="2"><c-regenerate-balances id="{{ refresh_id }}" /> {{ title }}</th>
+            <th class="funds-table__name" rowspan="2"><c-regenerate-balances id="{{ refresh_id }}" /> {{ title }}</th>
             <th rowspan="2" colspan="2" class="text-center main__group-start">{% blocktranslate with year=request.user.selected_year %}Start of {{ year }}{% endblocktranslate %}</th>
             <th colspan="2" class="text-center main__group-start">{{ request.user.selected_year }}</th>
             <th colspan="4" class="text-center main__group-start">{% translate 'Total' %}</th>
@@ -17,7 +17,7 @@
             <th colspan="2" class="text-center">{% translate 'Sold' %}</th>
         </tr>
         <tr>
-            <th class="text-left funds-table__name">{% translate 'Fund' %}</th>
+            <th class="funds-table__name">{{ name_title }}</th>
             <th class="main__group-start">{% translate 'Sum' %}</th>
             <th>{% translate 'Fees' %}</th>
             <th class="main__group-start">{% translate 'Sum' %}</th>
@@ -34,7 +34,7 @@
     </c-slot>
     {% for item in object_list %}
     <tr>
-        <td class="text-left funds-table__name">{{ item.owner }}</td>
+        <td class="funds-table__name">{{ item.owner }}</td>
         <c-figure-cell :value="item.past_amount" group />
         <c-figure-cell :value="item.past_fee" />
         <c-figure-cell :value="item.per_year_incomes" group />
@@ -61,7 +61,7 @@
     {% endfor %}
     <c-slot name="foot">
         <tr class="main__total">
-            <td class="text-left funds-table__name">{% translate 'Total' %}</td>
+            <td class="funds-table__name">{% translate 'Total' %}</td>
             <c-figure-cell :value="total_row.past_amount" group />
             <c-figure-cell :value="total_row.past_fee" />
             <c-figure-cell :value="total_row.per_year_incomes" group />
