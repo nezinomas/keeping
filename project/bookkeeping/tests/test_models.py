@@ -136,7 +136,7 @@ WORTH_FACTORIES = [AccountWorthFactory, SavingWorthFactory, PensionWorthFactory]
 
 
 @pytest.mark.parametrize(
-    "service, factory, field, fund_factory",
+    "service, factory, field, owner_factory",
     [
         (AccountWorthModelService, AccountWorthFactory, "account", AccountFactory),
         (SavingWorthModelService, SavingWorthFactory, "saving_type", SavingTypeFactory),
@@ -149,11 +149,11 @@ WORTH_FACTORIES = [AccountWorthFactory, SavingWorthFactory, PensionWorthFactory]
     ],
 )
 def test_worth_objects_are_the_users_journals(
-    main_user, second_user, service, factory, field, fund_factory
+    main_user, second_user, service, factory, field, owner_factory
 ):
-    mine = fund_factory(title="Mine")
+    mine = owner_factory(title="Mine")
     factory(**{field: mine})
-    factory(**{field: fund_factory(title="Theirs", journal=second_user.journal)})
+    factory(**{field: owner_factory(title="Theirs", journal=second_user.journal)})
 
     actual = service(main_user).objects
 
@@ -223,16 +223,16 @@ def test_worth_price_is_required(factory):
 
 
 @pytest.mark.parametrize(
-    "factory, field, fund_factory",
+    "factory, field, owner_factory",
     [
         (AccountWorthFactory, "account", AccountFactory),
         (SavingWorthFactory, "saving_type", SavingTypeFactory),
         (PensionWorthFactory, "pension_type", PensionTypeFactory),
     ],
 )
-def test_worth_journal_is_its_funds(second_user, factory, field, fund_factory):
+def test_worth_journal_is_its_owners(second_user, factory, field, owner_factory):
     journal = second_user.journal
 
-    obj = factory.build(**{field: fund_factory(journal=journal)})
+    obj = factory.build(**{field: owner_factory(journal=journal)})
 
     assert obj.journal == journal
