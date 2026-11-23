@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load get_item %}
 
 <c-paper-table class="main striped hover">
     <c-slot name="head">
@@ -12,26 +11,17 @@
     {% for item, total_column in ctx.data %}
     <tr>
         <td>{{ item.date|date:"F"|title }}</td>
-        {% for category in ctx.categories %}
-        {% with item|get_item:category as val %}<c-figure-cell :value="val" />{% endwith %}
-        {% endfor %}
-        <c-figure-cell :value="total_column.total" />
+        <c-expenses-by-type-row :row="item" :categories="ctx.categories" :total="total_column.total" />
     </tr>
     {% endfor %}
     <c-slot name="foot">
         <tr class="main__total">
             <td>{% translate 'Average' %}</td>
-            {% for category in ctx.categories %}{% with ctx.avg_row|get_item:category as val %}
-            <c-figure-cell :value="val" />
-            {% endwith %}{% endfor %}
-            <c-figure-cell :value="ctx.avg" />
+            <c-expenses-by-type-row :row="ctx.avg_row" :categories="ctx.categories" :total="ctx.avg" />
         </tr>
         <tr class="main__total">
             <td>{% translate 'Total' %}</td>
-            {% for category in ctx.categories %}{% with ctx.total_row|get_item:category as val %}
-            <c-figure-cell :value="val" />
-            {% endwith %}{% endfor %}
-            <c-figure-cell :value="ctx.total" />
+            <c-expenses-by-type-row :row="ctx.total_row" :categories="ctx.categories" :total="ctx.total" />
         </tr>
     </c-slot>
 </c-paper-table>

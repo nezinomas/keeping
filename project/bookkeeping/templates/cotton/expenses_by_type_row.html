@@ -1,0 +1,3 @@
+<c-vars row="" categories="" total="" />
+{% load get_item %}{% for category in categories %}{% with row|get_item:category as val %}<c-figure-cell :value="val" />{% endwith %}{% endfor %}
+<c-figure-cell :value="total" />
