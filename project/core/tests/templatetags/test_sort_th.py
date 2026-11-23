@@ -26,9 +26,6 @@ def test_a_sort_link_adds_its_order_to_the_urls_query(url, expected):
     [
         pytest.param('align="left"', '<th class="text-left">', id="left"),
         pytest.param(
-            'column="title"', '<th class="text-left title-col">', id="title_column"
-        ),
-        pytest.param(
             'column="total"', '<th class="month-table__total">', id="total_column"
         ),
         pytest.param('align="right"', "<th>", id="other_value"),

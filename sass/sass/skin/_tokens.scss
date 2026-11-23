@@ -4,6 +4,9 @@
 // The paper skin's mixins, and the tokens every chart reads, on `:root`: Highcharts
 // draws a tooltip outside `.paper-skin`, and an unresolved token comes out black.
 
+// a striped table's even row, as a plain fill or an opaque-stripe's image
+$stripe: rgba($ink, 0.035);
+
 @mixin panel {
     position: relative;
     padding: calc($gap * 1.5) calc($gap * 1.6);
@@ -86,7 +89,7 @@
 // an opaque colour, so nothing shows through.
 @mixin opaque-stripe {
     background-color: $paper;
-    background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+    background-image: linear-gradient($stripe, $stripe);
 }
 
 @mixin opaque-hover {

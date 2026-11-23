@@ -21,8 +21,8 @@
 
     margin: 0 0 10px;
 
-    // a phone has no room beside the hint, so the tip opens under the title; an
-    // anchored bubble finds that room itself (.panel__hint below)
+    // on a phone a bubble centred under the hint at the line's end runs off the
+    // page, so it opens under the whole title; an anchored bubble finds its room
     @include tooltip.unanchored {
         @include phone {
             position: relative;
@@ -43,7 +43,7 @@
     }
 }
 
-.panel__title:has(> .panel__control) {
+.paper-skin .panel__title:has(> .panel__control) {
     display: flex;
     justify-content: space-between;
 }
@@ -59,7 +59,5 @@
     &::before {
         white-space: normal;
         width: 18rem;
-        // too wide for a phone's room beside the hint: it opens under it
-        position-try-fallbacks: bottom;
     }
 }

@@ -36,7 +36,7 @@ def _row(title="Salary", states=ALL_WITHIN):
 def test_renders_a_row_with_its_title(table):
     actual = table([_row("Salary")])
 
-    assert '<td class="text-left">Salary</td>' in actual
+    assert "<td>Salary</td>" in actual
 
 
 def test_the_empty_row_spans_the_header_and_closes(table):

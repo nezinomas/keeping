@@ -182,7 +182,7 @@ def _panel(content, panel_id):
 
 
 def _row_titles(table):
-    return re.findall(r'<tr[^>]*>\s*<td class="text-left">\s*(.*?)\s*</td>', table)
+    return re.findall(r"<tr[^>]*>\s*<td>\s*(.*?)\s*</td>", table)
 
 
 def _month_cells(table, figure):
@@ -978,7 +978,7 @@ def test_day_tab_tables_head_their_months_with_the_quarter_band(
     band = re.search(r"<tr[^>]*>(.*?)</tr>", head, re.S).group(1)
     actual = re.findall(r"<th([^>]*)>(.*?)</th>", band)
 
-    assert actual == [(' class="title-col"', ""), *QUARTERS, *after]
+    assert actual == [("", ""), *QUARTERS, *after]
 
 
 @pytest.mark.parametrize("panel", ["day-plans", "calculations-spend"])

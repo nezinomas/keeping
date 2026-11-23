@@ -218,7 +218,7 @@
         // the stripe is fainter than the hover, so the cursor still reads on an
         // even row
         &.striped tbody tr:nth-child(even) > td {
-            background-color: rgba($ink, 0.035);
+            background-color: tokens.$stripe;
         }
 
         &.hover tbody tr:hover > td {

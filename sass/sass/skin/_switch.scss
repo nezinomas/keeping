@@ -2,56 +2,58 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// no hue: a control is not coloured for being one (sass.md *Colour*)
-.switch {
-    @include tokens.header;
+.paper-skin {
+    // no hue: a control is not coloured for being one (sass.md *Colour*)
+    .switch {
+        @include tokens.header;
 
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    @include tokens.bare-button;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        @include tokens.bare-button;
 
-    padding: 0;
+        padding: 0;
 
-    &:focus-visible {
-        @include tokens.focus-ring;
+        &:focus-visible {
+            @include tokens.focus-ring;
+        }
     }
-}
 
-.switch__track {
-    position: relative;
-    width: 1.6rem;
-    height: 0.9rem;
-    border-radius: 0.45rem;
-    background: $hair;
-}
-
-.switch__knob {
-    position: absolute;
-    top: 0.1rem;
-    left: 0.1rem;
-    width: 0.7rem;
-    height: 0.7rem;
-    border-radius: 50%;
-    background: $paper;
-}
-
-.switch[aria-checked="true"] {
     .switch__track {
-        background: $ink;
+        position: relative;
+        width: 1.6rem;
+        height: 0.9rem;
+        border-radius: 0.45rem;
+        background: $hair;
     }
 
     .switch__knob {
-        left: 0.8rem;
+        position: absolute;
+        top: 0.1rem;
+        left: 0.1rem;
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 50%;
+        background: $paper;
     }
-}
 
-// over the closed table, its track starts where the table's names do (Q200)
-.closed-fold > .switch {
-    margin-bottom: $gap;
-    margin-left: $cell-inset;
+    .switch[aria-checked="true"] {
+        .switch__track {
+            background: $ink;
+        }
 
-    @include phone {
-        margin-left: $name-inset-phone;
+        .switch__knob {
+            left: 0.8rem;
+        }
+    }
+
+    // over the closed table, its track starts where the table's names do (Q200)
+    .closed-fold > .switch {
+        margin-bottom: $gap;
+        margin-left: $cell-inset;
+
+        @include phone {
+            margin-left: $name-inset-phone;
+        }
     }
 }

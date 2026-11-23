@@ -46,7 +46,7 @@ def _expense_of_type(i):
 ADD_ROW = {"incomes": _income, "savings": _saving, "expenses": _expense_of_type}
 
 
-TITLE_COLUMN = r'<th class="text-left title-col">\s*<a [^>]*>{title}</a>'
+TITLE_COLUMN = r'<th class="text-left">\s*<a [^>]*>{title}</a>'
 ROW_TITLE = '<td class="text-left">{title}</td>'
 
 
@@ -177,7 +177,7 @@ def test_view_detailed_table_has_a_title_column_and_a_total_column_and_row(
     content = client_logged.get("/detailed/incomes/").content.decode()
 
     assert '<div class="month-table">' in content
-    assert '<th class="text-left title-col">' in content
+    assert '<th class="text-left">' in content
     assert '<th class="month-table__total">' in content
     assert '<tr class="main__total">' in content
     assert content.count('<td class="main__figure month-table__total">') == 2
@@ -222,7 +222,7 @@ def test_view_detailed_heads_the_months_with_the_quarter_band(client_logged):
         "Liep.", "Rugp.", "Rugs.", "Spal.", "Lapkr.", "Gruod.", "Viso",
     ]  # fmt: skip
     assert re.findall(r"<th([^>]*)>(.*?)</th>", band) == [
-        (' class="title-col"', ""),
+        ("", ""),
         (quarter, "I ketv."),
         (quarter, "II ketv."),
         (quarter, "III ketv."),

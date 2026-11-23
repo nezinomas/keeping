@@ -37,9 +37,21 @@ _Avoid_: toggle, checkbox, show/hide link
 **Sort header**:
 A table's head cell that orders the table by its column: a link to the table's url
 with `order=<key>`, plain text when that order is the one shown. `<c-sort-th>` takes a
-state, never a class: `align="left"`, or `column="title"` / `column="total"` for a
-Month table's first and last columns.
+state, never a class: `align="left"` for a column of names (Detailed's first, a Type
+table's), `column="total"` for a Month table's last.
 _Avoid_: sortable th, sort link, column header
+
+**Tip**:
+A bubble of text that opens over a trigger on hover or focus: `<c-tip side="bottom"
+text="…">trigger</c-tip>`, a `<span class="tip">` whose `data-tip` the bubble draws.
+`side` places it (`bottom`, `right`); `class` adds a class beside `tip` (`hint`, for
+the circled "?" of a Panel title or a header); `wide` stretches the trigger across
+its cell, so the whole cell opens the tip.
+A screen reader hears `label` as the trigger's name and `description` as what the
+tip adds, so a hint whose text is its label carries no description. The trigger takes
+the focus unless `:focusable="False"`, as when it wraps a control that takes it
+itself.
+_Avoid_: tooltip, popover, hover text
 
 **Quick-add**:
 The bar at the foot of an app's paper page, outside the swapped tab: the day of year and

@@ -3,7 +3,7 @@
 @use "tokens";
 @use "table";
 
-.month-table {
+.paper-skin .month-table {
     overflow-x: auto;
 }
 
@@ -18,8 +18,8 @@
         min-width: 72rem;
     }
 
-    th.title-col,
-    :is(tbody, tfoot) td:first-child {
+    thead tr > th:first-child,
+    :is(tbody, tfoot) tr > td:first-child {
         width: 8rem;
         position: sticky;
         left: 0;
@@ -74,6 +74,6 @@
     .month-table__quarter + :not(.month-table__quarter),
     thead tr:last-child > :nth-child(14),
     :is(tbody, tfoot) td:nth-child(14) {
-        border-left: 1px solid $hair;
+        @include table.group-rule($hair);
     }
 }
