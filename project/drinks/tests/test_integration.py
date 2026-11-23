@@ -15,6 +15,15 @@ OVERVIEW_CHART = "#chart-overview-container"
 HEAVY_DAY = "Rizikingo vartojimo diena: > 6 Std Av"
 
 
+def _rule_labels(browser, scope, read):
+    """`read`, a JS function of a label's span, for each chart rule label in scope."""
+    return browser.execute_script(
+        "return [...document.querySelectorAll("
+        f"  arguments[0] + ' .highcharts-plot-line-label span')].map({read});",
+        scope,
+    )
+
+
 @pytest.mark.webtest
 class DrinksQuickAdd(Browser):
     def test_more_button_opens_the_modal_without_replacing_it(self):
@@ -76,15 +85,14 @@ class DrinksChartRuleLabel(Browser):
         self.open_at("/drinks/", width)
         self.click_tab(tab)
 
-        labels = self.browser.execute_script(
-            "return [...document.querySelectorAll("
-            "  arguments[0] + ' .highcharts-plot-line-label span')].map(s => {"
-            "  const r = s.getBoundingClientRect();"
-            "  const c = s.closest('.highcharts-container')"
-            "    .getBoundingClientRect();"
-            "  return [s.textContent, r.left >= c.left && r.right <= c.right];"
-            "});",
+        labels = _rule_labels(
+            self.browser,
             scope,
+            "s => {"
+            "  const r = s.getBoundingClientRect();"
+            "  const c = s.closest('.highcharts-container').getBoundingClientRect();"
+            "  return [s.textContent, r.left >= c.left && r.right <= c.right];"
+            "}",
         )
         assert labels == [[text, True] for text in texts]
 
@@ -94,10 +102,10 @@ class DrinksChartRuleLabel(Browser):
         self.open("/drinks/")
         self.click_tab("risk")
 
-        labels = self.browser.execute_script(
-            "return [...document.querySelectorAll("
-            "  '#chart-weekly-container .highcharts-plot-line-label span')]"
-            "  .map(s => [s.textContent.split(':')[0], getComputedStyle(s).color]);"
+        labels = _rule_labels(
+            self.browser,
+            "#chart-weekly-container",
+            "s => [s.textContent.split(':')[0], getComputedStyle(s).color]",
         )
 
         assert labels == [
@@ -138,10 +146,8 @@ class DrinksTrendLimitRule(Browser):
         self.open("/drinks/")
         self.click_tab("trends")
 
-        labels = self.browser.execute_script(
-            "return [...document.querySelectorAll("
-            "  '#chart-trend-container .highcharts-plot-line-label span')]"
-            "  .map(s => s.textContent);"
+        labels = _rule_labels(
+            self.browser, "#chart-trend-container", "s => s.textContent"
         )
         assert labels == expected
 
@@ -180,21 +186,20 @@ class DrinksChartBarFigures(Browser):
 
 @pytest.mark.webtest
 class DrinksCalendarTooltip(Browser):
-    def test_tooltip_shows_only_while_a_day_has_focus(self):
-        DrinkFactory()
-        self.open("/drinks/")
-        tooltip = self.browser.find_element(By.ID, "heat-tooltip")
-        day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]")
-        seen = [tooltip.is_displayed()]
-
-        self.browser.execute_script("arguments[0].focus()", day)
-        seen.append(tooltip.is_displayed())
-        self.browser.execute_script("arguments[0].blur()", day)
-        seen.append(tooltip.is_displayed())
-
-        assert seen == [False, True, False]
-
-    def test_tooltip_reads_its_day_and_hides_off_every_day(self):
+    @parameterized.expand(
+        [
+            ("focus", "day.focus();", "day.blur();"),
+            # off every day: the month label has no data-label, so a mouseover hides
+            # the tooltip and a move over the label keeps it hidden
+            (
+                "hover",
+                "day.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));",
+                "label.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));"
+                " label.dispatchEvent(new MouseEvent('mousemove', {bubbles: true}));",
+            ),
+        ]
+    )
+    def test_tooltip_reads_its_day_only_while_the_day_holds_it(self, _, show, hide):
         DrinkFactory()
         self.open("/drinks/")
         day = self.browser.find_element(By.CSS_SELECTOR, ".mini i[data-label]:not(.l0)")
@@ -203,26 +208,33 @@ class DrinksCalendarTooltip(Browser):
             """
             const day = arguments[0];
             const tooltip = document.getElementById('heat-tooltip');
+            const label = document.querySelector('.heat-card .mlabel');
             const read = () => [
-                tooltip.hidden,
+                tooltip.checkVisibility(),
                 [...tooltip.children].map(line => line.textContent),
             ];
             // a handler that throws reports to window, not to dispatchEvent
             const errors = [];
             window.addEventListener('error', e => errors.push(e.message));
-            day.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
+            const before = tooltip.checkVisibility();
+            """
+            + show
+            + """
             const over = read();
-            const label = document.querySelector('.heat-card .mlabel');
-            label.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
-            label.dispatchEvent(new MouseEvent('mousemove', {bubbles: true}));
-            return [day.dataset.label.split('\\n'), over, tooltip.hidden, errors];
+            """
+            + hide
+            + """
+            return [
+                day.dataset.label.split('\\n'), before, over,
+                tooltip.checkVisibility(), errors,
+            ];
             """,
             day,
         )
 
-        lines, (hidden, shown), hidden_after, errors = seen
+        lines, before, (shown, text), after, errors = seen
         assert len(lines) == 3
-        assert (hidden, shown, hidden_after, errors) == (False, lines, True, [])
+        assert (before, shown, text, after, errors) == (False, True, lines, False, [])
 
     def test_tooltip_shows_a_label_as_text_not_markup(self):
         DrinkFactory()
