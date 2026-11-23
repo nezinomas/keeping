@@ -11,6 +11,9 @@ class PensionTypeModelService(BaseModelService):
         return models.PensionType.objects.filter(journal=self.user.journal)
 
     def items(self):
+        return self.all()
+
+    def all(self):
         return self.objects.all()
 
 

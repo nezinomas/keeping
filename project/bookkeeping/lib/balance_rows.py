@@ -9,14 +9,11 @@ class AccountBalanceRows(BalanceRows):
         worth = self._make_have(sources.have)
         return self._full_join(entries, worth)
 
-    def _make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
+    def _make_table(self, df: pl.LazyFrame, sources: BalanceSources) -> pl.LazyFrame:
         return (
             df.pipe(self._fill_missing_past_future_rows)
             .with_columns(
-                past=(pl.col("incomes") - pl.col("expenses"))
-                .cum_sum()
-                .shift(n=1, fill_value=0)
-                .over("category_id")
+                past=_before_this_year(pl.col("incomes") - pl.col("expenses"))
             )
             .with_columns(
                 balance=(pl.col("past") + pl.col("incomes") - pl.col("expenses"))
@@ -25,19 +22,14 @@ class AccountBalanceRows(BalanceRows):
         )
 
 
-def _before_this_year(column: str) -> pl.Expr:
-    return pl.col(column).cum_sum().shift(1, fill_value=0).over("category_id")
+def _before_this_year(value: pl.Expr) -> pl.Expr:
+    return value.cum_sum().shift(1, fill_value=0).over("category_id")
 
 
 class SavingBalanceRows(BalanceRows):
     @property
     def schema(self) -> dict:
         return super().schema | {"fee": pl.Int32}
-
-    def __init__(self, sources: BalanceSources):
-        # the base's __init__ builds the rows, and they read the moves
-        self._moves = self._make_moves(sources.moves)
-        super().__init__(sources)
 
     def _join_sources(self, sources: BalanceSources) -> pl.LazyFrame:
         bought = self._make_df(sources.incomes).select(
@@ -49,11 +41,11 @@ class SavingBalanceRows(BalanceRows):
         worth = self._make_have(sources.have)
         return self._full_join(self._full_join(bought, sold), worth)
 
-    def _make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
+    def _make_table(self, df: pl.LazyFrame, sources: BalanceSources) -> pl.LazyFrame:
         return (
             df.pipe(self._fill_missing_past_future_rows)
             .rename({"have": "market_value"})
-            .pipe(self._add_sold_since_check)
+            .pipe(self._add_sold_since_check, self._make_moves(sources.moves))
             .pipe(self._zero_worth_in_close_year_after_a_sell)
             .pipe(self._add_running_totals)
             .pipe(self._add_profit)
@@ -66,11 +58,12 @@ class SavingBalanceRows(BalanceRows):
             year=pl.col("date").dt.year().cast(pl.UInt16)
         )
 
-    def _add_sold_since_check(self, df: pl.LazyFrame) -> pl.LazyFrame:
+    @staticmethod
+    def _add_sold_since_check(df: pl.LazyFrame, moves: pl.LazyFrame) -> pl.LazyFrame:
         # a move carries only a date, so one on the worth's own day counts as after it
         stale = (
             df.select("category_id", "year", "latest_check")
-            .join(self._moves, on="category_id", suffix="_move")
+            .join(moves, on="category_id", suffix="_move")
             .filter(
                 (pl.col("year_move") <= pl.col("year"))
                 & (pl.col("date") >= pl.col("latest_check").dt.date())
@@ -109,8 +102,8 @@ class SavingBalanceRows(BalanceRows):
     def _add_running_totals(df: pl.LazyFrame) -> pl.LazyFrame:
         return (
             df.with_columns(
-                past_amount=_before_this_year("per_year_incomes"),
-                past_fee=_before_this_year("per_year_fee"),
+                past_amount=_before_this_year(pl.col("per_year_incomes")),
+                past_fee=_before_this_year(pl.col("per_year_fee")),
                 sold=pl.col("per_year_sold").cum_sum().over("category_id"),
                 sold_fee=pl.col("per_year_sold_fee").cum_sum().over("category_id"),
             )

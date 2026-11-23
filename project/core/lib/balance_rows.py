@@ -42,7 +42,9 @@ class BalanceRows(ABC):
     def _join_sources(self, sources: BalanceSources) -> pl.LazyFrame: ...
 
     @abstractmethod
-    def _make_table(self, df: pl.LazyFrame) -> pl.LazyFrame: ...
+    def _make_table(
+        self, df: pl.LazyFrame, sources: BalanceSources
+    ) -> pl.LazyFrame: ...
 
     def _build_rows(self, sources: BalanceSources) -> pl.LazyFrame:
         # read once: the year grid and the sync each collect the joined sources again
@@ -55,7 +57,7 @@ class BalanceRows(ABC):
         if not sources.types:
             raise ValueError("a journal's entries need their owners")
 
-        return self._make_table(df)
+        return self._make_table(df, sources)
 
     def _make_df(self, arr: list[dict]) -> pl.LazyFrame:
         return (
