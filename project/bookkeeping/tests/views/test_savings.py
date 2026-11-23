@@ -131,6 +131,9 @@ def test_saved_share_card_reads_the_savings_share_and_sum_or_draws_empty(
     with quiet_build(main_user):
         IncomeFactory(date=date(year, 1, 1), price=price)
         PensionFactory(date=date(1999, 1, 1), price=7000, fee=0)
+        # another year's Savings count in neither the share nor its note
+        buy(SavingTypeFactory(title="Earlier"), 9800, when=date(1998, 1, 1))
+        buy(SavingTypeFactory(title="Later"), 9900, when=date(2000, 1, 1))
         for saved, fee, fee_source, kind in savings:
             SavingFactory(
                 price=saved,
