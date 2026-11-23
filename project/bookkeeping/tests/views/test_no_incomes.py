@@ -89,7 +89,7 @@ def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
     heads = re.findall(
         PANEL_TITLE
         + r'<div class="table-responsive">\s*'
-        + r"<table\b[^>]*>\s*<thead>\s*<tr>\s*"
+        + r'<table class="main striped hover">\s*<thead>\s*<tr>\s*'
         + r"<th>(.*?)</th>",
         content,
         re.S,
@@ -112,6 +112,15 @@ def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
             re.S,
         )
     ] == [("Nebūtinos išlaidos", figure, ["hint tip bottom"] * hint_count, hint_count)]
+
+
+def test_no_incomes_head_names_the_money_each_column_reaches(client_logged):
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+
+    panel = content.split('<h2 class="panel__title">Be pajamų</h2>')[1]
+    head = panel.split("<thead>")[1].split("</thead>")[0]
+
+    assert re.findall(r"<th>([^<]*)</th>", head) == ["€ + F", "€ + F + P"]
 
 
 def test_no_incomes_panel_keeps_its_legend_under_the_table(client_logged):

@@ -2866,5 +2866,13 @@ msgstr "Pasiskolinti"
 msgid "Unnecessary expenses"
 msgstr "Nebūtinos išlaidos"
 
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:11
+msgid "€ + F"
+msgstr "€ + F"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:12
+msgid "€ + F + P"
+msgstr "€ + F + P"
+
 msgid "Without incomes"
 msgstr "Be pajamų"
