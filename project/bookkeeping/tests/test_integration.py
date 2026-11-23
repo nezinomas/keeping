@@ -7,6 +7,7 @@ import time_machine
 from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
+from parameterized import parameterized
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -16,13 +17,17 @@ from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import (
     FIND_TIP,
+    GAIN,
+    HARM,
+    INK,
+    INK_FAINT,
     INK_MUTED,
     NO_ANCHORING,
     TIP_BOX,
     Browser,
 )
 from ...expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
-from ...incomes.tests.factories import IncomeFactory
+from ...incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ...journals.tests.factories import JournalFactory
 from ...pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
@@ -39,8 +44,6 @@ CHART_ROOTS = (
 )
 # the dev DB's longest fund name
 LONGEST_FUND = "VALL - Vanguard FTSE GLB AL-CAP ETF"
-GAIN, HARM = "rgb(31, 107, 74)", "rgb(125, 39, 51)"
-INK, INK_FAINT = "rgb(22, 34, 43)", "rgb(139, 151, 159)"
 YEAR_STRIP = ".overview-grid__column:first-child .panel:first-child"
 EXPENSE_PARTS = "#chart-expenses-container .highcharts-data-label text"
 HAIR, HAIR_SOFT = "rgb(207, 214, 218)", "rgb(225, 230, 232)"
@@ -51,6 +54,7 @@ TINT_FADED = "color(srgb 0.0862745 0.411765 0.607843 / 0.0768628)"
 DATA_FADED = "color(srgb 0.0862745 0.411765 0.607843 / 0.35)"
 HARM_FADED = "color(srgb 0.490196 0.152941 0.2 / 0.35)"
 CLEAR = "rgba(0, 0, 0, 0)"
+STRIPE = "rgba(22, 34, 43, 0.035)"
 PAPER = "rgb(255, 255, 255)"
 BODY_FACE = (
     '"Segoe UI Variable Text", "Segoe UI", -apple-system, "Helvetica Neue", Arial,'
@@ -58,6 +62,23 @@ BODY_FACE = (
 )
 NO_INCOMES_TIP = "th > .tip[data-tip^='Nebūtinos išlaidos']"
 WASH = "rgba(232, 194, 26, 0.3)"
+BALANCE_CHART = {
+    "columns": [[TINT, YEAR_0], [HARM_SOFT, HARM]] + [[TINT, YEAR_0]] * 10,
+    "figures": [["0,3k", INK_MUTED], ["-1,5k", INK_MUTED]],
+    "zero": [[INK]],
+    "zero_at": [0],
+    "series": 1,
+    "legend": 0,
+}
+# per row, each cell with a left rule, by position from 1, and its colour; no width:
+# a scaled display snaps 1px to a device pixel
+LEFT_RULES = (
+    "const leftRules = rows => [...rows].map(tr =>"
+    " [...tr.children].flatMap((c, i) => {"
+    " const s = getComputedStyle(c);"
+    " return s.borderLeftStyle === 'solid' ? [[i + 1, s.borderLeftColor]] : [];"
+    " }));"
+)
 # the page's uncaught errors, gathered into window.errors from here on
 CATCH_ERRORS = (
     " window.errors = []; addEventListener('error', e => errors.push(e.message));"
@@ -235,18 +256,17 @@ class BookkeepingIndex(TestCase, Browser):
 
         assert self._drawn_charts() == 3
 
-    def test_a_reload_redraws_each_chart_once_and_throws_nothing(self):
-        # the overview has no chart: a reload there must find none to redraw
-        for tab, drawn in (("overview", 0), ("charts", 3)):
-            with self.subTest(tab=tab):
-                self.open(INDEX_TABS[tab].url)
+    # the overview has no chart: a reload there must find none to redraw
+    @parameterized.expand([("overview", 0), ("charts", 3)])
+    def test_a_reload_redraws_each_chart_once_and_throws_nothing(self, tab, drawn):
+        self.open(INDEX_TABS[tab].url)
 
-                assert self._reload() == {
-                    "drawn_on_load": drawn,
-                    "roots": ["redrawn"] * drawn,
-                    "draws": drawn,
-                    "errors": [],
-                }
+        assert self._reload() == {
+            "drawn_on_load": drawn,
+            "roots": ["redrawn"] * drawn,
+            "draws": drawn,
+            "errors": [],
+        }
 
     def test_charts_draw_flat_named_one_hue_bars_and_two_marked_lines_on_their_averages(
         self,
@@ -312,74 +332,60 @@ class BookkeepingIndex(TestCase, Browser):
 
         assert drawn == {"rules": [[DATA_RGB]], "rule_labels": ["Vidurkis: 100€"]}
 
-    def test_the_balance_chart_draws_each_month_s_balance_against_a_zero_rule(self):
+    # one column a month, a month at nought in the tint; a figure is muted, off a
+    # month at nought, and below 768px left to the tooltip
+    @parameterized.expand(
+        [(1500, BALANCE_CHART), (767, BALANCE_CHART | {"figures": []})]
+    )
+    def test_the_balance_chart_draws_each_month_s_balance_against_a_zero_rule(
+        self, width, expected
+    ):
         IncomeFactory(price=50000)
         ExpenseFactory(price=20000)
         ExpenseFactory(date=date(1999, 2, 1), price=150000)
-        drawn = {}
-        for width in (1500, 767):
-            self.open_at(INDEX_TABS["charts"].url, width)
-            drawn[width] = self.browser.execute_script(
-                f"{LOOK}"
-                " const box = '#chart-balance-container ';"
-                " return {columns: look(box + '.highcharts-point', 'fill', 'stroke'),"
-                " figures: [...document.querySelectorAll("
-                "  box + '.highcharts-data-label text')]"
-                "  .map(f => [f.textContent, getComputedStyle(f).fill]),"
-                " zero: look(box + '.highcharts-plot-line', 'stroke'),"
-                " series: document.querySelectorAll("
-                "  box + '.highcharts-series:not(.highcharts-markers)').length,"
-                " legend: document.querySelectorAll(box + '.highcharts-legend-item')"
-                "  .length};"
-            )
-            drawn[width]["zero_at"] = self.read_chart(
-                "chart-balance-container",
-                "return c.yAxis[0].plotLinesAndBands.map(rule => rule.options.value);",
-            )
+        self.open_at(INDEX_TABS["charts"].url, width)
+        drawn = self.browser.execute_script(
+            f"{LOOK}"
+            " const box = '#chart-balance-container ';"
+            " return {columns: look(box + '.highcharts-point', 'fill', 'stroke'),"
+            " figures: [...document.querySelectorAll("
+            "  box + '.highcharts-data-label text')]"
+            "  .map(f => [f.textContent, getComputedStyle(f).fill]),"
+            " zero: look(box + '.highcharts-plot-line', 'stroke'),"
+            " series: document.querySelectorAll("
+            "  box + '.highcharts-series:not(.highcharts-markers)').length,"
+            " legend: document.querySelectorAll(box + '.highcharts-legend-item')"
+            "  .length};"
+        )
+        drawn["zero_at"] = self.read_chart(
+            "chart-balance-container",
+            "return c.yAxis[0].plotLinesAndBands.map(rule => rule.options.value);",
+        )
 
-        # one column a month, a month at nought in the tint; a figure is muted, off a
-        # month at nought, and below 768px left to the tooltip
-        at_1500 = {
-            "columns": [[TINT, YEAR_0], [HARM_SOFT, HARM]] + [[TINT, YEAR_0]] * 10,
-            "figures": [["0,3k", INK_MUTED], ["-1,5k", INK_MUTED]],
-            "zero": [[INK]],
-            "zero_at": [0],
-            "series": 1,
-            "legend": 0,
-        }
-        assert drawn == {1500: at_1500, 767: at_1500 | {"figures": []}}
+        assert drawn == expected
 
-    def test_the_charts_stand_side_by_side_from_1200_and_stack_below(self):
-        placed = {}
-        for width in (1200, 1199):
-            self.open_at(INDEX_TABS["charts"].url, width)
-            a, b, c = self._boxes("#tab_content .panel")
-            x, y, _lines = self._boxes("#tab_content .highcharts-plot-background")
-            placed[width] = {
-                "beside": a["top"] == b["top"] and a["right"] < b["left"],
-                "stacked": b["top"] > a["bottom"],
-                "same_width": a["width"] == b["width"],
-                "plots_end_on_one_line": x["bottom"] == y["bottom"],
-                "lines_below_full_width": c["top"] > max(a["bottom"], b["bottom"])
-                and c["left"] == a["left"]
-                and c["right"] == b["right"],
-            }
+    @parameterized.expand([(1200, True), (1199, False)])
+    def test_the_charts_stand_side_by_side_from_1200_and_stack_below(
+        self, width, beside
+    ):
+        self.open_at(INDEX_TABS["charts"].url, width)
+        a, b, c = self._boxes("#tab_content .panel")
+        x, y, _lines = self._boxes("#tab_content .highcharts-plot-background")
 
-        assert placed == {
-            1200: {
-                "beside": True,
-                "stacked": False,
-                "same_width": True,
-                "plots_end_on_one_line": True,
-                "lines_below_full_width": True,
-            },
-            1199: {
-                "beside": False,
-                "stacked": True,
-                "same_width": True,
-                "plots_end_on_one_line": False,
-                "lines_below_full_width": True,
-            },
+        assert {
+            "beside": a["top"] == b["top"] and a["right"] < b["left"],
+            "stacked": b["top"] > a["bottom"],
+            "same_width": a["width"] == b["width"],
+            "plots_end_on_one_line": x["bottom"] == y["bottom"],
+            "lines_below_full_width": c["top"] > max(a["bottom"], b["bottom"])
+            and c["left"] == a["left"]
+            and c["right"] == b["right"],
+        } == {
+            "beside": beside,
+            "stacked": not beside,
+            "same_width": True,
+            "plots_end_on_one_line": beside,
+            "lines_below_full_width": True,
         }
 
     def test_a_year_with_no_expenses_draws_one_bar_and_no_figure(self):
@@ -392,29 +398,26 @@ class BookkeepingIndex(TestCase, Browser):
 
         assert (drawn, self._texts(EXPENSE_PARTS)) == (TINT, [])
 
+    @parameterized.expand([(1500,), (360,)])
     def test_each_expense_bar_ends_in_its_whole_sum_and_share_in_the_muted_figure(
-        self,
+        self, width
     ):
         for title, price in (("Big", 12345000), ("Small", 4115000)):
             ExpenseFactory(expense_type=ExpenseTypeFactory(title=title), price=price)
-        drawn = {}
-        for width in (1500, 360):
-            self.open_at(INDEX_TABS["charts"].url, width)
-            drawn[width] = self.browser.execute_script(
-                f"const look = getComputedStyle(document.querySelector('{EXPENSE_PARTS}'));"
-                " const chart = document.querySelector('#chart-expenses-container svg')"
-                "  .getBoundingClientRect();"
-                f" return {{look: [look.fill, look.fontSize, look.fontWeight],"
-                f" inside: [...document.querySelectorAll('{EXPENSE_PARTS}')]"
-                "  .every(f => f.getBoundingClientRect().right <= chart.right)};"
-            )
+        self.open_at(INDEX_TABS["charts"].url, width)
+        drawn = self.browser.execute_script(
+            f"const look = getComputedStyle(document.querySelector('{EXPENSE_PARTS}'));"
+            " const chart = document.querySelector('#chart-expenses-container svg')"
+            "  .getBoundingClientRect();"
+            f" return {{look: [look.fill, look.fontSize, look.fontWeight],"
+            f" inside: [...document.querySelectorAll('{EXPENSE_PARTS}')]"
+            "  .every(f => f.getBoundingClientRect().right <= chart.right)};"
+        )
 
         # the factory's own type, spent nothing, gets the last bar and no figure
         assert (self._texts(EXPENSE_PARTS), drawn) == (
             ["123.450€ · 75,0%", "41.150€ · 25,0%"],
-            dict.fromkeys(
-                (1500, 360), {"look": [INK_MUTED, "12px", "400"], "inside": True}
-            ),
+            {"look": [INK_MUTED, "12px", "400"], "inside": True},
         )
 
     def test_the_widest_expense_figure_ends_inside_its_chart_after_load_and_a_reload(
@@ -482,33 +485,27 @@ class BookkeepingIndex(TestCase, Browser):
             },
         }
 
-    def test_the_month_axis_names_each_month_and_no_tick_past_december(self):
-        months = {}
-        for width in (1500, 360):
-            self._open_charts_with_two_types(width)
-            months[width] = self._texts(
-                "#chart-balance-container .highcharts-xaxis-labels text"
-            )
+    # a phone prints every other month; the widened edges' tick past December
+    # prints empty
+    @parameterized.expand(
+        [
+            (
+                1500,
+                ["Sausis", "Vasaris", "Kovas", "Balandis", "Gegužė", "Birželis"]
+                + ["Liepa", "Rugpjūtis", "Rugsėjis", "Spalis", "Lapkritis", "Gruodis"],
+            ),
+            (360, ["Sausis", "Kovas", "Gegužė", "Liepa", "Rugsėjis", "Lapkritis", ""]),
+        ]
+    )
+    def test_the_month_axis_names_each_month_and_no_tick_past_december(
+        self, width, months
+    ):
+        self._open_charts_with_two_types(width)
 
-        # a phone prints every other month; the widened edges' tick past December
-        # prints empty
-        assert months == {
-            1500: [
-                "Sausis",
-                "Vasaris",
-                "Kovas",
-                "Balandis",
-                "Gegužė",
-                "Birželis",
-                "Liepa",
-                "Rugpjūtis",
-                "Rugsėjis",
-                "Spalis",
-                "Lapkritis",
-                "Gruodis",
-            ],
-            360: ["Sausis", "Kovas", "Gegužė", "Liepa", "Rugsėjis", "Lapkritis", ""],
-        }
+        assert (
+            self._texts("#chart-balance-container .highcharts-xaxis-labels text")
+            == months
+        )
 
     def test_each_chart_tooltip_prints_whole_euros(self):
         self._open_charts_with_two_types(1500)
@@ -540,25 +537,22 @@ class BookkeepingIndex(TestCase, Browser):
             ],
         }
 
-    def test_the_overview_panels_stand_in_three_columns_from_992_and_one_below(self):
-        placed = {}
-        for width in (992, 991):
-            self.open_at(INDEX_TABS["overview"].url, width)
-            a, b, c = self._boxes(".overview-grid__column")
-            placed[width] = {
-                "beside": a["top"] == b["top"] == c["top"]
-                and a["right"] < b["left"]
-                and b["right"] < c["left"],
-                "stacked": a["bottom"] <= b["top"] and b["bottom"] <= c["top"],
-                "middle_widest": b["width"] > a["width"]
-                and round(a["width"]) == round(c["width"]),
-            }
+    # no open debt: the third column is empty and keeps its track
+    @parameterized.expand([(992, True), (991, False)])
+    def test_the_overview_panels_stand_in_three_columns_from_992_and_one_below(
+        self, width, beside
+    ):
+        self.open_at(INDEX_TABS["overview"].url, width)
+        a, b, c = self._boxes(".overview-grid__column")
 
-        # no open debt: the third column is empty and keeps its track
-        assert placed == {
-            992: {"beside": True, "stacked": False, "middle_widest": True},
-            991: {"beside": False, "stacked": True, "middle_widest": False},
-        }
+        assert {
+            "beside": a["top"] == b["top"] == c["top"]
+            and a["right"] < b["left"]
+            and b["right"] < c["left"],
+            "stacked": a["bottom"] <= b["top"] and b["bottom"] <= c["top"],
+            "middle_widest": b["width"] > a["width"]
+            and round(a["width"]) == round(c["width"]),
+        } == {"beside": beside, "stacked": not beside, "middle_widest": beside}
 
     def test_a_signed_figure_is_gain_or_harm_text_and_a_zero_is_not(self):
         for title, have in (("Even", 10000), ("Gain", 15000), ("Loss", 5000)):
@@ -572,7 +566,7 @@ class BookkeepingIndex(TestCase, Browser):
             delta_ok="#accounts tbody tr:nth-child(1) td:last-child",
             delta_gain="#accounts tbody tr:nth-child(2) td:last-child",
             delta_loss="#accounts tbody tr:nth-child(3) td:last-child",
-            # Even + Gain + Loss: a zero with no data-cell to paint it faint
+            # Even + Gain + Loss: a zero, ink as every total row's unsigned figure
             delta_total="#accounts tfoot td:last-child",
             # the year strip's end, not highlighted: a figure, not a sign
             year_end=f"{YEAR_STRIP} td:nth-child(2)",
@@ -604,55 +598,57 @@ class BookkeepingIndex(TestCase, Browser):
             "zero_month": [INK_FAINT, True],
         }
 
-    def test_a_cash_flow_mismatch_wears_the_attention_wash_on_each_tab(self):
+    # the year's 1 000,00 flow against the accounts' balance, on each tab
+    @parameterized.expand(
+        [
+            ("overview", "#accounts", 100000, [CLEAR, "none"]),
+            ("balance", "#table-balance", 100000, [CLEAR, "none"]),
+            ("overview", "#accounts", 99900, [WASH, '"! "']),
+            ("balance", "#table-balance", 99900, [WASH, '"! "']),
+        ]
+    )
+    def test_a_cash_flow_mismatch_wears_the_attention_wash_on_each_tab(
+        self, tab, table, accounts_balance, mark
+    ):
         IncomeFactory(price=100000)
-        cells = {
-            "overview": "#accounts tfoot [data-check]",
-            "balance": "#table-balance tfoot [data-check]",
-        }
-        marks = {}
-        for case, accounts_balance in (("equal", 100000), ("differ", 99900)):
-            AccountBalance.objects.filter(year=1999).update(balance=accounts_balance)
-            for tab, cell in cells.items():
-                self.open_at(INDEX_TABS[tab].url, 1500)
-                marks[case, tab] = self.browser.execute_script(
-                    "const cell = document.querySelector(arguments[0]);"
-                    " return [getComputedStyle(cell).backgroundColor,"
-                    " getComputedStyle(cell, '::before').content];",
-                    cell,
-                )
+        AccountBalance.objects.filter(year=1999).update(balance=accounts_balance)
+        self.open_at(INDEX_TABS[tab].url, 1500)
+        cell = f"{table} tfoot [data-check]"
 
-        assert marks == {
-            ("equal", "overview"): [CLEAR, "none"],
-            ("equal", "balance"): [CLEAR, "none"],
-            ("differ", "overview"): [WASH, '"! "'],
-            ("differ", "balance"): [WASH, '"! "'],
-        }
-
-    def test_the_debts_switch_is_a_tab_stop_that_enter_space_and_a_click_press(self):
-        IncomeFactory()
-        pressed = {}
-        for width in (1500, 360):
-            self.open_at(INDEX_TABS["balance"].url, width)
-            self.browser.execute_script(FOCUS_THE_STOP_BEFORE, DEBTS_SWITCH)
-            ActionChains(self.browser).send_keys(Keys.TAB).perform()
-            tab_stop = self.browser.execute_script(
-                "return document.activeElement.matches(arguments[0]);", DEBTS_SWITCH
+        assert (
+            self.browser.execute_script(
+                "const cell = document.querySelector(arguments[0]);"
+                " return [getComputedStyle(cell).backgroundColor,"
+                " getComputedStyle(cell, '::before').content];",
+                cell,
             )
-            reads = [self._debts_switch()]
-            for press in (Keys.ENTER, Keys.SPACE, None):
-                if press:
-                    ActionChains(self.browser).send_keys(press).perform()
-                else:
-                    self.browser.find_element(By.CSS_SELECTOR, DEBTS_SWITCH).click()
-                self.wait_two_frames()
-                reads.append(self._debts_switch())
-            # a Worth save's reload draws it afresh, off (Q173)
-            self.browser.execute_script("htmx.trigger(document.body, 'reload');")
-            self.wait_until_idle()
+            == mark
+        )
+
+    @parameterized.expand([(1500,), (360,)])
+    def test_the_debts_switch_is_a_tab_stop_that_enter_space_and_a_click_press(
+        self, width
+    ):
+        IncomeFactory()
+        self.open_at(INDEX_TABS["balance"].url, width)
+        self.browser.execute_script(FOCUS_THE_STOP_BEFORE, DEBTS_SWITCH)
+        ActionChains(self.browser).send_keys(Keys.TAB).perform()
+        tab_stop = self.browser.execute_script(
+            "return document.activeElement.matches(arguments[0]);", DEBTS_SWITCH
+        )
+        reads = [self._debts_switch()]
+        for press in (Keys.ENTER, Keys.SPACE, None):
+            if press:
+                ActionChains(self.browser).send_keys(press).perform()
+            else:
+                self.browser.find_element(By.CSS_SELECTOR, DEBTS_SWITCH).click()
             self.wait_two_frames()
             reads.append(self._debts_switch())
-            pressed[width] = (tab_stop, reads)
+        # a Worth save's reload draws it afresh, off (Q173)
+        self.browser.execute_script("htmx.trigger(document.body, 'reload');")
+        self.wait_until_idle()
+        self.wait_two_frames()
+        reads.append(self._debts_switch())
 
         # visible cells span every column; Space scrolls nothing, and the switch
         # stays in the window, at the right end of Balansas' line (Q168, Q175)
@@ -665,9 +661,7 @@ class BookkeepingIndex(TestCase, Browser):
             "page_scrolls": True,
         }
         opened = closed | {"checked": "true", "spans": [11]}
-        assert pressed == dict.fromkeys(
-            (1500, 360), (True, [closed, opened, closed, opened, closed])
-        )
+        assert (tab_stop, reads) == (True, [closed, opened, closed, opened, closed])
 
     def test_the_debts_switch_draws_an_ink_track_its_knob_and_its_label(self):
         self.open_at(INDEX_TABS["balance"].url, 1500)
@@ -720,37 +714,33 @@ class BookkeepingIndex(TestCase, Browser):
         ]
         assert values == ["", ""]
 
+    @parameterized.expand(
+        [
+            ("overview", "bookkeeping:accounts_worth_new", AccountFactory),
+            ("funds", "bookkeeping:savings_worth_new", SavingTypeFactory),
+            ("funds", "bookkeeping:pensions_worth_new", PensionTypeFactory),
+        ]
+    )
     def test_a_worth_saved_from_its_pill_reloads_the_tab_once_and_closes_the_modal(
-        self,
+        self, tab, url_name, owner_factory
     ):
-        AccountFactory()
-        SavingTypeFactory()
-        PensionTypeFactory()
-        after_save = {}
-        for tab, url_name in (
-            ("overview", "bookkeeping:accounts_worth_new"),
-            ("funds", "bookkeeping:savings_worth_new"),
-            ("funds", "bookkeeping:pensions_worth_new"),
-        ):
-            self.open(INDEX_TABS[tab].url)
-            self.press_the_pill(url_name)
-            self.browser.execute_script(
-                "window.tabSwaps = 0;"
-                " htmx.on('htmx:after:swap', e => {"
-                " if (e.detail.ctx.target.id === 'tab_content') tabSwaps++; });"
-            )
-            self.browser.find_element(By.ID, "id_form-0-price").send_keys("5")
-            self.browser.find_element(By.ID, "_close").click()
-            self.wait_until_idle()
-            after_save[url_name] = self.browser.execute_script(
-                "return {tab_swaps: tabSwaps,"
-                " modal_hidden: document.getElementById('mainModalContainer').hidden,"
-                " form: !!document.querySelector('#mainModal .modal-form')};"
-            )
-
-        assert after_save == dict.fromkeys(
-            after_save, {"tab_swaps": 1, "modal_hidden": True, "form": False}
+        owner_factory()
+        self.open(INDEX_TABS[tab].url)
+        self.press_the_pill(url_name)
+        self.browser.execute_script(
+            "window.tabSwaps = 0;"
+            " htmx.on('htmx:after:swap', e => {"
+            " if (e.detail.ctx.target.id === 'tab_content') tabSwaps++; });"
         )
+        self.browser.find_element(By.ID, "id_form-0-price").send_keys("5")
+        self.browser.find_element(By.ID, "_close").click()
+        self.wait_until_idle()
+
+        assert self.browser.execute_script(
+            "return {tab_swaps: tabSwaps,"
+            " modal_hidden: document.getElementById('mainModalContainer').hidden,"
+            " form: !!document.querySelector('#mainModal .modal-form')};"
+        ) == {"tab_swaps": 1, "modal_hidden": True, "form": False}
 
     def test_every_index_tab_fits_a_phone(self):
         # a funds table and the accounts table run wider than a phone's column; the
@@ -790,26 +780,25 @@ class BookkeepingIndex(TestCase, Browser):
         # the cut and the "?" beside the label, both muted (Q166, Q177)
         assert looks == [[INK_MUTED], [INK_MUTED, "help"]]
 
-    def test_the_unnecessary_expenses_tip_opens_whole_under_its_header(self):
+    @parameterized.expand([(1500,), (360,)])
+    def test_the_unnecessary_expenses_tip_opens_whole_under_its_header(self, width):
         # six types and Taupymas: a list taller than its table
         journal = JournalFactory()
         types = [ExpenseTypeFactory(title=f"Type {n}") for n in range(6)]
         journal.unnecessary_savings = True
         journal.unnecessary_expenses = json.dumps([t.pk for t in types])
         journal.save()
-        read = {}
-        for width in (1500, 360):
-            self.open_at(INDEX_TABS["overview"].url, width)
-            self.browser.execute_script(
-                FIND_TIP + " tip.scrollIntoView({block: 'center'});", NO_INCOMES_TIP
-            )
-            hidden = self.browser.execute_script(TIP_BUBBLE, NO_INCOMES_TIP)
-            self.browser.execute_script(FIND_TIP + " tip.focus();", NO_INCOMES_TIP)
-            read[width] = (
-                [hidden["box_scrolls"], hidden["page_overflow"]],
-                self._tip_opens(NO_INCOMES_TIP),
-                self.browser.execute_script(TIP_BUBBLE, NO_INCOMES_TIP),
-            )
+        self.open_at(INDEX_TABS["overview"].url, width)
+        self.browser.execute_script(
+            FIND_TIP + " tip.scrollIntoView({block: 'center'});", NO_INCOMES_TIP
+        )
+        hidden = self.browser.execute_script(TIP_BUBBLE, NO_INCOMES_TIP)
+        self.browser.execute_script(FIND_TIP + " tip.focus();", NO_INCOMES_TIP)
+        read = (
+            [hidden["box_scrolls"], hidden["page_overflow"]],
+            self._tip_opens(NO_INCOMES_TIP),
+            self.browser.execute_script(TIP_BUBBLE, NO_INCOMES_TIP),
+        )
 
         whole = {
             "lines": 8,
@@ -821,7 +810,7 @@ class BookkeepingIndex(TestCase, Browser):
             "box_scrolls": False,
             "page_overflow": 0,
         }
-        assert read == dict.fromkeys((1500, 360), ([False, 0], True, whole))
+        assert read == ([False, 0], True, whole)
 
     def test_a_tip_at_the_edge_of_a_scrolled_table_opens_whole_past_it(self):
         long = "Type 6, the long one of eight"
@@ -1058,45 +1047,52 @@ class BookkeepingIndex(TestCase, Browser):
         }
         assert lines == 1
 
-    def test_index_tables_rule_where_each_column_group_starts(self):
+    @parameterized.expand(
+        [
+            # the band: five group heads, both Pervesta (not Parduota), row three's
+            # columns 2, 4, 6, 10, 12; the foot's market value spans two cells
+            (
+                "funds",
+                ".panel table.main",
+                [
+                    [
+                        [[i, HAIR] for i in (2, 3, 4, 5, 6)],
+                        [[1, HAIR], [2, HAIR]],
+                        [[i, HAIR] for i in (2, 4, 6, 10, 12)],
+                        [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 12)],
+                        [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 11)],
+                    ]
+                ]
+                * 2,
+            ),
+            # Taupymas, Skolos and Pinigų srautas, the hidden debts included, band to
+            # foot (not Parduota)
+            (
+                "balance",
+                "#table-balance table",
+                [
+                    [
+                        [[i, HAIR] for i in (2, 3, 4)],
+                        [[i, HAIR] for i in (5, 7, 11)],
+                        *[[[i, HAIR_SOFT] for i in (5, 7, 11)]] * 14,
+                    ]
+                ],
+            ),
+        ]
+    )
+    def test_index_tables_rule_where_each_column_group_starts(self, tab, tables, rules):
         SavingFactory()
         PensionFactory()
-        ruled = {}
-        for tab, tables in (
-            ("funds", ".panel table.main"),
-            ("balance", "#table-balance table"),
-        ):
-            self.open_at(INDEX_TABS[tab].url, 1500)
-            # per table and row, each cell with a left rule, by position from 1, and
-            # its colour; no width: a scaled display snaps 1px to a device pixel
-            ruled[tab] = self.browser.execute_script(
-                "return [...document.querySelectorAll(arguments[0])].map(t =>"
-                " [...t.querySelectorAll('tr')].map(tr =>"
-                " [...tr.children].flatMap((c, i) => {"
-                " const s = getComputedStyle(c);"
-                " return s.borderLeftStyle === 'solid'"
-                "  ? [[i + 1, s.borderLeftColor]] : [];"
-                " })));",
+        self.open_at(INDEX_TABS[tab].url, 1500)
+
+        assert (
+            self.browser.execute_script(
+                LEFT_RULES + " return [...document.querySelectorAll(arguments[0])]"
+                "  .map(t => leftRules(t.querySelectorAll('tr')));",
                 tables,
             )
-
-        # funds, the band: five group heads, both Pervesta (not Parduota), row
-        # three's columns 2, 4, 6, 10, 12; the foot's market value spans two cells
-        band = [
-            [[i, HAIR] for i in (2, 3, 4, 5, 6)],
-            [[1, HAIR], [2, HAIR]],
-            [[i, HAIR] for i in (2, 4, 6, 10, 12)],
-        ]
-        row = [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 12)]
-        foot = [[i, HAIR_SOFT] for i in (2, 4, 6, 10, 11)]
-        # balance: Taupymas, Skolos and Pinigų srautas, the hidden debts included,
-        # from the band through twelve months and two foot rows (not Parduota)
-        balance_band = [[[i, HAIR] for i in (2, 3, 4)], [[i, HAIR] for i in (5, 7, 11)]]
-        balance_row = [[i, HAIR_SOFT] for i in (5, 7, 11)]
-        assert ruled == {
-            "funds": [[*band, row, foot]] * 2,
-            "balance": [[*balance_band, *[balance_row] * 14]],
-        }
+            == rules
+        )
 
     def _tip_opens(self, selector: str) -> bool:
         # its box, not its opacity: a minimized Chrome draws no frame, so the fade
@@ -1235,18 +1231,31 @@ class BookkeepingMonthDetailedAndSummary(TestCase, Browser):
 
         assert overflow == {"width": 360, "page_overflow": 0, "table_scrolls": True}
 
+    def test_a_month_table_stripes_its_even_rows_and_its_pinned_cell_opaquely(self):
+        IncomeFactory()
+        IncomeFactory(income_type=IncomeTypeFactory(title="Kitos"))
+        self.open_at(reverse("bookkeeping:detailed"), 1280)
+
+        shades = self.browser.execute_script(
+            "return [...document.querySelectorAll('.month-table tbody tr')].map(tr =>"
+            " [0, 1].map(i => { const s = getComputedStyle(tr.children[i]);"
+            " return [s.backgroundColor, s.backgroundImage]; }));"
+        )
+
+        # the pinned name cell lays the stripe over paper, so nothing scrolls into
+        # view under it
+        assert shades == [
+            [[PAPER, "none"], [CLEAR, "none"]],
+            [[PAPER, f"linear-gradient({STRIPE}, {STRIPE})"], [STRIPE, "none"]],
+        ]
+
     def test_month_table_rules_run_from_the_band_to_the_foot(self):
         IncomeFactory()
         self.open_at(reverse("bookkeeping:detailed"), 1280)
 
-        # per row, each cell with a left rule, by position from 1, and its colour;
-        # no width: a scaled display snaps 1px to a device pixel (0.8px at 125%)
         ruled = self.browser.execute_script(
-            "return [...document.querySelectorAll('.month-table tr')].map(tr =>"
-            " [...tr.children].flatMap((c, i) => {"
-            " const s = getComputedStyle(c);"
-            " return s.borderLeftStyle === 'solid' ? [[i + 1, s.borderLeftColor]] : [];"
-            " }));"
+            LEFT_RULES
+            + " return leftRules(document.querySelectorAll('.month-table tr'));"
         )
         # each quarter's first month, then the rule closing December
         quarters = (5, 8, 11)
@@ -1271,17 +1280,16 @@ class BookkeepingMonthDetailedAndSummary(TestCase, Browser):
         # Bootstrap Icons' chevron-expand, not the legacy Glyphicons sort (Q190)
         assert set(map(tuple, arrows)) == {("bootstrap-icons", '""')}
 
-    def test_month_table_fades_its_edge_only_while_it_scrolls(self):
+    @parameterized.expand([(360, True), (1500, False)])
+    def test_month_table_fades_its_edge_only_while_it_scrolls(self, width, fade):
         IncomeFactory()
-        for width, fade in ((360, True), (1500, False)):
-            with self.subTest(width=width):
-                self.open_at(reverse("bookkeeping:detailed"), width)
-                faded = self.browser.execute_script(
-                    "return getComputedStyle(document.querySelector('.month-table'))"
-                    "  .maskImage !== 'none';"
-                )
+        self.open_at(reverse("bookkeeping:detailed"), width)
 
-                assert faded is fade
+        faded = self.browser.execute_script(
+            "return getComputedStyle(document.querySelector('.month-table'))"
+            "  .maskImage !== 'none';"
+        )
+        assert faded is fade
 
     def test_a_swap_beside_a_table_with_no_pin_library_throws_nothing(self):
         # the summary draws a .sticky-table and loads no sticky-table-headers.js

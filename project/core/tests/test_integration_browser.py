@@ -8,7 +8,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from ...users.tests.factories import UserFactory
 
+INK = "rgb(22, 34, 43)"  # --skin-ink
 INK_MUTED = "rgb(90, 106, 117)"  # --skin-ink-muted
+INK_FAINT = "rgb(139, 151, 159)"  # --skin-ink-faint
+GAIN = "rgb(31, 107, 74)"  # --skin-gain
+HARM = "rgb(125, 39, 51)"  # --skin-harm
 # a tip's bubble is a ::before, with no rect: a point in a drawn one answers with
 # its .tip, every fourth pixel to find it and each pixel of its rim for its edges
 FIND_TIP = "const tip = document.querySelector(arguments[0]);"

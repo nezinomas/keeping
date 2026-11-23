@@ -4,6 +4,7 @@ from datetime import date
 import pytest
 import time_machine
 from django.urls import reverse
+from django_htmx.middleware import HtmxDetails
 
 from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
@@ -37,8 +38,8 @@ from ..helper import (
     PANEL_TITLE,
     cell_texts,
     quiet_build,
-    row_cells,
     script_json,
+    tab_cards,
     table_titled,
     total_cells,
 )
@@ -203,6 +204,12 @@ GRID_COLUMN = '<div class="overview-grid__column">'
 LENT = ("Paskolinta", "90,00", "30,00", "60,00")
 BORROWED = ("Pasiskolinta", "70,00", "20,00", "50,00")
 PANELS = re.compile(PANEL_TITLE + r"(.*?)</section>", re.S)
+ROWS = re.compile(r"<tr\b[^>]*>(.*?)</tr>", re.S)
+
+
+def _balance_table(content):
+    """The Month balance table, from its Panel's id to its end."""
+    return content[content.index('id="table-balance"') :].partition("</table>")[0]
 
 
 def _panels(content, title):
@@ -213,10 +220,7 @@ def _panels(content, title):
 def _debts_tables(content):
     """Each Skolos Panel's header row, then its rows, (title, Suma, Grąžinta, Liko)."""
     return [
-        [
-            tuple(c.strip() for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row))
-            for row in re.findall(r"<tr>(.*?)</tr>", panel, re.S)
-        ]
+        [tuple(row) for row in cell_texts(panel)]
         for panel in _panels(content, "Skolos")
     ]
 
@@ -253,7 +257,6 @@ def test_overview_draws_the_year_strip_and_the_forecast_each_in_its_panel(
             re.findall(
                 r"(?<![\w:.-])(x-[\w.:-]+|hx-[\w:-]+|@[\w.:-]+|:[\w.-]+|id)=", section
             ),
-            re.findall(BOXED_TABLE, section),
             cell_texts(section),
         )
         for section, title in re.findall(
@@ -266,10 +269,11 @@ def test_overview_draws_the_year_strip_and_the_forecast_each_in_its_panel(
     heads = ["1999 pradžioje", "1999 pabaigoje", "Balansas"]
 
     # an empty journal: three dashes under the Year strip's titles in each; the
-    # forecast comes with the tab under a plain title, nothing folded or fetched
+    # forecast comes with the tab under a plain title, nothing folded or fetched;
+    # their tables' skin is test_index_tables_wear_the_skin_and_no_legacy_class's
     assert panels == [
-        ("1999 metai", [], ["main striped hover"], [heads, ["-", "-", "-"]]),
-        ("Prognozė", [], ["main striped hover"], [heads, ["-", "-", "-"]]),
+        ("1999 metai", [], [heads, ["-", "-", "-"]]),
+        ("Prognozė", [], [heads, ["-", "-", "-"]]),
     ]
 
 
@@ -329,7 +333,7 @@ def test_index_tables_wear_the_skin_and_no_legacy_class(
     drawn = re.findall(PANEL_TITLE, content)
     boxed = re.findall(BOXED_TABLE, content)
     total_rows = re.findall(r'<tr class="(main__total)">', content)
-    rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", content, re.S)
+    rows = ROWS.findall(content)
     # a cell past the name that holds no word, or any that reads as a figure (the
     # Year strip's first cell is a figure); a word is a label
     non_figures = [
@@ -560,12 +564,24 @@ def test_view_index_renders_its_chart_data(client_logged):
     assert [point["y"] for point in expenses] == [100]
 
 
+# 600,00 spent in January: 150 a month over four, 100 over the last six; the
+# accounts' -600,00 at 100 a month reads -6,0 months
 @pytest.mark.parametrize(
     ("view_class", "read", "average"),
     [
-        (TabOverview, lambda context: context["cards"][3].value, "150"),
-        (TabOverview, lambda context: context["avg_expenses"], 10000),
-        (TabCharts, lambda context: context["month_charts"]["expenses_average"], 15000),
+        (TabOverview, lambda content: tab_cards(content)[3][1], "150"),
+        (
+            TabOverview,
+            lambda content: cell_texts(table_titled(content, r"€ \+ F"))[2][1],
+            "-6,0",
+        ),
+        (
+            TabCharts,
+            lambda content: script_json(content, "month-charts-data")[
+                "expenses_average"
+            ],
+            15000,
+        ),
     ],
     ids=["card-of-4-months", "no-incomes-of-the-last-6", "chart-of-4-months"],
 )
@@ -574,10 +590,11 @@ def test_an_index_tab_averages_over_the_months_its_views_today_reached(
 ):
     ExpenseFactory(price=60000, date=date(1999, 1, 6))
     view = view_for(rf, main_user, view_class)
+    view.request.htmx = HtmxDetails(view.request)
     # apart from the clock, so a read of the clock shows
     view.today = date(1999, 4, 10)
 
-    assert read(view.get_context_data()) == average
+    assert read(view.get(view.request).content.decode()) == average
 
 
 def test_balance_tables_name_their_columns_and_foot_rows(client_logged):
@@ -585,12 +602,7 @@ def test_balance_tables_name_their_columns_and_foot_rows(client_logged):
 
     labels = [
         (
-            [
-                re.sub(r"<[^>]+>", "", cell).strip()
-                for cell in re.findall(
-                    r"<th\b[^>]*>(.*?)</th>", table.partition("</thead>")[0], re.S
-                )
-            ],
+            sum(cell_texts(table.partition("</thead>")[0]), []),
             re.findall(
                 r"<tr\b[^>]*>\s*<td[^>]*>([^<]*)</td>", table.partition("<tfoot>")[2]
             ),
@@ -648,7 +660,7 @@ def test_view_index_year_end_and_accounts_cells_equal_or_marked_mismatch(
 
     balance = tab_fragment(client_logged, INDEX_TABS["balance"].url)
     overview = tab_fragment(client_logged, INDEX_TABS["overview"].url)
-    year_end = total_cells(balance[balance.index('id="table-balance"') :])[-1]
+    year_end = total_cells(_balance_table(balance))[-1]
     accounts_balance = total_cells(table_titled(overview, "Sąskaitos"))[4]
 
     # each foot cell as the tab's reload draws it
@@ -728,35 +740,30 @@ def test_view_a_signed_figure_carries_its_sign_and_a_zero_carries_none(
     assert re.findall(cells, content) == attrs
 
 
-@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
-def test_view_index_savings_column_shows_the_invested_price(
-    client_logged, main_user, fee_source
-):
-    with quiet_build(main_user):
-        SavingFactory(
-            price=20000,
-            fee=300,
-            saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
-        )
-
-    content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
-    january = row_cells(content[content.index('id="table-balance"') :], "Sausis")
-
-    assert january[3] == "200,00"
-
-
-def test_balance_table_draws_each_column(client_logged, main_user):
+# Investuota reads the invested price, its fee apart, wherever the fee is paid from;
+# a fee paid from the account leaves the money flow with it
+@pytest.mark.parametrize(
+    "fee_source, flow",
+    [
+        (SavingType.FeeSource.INVESTMENT, "540,00"),
+        (SavingType.FeeSource.ACCOUNT, "537,00"),
+    ],
+)
+def test_balance_table_draws_each_column(client_logged, main_user, fee_source, flow):
     with quiet_build(main_user):
         IncomeFactory(price=100000)
         ExpenseFactory(price=20000)
-        SavingFactory(price=30000, fee=0)
+        SavingFactory(
+            price=30000,
+            fee=300,
+            saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
+        )
         SavingCloseFactory(price=5000, fee=0)
         _borrow()
         _lend()
 
     content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
-    table = content[content.index('id="table-balance"') :].partition("</table>")[0]
-    rows = cell_texts(table)
+    rows = cell_texts(_balance_table(content))
 
     # in, out; saved, sold; borrowed, paid back; lent, paid back
     moves = [
@@ -775,9 +782,9 @@ def test_balance_table_draws_each_column(client_logged, main_user):
     # January, then the average and total rows; the average's last cell is its label:
     # test_balance_tables_end_of_year_label_is_a_plain_cell_not_a_figure
     assert [rows[2], rows[-2][:-1], rows[-1]] == [
-        ["Sausis", *figures, "540,00"],
+        ["Sausis", *figures, flow],
         ["Vidurkis", *averages],
-        ["Viso", *figures, "540,00"],
+        ["Viso", *figures, flow],
     ]
 
 
@@ -788,7 +795,7 @@ def test_balance_table_hides_its_debt_columns_until_its_switch_asks(client_logge
     ).groups()
     title = re.search(r'<h2 class="panel__title">(.*?)</h2>', panel, re.S).group(1)
     table = re.search(r"<table\b.*?</table>", panel, re.S).group(0)
-    rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S)
+    rows = ROWS.findall(table)
 
     # the Panel holds the state its title's switch and its table's columns share
     assert (
@@ -808,8 +815,7 @@ def test_balance_table_hides_its_debt_columns_until_its_switch_asks(client_logge
 
 def test_balance_table_rules_where_each_column_group_starts(client_logged):
     content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
-    table = content[content.index('id="table-balance"') :].partition("</table>")[0]
-    rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S)
+    rows = ROWS.findall(_balance_table(content))
 
     # per row, each cell starting a group, by its position from 0
     starts = [
@@ -828,7 +834,7 @@ def test_balance_table_rules_where_each_column_group_starts(client_logged):
 
 def test_balance_tables_end_of_year_label_is_a_plain_cell_not_a_figure(client_logged):
     content = tab_fragment(client_logged, INDEX_TABS["balance"].url)
-    table = content[content.index('id="table-balance"') :].partition("</table>")[0]
+    table = _balance_table(content)
 
     # like Vidurkis beside it: a row name's face, not a figure's; it starts a group
     assert re.findall(r"<td\b([^>]*)>\s*Metų pabaigoje", table) == [

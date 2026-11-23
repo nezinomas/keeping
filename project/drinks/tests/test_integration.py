@@ -1,17 +1,18 @@
 from datetime import date
 
 import pytest
+from parameterized import parameterized
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from ...core.tests.test_integration_browser import INK_MUTED, Browser
+from ...core.tests.test_integration_browser import HARM, INK_MUTED, Browser
 from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 
 OVERVIEW_CHART = "#chart-overview-container"
-HARM = "rgb(125, 39, 51)"  # --skin-harm
+HEAVY_DAY = "Rizikingo vartojimo diena: > 6 Std Av"
 
 
 @pytest.mark.webtest
@@ -36,55 +37,56 @@ class DrinksQuickAdd(Browser):
 
 @pytest.mark.webtest
 class DrinksChartAxisTitle(Browser):
-    def test_axis_title_is_written_as_in_a_sentence_inside_the_chart(self):
+    @parameterized.expand([(1280,), (360,)])
+    def test_axis_title_is_written_as_in_a_sentence_inside_the_chart(self, width):
         chart = f"{OVERVIEW_CHART} .highcharts-root"
         title = f"{OVERVIEW_CHART} .highcharts-yaxis .highcharts-axis-title"
-        for width in (1280, 360):
-            with self.subTest(width=width):
-                self.open_at("/drinks/", width)
-                face = self.browser.execute_script(
-                    "const t = document.querySelector(arguments[0]);"
-                    "const s = getComputedStyle(t);"
-                    "const r = t.getBoundingClientRect();"
-                    "const c = document.querySelector(arguments[1])"
-                    "  .getBoundingClientRect();"
-                    "return [s.fontSize, s.letterSpacing, s.textTransform,"
-                    "  r.top >= c.top && r.right <= c.right];",
-                    title,
-                    chart,
-                )
+        self.open_at("/drinks/", width)
 
-                assert face == ["12px", "normal", "none", True]
+        face = self.browser.execute_script(
+            "const t = document.querySelector(arguments[0]);"
+            "const s = getComputedStyle(t);"
+            "const r = t.getBoundingClientRect();"
+            "const c = document.querySelector(arguments[1])"
+            "  .getBoundingClientRect();"
+            "return [s.fontSize, s.letterSpacing, s.textTransform,"
+            "  r.top >= c.top && r.right <= c.right];",
+            title,
+            chart,
+        )
+        assert face == ["12px", "normal", "none", True]
 
 
 @pytest.mark.webtest
 class DrinksChartRuleLabel(Browser):
-    def test_heavy_day_label_fits_inside_its_chart_at_each_width(self):
-        # three heavy days in a month, or the Risk chart's axis stops below its rule
-        for day in (1, 2, 3):
-            DrinkFactory(date=date(1999, 1, day), stdav=8)
-        heavy_day = "Rizikingo vartojimo diena: > 6 Std Av"
-        for tab, scope, width, texts in (
-            ("habits", "#tab_content", 1280, [heavy_day, heavy_day]),
+    @parameterized.expand(
+        [
+            ("habits", "#tab_content", 1280, [HEAVY_DAY, HEAVY_DAY]),
             ("habits", "#tab_content", 360, ["> 6 Std Av", "> 6 Std Av"]),
             ("risk", "#chart-heavy-container", 1280, ["Mažos rizikos riba: 3"]),
             ("risk", "#chart-heavy-container", 360, ["3"]),
-        ):
-            with self.subTest(tab=tab, width=width):
-                self.open_at("/drinks/", width)
-                self.click_tab(tab)
-                labels = self.browser.execute_script(
-                    "return [...document.querySelectorAll("
-                    "  arguments[0] + ' .highcharts-plot-line-label span')].map(s => {"
-                    "  const r = s.getBoundingClientRect();"
-                    "  const c = s.closest('.highcharts-container')"
-                    "    .getBoundingClientRect();"
-                    "  return [s.textContent, r.left >= c.left && r.right <= c.right];"
-                    "});",
-                    scope,
-                )
+        ]
+    )
+    def test_heavy_day_label_fits_inside_its_chart_at_each_width(
+        self, tab, scope, width, texts
+    ):
+        # three heavy days in a month, or the Risk chart's axis stops below its rule
+        for day in (1, 2, 3):
+            DrinkFactory(date=date(1999, 1, day), stdav=8)
+        self.open_at("/drinks/", width)
+        self.click_tab(tab)
 
-                assert labels == [[text, True] for text in texts]
+        labels = self.browser.execute_script(
+            "return [...document.querySelectorAll("
+            "  arguments[0] + ' .highcharts-plot-line-label span')].map(s => {"
+            "  const r = s.getBoundingClientRect();"
+            "  const c = s.closest('.highcharts-container')"
+            "    .getBoundingClientRect();"
+            "  return [s.textContent, r.left >= c.left && r.right <= c.right];"
+            "});",
+            scope,
+        )
+        assert labels == [[text, True] for text in texts]
 
     def test_rule_label_wears_its_rule_state(self):
         # a week past the high-risk threshold, or Highcharts drops both rules off the axis
@@ -106,45 +108,42 @@ class DrinksChartRuleLabel(Browser):
 
 @pytest.mark.webtest
 class DrinksHistoryDataLabels(Browser):
-    def test_data_labels_drop_where_a_year_is_too_narrow_for_them(self):
+    # the forecast's hollow bar prints no figure at any width
+    @parameterized.expand(
+        [(1280, [True, True, False], True), (360, [False] * 3, False)]
+    )
+    def test_data_labels_drop_where_a_year_is_too_narrow_for_them(
+        self, width, enabled, drawn
+    ):
         # ten years: about 23 px a year at 360, five times that at 1280
         for year in range(1990, 2000):
             DrinkFactory(date=date(year, 1, 1))
-        # the forecast's hollow bar prints no figure at any width
-        for width, enabled, drawn in (
-            (1280, [True, True, False], True),
-            (360, [False] * 3, False),
-        ):
-            with self.subTest(width=width):
-                self.open_at("/drinks/", width)
-                self.click_tab("history")
-                shown = self.read_chart(
-                    "chart-summary-container",
-                    "return [c.series.map(s => s.options.dataLabels.enabled),"
-                    "  !!c.container.querySelector('.highcharts-data-label')];",
-                )
+        self.open_at("/drinks/", width)
+        self.click_tab("history")
 
-                assert shown == [enabled, drawn]
+        shown = self.read_chart(
+            "chart-summary-container",
+            "return [c.series.map(s => s.options.dataLabels.enabled),"
+            "  !!c.container.querySelector('.highcharts-data-label')];",
+        )
+        assert shown == [enabled, drawn]
 
 
 @pytest.mark.webtest
 class DrinksTrendLimitRule(Browser):
-    def test_limit_rule_is_drawn_only_with_a_drink_target(self):
+    @parameterized.expand([(lambda: None, []), (DrinkTargetFactory, ["Riba: 100"])])
+    def test_limit_rule_is_drawn_only_with_a_drink_target(self, target, expected):
         DrinkFactory()
-        for target, expected in ((False, []), (True, ["Riba: 100"])):
-            with self.subTest(target=target):
-                if target:
-                    DrinkTargetFactory()
-                self.open("/drinks/")
-                self.click_tab("trends")
+        target()
+        self.open("/drinks/")
+        self.click_tab("trends")
 
-                labels = self.browser.execute_script(
-                    "return [...document.querySelectorAll("
-                    "  '#chart-trend-container .highcharts-plot-line-label span')]"
-                    "  .map(s => s.textContent);"
-                )
-
-                assert labels == expected
+        labels = self.browser.execute_script(
+            "return [...document.querySelectorAll("
+            "  '#chart-trend-container .highcharts-plot-line-label span')]"
+            "  .map(s => s.textContent);"
+        )
+        assert labels == expected
 
 
 @pytest.mark.webtest
@@ -323,29 +322,32 @@ class DrinksOverviewOnAPhone(Browser):
             "table_wider": True,
         }
 
-    def test_box_fades_its_edge_only_while_more_lies_past_it(self):
-        DrinkFactory(stdav=50_000)
-        for inside, width, scroll_to_end, fade in (
+    @parameterized.expand(
+        [
             ("#breakdown table", 360, False, True),
             ("#breakdown table", 360, True, False),
             ("#breakdown table", 1500, False, False),
             (".heat-daycol", 360, False, True),
-        ):
-            with self.subTest(inside=inside, width=width, scroll_to_end=scroll_to_end):
-                self.open_at("/drinks/", width)
-                self.browser.execute_script(
-                    f"const box = {self.BOX};"
-                    " if (arguments[1]) box.scrollLeft = box.scrollWidth;",
-                    inside,
-                    scroll_to_end,
-                )
-                self.wait_two_frames()
-                faded = self.browser.execute_script(
-                    f"return getComputedStyle({self.BOX}).maskImage !== 'none';",
-                    inside,
-                )
+        ]
+    )
+    def test_box_fades_its_edge_only_while_more_lies_past_it(
+        self, inside, width, scroll_to_end, fade
+    ):
+        DrinkFactory(stdav=50_000)
+        self.open_at("/drinks/", width)
+        self.browser.execute_script(
+            f"const box = {self.BOX};"
+            " if (arguments[1]) box.scrollLeft = box.scrollWidth;",
+            inside,
+            scroll_to_end,
+        )
+        self.wait_two_frames()
 
-                assert faded is fade
+        faded = self.browser.execute_script(
+            f"return getComputedStyle({self.BOX}).maskImage !== 'none';",
+            inside,
+        )
+        assert faded is fade
 
 
 @pytest.mark.webtest

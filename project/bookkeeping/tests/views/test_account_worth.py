@@ -1,8 +1,8 @@
 import re
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pytest
-import pytz
 
 from ....accounts.tests.factories import AccountBalanceFactory
 from ..factories import AccountWorthFactory
@@ -16,8 +16,8 @@ def _accounts(client):
 
 
 def _two_checks():
-    AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    AccountWorthFactory(date=datetime(1999, 2, 2, tzinfo=pytz.utc), price=555)
+    AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=ZoneInfo("UTC")), price=2)
+    AccountWorthFactory(date=datetime(1999, 2, 2, tzinfo=ZoneInfo("UTC")), price=555)
 
 
 @pytest.mark.parametrize(
