@@ -213,22 +213,16 @@ def test_profit_cards_read_each_table_s_total_and_a_table_without_one_draws_its_
     assert (tab_cards(content)[1:], drawn) == (cards, tables)
 
 
-TABLES = [
-    pytest.param("Fondai", SavingFactory, "Savings", id="funds"),
-    pytest.param("Pensijos", PensionFactory, "PensionType", id="pensions"),
-]
-
-
-@pytest.mark.parametrize("title, factory, row", TABLES)
-def test_table_shows_the_year_s_transfers_in_its_row_and_total(
-    client_logged, main_user, title, factory, row
+# the Fondai table's transfers are asserted in test_funds_table_draws_each_column
+def test_pensions_table_shows_the_year_s_transfers_in_its_row_and_total(
+    client_logged, main_user
 ):
     with quiet_build(main_user):
-        factory(price=660)
+        PensionFactory(price=660)
 
-    table = funds_table(client_logged, title)
+    table = funds_table(client_logged, "Pensijos")
 
-    assert row_cells(table, row)[2] == "6,60"
+    assert row_cells(table, "PensionType")[2] == "6,60"
     assert total_cells(table)[3] == "6,60"
 
 
@@ -290,11 +284,7 @@ def test_closed_fund_with_a_sell_shows_its_signed_profit_but_no_worth(
     cells = row_tags(funds_table(client_logged, title), "Closed")
 
     assert [text for _attrs, text in cells[8:10]] == ["-", "-"]
-    assert [
-        (text, re.search(r'data-sign="(\w+)"', attrs).group(1))
-        for attrs, text in cells[10:12]
-    ] == profit
-    assert not re.search(r"table-(success|danger)", str(cells))
+    assert signed_cells(cells[10:12]) == profit
 
 
 @pytest.mark.parametrize("title, kind", KINDS)
@@ -324,13 +314,10 @@ def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
         worth(fund, 100000)
 
     table = funds_table(client_logged)
-    row = re.search(r"<tr>\s*<td[^>]*>Even</td>(.*?)</tr>", table, re.S).group(1)
-
-    foot = re.search(r"<tfoot>(.*?)</tfoot>", table, re.S).group(1)
 
     assert {
-        "row": re.findall(r"<td([^>]*)>[^<]*</td>", row)[-2:],
-        "total": re.findall(r"<td([^>]*)>[^<]*</td>", foot)[-2:],
+        "row": [attrs for attrs, _text in row_tags(table, "Even")[-2:]],
+        "total": [attrs for attrs, _text in total_tags(table)[-2:]],
     } == dict.fromkeys(
         ("row", "total"),
         [f'{GROUP_FIGURE} data-cell="empty"', f'{FIGURE} data-cell="empty"'],

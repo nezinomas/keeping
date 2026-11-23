@@ -16,41 +16,40 @@ from ..signals.helpers import YEAR, buy, sell, worth
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.parametrize("title, kind", KINDS)
-def test_a_stale_worth_shows_dashes_in_the_profit_cells(
-    client_logged, main_user, title, kind
+@pytest.mark.parametrize(
+    "title, kind, year, later_worths, cells",
+    [
+        pytest.param("Fondai", "funds", YEAR, [], ["1.000,00", "-", "-"], id="funds"),
+        pytest.param(
+            "Pensijos", "pensions", YEAR, [], ["1.000,00", "-", "-"], id="pensions"
+        ),
+        pytest.param(
+            "Fondai", "funds", YEAR + 1, [], ["1.000,00", "-", "-"], id="next-year"
+        ),
+        pytest.param(
+            "Fondai",
+            "funds",
+            YEAR,
+            [70000],
+            ["700,00", "100,00", "10,00%"],
+            id="fresh",
+        ),
+    ],
+)
+def test_the_worth_shows_and_the_profit_reads_dashes_until_a_worth_after_the_sell(
+    client_logged, main_user, title, kind, year, later_worths, cells
 ):
     with quiet_build(main_user):
-        stale_fund(kind=kind)
+        fund = stale_fund(kind=kind)
+        for price in later_worths:
+            worth(fund, price)
+    User.objects.update(year=year)
 
-    cells = row_cells(funds_table(client_logged, title), "Stale")
-
-    assert cells[9] == "1.000,00"
-    assert cells[10:12] == ["-", "-"]
-
-
-def test_a_stale_worth_shows_dashes_the_next_year_too(client_logged, main_user):
-    with quiet_build(main_user):
-        stale_fund()
-    User.objects.update(year=YEAR + 1)
-
-    cells = row_cells(funds_table(client_logged), "Stale")
-
-    assert cells[10:12] == ["-", "-"]
-
-
-def test_a_worth_dated_after_the_sell_shows_the_profit(client_logged, main_user):
-    with quiet_build(main_user):
-        fund = stale_fund()
-        worth(fund, 70000)
-
-    cells = row_cells(funds_table(client_logged), "Stale")
-
-    assert cells[10:12] == ["100,00", "10,00%"]
+    assert row_cells(funds_table(client_logged, title), "Stale")[9:12] == cells
 
 
 @pytest.mark.parametrize("title, kind", KINDS)
-def test_the_total_profit_sums_only_the_rows_that_show_one(
+def test_the_total_transferred_sums_every_row_its_profit_and_percent_only_the_shown(
     client_logged, main_user, title, kind
 ):
     with quiet_build(main_user):
