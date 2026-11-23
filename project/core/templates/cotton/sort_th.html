@@ -1,6 +1,6 @@
-<c-vars key="" active="" url="" target="" align="" column="" />
+<c-vars key="" active="" url="" target="" column="" />
 
-<th{% if column == "total" %} class="month-table__total"{% elif align == "left" %} class="text-left"{% endif %}>
+<th{% if column == "total" %} class="month-table__total"{% endif %}>
     {% if key == active %}
     <span>{{ slot }}</span>
     {% else %}

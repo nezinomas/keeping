@@ -37,8 +37,8 @@ _Avoid_: toggle, checkbox, show/hide link
 **Sort header**:
 A table's head cell that orders the table by its column: a link to the table's url
 with `order=<key>`, plain text when that order is the one shown. `<c-sort-th>` takes a
-state, never a class: `align="left"` for a column of names (Detailed's first, a Type
-table's), `column="total"` for a Month table's last.
+state, never a class: `column="total"` for a Month table's last. A first column needs no
+state: the skin sets it left.
 _Avoid_: sortable th, sort link, column header
 
 **Tip**:

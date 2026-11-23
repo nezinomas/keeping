@@ -892,9 +892,7 @@ def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
     actual = _between(content, "calculations-spend")
-    labels = re.findall(
-        r'<h2 class="panel__title">([^<]*)<|<td class="text-left">([^<]*)<', actual
-    )
+    labels = re.findall(r'<h2 class="panel__title">([^<]*)<|<td>([^<]*)<', actual)
 
     assert ["".join(label) for label in labels] == [
         "Kiek galiu išleisti per dieną",
@@ -934,7 +932,7 @@ def test_day_tab_calculations_renders_two_panels_each_with_its_own_header(
 
 
 def _first_month_cell(content, label):
-    row = rf'<td class="text-left">{label}(?:<span[^>]*>.*?</span>)?</td>\s*'
+    row = rf"<td>{label}(?:<span[^>]*>.*?</span>)?</td>\s*"
     return re.search(row + r"<td[^>]*>([^<]*)</td>", content).group(1)
 
 

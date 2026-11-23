@@ -93,12 +93,12 @@ def test_income_load_form(client_logged, url_of, trigger, expected_of):
         (
             "incomes:type_new",
             {"title": "TTT", "type": "salary"},
-            r'<td class="text-left">TTT</td>',
+            r"<td>TTT</td>",
         ),
         (
             "incomes:type_update",
             {"title": "TTT", "type": "other"},
-            r'<td class="text-left">TTT</td>',
+            r"<td>TTT</td>",
         ),
     ],
     ids=["income", "type", "type_update"],
@@ -523,17 +523,17 @@ def _types_tab_of_alga_and_kita(client):
     "row",
     [
         (
-            r'<td class="text-left">Alga</td>\s*<td class="main__figure">900</td>\s*'
+            r'<td>Alga</td>\s*<td class="main__figure">900</td>\s*'
             r'<td class="main__figure">700</td>\s*<td class="main__figure">100%</td>\s*'
             r"<td>1999-02-05</td>"
         ),
         (
-            r'<td class="text-left">Kita</td>\s*<td class="main__figure">–</td>\s*'
+            r'<td>Kita</td>\s*<td class="main__figure">–</td>\s*'
             r'<td class="main__figure">–</td>\s*<td class="main__figure">–</td>\s*'
             r"<td>–</td>"
         ),
         (
-            r'<tr class="main__total">\s*<td class="text-left">Viso</td>\s*'
+            r'<tr class="main__total">\s*<td>Viso</td>\s*'
             r'<td class="main__figure">900</td>\s*<td class="main__figure">700</td>\s*'
             r'<td class="main__figure">100%</td>'
         ),
@@ -581,42 +581,22 @@ def test_types_tab_sorts_by_the_asked_column(client_logged):
     by_title = client_logged.get(url).content.decode()
     by_share = client_logged.get(url, {"order": "share"}).content.decode()
 
-    title_cells = r'<td class="text-left">([^<]*)</td>'
+    title_cells = r"<tr[^>]*>\s*<td>([^<]*)</td>"
     assert re.findall(title_cells, by_title) == ["Alga", "Zeta", "Viso"]
     assert re.findall(title_cells, by_share) == ["Zeta", "Alga", "Viso"]
 
 
-@pytest.mark.parametrize(
-    "order, headers, reload",
-    [
-        (
-            "share",
-            [
-                (' class="text-left"', "/incomes/types/?order=title", "Pajamų rūšis"),
-                ("", "/incomes/types/?order=this_year", "Šiemet"),
-                ("", "/incomes/types/?order=last_year", "Pernai"),
-                ("", "", "Dalis"),
-                ("", "/incomes/types/?order=last_income", "Paskutinį kartą"),
-            ],
-            '<div hx-get="/incomes/types/?order=share" hx-target="#tab_content"',
-        ),
-        (
-            "title",
-            [
-                (' class="text-left"', "", "Pajamų rūšis"),
-                ("", "/incomes/types/?order=this_year", "Šiemet"),
-                ("", "/incomes/types/?order=last_year", "Pernai"),
-                ("", "/incomes/types/?order=share", "Dalis"),
-                ("", "/incomes/types/?order=last_income", "Paskutinį kartą"),
-            ],
-            '<div hx-get="/incomes/types/?order=title" hx-target="#tab_content"',
-        ),
-    ],
-    ids=["share", "title"],
-)
-def test_types_tab_sort_links_and_reload_carry_only_the_order(
-    client_logged, order, headers, reload
-):
+TYPES_COLUMNS = [
+    ("title", "Pajamų rūšis"),
+    ("this_year", "Šiemet"),
+    ("last_year", "Pernai"),
+    ("share", "Dalis"),
+    ("last_income", "Paskutinį kartą"),
+]
+
+
+@pytest.mark.parametrize("order", [key for key, _ in TYPES_COLUMNS])
+def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged, order):
     content = client_logged.get(
         reverse("incomes:tab_types"), {"order": order}
     ).content.decode()
@@ -624,15 +604,16 @@ def test_types_tab_sort_links_and_reload_carry_only_the_order(
     # pushed, so a reload keeps the sort
     assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
     # the active column is a span, every other one a link
-    assert (
-        re.findall(
-            r"<th([^>]*)>\s*(?:<span>|<a role=\"button\" hx-get=\"([^\"]*)\""
-            r' hx-target="#tab_content">)([^<]*)</',
-            content,
-        )
-        == headers
-    )
+    assert re.findall(
+        r"<th([^>]*)>\s*(?:<span>|<a role=\"button\" hx-get=\"([^\"]*)\""
+        r' hx-target="#tab_content">)([^<]*)</',
+        content,
+    ) == [
+        ("", "" if key == order else f"/incomes/types/?order={key}", label)
+        for key, label in TYPES_COLUMNS
+    ]
     # a save reloads the sort shown
+    reload = f'<div hx-get="/incomes/types/?order={order}" hx-target="#tab_content"'
     assert reload in content
 
 
@@ -646,7 +627,7 @@ def _types_tab_of_two_kinds(client):
 def _type_rows(content):
     """(the row's attributes after its htmx ones, the type's title) of each row."""
     return re.findall(
-        row_start() + r'([^>]*)>\s*<td class="text-left">(\w+)</td>',
+        row_start() + r"([^>]*)>\s*<td>(\w+)</td>",
         content,
     )
 

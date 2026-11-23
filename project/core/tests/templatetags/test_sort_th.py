@@ -24,11 +24,10 @@ def test_a_sort_link_adds_its_order_to_the_urls_query(url, expected):
 @pytest.mark.parametrize(
     "state, expected",
     [
-        pytest.param('align="left"', '<th class="text-left">', id="left"),
+        pytest.param('align="left"', "<th>", id="align_is_gone"),
         pytest.param(
             'column="total"', '<th class="month-table__total">', id="total_column"
         ),
-        pytest.param('align="right"', "<th>", id="other_value"),
         pytest.param('class="x"', "<th>", id="class_passed"),
     ],
 )
@@ -54,7 +53,6 @@ def test_a_sort_header_draws_nothing_it_is_not_given(source):
         "active": "title",
         "url": "/puslapio/",
         "target": "#puslapio",
-        "align": "left",
         "column": "total",
     }
 

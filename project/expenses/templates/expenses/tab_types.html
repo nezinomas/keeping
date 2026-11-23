@@ -4,7 +4,7 @@
 <c-paper-table head_attrs='class="sortable-header-row" hx-push-url:inherited="true"'>
     <c-slot name="head">
         <tr>
-            <c-sort-th key="title" :active="table.order" :url="sort_url" target="#tab_content" align="left">{% translate 'Type / name' %}</c-sort-th>
+            <c-sort-th key="title" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Type / name' %}</c-sort-th>
             <c-sort-th key="this_year" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'This year' %}</c-sort-th>
             <c-sort-th key="last_year" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Last year' %}</c-sort-th>
             <c-sort-th key="share" :active="table.order" :url="sort_url" target="#tab_content">{% translate 'Share' %}</c-sort-th>
@@ -17,7 +17,7 @@
     <tbody>
         {% url 'expenses:type_update' row.pk as url_update %}
         <c-edit-row :url="url_update" class="main__group{% if not forloop.first %} table-group-divider{% endif %}">
-            <td class="text-left">{{ row.title }}{% if row.necessary %} <span class="main__mark">{% translate 'necessary' context 'expense type caption' %}</span>{% endif %}</td>
+            <td>{{ row.title }}{% if row.necessary %} <span class="main__mark">{% translate 'necessary' context 'expense type caption' %}</span>{% endif %}</td>
             <td class="main__figure">{{ row.this_year }}</td>
             <td class="main__figure">{{ row.last_year }}</td>
             <td class="main__figure">{{ row.share }}</td>
@@ -27,7 +27,7 @@
         {% for name in row.names %}
         {% url 'expenses:name_update' name.pk as name_update %}
         <c-edit-row :url="name_update">
-            <td class="text-left main__child">{{ name.title }}{% if name.year %} <span class="main__year">{{ name.year }}</span>{% endif %}</td>
+            <td class="main__child">{{ name.title }}{% if name.year %} <span class="main__year">{{ name.year }}</span>{% endif %}</td>
             <td class="main__figure">{{ name.this_year }}</td>
             <td class="main__figure">{{ name.last_year }}</td>
             <td class="main__figure main__share">{{ name.share }}</td>
@@ -40,7 +40,7 @@
     </c-slot>
     <c-slot name="foot">
         <tr class="main__total">
-            <td class="text-left">{% translate 'Total' %}</td>
+            <td>{% translate 'Total' %}</td>
             <td class="main__figure">{{ table.total.this_year }}</td>
             <td class="main__figure">{{ table.total.last_year }}</td>
             <td class="main__figure">{{ table.total.share }}</td>
