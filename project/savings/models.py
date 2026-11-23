@@ -1,10 +1,8 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.lib.db_sync import SAVING_FIELDS
-from ..core.mixins.shows_profit import ShowsProfitMixin
+from ..core.fund_balance import FundBalance
 from ..core.models import TitleAbstract
 from ..core.validators import TITLE_VALIDATORS
 from ..journals.models import Journal
@@ -75,32 +73,20 @@ class Saving(models.Model):
         return self.saving_type.journal
 
 
-class SavingBalance(ShowsProfitMixin, models.Model):
+class SavingBalance(FundBalance):
     fund_field = "saving_type"
-    sync_fields = SAVING_FIELDS
+    fund_closed_lookup = "saving_type__closed"
 
     saving_type = models.ForeignKey(
         SavingType, on_delete=models.CASCADE, related_name="savings_balance"
     )
-    year = models.PositiveIntegerField(
-        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
-    )
-    latest_check = models.DateTimeField(null=True, blank=True)
-    past_amount = models.IntegerField(default=0)
-    past_fee = models.IntegerField(default=0)
-    fee = models.IntegerField(default=0)
-    per_year_incomes = models.IntegerField(default=0)
-    per_year_fee = models.IntegerField(default=0)
-    sold = models.IntegerField(default=0)
-    sold_fee = models.IntegerField(default=0)
-    incomes = models.IntegerField(default=0)
-    market_value = models.IntegerField(default=0)
-    profit_sum = models.IntegerField(default=0)
-    profit_proc = models.FloatField(default=0.0)
-    sold_since_check = models.IntegerField(default=0)
 
     class Meta:
         ordering = ["year", "saving_type__pk"]
 
     def __str__(self):
-        return f"{self.saving_type.title}"
+        return self.saving_type.title
+
+    @property
+    def fund(self) -> SavingType:
+        return self.saving_type

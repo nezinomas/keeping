@@ -42,3 +42,10 @@ def test_total_row_no_data(mocker, main_user):
     assert actual["balance"] == 0
     assert actual["have"] == 0
     assert actual["delta"] == 0
+
+
+def test_total_row_raises_on_a_row_without_a_column(mocker, main_user):
+    mocker.patch(SERVICE, return_value=[SimpleNamespace(past=1, incomes=2)])
+
+    with pytest.raises(KeyError, match="expenses"):
+        load_service(main_user, 1)

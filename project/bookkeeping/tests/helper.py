@@ -2,7 +2,7 @@ import json
 import re
 from contextlib import contextmanager
 from datetime import date
-from unittest.mock import patch
+from unittest.mock import DEFAULT, patch
 
 import pytest
 from django.db import connection
@@ -116,31 +116,20 @@ def script_json(content, script_id):
     return json.loads(found.group(1))
 
 
-def switch_after_a_gain():
-    """A bought for 1 000,00, worth 1 300,00 on 1 March and switched whole to B in
-    June; B worth 1 400,00 at the year end."""
-    a = SavingTypeFactory(title="A")
-    b = SavingTypeFactory(title="B")
-    buy(a, 100000)
-    worth(a, 130000, month=3, day=1)
-    SavingChangeFactory(
-        from_account=a, to_account=b, price=130000, fee=0, date=date(1999, 6, 1)
-    )
-    worth(b, 140000)
-    return a, b
-
-
-def switch_a_into_b(*, kind="funds", a_closed=None, switched=130000):
-    """A bought 1 000,00, worth 1 300,00, all switched into B; A ends at 0, B at 1 400,00."""
-    a = SavingTypeFactory(title="A", type=kind, closed=a_closed)
+def switch_a_into_b(
+    *, kind="funds", checked=date(1999, 3, 1), on=date(1999, 6, 1), a_zeroed=False
+):
+    """A bought for 1 000,00 in 1999, worth 1 300,00 on `checked`, switched whole to B
+    on `on`; B worth 1 400,00 at the end of that year, and A 0 at 1999's when
+    `a_zeroed`."""
+    a = SavingTypeFactory(title="A", type=kind)
     b = SavingTypeFactory(title="B", type=kind)
     buy(a, 100000)
-    worth(a, 130000, month=5, day=28)
-    SavingChangeFactory(
-        from_account=a, to_account=b, price=switched, fee=0, date=date(1999, 6, 1)
-    )
-    worth(a, 0)
-    worth(b, 140000)
+    worth(a, 130000, month=checked.month, day=checked.day, year=checked.year)
+    SavingChangeFactory(from_account=a, to_account=b, price=130000, fee=0, date=on)
+    if a_zeroed:
+        worth(a, 0)
+    worth(b, 140000, year=on.year)
     return a, b
 
 
@@ -173,20 +162,41 @@ def row_titles(table):
     return re.findall(r"<tr>\s*<td[^>]*>([^<]*)</td>", table)
 
 
+FUNDS_TAB = "bookkeeping:tab_funds"
+
+
+def funds_table(client, title="Fondai"):
+    """The Fondai tab's table titled `title`: Fondai or Pensijos."""
+    return tab_table(client, FUNDS_TAB, title)
+
+
+def total_tags(table):
+    """(attributes, text) of each cell of `table`'s foot rows."""
+    foot = re.search(r"<tfoot>(.*?)</tfoot>", table, re.S).group(1)
+    return [
+        (attrs, text.strip())
+        for attrs, text in re.findall(r"<t[hd]([^>]*)>(.*?)</t[hd]>", foot, re.S)
+    ]
+
+
 def total_cells(table):
     """The cells of `table`'s foot rows, one string each."""
-    foot = re.search(r"<tfoot>(.*?)</tfoot>", table, re.S).group(1)
-    return [c.strip() for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", foot, re.S)]
+    return [text for _attrs, text in total_tags(table)]
+
+
+def _syncs() -> dict:
+    """Each balance sync, by its name in `balance_sources`."""
+    return {
+        "sync_accounts": balance_sources.sync_accounts,
+        "sync_savings": balance_sources.sync_savings,
+        "sync_pensions": balance_sources.sync_pensions,
+    }
 
 
 @contextmanager
 def quiet_syncs():
     """Saves inside the block sync no balance."""
-    with (
-        patch.object(balance_sources, "sync_accounts"),
-        patch.object(balance_sources, "sync_savings"),
-        patch.object(balance_sources, "sync_pensions"),
-    ):
+    with patch.multiple(balance_sources, **dict.fromkeys(_syncs(), DEFAULT)):
         yield
 
 
@@ -196,11 +206,7 @@ def quiet_build(user):
 
     Build balance rows after the block: the closing syncs overwrite any built inside.
     """
-    syncs = (
-        balance_sources.sync_accounts,
-        balance_sources.sync_savings,
-        balance_sources.sync_pensions,
-    )
+    syncs = _syncs().values()
     with quiet_syncs():
         yield
     for sync in syncs:

@@ -11,12 +11,11 @@ from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import PensionFactory
 from ....savings.tests.factories import SavingFactory
 from .. import factories
-from ..helper import cell_texts, tab_table, table_titled
+from ..helper import FUNDS_TAB, cell_texts, funds_table, tab_table, table_titled
 
 pytestmark = pytest.mark.django_db
 
 OVERVIEW = "bookkeeping:tab_overview"
-FUNDS = "bookkeeping:tab_funds"
 FUNDS_HEADER = (
     r'<th rowspan="2" colspan="2" class="[^"]*">1999 pradžioje</th>\s*'
     r'<th colspan="2" class="[^"]*">1999</th>'
@@ -26,7 +25,7 @@ FUNDS_HEADER = (
 def test_header_reads_the_selected_year(client_logged):
     PensionFactory()
 
-    assert re.search(FUNDS_HEADER, tab_table(client_logged, FUNDS, "Pensijos"))
+    assert re.search(FUNDS_HEADER, funds_table(client_logged, "Pensijos"))
 
 
 def test_accounts_table_draws_each_column_under_a_left_title(client_logged):
@@ -97,7 +96,8 @@ def test_every_table_refreshes_every_balance(client_logged):
     PensionFactory()
     url = reverse("bookkeeping:regenerate_balances")
     overview, funds = (
-        tab_fragment(client_logged, reverse(url_name)) for url_name in (OVERVIEW, FUNDS)
+        tab_fragment(client_logged, reverse(url_name))
+        for url_name in (OVERVIEW, FUNDS_TAB)
     )
 
     # the icon opens the title's header cell; a funds table's carries its name width.

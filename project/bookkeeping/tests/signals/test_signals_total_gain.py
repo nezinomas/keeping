@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from ....bookkeeping.tests.factories import PensionWorthFactory
-from ....bookkeeping.tests.helper import quiet_build, switch_after_a_gain
+from ....bookkeeping.tests.helper import quiet_build, switch_a_into_b
 from ....core.tests.utils import count_queries
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
@@ -55,7 +55,7 @@ def test_full_close_counts_the_money_taken_out_net_of_its_fee(main_user):
 
 def test_switch_moves_the_gain_to_the_fund_it_left(main_user):
     with quiet_build(main_user):
-        a, b = switch_after_a_gain()
+        a, b = switch_a_into_b()
     worth(a, 0)
 
     gain_a = balance(a).profit_sum

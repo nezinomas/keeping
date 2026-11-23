@@ -1,8 +1,6 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from ..core.lib.db_sync import SAVING_FIELDS
-from ..core.mixins.shows_profit import ShowsProfitMixin
+from ..core.fund_balance import FundBalance
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 
@@ -37,39 +35,27 @@ class Pension(models.Model):
         ordering = ["-date", "price"]
 
     def __str__(self):
-        return f"{(self.date)}: {self.pension_type}"
+        return f"{self.date}: {self.pension_type}"
 
     @property
     def journal(self):
         return self.pension_type.journal
 
 
-class PensionBalance(ShowsProfitMixin, models.Model):
+class PensionBalance(FundBalance):
     fund_field = "pension_type"
-    sync_fields = SAVING_FIELDS
+    fund_closed_lookup = "pension_type__closed"
 
     pension_type = models.ForeignKey(
         PensionType, on_delete=models.CASCADE, related_name="pensions_balance"
     )
-    year = models.PositiveIntegerField(
-        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
-    )
-    latest_check = models.DateTimeField(null=True, blank=True)
-    past_amount = models.IntegerField(default=0)
-    past_fee = models.IntegerField(default=0)
-    fee = models.IntegerField(default=0)
-    per_year_incomes = models.IntegerField(default=0)
-    per_year_fee = models.IntegerField(default=0)
-    sold = models.IntegerField(default=0)
-    sold_fee = models.IntegerField(default=0)
-    incomes = models.IntegerField(default=0)
-    market_value = models.IntegerField(default=0)
-    profit_sum = models.IntegerField(default=0)
-    profit_proc = models.FloatField(default=0.0)
-    sold_since_check = models.IntegerField(default=0)
 
     class Meta:
         ordering = ["year", "pension_type__pk"]
 
     def __str__(self):
-        return f"{self.pension_type.title}"
+        return self.pension_type.title
+
+    @property
+    def fund(self) -> PensionType:
+        return self.pension_type

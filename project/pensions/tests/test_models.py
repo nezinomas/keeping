@@ -16,10 +16,16 @@ from .factories import PensionBalanceFactory, PensionFactory, PensionTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-def test_pension_type_str():
-    p = PensionTypeFactory.build()
-
-    assert str(p) == "PensionType"
+@pytest.mark.parametrize(
+    "factory, text",
+    [
+        pytest.param(PensionTypeFactory, "PensionType", id="type"),
+        pytest.param(PensionFactory, "1999-01-01: PensionType", id="pension"),
+        pytest.param(PensionBalanceFactory, "PensionType", id="balance"),
+    ],
+)
+def test_str_names_the_pension_fund(factory, text):
+    assert str(factory.build()) == text
 
 
 def test_pension_type_items_user(main_user, second_user):

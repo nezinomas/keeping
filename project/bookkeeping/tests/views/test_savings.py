@@ -17,12 +17,14 @@ from ....transactions.tests.factories import SavingChangeFactory
 from ..factories import PensionWorthFactory, SavingWorthFactory
 from ..helper import (
     FIGURE,
+    FUNDS_TAB,
     GROUP_FIGURE,
     KINDS,
     PANEL_TITLE,
     cell_texts,
     closed_every_other,
     fund_with_a_sell,
+    funds_table,
     quiet_build,
     row_cells,
     row_tags,
@@ -30,7 +32,6 @@ from ..helper import (
     stale_fund,
     switch_a_into_b,
     tab_cards,
-    tab_table,
     table_titled,
     total_cells,
     view_queries,
@@ -38,12 +39,6 @@ from ..helper import (
 from ..signals.helpers import buy, sell, worth
 
 pytestmark = pytest.mark.django_db
-
-FUNDS_TAB = "bookkeeping:tab_funds"
-
-
-def _table(client, title="Fondai"):
-    return tab_table(client, FUNDS_TAB, title)
 
 
 def _fondai(client):
@@ -64,7 +59,7 @@ def test_each_table_lists_its_own_funds(client_logged, main_user, title, rows):
         SavingFactory(saving_type=SavingTypeFactory(title="PPP", type="pensions"))
         PensionFactory()
 
-    assert row_titles(_table(client_logged, title)) == rows
+    assert row_titles(funds_table(client_logged, title)) == rows
 
 
 INCOME = (1999, 10000)
@@ -76,6 +71,7 @@ INCOME = (1999, 10000)
     "income, savings, card",
     [
         pytest.param(INCOME, [], ("0,0%", "neutral"), id="0"),
+        pytest.param((1999, 10), [], ("0,0%", "neutral"), id="0-of-small-incomes"),
         pytest.param(INCOME, [(500, 0, "account")], ("5,0%", "neutral"), id="5"),
         pytest.param(INCOME, [(2049, 0, "account")], ("20,5%", "neutral"), id="20"),
         pytest.param(
@@ -228,7 +224,7 @@ def test_table_shows_the_year_s_transfers_in_its_row_and_total(
     with quiet_build(main_user):
         factory(price=660)
 
-    table = _table(client_logged, title)
+    table = funds_table(client_logged, title)
 
     assert row_cells(table, row)[2] == "6,60"
     assert total_cells(table)[3] == "6,60"
@@ -257,7 +253,7 @@ def test_table_dates_the_latest_check(
         worth_factory()
         worth_factory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
 
-    assert row_cells(_table(client_logged, title), row)[8] == "1999-01-01"
+    assert row_cells(funds_table(client_logged, title), row)[8] == "1999-01-01"
 
 
 @pytest.mark.parametrize(
@@ -289,7 +285,7 @@ def test_closed_fund_with_a_sell_shows_its_signed_profit_but_no_worth(
     with quiet_build(main_user):
         fund_with_a_sell("Closed", bought, sold, fee=fee, kind=kind, closed=1999)
 
-    cells = row_tags(_table(client_logged, title), "Closed")
+    cells = row_tags(funds_table(client_logged, title), "Closed")
 
     assert [text for _attrs, text in cells[8:10]] == ["-", "-"]
     assert [
@@ -310,7 +306,7 @@ def test_open_fund_with_no_worth_draws_its_cost_and_its_worth_cells_empty(
         else:
             buy(SavingTypeFactory(title="Open", type=kind), 100000)
 
-    cells = row_tags(_table(client_logged, title), "Open")
+    cells = row_tags(funds_table(client_logged, title), "Open")
 
     assert [
         (text, 'data-cell="empty"' in attrs) for attrs, text in [cells[4], *cells[8:]]
@@ -325,7 +321,7 @@ def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
         buy(fund, 100000)
         worth(fund, 100000)
 
-    table = _table(client_logged)
+    table = funds_table(client_logged)
     row = re.search(r"<tr>\s*<td[^>]*>Even</td>(.*?)</tr>", table, re.S).group(1)
 
     foot = re.search(r"<tfoot>(.*?)</tfoot>", table, re.S).group(1)
@@ -389,7 +385,7 @@ def test_funds_table_draws_each_column(client_logged, main_user):
     paid = ["1.000,00", "1,00", "200,00", "2,00", "1.200,00", "3,00", "300,00", "4,00"]
     # bought 1 200,00 for 3,00 of fees, 300,00 sold, worth 1 200,00
     profit = ["1.200,00", "297,00", "24,75%"]
-    assert cell_texts(_table(client_logged)) == [
+    assert cell_texts(funds_table(client_logged)) == [
         [
             "Fondai",
             "1999 pradžioje",
@@ -488,16 +484,29 @@ def test_funds_tab_queries_do_not_grow(client_logged, main_user, build, kind):
 
 
 @pytest.mark.parametrize(
+    "switch, total",
+    [
+        pytest.param({"a_zeroed": True}, ("2.300,00", "7,69%"), id="1999"),
+        pytest.param(
+            {"checked": date(1999, 12, 31), "on": date(2000, 6, 1)},
+            ("1.000,00", "30,00%"),
+            id="2000",
+        ),
+    ],
+)
+@pytest.mark.parametrize(
     "title, kind", [*KINDS, pytest.param("Fondai", "shares", id="shares")]
 )
-def test_total_counts_the_switched_money_once(client_logged, main_user, title, kind):
+def test_total_counts_the_money_switched_by_the_year_once(
+    client_logged, main_user, title, kind, switch, total
+):
     with quiet_build(main_user):
-        switch_a_into_b(kind=kind)
+        switch_a_into_b(kind=kind, **switch)
 
-    cells = total_cells(_table(client_logged, title))
+    cells = total_cells(funds_table(client_logged, title))
 
     # the total in, and the profit's percent on that base
-    assert (cells[5], cells[-1]) == ("2.300,00", "7,69%")
+    assert (cells[5], cells[-1]) == total
 
 
 def _source_closed_before_the_year():
@@ -564,16 +573,16 @@ def test_total_profit_percentage(client_logged, main_user, build, percent):
     with quiet_build(main_user):
         build()
 
-    assert total_cells(_table(client_logged))[-1] == percent
+    assert total_cells(funds_table(client_logged))[-1] == percent
 
 
 def test_pensions_total_ignores_a_switch_between_funds(client_logged, main_user):
     with quiet_build(main_user):
-        switch_a_into_b(kind="funds")
+        switch_a_into_b(a_zeroed=True)
         PensionFactory(price=100000)
         PensionWorthFactory(price=130000)
 
-    table = _table(client_logged, "Pensijos")
+    table = funds_table(client_logged, "Pensijos")
 
     assert total_cells(table)[5] == "1.000,00"
     assert total_cells(table)[-1] == row_cells(table, "PensionType")[-1]
