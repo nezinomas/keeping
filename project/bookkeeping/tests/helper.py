@@ -170,6 +170,14 @@ def funds_table(client, title="Fondai"):
     return tab_table(client, FUNDS_TAB, title)
 
 
+def signed_cells(cells):
+    """(text, its data-sign or "") of each of the (attributes, text) `cells`."""
+    return [
+        (text, (re.findall(r'data-sign="(\w+)"', attrs) or [""])[0])
+        for attrs, text in cells
+    ]
+
+
 def total_tags(table):
     """(attributes, text) of each cell of `table`'s foot rows."""
     foot = re.search(r"<tfoot>(.*?)</tfoot>", table, re.S).group(1)

@@ -1,5 +1,7 @@
 from django.db.models import F, Q
 
+from ..lib.money_cells import rounds_to_zero
+
 # A stale worth counts as 0 until a worth dated after the move is entered.
 FRESH_WORTH = Q(sold_since_check=0)
 
@@ -17,6 +19,11 @@ class ShowsProfitMixin:
         in_close_year = self.fund.closed == self.year and self.sold != 0
         fresh_worth = self.market_value != 0 and self.sold_since_check == 0
         return fresh_worth or in_close_year
+
+    @property
+    def profit_proc_signed(self) -> bool:
+        """The percent wears its sum's sign, unless it reads 0%."""
+        return not rounds_to_zero(self.profit_proc)
 
     @classmethod
     def shows_profit_q(cls) -> Q:

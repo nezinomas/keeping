@@ -52,7 +52,7 @@
         {% endif %}
         {% if item.shows_profit %}
         <c-figure-cell :value="item.profit_sum" signed group />
-        <c-figure-cell :value="item.profit_sum" signed>{{ item.profit_proc|cellformat }}%</c-figure-cell>
+        <c-figure-cell :value="item.profit_sum" :signed="item.profit_proc_signed">{{ item.profit_proc|cellformat:"0" }}%</c-figure-cell>
         {% else %}
         <c-figure-cell empty group />
         <c-figure-cell empty />
@@ -72,7 +72,7 @@
             <c-figure-cell :value="total_row.sold_fee" />
             <c-figure-cell :value="total_row.market_value" colspan="2" group />
             <c-figure-cell :value="total_row.profit_sum" signed group />
-            <c-figure-cell :value="total_row.profit_sum" signed>{{ total_row.profit_proc|cellformat }}%</c-figure-cell>
+            <c-figure-cell :value="total_row.profit_sum" :signed="total_row.profit_proc_signed">{{ total_row.profit_proc|cellformat:"0" }}%</c-figure-cell>
         </tr>
     </c-slot>
 </c-paper-table>

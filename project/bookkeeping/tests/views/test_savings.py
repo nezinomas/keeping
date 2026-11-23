@@ -29,11 +29,13 @@ from ..helper import (
     row_cells,
     row_tags,
     row_titles,
+    signed_cells,
     stale_fund,
     switch_a_into_b,
     tab_cards,
     table_titled,
     total_cells,
+    total_tags,
     view_queries,
 )
 from ..signals.helpers import buy, sell, worth
@@ -333,6 +335,31 @@ def test_a_fund_worth_its_cost_draws_its_profit_and_total_as_an_empty_zero(
         ("row", "total"),
         [f'{GROUP_FIGURE} data-cell="empty"', f'{FIGURE} data-cell="empty"'],
     )
+
+
+@pytest.mark.parametrize(
+    "bought, worth_of, profit",
+    [
+        pytest.param(100000, 101500, [("15,00", "gain"), ("1,50%", "gain")], id="1.5"),
+        pytest.param(
+            1000000, 1000400, [("4,00", "gain"), ("0,04%", "gain")], id="0.04"
+        ),
+        pytest.param(1000000, 999960, [("-0,40", "loss"), ("0%", "")], id="rounded"),
+        pytest.param(0, 50000, [("500,00", "gain"), ("0%", "")], id="no-cost"),
+    ],
+)
+def test_a_profit_percent_reads_two_decimals_and_its_sign_or_0_percent_in_ink(
+    client_logged, main_user, bought, worth_of, profit
+):
+    with quiet_build(main_user):
+        _fund(bought, worth_of)()
+
+    table = funds_table(client_logged)
+
+    assert {
+        "row": signed_cells(row_tags(table, "Fund")[-2:]),
+        "total": signed_cells(total_tags(table)[-2:]),
+    } == dict.fromkeys(("row", "total"), profit)
 
 
 def _shape(table):

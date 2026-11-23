@@ -1,6 +1,8 @@
 from django import template
 from django.template.defaultfilters import floatformat
 
+from ..lib.money_cells import rounds_to_zero
+
 register = template.Library()
 
 
@@ -12,7 +14,7 @@ def cellformat(value, default: str = "-"):
         except ValueError:
             return default
 
-    if value is None or round(value, 2) == 0:
+    if value is None or rounds_to_zero(value):
         return default
 
     return floatformat(value, "2g")

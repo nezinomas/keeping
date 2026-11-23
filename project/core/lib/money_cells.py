@@ -11,6 +11,11 @@ def amount(cents: int, places: str = "0g") -> str:
     return floatformat(int_cents_to_float(cents), places) if cents else NOTHING
 
 
+def rounds_to_zero(figure: float) -> bool:
+    """A figure drawn in two decimals reads 0."""
+    return round(figure, 2) == 0
+
+
 def percent(figure: float) -> str:
     """A percent in one decimal, without its "%"."""
     return floatformat(figure, "1g")

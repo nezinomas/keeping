@@ -1,3 +1,6 @@
+from ...core.lib.money_cells import rounds_to_zero
+
+
 def total_row(data, fields: list[str]) -> dict:
     """Each of `fields` summed over the rows; a row without one raises KeyError."""
     row = dict.fromkeys(fields, 0)
@@ -17,6 +20,7 @@ def funds_total_row(data, fields: list[str], switched_within: int = 0) -> dict:
     shown_row = total_row(shown, ["incomes", "profit_sum"])
     row["profit_sum"] = shown_row["profit_sum"]
     row["profit_proc"] = profit_percent(shown_row, switched_within)
+    row["profit_proc_signed"] = not rounds_to_zero(row["profit_proc"])
     return row
 
 
