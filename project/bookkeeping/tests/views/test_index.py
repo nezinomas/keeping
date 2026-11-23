@@ -374,7 +374,7 @@ def test_expenses_by_type_head_cuts_a_long_type_and_tips_it_whole(client_logged)
         pytest.param("1999-02-15", ["100,00", "550,00", "650,00"], id="running-of-two"),
     ],
 )
-def test_expenses_by_type_table_draws_each_cell(
+def test_expenses_by_type_table_draws_its_first_two_months_average_and_total_rows(
     client_logged, main_user, today, averages
 ):
     with quiet_build(main_user):
@@ -625,7 +625,7 @@ def _accounts_hold_less():
         ),
     ],
 )
-def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
+def test_view_index_year_end_and_accounts_cells_equal_or_marked_mismatch(
     client_logged, main_user, fee_source, skews, equal, state
 ):
     with quiet_build(main_user):
