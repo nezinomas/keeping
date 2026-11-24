@@ -289,7 +289,7 @@ def from_and_to(kind):
     }
 
 
-def new_price(kind):
+def new_amount(kind):
     move = reloaded(kind.factory(price=5, **from_and_to(kind)))
     move.price = 1
     move.save()
@@ -326,7 +326,7 @@ def another_deleted(kind):
 @pytest.mark.parametrize(
     "edit",
     [
-        pytest.param(new_price, id="new-price"),
+        pytest.param(new_amount, id="new-amount"),
         pytest.param(nothing_changed, id="nothing-changed"),
         pytest.param(new_ends, id="new-ends"),
         pytest.param(another_deleted, id="another-deleted"),
@@ -411,7 +411,7 @@ def test_sums_each_end_by_year(main_user, kind, sums_of, with_fee, sums):
     ]
 
 
-def test_str_names_the_day_both_ends_and_the_grouped_price():
+def test_str_names_the_day_both_ends_and_the_grouped_amount():
     move = TransactionFactory.build(
         date=date(2001, 2, 3),
         price=123456,
