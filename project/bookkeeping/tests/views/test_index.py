@@ -271,9 +271,8 @@ def test_overview_draws_the_year_strip_and_the_forecast_each_in_its_panel(
     ]
     heads = ["1999 pradžioje", "1999 pabaigoje", "Balansas"]
 
-    # an empty journal: three dashes under the Year strip's titles in each; the
-    # forecast comes with the tab under a plain title, nothing folded or fetched;
-    # their tables' skin is test_index_tables_wear_the_skin_and_no_legacy_class's
+    # an empty journal: three dashes under each title; the forecast comes with the
+    # tab, unfolded; their skin: test_index_tables_wear_the_skin_and_no_legacy_class
     assert panels == [
         ("1999 metai", [], [heads, ["-", "-", "-"]]),
         ("Prognozė", [], [heads, ["-", "-", "-"]]),
