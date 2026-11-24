@@ -56,7 +56,7 @@ class YearBalance(BalanceBase):
         return self._balance["money_flow"].to_list()
 
     def _calc_balance_and_money_flow(self, df: pl.DataFrame) -> pl.DataFrame:
-        if self.is_empty(df):
+        if df.is_empty():
             return df
 
         account_fee = pl.lit(0)
