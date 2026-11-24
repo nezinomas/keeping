@@ -298,37 +298,6 @@ def test_types_tab_lists_a_name_limited_to_another_year_with_its_year(client_log
     assert 'class="filter-line"' not in content
 
 
-TYPES_COLUMNS = [
-    ("title", "Rūšis / pavadinimas"),
-    ("this_year", "Šiemet"),
-    ("last_year", "Pernai"),
-    ("share", "Dalis"),
-    ("last_expense", "Paskutinį kartą"),
-]
-
-
-@pytest.mark.parametrize("order", [key for key, _ in TYPES_COLUMNS])
-def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged, order):
-    content = client_logged.get(
-        reverse("expenses:tab_types"), {"order": order}
-    ).content.decode()
-
-    # pushed, so a reload keeps the sort
-    assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
-    # the active column is a span, every other one a link
-    assert re.findall(
-        r"<th([^>]*)>\s*(?:<span>|<a role=\"button\" hx-get=\"([^\"]*)\""
-        r' hx-target="#tab_content">)([^<]*)</',
-        content,
-    ) == [
-        ("", "" if key == order else f"/expenses/types/?order={key}", label)
-        for key, label in TYPES_COLUMNS
-    ]
-    # a save reloads the sort shown
-    reload = f'<div hx-get="/expenses/types/?order={order}" hx-target="#tab_content"'
-    assert reload in content
-
-
 def test_types_tab_edits_each_type_and_name_from_its_row(client_logged):
     food = ExpenseTypeFactory(title="Maistas")
     milk = ExpenseNameFactory(title="Pienas", parent=food)

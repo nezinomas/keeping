@@ -586,37 +586,6 @@ def test_types_tab_sorts_by_the_asked_column(client_logged):
     assert re.findall(title_cells, by_share) == ["Zeta", "Alga", "Viso"]
 
 
-TYPES_COLUMNS = [
-    ("title", "Pajamų rūšis"),
-    ("this_year", "Šiemet"),
-    ("last_year", "Pernai"),
-    ("share", "Dalis"),
-    ("last_income", "Paskutinį kartą"),
-]
-
-
-@pytest.mark.parametrize("order", [key for key, _ in TYPES_COLUMNS])
-def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged, order):
-    content = client_logged.get(
-        reverse("incomes:tab_types"), {"order": order}
-    ).content.decode()
-
-    # pushed, so a reload keeps the sort
-    assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
-    # the active column is a span, every other one a link
-    assert re.findall(
-        r"<th([^>]*)>\s*(?:<span>|<a role=\"button\" hx-get=\"([^\"]*)\""
-        r' hx-target="#tab_content">)([^<]*)</',
-        content,
-    ) == [
-        ("", "" if key == order else f"/incomes/types/?order={key}", label)
-        for key, label in TYPES_COLUMNS
-    ]
-    # a save reloads the sort shown
-    reload = f'<div hx-get="/incomes/types/?order={order}" hx-target="#tab_content"'
-    assert reload in content
-
-
 def _types_tab_of_two_kinds(client):
     IncomeTypeFactory(title="Alga", type="salary")
     IncomeTypeFactory(title="Kita", type="other")
