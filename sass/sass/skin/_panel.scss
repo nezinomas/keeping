@@ -31,11 +31,9 @@
                 position: static;
 
                 &::before {
-                    top: 100%;
                     left: 0;
                     right: 0;
                     width: auto;
-                    margin: tooltip.$tip-gap 0 0;
                     transform: none;
                 }
             }
