@@ -17,38 +17,24 @@ def fixture_balance():
     )
 
 
-def test_chart_data(balance):
-    expect = [
-        {"name": "T2", "y": 85},
-        {"name": "T1", "y": 1},
-    ]
+@pytest.mark.parametrize(
+    "types, total_row, expect",
+    [
+        pytest.param(
+            ["T1", "T2"],
+            {"T1": 1, "T2": 85},
+            [{"name": "T2", "y": 85}, {"name": "T1", "y": 1}],
+            id="largest_first",
+        ),
+        pytest.param([], {}, [{"name": "Išlaidų nėra", "y": 0}], id="no_types"),
+        pytest.param(["X"], {}, [{"name": "X", "y": 0}], id="no_sums"),
+    ],
+)
+def test_chart_draws_each_type_by_its_sum(balance, types, total_row, expect):
+    balance.types = types
+    balance.total_row = total_row
 
-    obj = ExpenseService(data=balance, months=4)
-    actual = obj.chart_context()
-
-    assert expect == actual
-
-
-def test_chart_data_none(balance):
-    balance.types = []
-    balance.total_row = {}
-
-    expect = [{"name": "Išlaidų nėra", "y": 0}]
-
-    obj = ExpenseService(data=balance, months=4)
-    actual = obj.chart_context()
-
-    assert expect == actual
-
-
-def test_chart_no_data(balance):
-    balance.types = ["X"]
-    balance.total_row = {}
-
-    expect = [{"name": "X", "y": 0}]
-
-    obj = ExpenseService(data=balance, months=4)
-    actual = obj.chart_context()
+    actual = ExpenseService(data=balance, months=4).chart_context()
 
     assert expect == actual
 
