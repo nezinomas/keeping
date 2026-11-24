@@ -926,7 +926,9 @@ def _first_month_cell(content, label):
     return re.search(row + r"<td[^>]*>([^<]*)</td>", content).group(1)
 
 
-def test_day_tab_calculations_breakdown_reads_the_plans(client_logged):
+def test_day_tab_calculations_breakdown_rows_are_parts_that_read_the_plans(
+    client_logged,
+):
     ExpensePlanFactory(
         price=10_000, expense_type=ExpenseTypeFactory(title="N", necessary=True)
     )
@@ -938,6 +940,10 @@ def test_day_tab_calculations_breakdown_reads_the_plans(client_logged):
     assert _first_month_cell(content, "Būtinos išlaidos") == "100,00"
     assert _first_month_cell(content, "Papildomos būtinos išlaidos") == "50,00"
     assert _first_month_cell(content, "Taupymas") == "30,00"
+    # the parts of their sum, each under it as its part
+    assert re.findall(
+        r'<tr class="calculations-table__part">\s*<td>([^<]*)<', content
+    ) == ["Būtinos išlaidos", "Papildomos būtinos išlaidos", "Taupymas"]
 
 
 QUARTERS = [

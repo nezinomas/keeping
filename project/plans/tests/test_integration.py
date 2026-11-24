@@ -43,15 +43,19 @@ class Plans(Browser):
         self.browser.execute_script("document.activeElement.blur();")
         self.browser.execute_script(NO_ANCHORING)
         placed["not anchored"] = self._open_hint()
+        self.browser.execute_script("document.activeElement.blur();")
+        self.browser.execute_script(FIND_TIP + " tip.dataset.tip = 'Trumpa';", HINT)
+        placed["not anchored, short"] = self._open_hint()
 
         # 18rem under its `?`, slid inside the window; with no anchor positioning,
-        # the title's own width under the title
+        # the title's own width under the title, however short its text
         under = {"gap_is_8px": True, "in_the_window": True}
+        spanning = {"position": "absolute", "width": title, "spans_its_title": True}
         assert placed == {
             "anchored": under
             | {"position": "fixed", "width": 288, "spans_its_title": False},
-            "not anchored": under
-            | {"position": "absolute", "width": title, "spans_its_title": True},
+            "not anchored": under | spanning,
+            "not anchored, short": under | spanning,
         }
 
     def test_the_hint_reads_muted_under_a_help_cursor(self):

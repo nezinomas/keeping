@@ -26,6 +26,7 @@ from ...core.tests.test_integration_browser import (
     TIP_BOX,
     Browser,
 )
+from ...debts.tests.factories import LendFactory
 from ...expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ...journals.tests.factories import JournalFactory
@@ -232,12 +233,31 @@ TIP_AGAINST_ITS_TRIGGER = (
 )
 
 
+# the open bubble's fade, which a minimized Chrome creates and never runs: the
+# transition's property, length and the opacity it starts from and ends at
+TIP_FADE = (
+    FIND_TIP
+    + """
+    const [fade] = document.getAnimations().filter(a => a.effect.target === tip
+        && a.effect.pseudoElement === '::before');
+    return fade ? [fade.transitionProperty,
+        getComputedStyle(tip, '::before').transitionDuration.split(', ')[0],
+        ...fade.effect.getKeyframes().map(k => k.opacity)] : [];
+"""
+)
+
+
 def _the_longest_names():
     # a funds table and the accounts table run wider than a phone's column; the
     # dev DB's longest fund and pension names
     IncomeFactory()
     SavingFactory(saving_type=SavingTypeFactory(title=LONGEST_FUND))
     PensionFactory(pension_type=PensionTypeFactory(title="Artea Ambicingas Index 16+"))
+
+
+def _a_debt_wider_than_a_phone():
+    # its figures run wider than a phone's column
+    LendFactory(price=2_000_000_000)
 
 
 def _ten_expense_types():
@@ -557,11 +577,19 @@ class BookkeepingIndex(TestCase, Browser):
 
     # no open debt: the third column is empty and keeps its track
     @parameterized.expand([(992, True), (991, False)])
-    def test_the_overview_panels_stand_in_three_columns_from_992_and_one_below(
+    def test_the_overview_grid_spaces_its_panels_in_three_columns_from_992_or_one(
         self, width, beside
     ):
         self.open_at(INDEX_TABS["overview"].url, width)
         a, b, c = self._boxes(".overview-grid__column")
+        year_strip, forecast = self._boxes(".overview-grid__column:first-child > *")
+        under_the_accounts = self.browser.execute_script(
+            "const grid = document.querySelector('.overview-grid');"
+            " const accounts = grid.previousElementSibling;"
+            " return grid.getBoundingClientRect().top"
+            "  - accounts.getBoundingClientRect().bottom"
+            "  - parseFloat(getComputedStyle(grid.parentElement).rowGap);"
+        )
 
         assert {
             "beside": a["top"] == b["top"] == c["top"]
@@ -570,7 +598,19 @@ class BookkeepingIndex(TestCase, Browser):
             "stacked": a["bottom"] <= b["top"] and b["bottom"] <= c["top"],
             "middle_widest": b["width"] > a["width"]
             and round(a["width"]) == round(c["width"]),
-        } == {"beside": beside, "stacked": not beside, "middle_widest": beside}
+            # each column as tall as its Panels, the empty one flat
+            "empty_column_flat": c["bottom"] == c["top"],
+            "panels_24px_apart": round(forecast["top"] - year_strip["bottom"]),
+            # past the tab's own row gap
+            "grid_32px_under_the_accounts": round(under_the_accounts),
+        } == {
+            "beside": beside,
+            "stacked": not beside,
+            "middle_widest": beside,
+            "empty_column_flat": True,
+            "panels_24px_apart": 24,
+            "grid_32px_under_the_accounts": 32,
+        }
 
     def test_a_signed_figure_is_gain_or_harm_text_and_a_zero_is_not(self):
         for title, have in (("Even", 10000), ("Gain", 15000), ("Loss", 5000)):
@@ -776,6 +816,14 @@ class BookkeepingIndex(TestCase, Browser):
                 ".panel .table-responsive",
                 [True, True],
             ),
+            # the no-incomes and debts tables: the year strip and forecast fit
+            (
+                "overview",
+                _a_debt_wider_than_a_phone,
+                INDEX_TABS["overview"].url,
+                ".overview-grid .table-responsive",
+                [False, False, True, True],
+            ),
             # a column per type: ten make the table wider than the phone
             ("month", _ten_expense_types, "/month/", "#month-content", [True]),
         ]
@@ -841,7 +889,9 @@ class BookkeepingIndex(TestCase, Browser):
         }
         assert read == ([False, 0], True, whole)
 
-    def test_a_tip_at_the_edge_of_a_scrolled_table_opens_whole_past_it(self):
+    def test_a_tip_at_the_edge_of_a_scrolled_table_opens_whole_past_it_its_text_left(
+        self,
+    ):
         long = "Type 6, the long one of eight"
         for n in range(1, 9):
             ExpenseTypeFactory(title=long if n == 6 else f"Type {n}")
@@ -852,7 +902,8 @@ class BookkeepingIndex(TestCase, Browser):
             " tip.focus({preventScroll: true});"
             " const box = tip.closest('.table-responsive');"
             " return [box.scrollLeft > 0,"
-            "  box.scrollLeft + box.clientWidth < box.scrollWidth];",
+            "  box.scrollLeft + box.clientWidth < box.scrollWidth,"
+            "  getComputedStyle(tip, '::before').textAlign];",
             tip,
         )
         read = self.browser.execute_script(TIP_BUBBLE, tip)
@@ -860,7 +911,7 @@ class BookkeepingIndex(TestCase, Browser):
         # scrolled, and not to its end, where a box fades its edge: that mask would
         # cut the bubble where it leaves the box
         assert (scrolled, read) == (
-            [True, True],
+            [True, True, "left"],
             {
                 "lines": 1,
                 "whole": True,
@@ -954,9 +1005,10 @@ class BookkeepingIndex(TestCase, Browser):
         looks = {}
         for name, (tip, focused) in tips.items():
             # Tab from the cell's start: nothing before the trigger is a stop
-            self.browser.execute_script(
+            shut = self.browser.execute_script(
                 FIND_TIP + " const cell = tip.closest('th, td');"
-                " cell.tabIndex = -1; cell.focus();",
+                " cell.tabIndex = -1; cell.focus();"
+                " return getComputedStyle(tip, '::before').opacity;",
                 tip,
             )
             ActionChains(self.browser).send_keys(Keys.TAB).perform()
@@ -970,16 +1022,25 @@ class BookkeepingIndex(TestCase, Browser):
                 *self.browser.execute_script(
                     FIND_TIP + " const b = getComputedStyle(tip, '::before');"
                     " return [b.backgroundColor, b.color, b.fontFamily, b.textShadow,"
-                    "  b.boxShadow, getComputedStyle(tip, '::after').content];",
+                    "  b.boxShadow, getComputedStyle(tip, '::after').content,"
+                    "  b.boxSizing, b.borderRadius, b.fontSize, b.lineHeight,"
+                    "  b.textAlign];",
                     tip,
                 ),
+                [shut, self.browser.execute_script(TIP_FADE, tip)],
+                self.browser.execute_script(TIP_AGAINST_ITS_TRIGGER, tip)["side"],
             ]
 
-        # the focus on the trigger, its tip open: ink on paper in the body face, no
-        # shadow, and no arrow after it
-        assert looks == dict.fromkeys(
-            tips, [True, True, INK, PAPER, BODY_FACE, "none", "none", "none"]
-        )
+        # its tip open on the focus: ink on paper in the body face, unshadowed, no
+        # arrow, small, left in a rounded box; shut unseen, it fades in on its side
+        paper_tip = [True, True, INK, PAPER, BODY_FACE, "none", "none", "none"]
+        paper_tip += ["border-box", "3px", "13px", "14.3px", "left"]
+        paper_tip += [["0", ["opacity", "0.3s", "0", "1"]]]
+        assert looks == {
+            "refresh": [*paper_tip, "beside"],
+            "check": [*paper_tip, "beside"],
+            "unnecessary": [*paper_tip, "under"],
+        }
 
     def test_space_on_the_refresh_icon_posts_once_and_gives_the_focus_back(self):
         AccountWorthFactory()
