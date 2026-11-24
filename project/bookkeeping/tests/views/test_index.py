@@ -28,7 +28,7 @@ from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingCloseFactory
 from ...tabs import INDEX_TABS
-from ...views import TabCharts, TabOverview
+from ...views import TabBalance, TabCharts, TabOverview
 from ..factories import AccountWorthFactory
 from ..helper import (
     BOXED_TABLE,
@@ -584,8 +584,26 @@ def test_view_index_renders_its_chart_data(client_logged):
             ],
             15000,
         ),
+        (
+            TabBalance,
+            lambda content: cell_texts(_balance_table(content))[-2][2],
+            "150,00",
+        ),
+        (
+            TabBalance,
+            lambda content: cell_texts(_panels(content, "Išlaidų statistika")[0])[-2][
+                -1
+            ],
+            "150,00",
+        ),
     ],
-    ids=["card-of-4-months", "no-incomes-of-the-last-6", "chart-of-4-months"],
+    ids=[
+        "card-of-4-months",
+        "no-incomes-of-the-last-6",
+        "chart-of-4-months",
+        "balance-of-4-months",
+        "expenses-by-type-of-4-months",
+    ],
 )
 def test_an_index_tab_averages_over_the_months_its_views_today_reached(
     rf, main_user, view_class, read, average
