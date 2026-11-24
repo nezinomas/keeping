@@ -4,6 +4,12 @@
 
 // The paper bundle does not import components/_table: `.main`'s only definition.
 
+// a column group's first column; its callers pass $hair through the header band and
+// $hair-soft down the body and the foot (sass.md *Tables*, *Column groups*)
+@mixin group-rule($colour) {
+    border-left: 1px solid $colour;
+}
+
 .paper-skin {
     .main {
         width: 100%;
@@ -29,7 +35,7 @@
 
         // zero specificity, so the markup's .text-left / .text-center still win
         :where(th, td) {
-            padding: 0.35rem $gap;
+            padding: 0.35rem $cell-inset;
             text-align: right;
             vertical-align: middle;
         }
@@ -39,9 +45,8 @@
         }
 
         thead th {
-            font-family: $display;
-            font-size: 0.8125rem;
-            font-weight: 400;
+            @include tokens.header;
+
             color: $ink;
             background: $band;
         }
@@ -52,6 +57,14 @@
 
         tbody td {
             border-bottom: 1px solid $hair-soft;
+        }
+
+        thead th.main__group-start {
+            @include group-rule($hair);
+        }
+
+        :is(tbody, tfoot) td.main__group-start {
+            @include group-rule($hair-soft);
         }
 
         .main__date {
@@ -66,8 +79,8 @@
             }
 
             .main__name {
-                padding-left: 0.5 * $gap;
-                padding-right: 0.5 * $gap;
+                padding-left: $name-inset-phone;
+                padding-right: $name-inset-phone;
             }
 
             td.main__name {
@@ -84,6 +97,11 @@
             font-family: $figures;
             font-size: 0.86rem;
             white-space: nowrap;
+        }
+
+        // a figure beside a label, not a column's: a header's sum
+        .main__figure--muted {
+            color: $ink-muted;
         }
 
         tbody tr.main__group td {
@@ -131,7 +149,11 @@
         :is(tbody, tfoot) tr.main__total td {
             border-bottom: 0;
             font-weight: 600;
-            color: $ink;
+
+            // a signed figure keeps its gain or harm on the total row
+            &:not([data-sign]) {
+                color: $ink;
+            }
         }
 
         // drawn from the row above: border-collapse gives a 1px tie to the upper
@@ -153,8 +175,39 @@
             color: $ink-muted;
         }
 
+        // a balance table's refresh icon: a button drawn as the icon alone, in
+        // $ink-muted as the edit column's, $ink under the pointer
+        .refresh-icon {
+            @include tokens.bare-button;
+
+            padding: 0;
+            color: $ink-muted;
+
+            &:hover {
+                color: $ink;
+            }
+        }
+
         .delete-col a {
             color: $harm;
+        }
+
+        // a signed money figure is coloured text, never a filled cell
+        [data-sign="gain"] {
+            color: $gain;
+        }
+
+        [data-sign="loss"] {
+            color: $harm;
+        }
+
+        // the Cash-flow check's two figures disagree: a highlighter stroke, not harm
+        [data-check="mismatch"] {
+            background-color: var(--skin-attention-wash);
+
+            &::before {
+                content: "! ";
+            }
         }
 
         // a zero is present, not read (the `cell_state` filter's "empty")
@@ -165,7 +218,7 @@
         // the stripe is fainter than the hover, so the cursor still reads on an
         // even row
         &.striped tbody tr:nth-child(even) > td {
-            background-color: rgba($ink, 0.035);
+            background-color: tokens.$stripe;
         }
 
         &.hover tbody tr:hover > td {
@@ -181,8 +234,8 @@
             gap: 0.35rem;
 
             &::before {
-                font-family: 'Glyphicons Halflings';
-                content: "\e113";
+                font-family: bootstrap-icons;
+                content: "\f286";
                 font-size: 8px;
             }
         }
@@ -236,6 +289,7 @@
     // has no scroll timeline to run on, so it draws no fade
     .table-responsive,
     .month-table {
+        // off while a tip in the box is open: skin/_tooltip.scss
         animation: table-edge linear both;
         animation-timeline: scroll(self inline);
     }

@@ -1,0 +1,4 @@
+<c-vars value="" colspan="" :signed="False" :ok="False" show="" :empty="False" :group="False" />
+{# check: a passed "" still draws data-check="" (the Cash-flow check's state); no check, no attribute #}
+{# ok: Delta's zero is a gain reading "ok", with no data-cell, whose faint would cover it #}
+{% load math cell_format %}<td{% if colspan %} colspan="{{ colspan }}"{% endif %} class="main__figure{% if group %} main__group-start{% endif %}"{% if ok or signed and value %} data-sign="{{ value|sign }}"{% endif %}{% if not ok %} data-cell="{% if empty %}empty{% else %}{{ value|cell_state }}{% endif %}"{% endif %}{% if "check" in attrs %} data-check="{{ check }}"{% endif %}{% if show %} x-show="{{ show }}"{% endif %}>{% if empty %}-{% elif slot %}{{ slot }}{% elif ok %}{{ value|price|cellformat:"ok" }}{% else %}{{ value|price|cellformat }}{% endif %}</td>

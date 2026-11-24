@@ -1,0 +1,41 @@
+{% load i18n %}
+
+<div class="stat-cards">
+    <c-stat-cards :cards="cards" />
+</div>
+
+<c-panel table id="accounts" title="{% translate 'Accounts' %}">
+    <div class="table-responsive">{% include 'bookkeeping/includes/account_worth_list.html' %}</div>
+</c-panel>
+
+{% blocktranslate asvar year_title with year=request.user.selected_year %}{{ year }} year{% endblocktranslate %}
+<div class="overview-grid">
+    <div class="overview-grid__column">
+        <c-panel table :title="year_title">
+            <div class="table-responsive">{% include 'bookkeeping/includes/balance_short.html' with title=balance_short.title data=balance_short.data highlight=balance_short.highlight %}</div>
+        </c-panel>
+
+        <c-panel table title="{% translate 'Forecast' %}">
+            <div class="table-responsive">{% include 'bookkeeping/includes/balance_short.html' with title=forecast.title data=forecast.data highlight=forecast.highlight %}</div>
+        </c-panel>
+    </div>
+
+    <div class="overview-grid__column">
+        <c-panel table title="{% translate 'Without incomes' %}">
+            <div class="table-responsive">{% include 'bookkeeping/includes/no_incomes.html' %}</div>
+            <p class="mt-3">
+                <b>€</b> - {% translate 'Money in accounts' %}<br>
+                <b>F</b> - {% translate 'Funds/Stocks' %}<br>
+                <b>P</b> - {% translate 'Pension funds' %}
+            </p>
+        </c-panel>
+    </div>
+
+    <div class="overview-grid__column">
+        {% if debts %}
+        <c-panel table title="{% translate 'Debts' %}">
+            <div class="table-responsive">{% include 'bookkeeping/includes/debts_table.html' %}</div>
+        </c-panel>
+        {% endif %}
+    </div>
+</div>

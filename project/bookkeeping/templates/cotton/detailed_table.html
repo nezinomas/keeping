@@ -6,12 +6,12 @@
 <table class="main striped hover">
     <thead class="sortable-header-row">
         <tr>
-            <th class="title-col"></th>
+            <th></th>
             <c-quarter-band />
             <th></th>
         </tr>
         <tr>
-            <c-sort-th key="title" :active="order" :url="url" :target="sort_target" column="title">{{ title }}</c-sort-th>
+            <c-sort-th key="title" :active="order" :url="url" :target="sort_target">{{ title }}</c-sort-th>
             {% month_abbreviations as abbreviations %}
             {% for key, label in abbreviations %}
             <c-sort-th :key="key" :active="order" :url="url" :target="sort_target">{{ label }}</c-sort-th>
@@ -23,7 +23,7 @@
     <tbody>
         {% for row in data %}
         <tr>
-            <td class="text-left">{{ row.title }}</td>
+            <td>{{ row.title }}</td>
             {% include 'bookkeeping/detailed/figure_cells.html' with row=row months=months %}
         </tr>
         {% endfor %}
@@ -31,7 +31,7 @@
 
     <tfoot>
         <tr class="main__total">
-            <td class="text-left">{% translate 'Total' %}</td>
+            <td>{% translate 'Total' %}</td>
             {% include 'bookkeeping/detailed/figure_cells.html' with row=total months=months %}
         </tr>
     </tfoot>

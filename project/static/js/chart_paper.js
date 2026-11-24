@@ -33,17 +33,64 @@ function paperRuleText(name, level) {
     return PAPER_WIDE ? `${name}: ${level}` : String(level);
 }
 
-// Every figure printed on a mark; each use adds only its colour.
+// Every figure printed on a mark: the theme's face, size and weight; its colour is
+// the theme's `dataLabels.color`, as a `style.color` loses to it.
 var PAPER_DATA_LABEL_STYLE = {
     ...PAPER_CHART_TEXT,
     fontWeight: "400",
     textOutline: "none",
 };
 
-// A figure on a mark, left off a mark of zero.
+// A figure on a mark, left off a mark of zero or below.
 function paperFigure(decimals) {
     return function () {
         return this.y > 0 ? Highcharts.numberFormat(this.y, decimals) : "";
+    };
+}
+
+// Whole euros, as a tooltip prints a sum.
+function paperEuros(value) {
+    return Highcharts.numberFormat(value, 0) + "€";
+}
+
+// A money figure: from 100 either way in thousands ("0,1k", "-2,5k"), below it whole.
+function paperMoney(value) {
+    if (Math.abs(value) >= 100) {
+        return Highcharts.numberFormat(value / 1000, 1) + "k";
+    }
+    return Highcharts.numberFormat(value, 0);
+}
+
+// A money axis, its ticks far enough apart that two never print alike in thousands,
+// as a step of 50 would ("0,2k" for both 150 and 200).
+function paperMoneyAxis() {
+    return {
+        title: { text: "" },
+        labels: { formatter() { return paperMoney(this.value); } },
+        tickPixelInterval: 120,
+    };
+}
+
+// Two charts side by side keep one bottom margin, room for a month axis' tilted names,
+// so both plots end on one line.
+var PAPER_PAIR_MARGIN_BOTTOM = 70;
+
+// What a series not hovered fades to, and a mark drawn paler takes too.
+var PAPER_INACTIVE_OPACITY = 0.35;
+
+// A colour at the inactive opacity: a mark that is not the whole reading yet.
+function paperFaded(colour) {
+    return `color-mix(in srgb, ${colour} ${PAPER_INACTIVE_OPACITY * 100}%, transparent)`;
+}
+
+// A category axis for `paperFixEdges`, whose widened edges leave room for a tick past
+// the last category: only a real category prints.
+function paperCategoryAxis(categories) {
+    return {
+        categories: categories,
+        type: "category",
+        tickmarkPlacement: "on",
+        labels: { formatter() { return categories[this.pos] ?? ""; } },
     };
 }
 
@@ -101,13 +148,7 @@ function paperTwoPanes() {
             legend: { enabled: false },
             tooltip: { shared: true },
         },
-        xAxis: (categories) => ({
-            categories: categories,
-            type: "category",
-            tickmarkPlacement: "on",
-            // the widened edges leave room for a tick past the last category
-            labels: { formatter() { return categories[this.pos] ?? ""; } },
-        }),
+        xAxis: paperCategoryAxis,
         paneTop: {
             min: 0,
             top: "0%",
@@ -136,8 +177,6 @@ function paperTwoPanes() {
                 enabled: true,
                 crop: false,
                 overflow: "allow",
-                // the theme's `dataLabels.color` beats a `style.color`
-                color: "var(--skin-ink-muted)",
                 formatter: paperFigure(1),
             },
         },
@@ -156,7 +195,7 @@ Highcharts.setOptions({
         "var(--skin-year-5)",
     ],
     chart: {
-        backgroundColor: "transparent",
+        backgroundColor: "none",
         height: PAPER_CHART_HEIGHT.standard,
         spacing: [12, 6, 10, 6],
         style: {
@@ -199,12 +238,13 @@ Highcharts.setOptions({
             },
         },
     },
-    // Highcharts' own colours, so the border takes the hovered series' colour; only
-    // its width is set, as `themes/theme.js` turns the border off (`borderWidth: 0`).
+    // Highcharts' own border colour, the hovered series'; only its width is set, as
+    // `themes/theme.js` turns the border off (`borderWidth: 0`). The text is ink.
     tooltip: {
         borderWidth: 1,
         borderRadius: 3,
         shadow: false,
+        style: { color: "var(--skin-ink)" },
     },
     // under the plot, set once for every paper chart; each chart still sets `enabled`
     legend: {
@@ -212,7 +252,7 @@ Highcharts.setOptions({
         align: "center",
         verticalAlign: "bottom",
         floating: false,
-        backgroundColor: "transparent",
+        backgroundColor: "none",
         itemStyle: {
             color: "var(--skin-ink-muted)",
             ...PAPER_CHART_TEXT,
@@ -233,11 +273,13 @@ Highcharts.setOptions({
                     halo: false,
                 },
                 inactive: {
-                    opacity: 0.35,
+                    opacity: PAPER_INACTIVE_OPACITY,
                 },
             },
             dataLabels: {
-                color: "var(--skin-ink)",
+                // a figure on a mark is muted, as an axis label (`.claude/sass.md`
+                // *Type*); `color` here, as it beats a `style.color`
+                color: "var(--skin-ink-muted)",
                 style: PAPER_DATA_LABEL_STYLE,
             },
         },
@@ -248,6 +290,9 @@ Highcharts.setOptions({
             borderColor: "var(--skin-paper)",
             // Highcharts rounds column corners from v11; the paper skin's are square
             borderRadius: 0,
+            // `paperFixEdges` cuts the range inside the first and last category, which
+            // would leave their columns out of the value axis' extremes
+            getExtremesFromAll: true,
         },
     },
 });

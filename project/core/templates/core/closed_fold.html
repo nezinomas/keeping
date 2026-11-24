@@ -5,10 +5,8 @@
 {% endif %}
 
 {% if closed_rows %}
-<div x-data="{ shown: false }">
-    <nav class="filter-line">
-        <button type="button" class="filter-line__item" @click="shown = ! shown" :aria-current="shown ? 'true' : null">{{ label }}</button>
-    </nav>
+<div class="closed-fold" x-data="{ shown: false }">
+    <c-switch model="shown">{{ label }}</c-switch>
     <c-owner-table :rows="closed_rows" closed :header="header" :url_name="url_name" x-show="shown" x-cloak />
 </div>
 {% endif %}

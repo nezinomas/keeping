@@ -1,16 +1,10 @@
 import re
 
-from django.template import engines
-from django_cotton.compiler_regex import CottonCompiler
-
-
-def _render():
-    processed = CottonCompiler().process("<c-quarter-band />")
-    return engines["django"].from_string(processed).render({})
+from ..utils import render_cotton
 
 
 def test_four_quarter_cells_span_three_months_each():
-    actual = re.findall(r"<th([^>]*)>(.*?)</th>", _render())
+    actual = re.findall(r"<th([^>]*)>(.*?)</th>", render_cotton("<c-quarter-band />"))
 
     assert actual == [
         (' class="month-table__quarter" colspan="3"', "I ketv."),

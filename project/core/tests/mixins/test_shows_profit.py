@@ -22,7 +22,7 @@ SHAPES = [
 
 
 @pytest.mark.parametrize(
-    "fund_factory, balance_factory, fund_field, model",
+    "owner_factory, balance_factory, owner_field, model",
     [
         pytest.param(
             SavingTypeFactory,
@@ -40,15 +40,17 @@ SHAPES = [
         ),
     ],
 )
-def test_balance_property_and_q_agree(fund_factory, balance_factory, fund_field, model):
-    # every fund first: saving one resyncs the balance rows already made
-    funds = [
-        fund_factory(title=f"F{i}", closed=closed)
+def test_balance_property_and_q_agree(
+    owner_factory, balance_factory, owner_field, model
+):
+    # every owner first: saving one resyncs the balance rows already made
+    owners = [
+        owner_factory(title=f"F{i}", closed=closed)
         for i, (*_, closed) in enumerate(SHAPES)
     ]
-    for fund, (worth, since, sold, _closed) in zip(funds, SHAPES, strict=True):
+    for owner, (worth, since, sold, _closed) in zip(owners, SHAPES, strict=True):
         balance_factory(
-            **{fund_field: fund},
+            **{owner_field: owner},
             year=1999,
             market_value=worth,
             sold_since_check=since,

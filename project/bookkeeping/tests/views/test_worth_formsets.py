@@ -45,9 +45,9 @@ def test_post_writes_all_rows_in_one_insert(client_logged, count):
 class Worth(NamedTuple):
     url: str
     view: type
-    fund_factory: type
+    owner_factory: type
     worth_factory: type
-    fund_field: str
+    owner_field: str
     model: type
     title: str
     duplicate_message: str
@@ -61,9 +61,9 @@ WORTH_FORMSETS = [
         Worth(
             url="bookkeeping:accounts_worth_new",
             view=views.AccountsWorthNew,
-            fund_factory=AccountFactory,
+            owner_factory=AccountFactory,
             worth_factory=AccountWorthFactory,
-            fund_field="account",
+            owner_field="account",
             model=AccountWorth,
             title="Sąskaitų vertė",
             duplicate_message="Pasirinktos vienodos sąskaitos.",
@@ -77,9 +77,9 @@ WORTH_FORMSETS = [
         Worth(
             url="bookkeeping:savings_worth_new",
             view=views.SavingsWorthNew,
-            fund_factory=SavingTypeFactory,
+            owner_factory=SavingTypeFactory,
             worth_factory=SavingWorthFactory,
-            fund_field="saving_type",
+            owner_field="saving_type",
             model=SavingWorth,
             title="Fondų vertė",
             duplicate_message="Pasirinkti vienodi fondai.",
@@ -93,9 +93,9 @@ WORTH_FORMSETS = [
         Worth(
             url="bookkeeping:pensions_worth_new",
             view=views.PensionsWorthNew,
-            fund_factory=PensionTypeFactory,
+            owner_factory=PensionTypeFactory,
             worth_factory=PensionWorthFactory,
-            fund_field="pension_type",
+            owner_field="pension_type",
             model=PensionWorth,
             title="Pensijų vertė",
             duplicate_message="Pasirinktos vienodos pensijos.",
@@ -110,10 +110,10 @@ WORTH_FORMSETS = [
 
 def worth_post_queries(client, worth, count, duplicate):
     with quiet_syncs():
-        funds = [worth.fund_factory(title=f"F{count}-{i}") for i in range(count)]
-    rows = [{"date": "1999-9-9", "price": "5", worth.fund_field: f.pk} for f in funds]
+        owners = [worth.owner_factory(title=f"F{count}-{i}") for i in range(count)]
+    rows = [{"date": "1999-9-9", "price": "5", worth.owner_field: f.pk} for f in owners]
     if duplicate:
-        rows[-1][worth.fund_field] = funds[0].pk
+        rows[-1][worth.owner_field] = owners[0].pk
 
     return count_queries(lambda: client.post(reverse(worth.url), post_data(rows)))
 
@@ -121,8 +121,8 @@ def worth_post_queries(client, worth, count, duplicate):
 @pytest.mark.django_db
 @pytest.mark.parametrize("worth", WORTH_FORMSETS)
 def test_post_stamps_the_time_of_day_in_utc(client_logged, worth):
-    fund = worth.fund_factory()
-    row = {"date": "1999-9-9", "price": "5", worth.fund_field: fund.pk}
+    owner = worth.owner_factory()
+    row = {"date": "1999-9-9", "price": "5", worth.owner_field: owner.pk}
 
     with time_machine.travel(datetime(1999, 1, 1, 13, 14, 15, tzinfo=UTC), tick=False):
         client_logged.post(reverse(worth.url), post_data([row]))
@@ -144,10 +144,12 @@ def test_post_query_count_does_not_grow_with_the_rows(client_logged, worth, dupl
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("worth", WORTH_FORMSETS)
-def test_worth_form_lists_the_users_funds(client_logged, main_user, second_user, worth):
-    worth.fund_factory(title="Open")
-    worth.fund_factory(title="Closed", closed=main_user.year - 1)
-    worth.fund_factory(title="Foreign", journal=second_user.journal)
+def test_worth_form_lists_the_users_owners(
+    client_logged, main_user, second_user, worth
+):
+    worth.owner_factory(title="Open")
+    worth.owner_factory(title="Closed", closed=main_user.year - 1)
+    worth.owner_factory(title="Foreign", journal=second_user.journal)
 
     actual = client_logged.get(reverse(worth.url)).content.decode("utf-8")
 
@@ -158,15 +160,15 @@ def test_worth_form_lists_the_users_funds(client_logged, main_user, second_user,
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("worth", WORTH_FORMSETS)
-def test_worth_form_rejects_a_fund_of_another_journal(
+def test_worth_form_rejects_an_owner_of_another_journal(
     client_logged, second_user, worth
 ):
-    foreign = worth.fund_factory(title="Foreign", journal=second_user.journal)
-    row = {"date": "1999-2-3", "price": "0.01", worth.fund_field: foreign.pk}
+    foreign = worth.owner_factory(title="Foreign", journal=second_user.journal)
+    row = {"date": "1999-2-3", "price": "0.01", worth.owner_field: foreign.pk}
 
     actual = client_logged.post(reverse(worth.url), post_data([row]))
 
-    error = f'aria-describedby="id_form-0-{worth.fund_field}_error"'
+    error = f'aria-describedby="id_form-0-{worth.owner_field}_error"'
     assert error in actual.content.decode("utf-8")
     assert not worth.model.objects.exists()
 
@@ -177,11 +179,11 @@ def test_worth_form_rejects_a_fund_of_another_journal(
 def test_worth_form_ignores_a_posted_row_id(
     client_logged, second_user, worth, posted_id
 ):
-    foreign_fund = worth.fund_factory(title="Foreign", journal=second_user.journal)
-    foreign = worth.worth_factory(price=5, **{worth.fund_field: foreign_fund})
-    own = worth.fund_factory(title="Own")
+    foreign_owner = worth.owner_factory(title="Foreign", journal=second_user.journal)
+    foreign = worth.worth_factory(price=5, **{worth.owner_field: foreign_owner})
+    own = worth.owner_factory(title="Own")
     row_id = {"foreign": foreign.pk, "missing": foreign.pk + 1}[posted_id]
-    row = {"id": row_id, "date": "1999-2-3", "price": "7", worth.fund_field: own.pk}
+    row = {"id": row_id, "date": "1999-2-3", "price": "7", worth.owner_field: own.pk}
 
     data = post_data([row]) | {"form-INITIAL_FORMS": 1}
 
@@ -191,8 +193,8 @@ def test_worth_form_ignores_a_posted_row_id(
     )
 
     foreign.refresh_from_db()
-    assert (getattr(foreign, worth.fund_field), foreign.price) == (foreign_fund, 5)
-    own_rows = worth.model.objects.filter(**{worth.fund_field: own})
+    assert (getattr(foreign, worth.owner_field), foreign.price) == (foreign_owner, 5)
+    own_rows = worth.model.objects.filter(**{worth.owner_field: own})
     assert list(own_rows.values_list("price", flat=True)) == [700]
     assert row_reads == 0
 
@@ -202,28 +204,31 @@ def test_worth_form_ignores_a_posted_row_id(
 def test_modal_renders_the_formset_under_its_title_and_worth_css_class(
     client_logged, worth
 ):
-    fund = worth.fund_factory(title="F1")
+    owner = worth.owner_factory(title="F1")
 
     response = client_logged.get(reverse(worth.url))
 
     actual = response.content.decode("utf-8")
     assert f'<h5 class="modal-title">{worth.title}</h5>' in actual
     assert 'class="modal-body worth-form"' in actual
-    assert f'<option value="{fund.pk}" selected>F1</option>' in actual
+    assert f'<option value="{owner.pk}" selected>F1</option>' in actual
 
 
 @pytest.mark.django_db
-def test_formset_has_one_empty_price_per_account(client_logged):
-    AccountFactory(title="A1")
-    AccountFactory(title="A2")
+@pytest.mark.parametrize("worth", WORTH_FORMSETS)
+def test_modal_has_one_unpriced_form_per_owner_with_that_owner_selected(
+    client_logged, worth
+):
+    f1 = worth.owner_factory(title="F1")
+    f2 = worth.owner_factory(title="F2")
+    worth.worth_factory(**{worth.owner_field: f1})
 
-    response = client_logged.get(reverse("bookkeeping:accounts_worth_new"))
+    content = client_logged.get(reverse(worth.url)).content.decode()
 
-    prices = re.findall(
-        r'<input[^>]*name="form-\d+-price"[^>]*>', response.content.decode()
-    )
-    assert len(prices) == 2
-    assert not any("value=" in price for price in prices)
+    selected = re.findall(r'<option value="(\d+)" selected>([^<]*)</option>', content)
+    prices = re.findall(r'<input[^>]*name="form-\d+-price"[^>]*>', content)
+    assert selected == [(str(f1.pk), "F1"), (str(f2.pk), "F2")]
+    assert ["value=" in price for price in prices] == [False, False]
 
 
 @pytest.mark.django_db
@@ -277,22 +282,6 @@ def test_service_instance_is_built_once(rf, main_user):
 
 
 @pytest.mark.django_db
-def test_unbound_formset_renders_one_form_per_fund_with_that_fund_selected(
-    rf, main_user
-):
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
-    AccountWorthFactory(account=a1)
-    view = worth_view(rf, main_user)
-
-    actual = [str(form["account"]) for form in view.unbound_formset()]
-
-    assert len(actual) == 2
-    assert f'<option value="{a1.pk}" selected>A1</option>' in actual[0]
-    assert f'<option value="{a2.pk}" selected>A2</option>' in actual[1]
-
-
-@pytest.mark.django_db
 def test_bound_formset_renders_only_the_posted_rows(rf, main_user):
     a1 = AccountFactory(title="A1")
     AccountFactory(title="A2")
@@ -338,10 +327,10 @@ def test_post_with_invalid_formset_returns_the_formset_with_its_errors(client_lo
     ],
 )
 def test_post_saves_only_the_rows_with_a_price(rf, main_user, prices, saved):
-    funds = [AccountFactory(title="A1"), AccountFactory(title="A2")]
+    owners = [AccountFactory(title="A1"), AccountFactory(title="A2")]
     rows = [
-        {"date": "1999-9-9", "account": fund.pk} | price
-        for fund, price in zip(funds, prices, strict=True)
+        {"date": "1999-9-9", "account": owner.pk} | price
+        for owner, price in zip(owners, prices, strict=True)
     ]
     view = posted_view(rf, main_user, rows)
 
@@ -352,32 +341,34 @@ def test_post_saves_only_the_rows_with_a_price(rf, main_user, prices, saved):
         (w.account.title, w.price, w.date.strftime("%Y-%m-%d")) for w in actual
     ] == saved
     assert response.status_code == 204
-    assert response["HX-Trigger"] == '{"afterAccountWorthNew": {}}'
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("worth", WORTH_FORMSETS)
-def test_post_syncs_the_balances_of_the_saved_rows_user(client_logged, worth):
-    fund = worth.fund_factory()
-    row = {"date": "1999-9-9", "price": "0.01", worth.fund_field: fund.pk}
+def test_post_syncs_the_balances_of_the_saved_rows_user_and_reloads_the_tab(
+    client_logged, worth
+):
+    owner = worth.owner_factory()
+    row = {"date": "1999-9-9", "price": "0.01", worth.owner_field: owner.pk}
 
-    client_logged.post(reverse(worth.url), post_data([row]))
+    response = client_logged.post(reverse(worth.url), post_data([row]))
 
     actual = worth.balance.objects.values_list("year", worth.balance_field)
     assert list(actual) == [(1999, 1), (2000, 1)]
+    assert response["HX-Trigger"] == '{"reload": {}}'
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("worth", WORTH_FORMSETS)
-def test_clean_tags_the_fund_field_the_model_names(rf, main_user, worth):
-    fund = worth.fund_factory()
+def test_clean_tags_the_owner_field_the_model_names(rf, main_user, worth):
+    owner = worth.owner_factory()
     view = worth_view(rf, main_user, worth.view)
-    row = {"date": "1999-9-9", "price": "5", worth.fund_field: fund.pk}
+    row = {"date": "1999-9-9", "price": "5", worth.owner_field: owner.pk}
 
     actual = bound_formset(view, [row] * 3)
 
     assert not actual.is_valid()
-    expected = [{worth.fund_field: [worth.duplicate_message]}] * 3
+    expected = [{worth.owner_field: [worth.duplicate_message]}] * 3
     assert [form.errors for form in actual.forms] == expected
 
 

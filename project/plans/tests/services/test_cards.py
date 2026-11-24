@@ -109,6 +109,24 @@ def test_cards_titles_in_order(build, data, titles):
             ["Kasdienės"],
             id="everyday",
         ),
+        pytest.param(
+            SavingCards.build,
+            _data(savings=[300_000] + [0] * 11),
+            ["Planuotų pajamų dalis"],
+            id="share-without-incomes",
+        ),
+        pytest.param(
+            _day_cards,
+            _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=ZERO_MONTHS),
+            ["Dienos planas šį mėnesį"],
+            id="day-plan",
+        ),
+        pytest.param(
+            _day_cards,
+            _data(per_day=[3000] * 12),
+            ["Suma dienai šį mėnesį"],
+            id="sum-per-day-without-incomes",
+        ),
     ],
 )
 def test_cards_are_empty_without_their_plans(build, data, empty):
@@ -138,31 +156,40 @@ def test_cards_per_month_divides_the_year_total_by_twelve(build, data):
     assert card.value == "833"
 
 
-# Pajamos
-def test_income_cards_per_year_is_the_year_total():
-    data = _data(incomes=[1000] * 12)
+@pytest.mark.parametrize(
+    "build, data, value",
+    [
+        pytest.param(
+            IncomeCards.build, _data(incomes=[1000] * 12), "120", id="incomes"
+        ),
+        pytest.param(
+            SavingCards.build,
+            _data(incomes=[100_000] * 12, savings=[25_000] * 12),
+            "3.000",
+            id="savings",
+        ),
+    ],
+)
+def test_cards_per_year_is_the_year_total(build, data, value):
+    card = _card(build(data), "Per metus")
 
-    card = _card(IncomeCards.build(data), "Per metus")
-
-    assert card.value == "120"
+    assert card.value == value
 
 
-def test_income_cards_median_is_the_monthly_median():
-    # the mean is 9250 cents, the median 1000
-    data = _data(incomes=[1000] * 11 + [100_000])
+@pytest.mark.parametrize(
+    "incomes, value",
+    [
+        # the mean is 9250 cents, the median 1000
+        pytest.param([1000] * 11 + [100_000], "10", id="not-the-mean"),
+        pytest.param([100_000] + [0] * 11, "0", id="zero"),
+    ],
+)
+def test_income_cards_median_is_the_monthly_median(incomes, value):
+    data = _data(incomes=incomes)
 
     card = _card(IncomeCards.build(data), "Mėnesio mediana")
 
-    assert card.value == "10"
-
-
-# Taupymas
-def test_saving_cards_per_year_is_the_year_total():
-    data = _data(incomes=[100_000] * 12, savings=[25_000] * 12)
-
-    card = _card(SavingCards.build(data), "Per metus")
-
-    assert card.value == "3.000"
+    assert card.value == value
 
 
 def test_saving_cards_share_of_planned_incomes():
@@ -176,15 +203,6 @@ def test_saving_cards_share_of_planned_incomes():
     assert card.unit == "%"
 
 
-def test_saving_cards_share_is_empty_without_income_plans():
-    data = _data(incomes=ZERO_MONTHS, savings=[300_000] + [0] * 11)
-
-    card = _card(SavingCards.build(data), "Planuotų pajamų dalis")
-
-    assert card.state == EMPTY
-
-
-# Išlaidos
 @pytest.fixture
 def mixed_expenses():
     return _data(
@@ -248,7 +266,6 @@ def test_expense_cards_no_card_has_an_explanation(mixed_expenses):
     assert all(card.explanation == () for card in cards)
 
 
-# Suma dienai
 def test_day_cards_read_the_given_month_not_another():
     per_day = [0] * 12
     per_day[5] = 3000
@@ -275,36 +292,22 @@ def test_day_cards_day_plan_state_against_sum_per_day(per_day, state):
     assert card.state == state
 
 
-def test_day_cards_day_plan_is_empty_without_a_day_plan_for_the_month():
-    data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=ZERO_MONTHS)
-
-    card = _card(_day_cards(data), "Dienos planas šį mėnesį")
-
-    assert card.state == EMPTY
-
-
-def test_day_cards_sum_per_day_is_empty_without_income_plans():
-    data = _data(incomes=ZERO_MONTHS, per_day=[3000] * 12)
-
-    card = _card(_day_cards(data), "Suma dienai šį mėnesį")
-
-    assert card.state == EMPTY
-
-
-def test_day_cards_sum_per_day_shows_even_when_negative():
-    # (100 − 100 000) ÷ 30 days = −3330 cents
+@pytest.mark.parametrize(
+    "incomes, expenses, value",
+    [
+        pytest.param(INCOMES_FOR_25_PER_DAY, ZERO_MONTHS, "25,00", id="two-decimals"),
+        pytest.param(INCOMES_FOR_25_PER_DAY, [75_000] * 12, "0,00", id="zero"),
+        # (100 − 100 000) ÷ 30 days = −3330 cents
+        pytest.param([100] * 12, [100_000] * 12, "-33,30", id="negative"),
+    ],
+)
+def test_day_cards_sum_per_day_has_two_decimals(incomes, expenses, value):
     data = _data(
-        incomes=[100] * 12, expenses_necessary=[100_000] * 12, per_day=[3000] * 12
+        incomes=incomes,
+        expenses_necessary=expenses,
+        per_day=[3000] * 12,
     )
 
     card = _card(_day_cards(data), "Suma dienai šį mėnesį")
 
-    assert card.value == "-33,30"
-
-
-def test_day_cards_sum_per_day_has_two_decimals():
-    data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[3000] * 12)
-
-    card = _card(_day_cards(data), "Suma dienai šį mėnesį")
-
-    assert card.value == "25,00"
+    assert card.value == value

@@ -1,37 +1,22 @@
 {% load i18n %}
 {% load math %}
+{% translate 'Unnecessary expenses that can be avoided' as cuts %}
 
-
-<table class="main striped hover">
-    <thead>
+<c-paper-table class="main striped hover">
+    <c-slot name="head">
         <tr>
-            <th class="text-left"><span class="tip right w100" data-tip="{% translate 'Unnecessary expenses that can be avoided' %}:
+            <th>{% translate 'Unnecessary expenses' %} <span class="main__figure main__figure--muted">{% if save_sum %}{{ save_sum|price|floatformat:'0g' }}{% else %}-{% endif %}</span>{% if not_use %} <c-tip class="hint" side="bottom" text="{{ cuts }}:
 {% for i in not_use %}- {{ i }}
-{% endfor %}">{{ save_sum|price|floatformat:'0g' }}</span></th>
-            <th class="long-price-col">€ + F</th>
-            <th class="long-price-col">€ + F + P</th>
+{% endfor %}" label="{{ cuts }}" description="{{ cuts }}: {{ not_use|join:', ' }}"><i class="bi bi-question-circle"></i></c-tip>{% endif %}</th>
+            <th>{% translate '€ + F' %}</th>
+            <th>{% translate '€ + F + P' %}</th>
         </tr>
-    </thead>
-    <tbody>
-        {% for obj in no_incomes %}
-        <tr>
-            {% if obj.price %}
-                {% firstof obj.money_fund|price|floatformat:'2g' as money_fund %}
-                {% firstof obj.money_fund_pension|price|floatformat:'2g' as money_fund_pension %}
-            {% else %}
-                {% firstof obj.money_fund|floatformat:'1g' as money_fund %}
-                {% firstof obj.money_fund_pension|floatformat:'1g' as money_fund_pension %}
-            {% endif %}
-
-            <td class="text-left">{{obj.title}}</td>
-            <td>{{money_fund}}</td>
-            <td>{{money_fund_pension}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<p class="mt-3">
-    <b>€</b> - {% translate 'Money in accounts' %}<br>
-    <b>F</b> - {% translate 'Funds/Stocks' %}<br>
-    <b>P</b> - {% translate 'Pension funds' %}
-</p>
+    </c-slot>
+    {% for obj in no_incomes %}
+    <tr>
+        <td>{{obj.title}}</td>
+        {% include 'bookkeeping/includes/no_incomes_figure.html' with value=obj.money_fund price=obj.price %}
+        {% include 'bookkeeping/includes/no_incomes_figure.html' with value=obj.money_fund_pension price=obj.price %}
+    </tr>
+    {% endfor %}
+</c-paper-table>

@@ -2,7 +2,9 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from ....accounts.tests.factories import AccountFactory
+from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import SavingWorthFactory
+from ....core.tests.utils import count_queries
 from ....savings.models import SavingBalance
 from ....savings.tests.factories import (
     SavingFactory,
@@ -40,6 +42,14 @@ def worth(saving_type, price, month=12, day=31, year=YEAR):
     return SavingWorthFactory(
         saving_type=saving_type, price=price, date=worth_date(month, day, year)
     )
+
+
+def resync_queries(user):
+    """The queries one re-sync of every fund's balance rows takes, from no rows."""
+    SavingBalance.objects.all().delete()
+    count = count_queries(lambda: balance_sources.sync_savings(user=user))
+    assert SavingBalance.objects.exists()
+    return count
 
 
 def switch_out(fund, price, when):

@@ -1,12 +1,6 @@
 import pytest
-from django.template import engines
-from django_cotton.compiler_regex import CottonCompiler
 
-
-def _render(source: str, context: dict) -> str:
-    # only the cotton loader rewrites <c-…>, so a string runs its compiler by hand
-    processed = CottonCompiler().process(source)
-    return engines["django"].from_string(processed).render(context)
+from ..utils import render_cotton
 
 
 @pytest.mark.parametrize(
@@ -19,9 +13,9 @@ def _render(source: str, context: dict) -> str:
     ],
 )
 def test_a_sort_link_adds_its_order_to_the_urls_query(url, expected):
-    content = _render(
+    content = render_cotton(
         '<c-sort-th key="title" active="share" :url="url" target="#t">T</c-sort-th>',
-        {"url": url},
+        url=url,
     )
 
     assert f'<a role="button" {expected} hx-target="#t">T</a>' in content
@@ -30,20 +24,16 @@ def test_a_sort_link_adds_its_order_to_the_urls_query(url, expected):
 @pytest.mark.parametrize(
     "state, expected",
     [
-        pytest.param('align="left"', '<th class="text-left">', id="left"),
-        pytest.param(
-            'column="title"', '<th class="text-left title-col">', id="title_column"
-        ),
+        pytest.param('align="left"', "<th>", id="align_is_gone"),
         pytest.param(
             'column="total"', '<th class="month-table__total">', id="total_column"
         ),
-        pytest.param('align="right"', "<th>", id="other_value"),
         pytest.param('class="x"', "<th>", id="class_passed"),
     ],
 )
 def test_a_sort_header_maps_its_state_to_a_class(state, expected):
-    content = _render(
-        f'<c-sort-th key="title" active="share" url="/t/" {state}>T</c-sort-th>', {}
+    content = render_cotton(
+        f'<c-sort-th key="title" active="share" url="/t/" {state}>T</c-sort-th>'
     )
 
     assert content.strip().startswith(expected)
@@ -63,8 +53,7 @@ def test_a_sort_header_draws_nothing_it_is_not_given(source):
         "active": "title",
         "url": "/puslapio/",
         "target": "#puslapio",
-        "align": "left",
-        "column": "title",
+        "column": "total",
     }
 
-    assert _render(source, page) == _render(source, {})
+    assert render_cotton(source, **page) == render_cotton(source)

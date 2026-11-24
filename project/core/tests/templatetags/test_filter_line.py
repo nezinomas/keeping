@@ -1,5 +1,4 @@
-from django.template import engines
-from django_cotton.compiler_regex import CottonCompiler
+from ..utils import render_cotton
 
 ITEMS = [
     {"label": "Sausis", "url": "/t/?month=1", "active": False},
@@ -7,15 +6,9 @@ ITEMS = [
 ]
 
 
-def _render(source: str, context: dict) -> str:
-    # only the cotton loader rewrites <c-…>, so a string runs its compiler by hand
-    processed = CottonCompiler().process(source)
-    return engines["django"].from_string(processed).render(context)
-
-
 def test_the_filter_line_draws_one_item_per_entry():
-    content = _render(
-        '<c-filter-line :items="items" target="#tab_content" />', {"items": ITEMS}
+    content = render_cotton(
+        '<c-filter-line :items="items" target="#tab_content" />', items=ITEMS
     )
 
     assert content.count("<button") == 2

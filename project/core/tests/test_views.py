@@ -106,6 +106,7 @@ def test_a_paper_page_draws_its_tab_panel(client_logged, url, panel_class):
         pytest.param("plans:index", [], id="plans"),
         pytest.param("counts:index", ["count-type"], id="counts"),
         pytest.param("drinks:index", [], id="drinks"),
+        pytest.param("bookkeeping:index", [], id="bookkeeping"),
     ],
 )
 def test_every_script_a_paper_page_runs_carries_the_csp_nonce(client_logged, url, args):
@@ -123,3 +124,51 @@ def test_every_script_a_paper_page_runs_carries_the_csp_nonce(client_logged, url
     nonces = {re.search(r'nonce="([^"]*)"', tag)[1] for tag in scripts}
     assert len(nonces) == 1
     assert nonces.isdisjoint({"", "None"})
+
+
+TYPES_TABS = {
+    ("expenses:tab_types", "/expenses/types/"): [
+        ("title", "Rūšis / pavadinimas"),
+        ("this_year", "Šiemet"),
+        ("last_year", "Pernai"),
+        ("share", "Dalis"),
+        ("last_expense", "Paskutinį kartą"),
+    ],
+    ("incomes:tab_types", "/incomes/types/"): [
+        ("title", "Pajamų rūšis"),
+        ("this_year", "Šiemet"),
+        ("last_year", "Pernai"),
+        ("share", "Dalis"),
+        ("last_income", "Paskutinį kartą"),
+    ],
+}
+
+
+@pytest.mark.parametrize(
+    "tab, order",
+    [
+        pytest.param(tab, key, id=f"{tab[0]}-{key}")
+        for tab, columns in TYPES_TABS.items()
+        for key, _ in columns
+    ],
+)
+def test_types_tab_sort_links_and_reload_carry_only_the_order(
+    client_logged, tab, order
+):
+    url_name, path = tab
+    content = client_logged.get(reverse(url_name), {"order": order}).content.decode()
+
+    # pushed, so a reload keeps the sort
+    assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
+    # the active column is a span, every other one a link
+    assert re.findall(
+        r"<th([^>]*)>\s*(?:<span>|<a role=\"button\" hx-get=\"([^\"]*)\""
+        r' hx-target="#tab_content">)([^<]*)</',
+        content,
+    ) == [
+        ("", "" if key == order else f"{path}?order={key}", label)
+        for key, label in TYPES_TABS[tab]
+    ]
+    # a save reloads the sort shown
+    reload = f'<div hx-get="{path}?order={order}" hx-target="#tab_content"'
+    assert reload in content

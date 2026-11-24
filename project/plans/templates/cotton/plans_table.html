@@ -1,19 +1,17 @@
 {% load i18n %}
-{% load math %}
-{% load cell_format %}
 {% load months %}
 
 <div class="month-table">
 <c-paper-table class="main striped hover">
     <c-slot name="head">
         <tr>
-            <th class="title-col"></th>
+            <th></th>
             <c-quarter-band />
             <th class="edit-col"></th>
             <th class="delete-col"></th>
         </tr>
         <tr>
-            <th class="text-left title-col">{% translate 'Title' %}</th>
+            <th>{% translate 'Title' %}</th>
             <c-month-headers />
             <th class="edit-col"></th>
             <th class="delete-col"></th>
@@ -21,9 +19,9 @@
     </c-slot>
         {% for row in rows %}
         <c-edit-row :url="row.update_url">
-            <td class="text-left">{{ row.title }}</td>
+            <td>{{ row.title }}</td>
             {% for value, state in row.cells %}
-            <td class="main__figure{% if state == 'over' %} plans-table__over{% endif %}" data-cell="{{value|cell_state}}">{{value|price|cellformat:"0,00"}}</td>
+            <c-month-figure :value="value" class="{% if state == 'over' %}plans-table__over{% endif %}" />
             {% endfor %}
             <c-td-edit :url="row.update_url" />
             <c-td-delete :url="row.delete_url" />

@@ -19,8 +19,20 @@ class DetailedTab(Tab):
         return f"bookkeeping/detailed/tab_{self.template}.html"
 
 
-TABS = Tabs(
+DETAILED_TABS = Tabs(
     DetailedTab("incomes", _("Incomes"), "table"),
     DetailedTab("savings", _("Savings"), "table"),
     DetailedTab("expenses", _("Expenses"), "expenses"),
+)
+
+
+class IndexTab(Tab):
+    app = "bookkeeping"
+
+
+INDEX_TABS = Tabs(
+    IndexTab("overview", _("Overview")),
+    IndexTab("funds", _("Funds")),
+    IndexTab("balance", _("Balance")),
+    IndexTab("charts", _("Charts")),
 )

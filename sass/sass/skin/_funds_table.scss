@@ -1,0 +1,5 @@
+// Fondai over Pensijos: one name width starts both tables' figures at one x where they
+// fit; on a phone the overflowing table shrinks it to the names' own width
+.paper-skin .funds-table__name {
+    width: 17rem;
+}

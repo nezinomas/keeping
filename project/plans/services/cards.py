@@ -5,7 +5,7 @@ from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext as _
 from django.utils.translation import pgettext
 
-from ...core.lib.convert_price import int_cents_to_float
+from ...core.lib.money_cells import euros
 from ...core.lib.stat_card import (
     HIGH,
     NEUTRAL,
@@ -24,19 +24,11 @@ def _sum(rows: Sequence[dict]) -> int:
     return sum(row["amount"] for row in rows)
 
 
-def _whole_euros(cents: float) -> str:
-    return floatformat(int_cents_to_float(cents), "0g")
-
-
-def _euros_and_cents(cents: int) -> str:
-    return floatformat(int_cents_to_float(cents), "2g")
-
-
 def _amount_card(title: str, cents: float) -> Card:
     if not cents:
         return EmptyStatCard(title)
 
-    return StatCard(title=title, value=_whole_euros(cents))
+    return StatCard(title=title, value=euros(cents, "0g"))
 
 
 def _year_card(total: int) -> Card:
@@ -69,7 +61,7 @@ class IncomeCards(PlanCards):
 
         cents = PlanCalculateDaySum(self.data).cell(CalcRow.INCOMES_AVG, 1)
 
-        return StatCard(title=title, value=_whole_euros(cents))
+        return StatCard(title=title, value=euros(cents, "0g"))
 
 
 class SavingCards(PlanCards):
@@ -123,7 +115,7 @@ class DayCards:
             return EmptyStatCard(title)
 
         cents = self.calc.cell(CalcRow.SUM_PER_DAY, self.month)
-        return StatCard(title=title, value=_euros_and_cents(cents))
+        return StatCard(title=title, value=euros(cents, "2g"))
 
     def _day_plan(self, title: str) -> Card:
         cents = self.calc.cell(InputRow.DAY_PLAN, self.month)
@@ -132,4 +124,4 @@ class DayCards:
 
         over = self.calc.day_plan_states()[str(self.month)] == OVER
         state = HIGH if over else NEUTRAL
-        return LevelStatCard(title=title, value=_euros_and_cents(cents), state=state)
+        return LevelStatCard(title=title, value=euros(cents, "2g"), state=state)

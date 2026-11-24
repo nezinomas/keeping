@@ -11,7 +11,7 @@ def float_to_int_cents(value: float) -> int:
     return int(value * 100 + 0.00001)
 
 
-def int_cents_to_float(value: int) -> float:
+def int_cents_to_float(value: float) -> float:
     return value / 100
 
 

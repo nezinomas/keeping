@@ -1,12 +1,14 @@
 import json
+import re
 from datetime import date
 
 import pytest
 import time_machine
+from django.test import Client
 from django.urls import reverse
 
 from ....accounts.tests.factories import AccountBalance
-from ....core.tests.utils import setup_view
+from ....core.tests.utils import setup_view, tab_fragment
 from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
 from ....journals.tests.factories import JournalFactory
@@ -18,11 +20,65 @@ from ... import views
 pytestmark = pytest.mark.django_db
 
 
-def test_view_regenerate_balances_responds_no_content(client_logged):
-    url = reverse("bookkeeping:regenerate_balances")
-    response = client_logged.get(url, follow=True)
+BALANCES = (AccountBalance, SavingBalance, PensionBalance)
 
-    assert response.status_code == 204
+
+def test_a_get_is_refused_and_syncs_nothing(client_logged):
+    IncomeFactory()
+    SavingFactory()
+    PensionFactory()
+    for balance in BALANCES:
+        balance.objects.all().delete()
+
+    response = client_logged.get(reverse("bookkeeping:regenerate_balances"))
+
+    assert [response.status_code, *(b.objects.count() for b in BALANCES)] == [
+        405,
+        0,
+        0,
+        0,
+    ]
+
+
+def test_a_post_passes_csrf_only_with_each_icons_token(main_user):
+    IncomeFactory()
+    SavingFactory()
+    PensionFactory()
+    client = Client(enforce_csrf_checks=True)
+    client.force_login(main_user)
+    content = "".join(
+        tab_fragment(client, reverse(url_name))
+        for url_name in ("bookkeeping:tab_overview", "bookkeeping:tab_funds")
+    )
+    tokens = re.findall(
+        r'<button\b[^>]*\bid="refresh-(\w+)"[^>]*'
+        r'\bhx-headers=\'\{"X-CSRFToken":"([^"]+)"\}\'',
+        content,
+    )
+    url = reverse("bookkeeping:regenerate_balances")
+
+    statuses = [
+        ("no token", client.post(url).status_code),
+        *(
+            (kind, client.post(url, headers={"X-CSRFToken": token}).status_code)
+            for kind, token in tokens
+        ),
+    ]
+
+    assert statuses == [
+        ("no token", 403),
+        ("accounts", 204),
+        ("savings", 204),
+        ("pensions", 204),
+    ]
+
+
+def test_an_anonymous_post_lands_on_the_login(client):
+    url = reverse("bookkeeping:regenerate_balances")
+
+    response = client.post(url)
+
+    assert response.url == f"{reverse('users:login')}?next={url}"
 
 
 @time_machine.travel("1999-01-01")
@@ -49,82 +105,24 @@ def test_view_regenerate_balances_all_year(client_logged, main_user):
 
     url = reverse("bookkeeping:regenerate_balances")
 
-    client_logged.get(url, {"ajax_trigger": 1}, follow=True)
+    response = client_logged.post(url, follow=True)
 
+    assert response.status_code == 204
     assert AccountBalance.objects.all().count() == 3
     assert SavingBalance.objects.all().count() == 2
     assert PensionBalance.objects.all().count() == 2
 
 
-def test_view_regenerate_balances_func_called(mocker, fake_request):
-    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
-    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
-    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
-
-    class Dummy(views.RegenerateBalances):
-        pass
-
-    view = setup_view(Dummy(), fake_request)
-    view.get(fake_request)
-
-    assert account.call_count == 1
-    assert saving.call_count == 1
-    assert pension.call_count == 1
-
-
-@pytest.mark.parametrize(
-    "kind, calls",
-    [
-        pytest.param("accounts", (1, 0, 0), id="accounts"),
-        pytest.param("savings", (0, 1, 0), id="savings"),
-        pytest.param("pensions", (0, 0, 1), id="pensions"),
-    ],
-)
-def test_view_regenerate_balances_syncs_only_its_kind(kind, calls, mocker, rf):
-    request = rf.get(f"/fake/?type={kind}")
-    request.user = UserFactory.build()
-    request.user.journal = JournalFactory.build()
-
-    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
-    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
-    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
-
-    setup_view(views.RegenerateBalances(), request).get(request)
-
-    assert (account.call_count, saving.call_count, pension.call_count) == calls
-
-
-@pytest.mark.parametrize(
-    "kind, trigger",
-    [
-        ("accounts", "afterSignalAccounts"),
-        ("savings", "afterSignalSavings"),
-        ("pensions", "afterSignalPensions"),
-    ],
-)
-def test_view_regenerate_sends_the_trigger_of_its_kind(kind, trigger, mocker, rf):
-    request = rf.get(f"/fake/?type={kind}")
-    request.user = UserFactory.build()
-    request.user.journal = JournalFactory.build()
-    mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
-    mocker.patch("project.bookkeeping.balance_sources.sync_savings")
-    mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
-
-    response = setup_view(views.RegenerateBalances(), request).get(request)
-
-    assert json.loads(response.headers["HX-Trigger"]) == {trigger: {}}
-
-
-def test_view_regenerate_unknown_type_syncs_all_and_sends_after_signal(mocker, rf):
-    request = rf.get("/fake/?type=xxx")
+def test_view_regenerate_syncs_every_balance_and_reloads_the_tab(mocker, rf):
+    request = rf.post("/fake/")
     request.user = UserFactory.build()
     request.user.journal = JournalFactory.build()
     syncs = [
-        mocker.patch(f"project.bookkeeping.balance_sources.sync_{kind}")
-        for kind in ("accounts", "savings", "pensions")
+        mocker.patch(f"project.bookkeeping.balance_sources.sync_{name}")
+        for name in ("accounts", "savings", "pensions")
     ]
 
-    response = setup_view(views.RegenerateBalances(), request).get(request)
+    response = setup_view(views.RegenerateBalances(), request).post(request)
 
-    assert [x.call_count for x in syncs] == [1, 1, 1]
-    assert json.loads(response.headers["HX-Trigger"]) == {"afterSignal": {}}
+    assert tuple(sync.call_count for sync in syncs) == (1, 1, 1)
+    assert json.loads(response.headers["HX-Trigger"]) == {"reload": {}}

@@ -1,24 +1,21 @@
-{% load math %}
-{% load cell_format %}
-
 <div class="month-table">
 <table class="main striped hover calculations-table">
     <thead>
         <tr>
-            <th class="title-col"></th>
+            <th></th>
             <c-quarter-band />
         </tr>
         <tr>
-            <th class="text-left title-col"></th>
+            <th></th>
             <c-month-headers />
         </tr>
     </thead>
     <tbody>
         {% for row in rows %}
         <tr{% if row.part %} class="calculations-table__part"{% endif %}>
-            <td class="text-left">{{ row.label }}{% if row.words %}<span class="calculations-table__words">{{ row.words }}</span>{% endif %}</td>
+            <td>{{ row.label }}{% if row.words %}<span class="calculations-table__words">{{ row.words }}</span>{% endif %}</td>
             {% for value, state in row.cells %}
-            <td class="main__figure{% if state == 'over' %} plans-table__over{% endif %}" data-cell="{{value|cell_state}}">{{value|price|cellformat:"0,00"}}</td>
+            <c-month-figure :value="value" class="{% if state == 'over' %}plans-table__over{% endif %}" />
             {% endfor %}
         </tr>
         {% endfor %}

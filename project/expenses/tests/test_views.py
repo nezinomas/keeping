@@ -240,22 +240,21 @@ def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
 
     rows = [
         r'<tbody>\s*<tr[^>]* class="main__group">\s*'
-        r'<td class="text-left">Buitinės</td>\s*'
-        + cells(100, "–", "10%", "1999-04-01"),
-        r'<tr[^>]*>\s*<td class="text-left main__child">Muilas</td>\s*'
+        r"<td>Buitinės</td>\s*" + cells(100, "–", "10%", "1999-04-01"),
+        r'<tr[^>]*>\s*<td class="main__child">Muilas</td>\s*'
         + name_cells(100, "–", "100%", "1999-04-01"),
         r'</tbody>\s*<tbody>\s*<tr[^>]* class="main__group table-group-divider">\s*'
-        r'<td class="text-left">Maistas</td>\s*' + cells(900, 200, "90%", "1999-03-07"),
-        r'<tr[^>]*>\s*<td class="text-left main__child">Duona</td>\s*'
+        r"<td>Maistas</td>\s*" + cells(900, 200, "90%", "1999-03-07"),
+        r'<tr[^>]*>\s*<td class="main__child">Duona</td>\s*'
         + name_cells(300, "–", "33%", "1999-03-07"),
-        r'<tr[^>]*>\s*<td class="text-left main__child">Pienas</td>\s*'
+        r'<tr[^>]*>\s*<td class="main__child">Pienas</td>\s*'
         + name_cells(600, 200, "67%", "1999-02-05"),
-        r'<tr[^>]*>\s*<td class="text-left main__child">Sūris</td>\s*'
+        r'<tr[^>]*>\s*<td class="main__child">Sūris</td>\s*'
         + name_cells("–", "–", "–", "–"),
         r'</tbody>\s*<tbody>\s*<tr[^>]* class="main__group table-group-divider">\s*'
-        r'<td class="text-left">Tuščia</td>\s*' + cells("–", "–", "–", "–"),
+        r"<td>Tuščia</td>\s*" + cells("–", "–", "–", "–"),
         r'</tbody>\s*<tfoot>\s*<tr class="main__total">\s*'
-        r'<td class="text-left">Viso</td>\s*' + figures("1.000", 200, "100%"),
+        r"<td>Viso</td>\s*" + figures("1.000", 200, "100%"),
     ]
     assert re.search(r"[\s\S]*?".join(rows), content)
 
@@ -264,7 +263,7 @@ def test_types_tab_lists_each_type_with_its_names_beneath(client_logged):
     "necessary, title_cell",
     [
         (True, 'Būstas <span class="main__mark">būtinos</span></td>'),
-        (False, '<td class="text-left">Būstas</td>'),
+        (False, "<td>Būstas</td>"),
     ],
     ids=["necessary_reads_its_caption", "other_has_none"],
 )
@@ -297,34 +296,6 @@ def test_types_tab_lists_a_name_limited_to_another_year_with_its_year(client_log
     assert 'main__child">Šių metų <span class="main__year">1999</span></td>' in content
     assert 'main__child">Senas <span class="main__year">1998</span></td>' in content
     assert 'class="filter-line"' not in content
-
-
-@pytest.mark.parametrize("order", ["share", "title"])
-def test_types_tab_sort_links_and_reload_carry_only_the_order(client_logged, order):
-    query = {"order": order}
-
-    content = client_logged.get(reverse("expenses:tab_types"), query).content.decode()
-
-    # pushed, so a reload keeps the sort
-    assert '<thead class="sortable-header-row" hx-push-url:inherited="true">' in content
-    for key, label in (
-        ("title", "Rūšis / pavadinimas"),
-        ("this_year", "Šiemet"),
-        ("last_year", "Pernai"),
-        ("share", "Dalis"),
-        ("last_expense", "Paskutinį kartą"),
-    ):
-        drawn = (
-            f'<a role="button" hx-get="/expenses/types/?order={key}"'
-            f' hx-target="#tab_content">{label}</a>'
-        )
-        if key == order:
-            drawn = f"<span>{label}</span>"
-        assert drawn in content
-    assert re.search(r'<th class="text-left">\s*<(span|a [^>]*)>Rūšis', content)
-    # a save reloads the sort shown
-    reload = f'<div hx-get="/expenses/types/?order={order}" hx-target="#tab_content"'
-    assert reload in content
 
 
 def test_types_tab_edits_each_type_and_name_from_its_row(client_logged):

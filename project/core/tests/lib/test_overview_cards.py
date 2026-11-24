@@ -26,30 +26,34 @@ def test_three_cards_in_order():
     assert list(_cards()) == ["Šiais metais", "Per mėnesį", "Didžiausia rūšis"]
 
 
-def test_this_year_is_the_total_in_euro():
-    card = _cards()["Šiais metais"]
+@pytest.mark.parametrize(
+    "last_year, note",
+    [
+        pytest.param(LAST_YEAR, "Pernai 800", id="last-year"),
+        pytest.param([], "", id="no-last-year"),
+    ],
+)
+def test_this_year_is_the_total_in_euro_noting_last_year(last_year, note):
+    card = _cards(last_year=last_year)["Šiais metais"]
 
-    assert card.value == "1.200"
-    assert card.note == "Pernai 800"
-
-
-def test_this_year_has_no_note_when_last_year_is_empty():
-    assert _cards(last_year=[])["Šiais metais"].note == ""
-
-
-def test_per_month_divides_a_running_year_by_the_months_reached():
-    card = _cards()["Per mėnesį"]
-
-    assert card.value == "133"
-    assert card.note == "9 mėnesiai"
-    assert card.explanation == ("Metų suma, padalinta iš prabėgusių mėnesių",)
+    assert (card.value, card.note) == ("1.200", note)
 
 
-def test_per_month_divides_a_finished_year_by_twelve():
-    card = _cards(boundary=FINISHED)["Per mėnesį"]
+@pytest.mark.parametrize(
+    "boundary, value, note",
+    [
+        pytest.param(RUNNING, "133", "9 mėnesiai", id="running"),
+        pytest.param(FINISHED, "100", "12 mėnesių", id="finished"),
+    ],
+)
+def test_per_month_divides_the_year_by_the_months_reached(boundary, value, note):
+    card = _cards(boundary=boundary)["Per mėnesį"]
 
-    assert card.value == "100"
-    assert card.note == "12 mėnesių"
+    assert (card.value, card.note, card.explanation) == (
+        value,
+        note,
+        ("Metų suma, padalinta iš prabėgusių mėnesių",),
+    )
 
 
 def test_per_month_of_a_coming_year_is_empty_while_this_year_reads_the_total():

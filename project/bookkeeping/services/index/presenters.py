@@ -1,12 +1,19 @@
+from dataclasses import dataclass
 from datetime import date
 
 from django.utils.translation import gettext as _
 
+from ....core.lib.money_cells import amount, percent
+from ....core.lib.stat_card import Card, EmptyStatCard, StatCard
 from ....core.lib.translation import month_names
+from ....core.lib.year_boundary import YearBoundary
 from ....debts.models import Debt
+from ....debts.services.model_services import DebtModelService
 from ....users.models import User
+from ...lib.balance_base import BalanceBase
 from ...lib.make_dataframe import MakeDataFrame
 from ...lib.year_balance import YearBalance
+from ..wealth.presenters import WealthPresenter
 from .providers import IndexDataProvider
 
 INDEX_COLUMNS = (
@@ -22,72 +29,93 @@ INDEX_COLUMNS = (
     "balance",
     "money_flow",
 )
+MONTHS = range(1, 13)
+
+
+def year_strip_titles(year: int) -> list[str]:
+    """The Year strip's heads, which the Forecast's figures read under too."""
+    return [
+        _("Start of %(year)s") % {"year": year},
+        _("End of %(year)s") % {"year": year},
+        _("Balance"),
+    ]
 
 
 class IndexContextBuilder:
-    def __init__(self, balance: YearBalance, debts: dict[Debt.DebtType, dict]):
+    def __init__(self, balance: YearBalance):
         self._balance = balance
-        self._debts = debts
 
-    def balance_context(self) -> dict:
+    def balance_context(self, accounts_balance: int) -> dict:
         return {
             "data": self._balance.balance,
             "total_row": self._balance.total_row,
             "amount_end": self._balance.amount_end,
             "avg_row": self._balance.average,
+            "cash_flow_check": self.check_cash_flow(accounts_balance),
         }
+
+    def check_cash_flow(self, accounts_balance: int) -> str:
+        state = ""
+        if self._balance.amount_end != accounts_balance:
+            state = "mismatch"
+        return state
 
     def balance_short_context(self) -> dict:
         start = self._balance.amount_start
         end = self._balance.amount_end
 
         return {
-            "title": [
-                _("Start of %(year)s") % {"year": self._balance.year},
-                _("End of %(year)s") % {"year": self._balance.year},
-                _("Balance"),
-            ],
+            "title": year_strip_titles(self._balance.year),
             "data": [start, end, (end - start)],
             "highlight": [False, False, True],
         }
 
-    def chart_balance_context(self) -> dict:
-        return {
-            "categories": list(month_names().values()),
-            "incomes": self._balance.income_data,
-            "incomes_title": _("Incomes"),
-            "expenses": self._balance.expense_data,
-            "expenses_title": _("Expenses"),
+    def cards(self, wealth: WealthPresenter) -> list[Card]:
+        averages = {
+            _("Average incomes"): self._balance.avg_incomes,
+            _("Average expenses"): self._balance.avg_expenses,
         }
+        cards = [
+            StatCard(_("Money"), value=amount(wealth.money)),
+            StatCard(_("Wealth"), value=amount(wealth.wealth)),
+        ]
 
-    def averages_context(self) -> dict:
-        return {
-            "title": [_("Average incomes"), _("Average expenses")],
-            "data": [self._balance.avg_incomes, self._balance.avg_expenses],
-            "empty": self._balance.is_coming,
-        }
+        if self._balance.is_coming:
+            return cards + [EmptyStatCard(title) for title in averages]
 
-    def borrow_context(self) -> dict:
-        return self._generic_debt_context(
-            Debt.DebtType.BORROW, _("Borrow"), _("Borrow return")
-        )
+        return cards + [
+            StatCard(title, value=amount(figure)) for title, figure in averages.items()
+        ]
 
-    def lend_context(self) -> dict:
-        return self._generic_debt_context(
-            Debt.DebtType.LEND, _("Lend"), _("Lend return")
-        )
 
-    def _generic_debt_context(
-        self, debt_type: Debt.DebtType, debt_title: str, return_title: str
-    ) -> dict:
-        debt = self._debts[debt_type]
-        if not debt["debt"]:
-            return {}
+def _profit_card(title: str, table: dict) -> Card:
+    """A table's total profit or loss, empty at none (no rows, or a total of zero)."""
+    total = table["total_row"]
+    if not total["profit_sum"]:
+        return EmptyStatCard(title)
 
-        return {
-            "title": [debt_title, return_title],
-            "data": [debt["debt"], debt["debt_return"]],
-        }
+    return StatCard(
+        title,
+        value=_profit(total["profit_sum"]),
+        note=f"{percent(total['profit_proc'])}%",
+    )
+
+
+def _profit(cents: int) -> str:
+    """Whole euros, but under 0,50 either way its cents, so it never reads "0"."""
+    places = "0g"
+    if abs(cents) < 50:
+        places = "2g"
+    return amount(cents, places)
+
+
+def funds_cards(savings: dict, pensions: dict) -> list[Card]:
+    """Fondai's Cards: the Saved share, then each table's total profit."""
+    return [
+        savings["saved_share"],
+        _profit_card(_("Fund profit"), savings),
+        _profit_card(_("Pension profit"), pensions),
+    ]
 
 
 def load_service(user: User, today: date) -> IndexContextBuilder:
@@ -98,4 +126,89 @@ def load_service(user: User, today: date) -> IndexContextBuilder:
     df = MakeDataFrame.for_year(year, dto.monthly_data, INDEX_COLUMNS)
     balance = YearBalance(data=df, amount_start=dto.amount_start, today=today)
 
-    return IndexContextBuilder(balance=balance, debts=dto.debts)
+    return IndexContextBuilder(balance=balance)
+
+
+@dataclass(frozen=True)
+class MonthCharts:
+    """Grafikai's two month charts: the year's incomes and expenses, month by month."""
+
+    incomes: list[int]
+    expenses: list[int]
+    averages: dict[str, float]
+    months_with_rows: frozenset[int]
+    boundary: YearBoundary
+
+    @classmethod
+    def load(cls, user: User, today: date) -> "MonthCharts":
+        provider = IndexDataProvider(user)
+        data = provider.get_incomes_and_expenses()
+        df = MakeDataFrame.for_year(provider.year, data, ("incomes", "expenses")).data
+        boundary = YearBoundary(provider.year, today)
+        return cls(
+            df["incomes"].to_list(),
+            df["expenses"].to_list(),
+            BalanceBase(df).average_over(boundary.months_elapsed),
+            frozenset(row["date"].month for row in data),
+            boundary,
+        )
+
+    def context(self) -> dict:
+        return {
+            "categories": list(month_names().values()),
+            "incomes": self._drawn(self.incomes),
+            "incomes_title": _("Incomes"),
+            "incomes_average": round(self.averages["incomes"]),
+            "expenses": self._drawn(self.expenses),
+            "expenses_title": _("Expenses"),
+            "expenses_average": round(self.averages["expenses"]),
+            "current_month": [
+                self.boundary.is_current and month == self.boundary.today.month
+                for month in MONTHS
+            ],
+            "balance_title": _("Balance"),
+            "average_title": _("Average"),
+            "so_far": _("so far"),
+        }
+
+    def _drawn(self, sums: list[int]) -> list[int | None]:
+        """A month not yet reached is Highcharts' gap, unless it already holds rows."""
+        return [
+            figure
+            if month <= self.boundary.months_elapsed or month in self.months_with_rows
+            else None
+            for month, figure in zip(MONTHS, sums, strict=True)
+        ]
+
+
+@dataclass(frozen=True)
+class DebtsTable:
+    """Apžvalga's Debts table: what is owed and what came back, whatever its year."""
+
+    debts: dict[Debt.DebtType, dict]
+
+    @classmethod
+    def load(cls, user: User) -> "DebtsTable":
+        return cls(
+            {
+                debt_type: DebtModelService(user, debt_type).sum_all()
+                for debt_type in Debt.DebtType
+            }
+        )
+
+    def debts_context(self) -> list[dict]:
+        """A row per kind with a debt, Lend first, as Debts' own tabs."""
+        rows = []
+        for debt_type in (Debt.DebtType.LEND, Debt.DebtType.BORROW):
+            sums = self.debts[debt_type]
+            if not sums["debt"]:
+                continue
+            rows.append(
+                {
+                    "title": debt_type.label,
+                    "debt": sums["debt"],
+                    "debt_return": sums["debt_return"],
+                    "remaining": sums["debt"] - sums["debt_return"],
+                }
+            )
+        return rows

@@ -1,0 +1,20 @@
+{% load i18n %}
+
+<c-paper-table class="main striped hover">
+    <c-slot name="head">
+        <tr>
+            <th></th>
+            <th>{% translate 'Sum' %}</th>
+            <th>{% translate 'Returned' %}</th>
+            <th>{% translate 'Remaining' %}</th>
+        </tr>
+    </c-slot>
+    {% for debt in debts %}
+    <tr>
+        <td>{{ debt.title }}</td>
+        <c-figure-cell :value="debt.debt" />
+        <c-figure-cell :value="debt.debt_return" />
+        <c-figure-cell :value="debt.remaining" />
+    </tr>
+    {% endfor %}
+</c-paper-table>

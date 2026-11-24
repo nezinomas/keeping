@@ -35,34 +35,20 @@ def _figures(chart, year=YEAR):
     }
 
 
-def test_a_year_without_a_sell_or_switch_reads_as_it_did(main_user):
+def _worth_only():
     fund = SavingTypeFactory(title="Fund")
     buy(fund, 100000)
     worth(fund, 120000)
 
-    assert _figures(_chart(main_user)) == {
-        "total": 120000,
-        "profit": 20000,
-        "invested": 100000,
-        "proc": 20.0,
-    }
 
-
-def test_the_viso_holds_what_is_left_after_a_sell(main_user):
+def _worth_after_a_sell():
     fund = SavingTypeFactory(title="Fund")
     buy(fund, 100000)
     sell(fund, 40000)
     worth(fund, 70000)
 
-    assert _figures(_chart(main_user)) == {
-        "total": 70000,
-        "profit": 10000,
-        "invested": 60000,
-        "proc": 10.0,
-    }
 
-
-def test_a_stale_worth_stays_out_of_all_three_figures(main_user):
+def _a_stale_and_a_fresh_fund():
     stale = SavingTypeFactory(title="Stale")
     buy(stale, 100000)
     worth(stale, 100000, month=3, day=1)
@@ -71,12 +57,55 @@ def test_a_stale_worth_stays_out_of_all_three_figures(main_user):
     buy(fresh, 50000)
     worth(fresh, 60000)
 
-    assert _figures(_chart(main_user)) == {
-        "total": 60000,
-        "profit": 10000,
-        "invested": 50000,
-        "proc": 20.0,
-    }
+
+def _a_pension_with_a_worth_and_one_without():
+    shown = PensionTypeFactory(title="Shown")
+    hidden = PensionTypeFactory(title="Hid")
+    PensionFactory(pension_type=shown, price=10000, fee=0)
+    PensionFactory(pension_type=hidden, price=5000, fee=0)
+    PensionWorthFactory(
+        pension_type=shown,
+        price=12000,
+        date=worth_date(),
+    )
+
+
+@pytest.mark.parametrize(
+    "seed, pointer, figures",
+    [
+        pytest.param(
+            _worth_only,
+            "funds",
+            {"total": 120000, "profit": 20000, "invested": 100000, "proc": 20.0},
+            id="no_sell_or_switch",
+        ),
+        pytest.param(
+            _worth_after_a_sell,
+            "funds",
+            {"total": 70000, "profit": 10000, "invested": 60000, "proc": 10.0},
+            id="after_a_sell",
+        ),
+        pytest.param(
+            _a_stale_and_a_fresh_fund,
+            "funds",
+            {"total": 60000, "profit": 10000, "invested": 50000, "proc": 20.0},
+            id="stale_worth_left_out",
+        ),
+        pytest.param(
+            _a_pension_with_a_worth_and_one_without,
+            "pensions2",
+            {"total": 12000, "profit": 2000, "invested": 10000, "proc": 20.0},
+            id="pension_without_a_worth_left_out",
+        ),
+    ],
+)
+def test_a_chart_sums_total_profit_invested_and_proc_of_the_rows_that_show_a_profit(
+    main_user, seed, pointer, figures
+):
+    with quiet_build(main_user):
+        seed()
+
+    assert _figures(_chart(main_user, pointer)) == figures
 
 
 def _switch_scene():
@@ -89,37 +118,17 @@ def _switch_scene():
     worth(b, 45000)
 
 
-def test_a_year_with_a_switch_reads_the_funds_table_percent(main_user):
-    _switch_scene()
+@pytest.mark.parametrize("pointer", ["funds", "funds_shares"])
+def test_the_funds_charts_take_a_switch_off_their_percent_as_the_funds_table_does(
+    main_user, pointer
+):
+    with quiet_build(main_user):
+        _switch_scene()
 
     table = savings.load_service(main_user, YEAR)["total_row"]["profit_proc"]
-    chart = _figures(_chart(main_user))
+    chart = _figures(_chart(main_user, pointer))
 
     assert chart["proc"] == round(table, 1) == 15.0
-
-
-def test_the_funds_and_shares_chart_takes_the_same_switch_off(main_user):
-    _switch_scene()
-
-    assert _figures(_chart(main_user, "funds_shares"))["proc"] == 15.0
-
-
-def test_pensions_ii_counts_only_the_rows_that_show_a_profit(main_user):
-    shown, hidden = PensionTypeFactory(title="Shown"), PensionTypeFactory(title="Hid")
-    PensionFactory(pension_type=shown, price=10000, fee=0)
-    PensionFactory(pension_type=hidden, price=5000, fee=0)
-    PensionWorthFactory(
-        pension_type=shown,
-        price=12000,
-        date=worth_date(),
-    )
-
-    assert _figures(_chart(main_user, "pensions2")) == {
-        "total": 12000,
-        "profit": 2000,
-        "invested": 10000,
-        "proc": 20.0,
-    }
 
 
 def _grow(years):
@@ -161,24 +170,25 @@ def test_the_chart_queries_do_not_grow_with_the_years(main_user):
 
 
 def test_money_from_another_type_is_outside_the_funds_chart(main_user):
-    a, b, c = (SavingTypeFactory(title=t, type="funds") for t in "ABC")
-    shares = SavingTypeFactory(title="S", type="shares")
-    buy(a, 30000)
-    buy(shares, 10000)
-    for source, target, price, month in [
-        (a, b, 10000, 6),
-        (shares, b, 10000, 6),
-        (b, c, 20000, 7),
-    ]:
-        SavingChangeFactory(
-            from_account=source,
-            to_account=target,
-            price=price,
-            fee=0,
-            date=date(YEAR, month, 1),
-        )
-    worth(a, 20000)
-    worth(c, 22000)
+    with quiet_build(main_user):
+        a, b, c = (SavingTypeFactory(title=t, type="funds") for t in "ABC")
+        shares = SavingTypeFactory(title="S", type="shares")
+        buy(a, 30000)
+        buy(shares, 10000)
+        for source, target, price, month in [
+            (a, b, 10000, 6),
+            (shares, b, 10000, 6),
+            (b, c, 20000, 7),
+        ]:
+            SavingChangeFactory(
+                from_account=source,
+                to_account=target,
+                price=price,
+                fee=0,
+                date=date(YEAR, month, 1),
+            )
+        worth(a, 20000)
+        worth(c, 22000)
 
     assert _figures(_chart(main_user))["proc"] == 5.0
     assert _figures(_chart(main_user, "funds_shares"))["proc"] == 5.0

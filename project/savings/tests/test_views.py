@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.utils import (
-    FOLD_BUTTON,
+    FOLD_SWITCH,
     FOLDED,
     HEAD_CELL,
     PAPER_PARTS,
@@ -508,7 +508,7 @@ def _struck(title, year):
                     FUND_HEADER,
                     ["Delta", "Zeta", "Beta", "Alpha", "Edge", "Mid", "Late"],
                 ),
-                FOLD_BUTTON,
+                FOLD_SWITCH,
                 (
                     FOLDED,
                     FUND_HEADER,
@@ -590,7 +590,7 @@ def test_a_fund_form_loads(client_logged, url_of):
             None,
             [
                 ("", FUND_HEADER, ["TTT"]),
-                FOLD_BUTTON,
+                FOLD_SWITCH,
                 (FOLDED, FUND_HEADER, [_struck("YYY", 1111)]),
             ],
             id="open",
@@ -600,7 +600,7 @@ def test_a_fund_form_loads(client_logged, url_of):
             1998,
             [
                 "1999 metais įrašų nėra.",
-                FOLD_BUTTON,
+                FOLD_SWITCH,
                 (FOLDED, FUND_HEADER, [_struck("YYY", 1111), _struck("TTT", 1998)]),
             ],
             id="closed_before_the_year",

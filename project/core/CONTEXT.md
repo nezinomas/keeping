@@ -25,12 +25,41 @@ The rule for a new page:
 [paper-migration §11](../../.plans/playbooks/paper-migration.md).
 _Avoid_: bare panel, frameless panel, table card
 
+**Switch**:
+A two-state control that shows or hides part of a page: a track and its label,
+`<c-switch model="open">label</c-switch>`, a `<button role="switch">` whose
+`aria-checked` and press follow the caller's Alpine variable `model`. The caller owns
+the `x-data` and the `x-show`s; on a Panel title it sits in the `title_control` slot,
+wrapped in `.panel__control`, at the line's right end; in a Closed fold, above the
+closed table. Drawn in ink, off and on.
+_Avoid_: toggle, checkbox, show/hide link
+
 **Sort header**:
 A table's head cell that orders the table by its column: a link to the table's url
 with `order=<key>`, plain text when that order is the one shown. `<c-sort-th>` takes a
-state, never a class: `align="left"`, or `column="title"` / `column="total"` for a
-Month table's first and last columns.
+state, never a class: `column="total"` for a Month table's last. A first column needs no
+state: the skin sets it left.
 _Avoid_: sortable th, sort link, column header
+
+**Month figure**:
+A month's cell in a Month table: `<c-month-figure :value="…">`, the money with cents,
+`0,00` for a month with nothing, where bookkeeping's `<c-figure-cell>` draws `-`; its
+`data-cell` carries the value's state. `class` adds the caller's state class beside
+`main__figure` (plans' `plans-table__over`, a month over its plan), as core names no
+app's class. Detailed's tables and Plans' plan and Calculations tables draw it.
+_Avoid_: month cell, figure td
+
+**Tip**:
+A bubble of text that opens over a trigger on hover or focus: `<c-tip side="bottom"
+text="…">trigger</c-tip>`, a `<span class="tip">` whose `data-tip` the bubble draws.
+`side` places it (`bottom`, `right`); `class` adds a class beside `tip` (`hint`, for
+the circled "?" of a Panel title or a header); `wide` stretches the trigger across
+its cell, so the whole cell opens the tip.
+A screen reader hears `label` as the trigger's name and `description` as what the
+tip adds, so a hint whose text is its label carries no description. The trigger takes
+the focus unless `:focusable="False"`, as when it wraps a control that takes it
+itself.
+_Avoid_: tooltip, popover, hover text
 
 **Quick-add**:
 The bar at the foot of an app's paper page, outside the swapped tab: the day of year and
@@ -60,10 +89,11 @@ _Avoid_: accounts table, list
 
 **Closed fold**:
 An Owner table of the owners open in the viewed year, or the shared notice when none is,
-above a button that unfolds a second Owner table of those closed before it, the button
-drawn only when one is (Sąskaitos, Fondai; II pakopos fondai passes no closed rows, so
-it never draws one). [`core/closed_fold.html`](templates/core/closed_fold.html)
-takes `rows`, `closed_rows`, `header`, `url_name` and the button's `label`;
+above a Switch that unfolds a second Owner table of those closed before it, the Switch
+drawn only when one is, off on every load, in line with the table's names (Sąskaitos,
+Fondai; II pakopos fondai passes no closed rows, so it never draws one).
+[`core/closed_fold.html`](templates/core/closed_fold.html)
+takes `rows`, `closed_rows`, `header`, `url_name` and the Switch's `label`;
 `ClosedFoldTabMixin` (`core/mixins/tabs.py`) reads both lists for a tab.
 _Avoid_: accordion, scope, show closed, archive
 

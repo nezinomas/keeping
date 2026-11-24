@@ -68,7 +68,7 @@ _Avoid_: page, section, view, panel
 The Accounts Tab's second table, of the Accounts closed before the viewed year: struck
 through, captioned *uždaryta* and its year, oldest close first. Folded below the open
 ones — the Accounts open in the viewed year, not closed or closed that year or later —
-until the *Uždarytos sąskaitos* button unfolds it; the Tab has one URL.
+until the *Uždarytos sąskaitos* switch unfolds it; the Tab has one URL.
 _Avoid_: scope, filter, show closed, archive
 
 **Close mark**:

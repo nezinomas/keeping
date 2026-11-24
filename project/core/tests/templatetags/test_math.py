@@ -1,5 +1,4 @@
-import pytest
-from hypothesis import assume, given
+from hypothesis import given
 from hypothesis import strategies as st
 
 from ...templatetags import math
@@ -28,26 +27,3 @@ def test_sub_type_error(num):
 @given(numbers_strategy, numbers_strategy)
 def test_sub_commutative(x, y):
     assert math.sub(x, y) == -(math.sub(y, x))
-
-
-@given(numbers_strategy)
-def test_percent_type_error(num):
-    assert math.percent(num, None) == 0
-    assert math.percent(None, num) == 0
-
-
-@given(numbers_strategy)
-def test_percent_zero_division(num):
-    assert math.percent(num, 0) == 0
-
-
-@given(numbers_strategy, numbers_strategy)
-def test_percent_proportion(a, b):
-    assume(a and b)
-    left = b / a
-    right = math.percent(a, b) / 100
-    assert pytest.approx(left) == pytest.approx(right)
-
-
-def test_percent_unit_test():
-    assert math.percent(75, 15) == 20

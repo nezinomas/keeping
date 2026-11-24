@@ -1,8 +1,10 @@
 import itertools as it
 from dataclasses import dataclass, field
+from datetime import date
 
 from django.utils.translation import gettext_lazy as _
 
+from ...core.lib.year_boundary import YearBoundary
 from ...expenses.services.model_services import (
     ExpenseModelService,
     ExpenseTypeModelService,
@@ -31,13 +33,13 @@ class ExpenseServiceData:
 
 
 class ExpenseService:
-    def __init__(self, data: BalanceBase):
+    def __init__(self, data: BalanceBase, months: int):
         self._types = data.types
         self._total = data.total
         self._total_row = data.total_row
         self._total_column = data.total_column
         self._balance = data.balance
-        self._average = data.average
+        self._average = data.average_over(months)
 
     def chart_context(self):
         if not self._types:
@@ -48,9 +50,9 @@ class ExpenseService:
             arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
 
             # transform arr for bar chart
-            return [{"name": key[:11], "y": value} for key, value in arr.items()]
+            return [{"name": key, "y": value} for key, value in arr.items()]
 
-        return [{"name": name[:11], "y": 0} for name in self._types]
+        return [{"name": name, "y": 0} for name in self._types]
 
     def table_context(self):
         return {
@@ -58,15 +60,13 @@ class ExpenseService:
             "data": it.zip_longest(self._balance, self._total_column),
             "total": self._total,
             "total_row": self._total_row,
-            "avg": self._calc_total_avg(self._total_row),
+            "avg": sum(self._average.values()),
             "avg_row": self._average,
         }
 
-    def _calc_total_avg(self, data: dict) -> float:
-        return sum(values) / 12 if (values := data.values()) else 0
 
-
-def load_service(user):
+def load_service(user: User, today: date) -> ExpenseService:
     data = ExpenseServiceData(user)
     df = MakeDataFrame.for_year(data.year, data.expenses, data.expense_types)
-    return ExpenseService(BalanceBase(df.data))
+    months = YearBoundary(data.year, today).months_elapsed
+    return ExpenseService(BalanceBase(df.data), months)

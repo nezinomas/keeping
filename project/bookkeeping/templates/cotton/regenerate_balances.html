@@ -1,6 +1,9 @@
+<c-vars id="" />
+{# its own id per table: htmx's swap gives the focus back to the element whose id held it, so the tab's reload leaves it on this icon #}
 {% load i18n %}
-<span class="tip right" data-tip="{% translate 'Only the balances in this table will be updated.' %}">
-    <a href="#" role="button" hx-get="{% url 'bookkeeping:regenerate_balances' %}{% if type %}?type={{ type }}{% endif %}">
+{% translate 'Balances for all years will be updated.' as tip %}
+<c-tip side="right" text="{{ tip }}" :focusable="False">
+    <button type="button" id="{{ id }}" class="refresh-icon" hx-post="{% url 'bookkeeping:regenerate_balances' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' aria-label="{{ tip }}">
         <i class="bi bi-arrow-repeat me-1"></i>
-    </a>
-</span>
+    </button>
+</c-tip>

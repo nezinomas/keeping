@@ -4,6 +4,9 @@
 // The paper skin's mixins, and the tokens every chart reads, on `:root`: Highcharts
 // draws a tooltip outside `.paper-skin`, and an unresolved token comes out black.
 
+// a striped table's even row, as a plain fill or an opaque-stripe's image
+$stripe: rgba($ink, 0.035);
+
 @mixin panel {
     position: relative;
     padding: calc($gap * 1.5) calc($gap * 1.6);
@@ -12,12 +15,25 @@
     border-radius: 0;
 }
 
+// A control's keyboard focus: an ink ring clear of its edge.
+@mixin focus-ring {
+    outline: 2px solid $ink;
+    outline-offset: 2px;
+}
+
 // A Panel's or a table's title.
 @mixin title {
     font-family: $display;
     font-size: 1.15rem;
     font-weight: 600;
     color: $ink;
+}
+
+// A table header's text, and a Switch's label beside a title.
+@mixin header {
+    font-family: $display;
+    font-size: 0.8125rem;
+    font-weight: 400;
 }
 
 // A small label a level above what it names; 12px is the floor for capitals in the
@@ -62,11 +78,18 @@
     }
 }
 
+// A button drawn as its content alone: the browser's border and grey face dropped.
+// Its padding stays the caller's.
+@mixin bare-button {
+    border: 0;
+    background: none;
+}
+
 // A striped row on a cell that others scroll under: the stripe as an image over
 // an opaque colour, so nothing shows through.
 @mixin opaque-stripe {
     background-color: $paper;
-    background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+    background-image: linear-gradient($stripe, $stripe);
 }
 
 @mixin opaque-hover {
@@ -94,6 +117,8 @@
     --skin-harm: #{$harm};
     --skin-harm-soft: #{$harm-soft};
     --skin-harm-tint: #{$harm-tint};
+
+    --skin-gain: #{$gain};
 
     --skin-attention: #{$attention};
     --skin-attention-wash: #{rgba($attention, 0.3)};

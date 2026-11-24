@@ -61,7 +61,14 @@ def test_context_months_are_the_users_year(main_user, rf):
 @pytest.mark.parametrize(
     "path, expect",
     [
-        pytest.param("/", {"bookkeeping"}, id="year_menu_on_the_root_only"),
+        pytest.param("/", {"bookkeeping"}, id="year_menu_on_the_root"),
+        pytest.param("/bookkeeping/funds/", {"bookkeeping"}, id="index_funds_tab"),
+        pytest.param("/bookkeeping/balance/", {"bookkeeping"}, id="index_balance_tab"),
+        pytest.param("/bookkeeping/charts/", {"bookkeeping"}, id="index_charts_tab"),
+        pytest.param(
+            "/bookkeeping/accounts_worth/new/", set(), id="index_tab_exact_path"
+        ),
+        pytest.param("/detailed/", {"detailed"}, id="detailed_not_the_index"),
         pytest.param("/month/", {"month"}, id="month"),
         pytest.param("/detailed/expenses/", {"detailed"}, id="detailed_not_expenses"),
         pytest.param("/expenses/data/all/", {"expenses"}, id="expenses_tab"),

@@ -10,7 +10,7 @@ from ..services.expenses import ExpenseServiceData
 from ..services.forecast.providers import ForecastDataProvider
 from ..services.index.providers import IndexDataProvider
 from ..services.month.providers import MonthDataProvider
-from ..views import Accounts, NoIncomes, Pensions, ReloadIndex, Savings, Wealth
+from ..views import TabBalance, TabFunds, TabOverview
 
 pytestmark = pytest.mark.django_db
 
@@ -29,47 +29,35 @@ def _index_service(user):
         return services.index.load_service(user, TODAY)
 
 
+def _tab_view(view_class):
+    def read(rf, user):
+        # the services read the year too: patched, the view's own read is alone
+        with (
+            patch.object(services.index, "load_service"),
+            patch.object(services.expenses, "load_service"),
+            patch.object(services.forecast, "load_service"),
+        ):
+            return view_for(rf, user, view_class).get_context_data()
+
+    return read
+
+
 def _month_service(user):
     with patch(f"{services.month.presenters.__name__}.MonthDataProvider"):
         return services.month.load_service(user, TODAY)
 
 
-def _reload_index_view(rf, user):
-    # both services read the year first and raise for the same user
-    with (
-        patch.object(services.index, "load_service"),
-        patch.object(services.expenses, "load_service"),
-    ):
-        return view_for(rf, user, ReloadIndex).get_context_data()
-
-
 @pytest.mark.parametrize(
     "read",
     [
-        pytest.param(
-            lambda rf, u: view_for(rf, u, Accounts).get_context_data(),
-            id="accounts_view",
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, Savings).get_context_data(), id="savings_view"
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, Pensions).get_context_data(),
-            id="pensions_view",
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, Wealth).get_context_data(), id="wealth_view"
-        ),
-        pytest.param(
-            lambda rf, u: view_for(rf, u, NoIncomes).get_context_data(),
-            id="no_incomes_view",
-        ),
+        pytest.param(_tab_view(TabOverview), id="overview_tab"),
+        pytest.param(_tab_view(TabFunds), id="funds_tab"),
+        pytest.param(_tab_view(TabBalance), id="balance_tab"),
         pytest.param(
             lambda rf, u: services.forecast.load_service(u, TODAY),
             id="forecast_service",
         ),
         pytest.param(lambda rf, u: ForecastDataProvider(u), id="forecast_provider"),
-        pytest.param(_reload_index_view, id="reload_index_view"),
         pytest.param(lambda rf, u: _detailed_service(u), id="detailed_service"),
         pytest.param(lambda rf, u: DetailedDataProvider(u), id="detailed_provider"),
         pytest.param(lambda rf, u: _index_service(u), id="index_service"),

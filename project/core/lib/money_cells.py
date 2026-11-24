@@ -7,8 +7,23 @@ from .convert_price import int_cents_to_float
 NOTHING = "–"
 
 
-def amount(cents: int) -> str:
-    return floatformat(int_cents_to_float(cents), "0g") if cents else NOTHING
+def euros(cents: float, places: str) -> str:
+    """Cents as euros at `places`; 0 stays a figure, where `amount` draws it "–"."""
+    return floatformat(int_cents_to_float(cents), places)
+
+
+def amount(cents: int, places: str = "0g") -> str:
+    return euros(cents, places) if cents else NOTHING
+
+
+def rounds_to_zero(figure: float) -> bool:
+    """A figure drawn in two decimals reads 0."""
+    return round(figure, 2) == 0
+
+
+def percent(figure: float) -> str:
+    """A percent in one decimal, without its "%"."""
+    return floatformat(figure, "1g")
 
 
 def day(when: date) -> str:
@@ -22,12 +37,12 @@ def share(cents: int, total: int) -> str:
     if cents == total:
         return "100%"
 
-    percent = cents / total * 100
+    part = cents / total * 100
 
-    if percent < 0.5:
+    if part < 0.5:
         return "< 1%"
 
-    if percent >= 99.5:
+    if part >= 99.5:
         return "> 99%"
 
-    return f"{floatformat(percent, '0')}%"
+    return f"{floatformat(part, '0')}%"

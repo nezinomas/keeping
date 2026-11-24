@@ -6,7 +6,8 @@ from django.urls import reverse
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import Select, WebDriverWait
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
@@ -32,20 +33,16 @@ COLUMNS = (
 @pytest.mark.webtest
 class Expenses(Browser):
     def test_overview_chart_draws_on_load_and_after_a_tab_swap(self):
-        self.assert_overview_chart_redraws(
-            reverse("expenses:index"), "chart-months-container"
-        )
+        self.assert_overview_chart_redraws(self._index_path(), "chart-months-container")
 
-    def index_url(self):
-        return f"{self.live_server_url}{reverse('expenses:index')}"
+    def _index_path(self):
+        return reverse("expenses:index")
 
-    def data_url(self):
-        month = date.today().month
-        return f"{self.live_server_url}{reverse('expenses:tab_data', args=[month])}"
+    def _data_path(self):
+        return reverse("expenses:tab_data", args=[date.today().month])
 
-    def _open_add_expense(self, url):
-        self.browser.get(url)
-        self.wait_until_idle()
+    def _open_add_expense(self, path):
+        self.open(path)
         self._press_add_expense()
 
     def _press_add_expense(self):
@@ -55,31 +52,38 @@ class Expenses(Browser):
         self.wait_until_idle()
 
     def _select(self, expense_type, expense_name, account):
-        for field, option in [
-            ("expense_type", expense_type),
-            ("expense_name", expense_name),
-            ("account", account),
-        ]:
-            Select(self.browser.find_element(By.ID, f"id_{field}")).select_by_value(
-                f"{option.pk}"
+        self._select_by_pk("expense_type", expense_type)
+        # the type's names arrive over htmx
+        WebDriverWait(self.browser, 10).until(
+            ec.presence_of_element_located(
+                (By.CSS_SELECTOR, f'#id_expense_name option[value="{expense_name.pk}"]')
             )
+        )
+        self._select_by_pk("expense_name", expense_name)
+        self._select_by_pk("account", account)
+
+    def _select_by_pk(self, field, instance):
+        Select(self.browser.find_element(By.ID, f"id_{field}")).select_by_value(
+            f"{instance.pk}"
+        )
 
     def _fill_selects(self):
         account = AccountFactory()
         expense_type = ExpenseTypeFactory()
         expense_name = ExpenseNameFactory()
 
-        self._open_add_expense(self.data_url())
+        self._open_add_expense(self._data_path())
         self._select(expense_type, expense_name, account)
 
     def _open_update_form(self):
-        self.browser.get(self.data_url())
-        self.wait_until_idle()
+        self.open(self._data_path())
+        self._press_edit()
 
+    def _press_edit(self):
         self.browser.find_element(By.CSS_SELECTOR, "a.edit").click()
         self.wait_until_idle()
 
-    def _submit_and_close_update_form(self):
+    def _press_close_submit(self):
         self.browser.find_element(By.ID, "_close").click()
         self.wait_until_idle()
 
@@ -112,7 +116,7 @@ class Expenses(Browser):
             title="Expense Name 1", parent=ExpenseTypeFactory(title="Expense Type 1")
         )
 
-        self._open_add_expense(self.data_url())
+        self._open_add_expense(self._data_path())
         for name, total, submit in [
             (first, "123.45", "_new"),
             (second, "65.78", "_close"),
@@ -134,10 +138,9 @@ class Expenses(Browser):
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_empty_required_fields(self):
-        self._open_add_expense(self.index_url())
+        self._open_add_expense(self._index_path())
 
-        self.browser.find_element(By.ID, "_close").click()
-        self.wait_until_idle()
+        self._press_close_submit()
 
         feedback = "div[@class='invalid-feedback']"
         errors = {
@@ -158,7 +161,7 @@ class Expenses(Browser):
         for lang, month in [("lt", "sausis"), ("en", "January")]:
             with self.subTest(lang=lang):
                 Journal.objects.update(lang=lang)
-                self._open_add_expense(self.index_url())
+                self._open_add_expense(self._index_path())
 
                 self.browser.find_element(By.ID, "id_date").click()
 
@@ -169,8 +172,8 @@ class Expenses(Browser):
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_a_reopened_form_leaves_one_date_picker(self):
-        self._open_add_expense(self.index_url())
-        self.browser.find_element(By.CSS_SELECTOR, "#mainModal .modal-close").click()
+        self._open_add_expense(self._index_path())
+        self._press_the_close_button()
         self._press_add_expense()
 
         self.browser.find_element(By.ID, "id_date").click()
@@ -194,7 +197,7 @@ class Expenses(Browser):
         self.browser.find_element(By.ID, "id_total_sum").send_keys("5.36")
         self.browser.find_element(By.ID, "add_price").click()
 
-        self._submit_and_close_update_form()
+        self._press_close_submit()
 
         assert not self.browser.find_elements(
             By.CSS_SELECTOR, "#mainModal .invalid-feedback"
@@ -207,14 +210,7 @@ class Expenses(Browser):
         ExpenseFactory(remark="yyyy")
         ExpenseFactory(remark="zzzz")
 
-        self.browser.get(self.data_url())
-        self.wait_until_idle()
-
-        search = self.browser.find_element(by=By.ID, value="id_search")
-        search.send_keys("xxxx")
-
-        search.send_keys(Keys.RETURN)
-        self.wait_until_idle()
+        self._search("xxxx")
 
         assert [expense["remark"] for expense in self.listed_rows(COLUMNS)] == ["xxxx"]
 
@@ -262,17 +258,15 @@ class Expenses(Browser):
         assert [expense["price"] for expense in self.listed_rows(COLUMNS)] == page_two
 
     def _search(self, text):
-        self.browser.get(self.data_url())
-        self.wait_until_idle()
+        self.open(self._data_path())
         search = self.browser.find_element(By.ID, "id_search")
         search.send_keys(text)
         search.send_keys(Keys.RETURN)
         self.wait_until_idle()
 
     def _save_the_first_row(self):
-        self.browser.find_element(By.CSS_SELECTOR, "a.edit").click()
-        self.wait_until_idle()
-        self._submit_and_close_update_form()
+        self._press_edit()
+        self._press_close_submit()
 
     def _modal_container(self):
         return self.browser.find_element(By.ID, "mainModalContainer")
@@ -285,15 +279,13 @@ class Expenses(Browser):
         ExpenseFactory(remark="AAAA")
         ExpenseFactory(remark="BBBB")
 
-        self.browser.get(self.data_url())
-        self.wait_until_idle()
+        self.open(self._data_path())
 
         self.browser.find_element(By.CSS_SELECTOR, ".delete-col a").click()
         self.wait_until_idle()
         assert self._modal_display() == "block"
 
-        self.browser.find_element(By.ID, "_close").click()
-        self.wait_until_idle()
+        self._press_close_submit()
 
         assert self._modal_display() == "none"
         assert len(self.listed_rows(COLUMNS)) == 1
@@ -319,7 +311,7 @@ class Expenses(Browser):
             "backdrop": self._click_the_backdrop,
             "button": self._press_the_close_button,
             "escape": self._press_escape,
-            "save": self._submit_and_close_update_form,
+            "save": self._press_close_submit,
         }
 
         for name, close in closers.items():
@@ -367,10 +359,8 @@ class Expenses(Browser):
     def test_a_receipt_image_opens_in_the_image_modal(self):
         ExpenseFactory(attachment="receipt.jpg")
         # from Apžvalga, so imgModal's container arrives with the Duomenys swap
-        self.browser.get(self.index_url())
-        self.wait_until_idle()
-        self.browser.find_element(By.ID, "tab-data").click()
-        self.wait_until_idle()
+        self.open(self._index_path())
+        self.click_tab("data")
 
         # the second open is the second swap into the same modal
         for _ in range(2):
@@ -403,8 +393,7 @@ class Expenses(Browser):
 
     def test_the_import_review_lines_total_follows_a_typed_price(self):
         AccountFactory()
-        self.browser.get(f"{self.live_server_url}{reverse('expenses:import')}")
-        self.wait_until_idle()
+        self.open(reverse("expenses:import"))
         self.browser.find_element(By.ID, "id_pdf").send_keys(
             str(FIXTURES / "barbora.pdf")
         )

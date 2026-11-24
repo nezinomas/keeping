@@ -23,7 +23,14 @@ class IndexDataProvider:
         return IndexDataDTO(
             amount_start=self._get_amount_start(),
             monthly_data=self._get_monthly_data(),
-            debts=self._get_debts(),
+        )
+
+    def get_incomes_and_expenses(self) -> list[dict]:
+        return list(
+            it.chain(
+                IncomeModelService(self.user).sum_by_month(self.year),
+                ExpenseModelService(self.user).sum_by_month(self.year),
+            )
         )
 
     def _get_amount_start(self) -> int:
@@ -36,8 +43,7 @@ class IndexDataProvider:
     def _get_monthly_data(self) -> list[dict]:
         return list(
             it.chain(
-                IncomeModelService(self.user).sum_by_month(self.year),
-                ExpenseModelService(self.user).sum_by_month(self.year),
+                self.get_incomes_and_expenses(),
                 SavingModelService(self.user).cash_flow_by_month(self.year),
                 SavingCloseModelService(self.user).sum_by_month(self.year),
                 *(self._get_debt_monthly(debt_type) for debt_type in Debt.DebtType),
@@ -54,9 +60,3 @@ class IndexDataProvider:
             .sum_by_month(self.year)
             .values("date", "title", sum=F("sum_debt"))
         )
-
-    def _get_debts(self) -> dict[Debt.DebtType, dict]:
-        return {
-            debt_type: DebtModelService(self.user, debt_type).sum_all()
-            for debt_type in Debt.DebtType
-        }

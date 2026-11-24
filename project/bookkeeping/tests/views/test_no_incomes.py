@@ -1,45 +1,167 @@
 import json
-from datetime import date, datetime
+import re
+from datetime import date
 
 import pytest
-import pytz
+import time_machine
 from django.db.models import Sum
 from django.template.loader import render_to_string
 from django.urls import reverse
 
 from ....accounts.models import AccountBalance
-from ....expenses.tests.factories import ExpenseTypeFactory
+from ....core.tests.utils import tab_fragment
+from ....expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
 from ....journals.tests.factories import JournalFactory
-from ....savings.tests.factories import SavingFactory, SavingTypeFactory
-from ....transactions.tests.factories import SavingCloseFactory
+from ....savings.tests.factories import SavingTypeFactory
 from ...lib import no_incomes
-from ..factories import SavingWorthFactory
+from ..helper import PANEL_TITLE, quiet_build, row_cells, stale_fund
+from ..signals.helpers import buy, worth
 
 pytestmark = pytest.mark.django_db
 
 
-def test_view_not_necessary(client_logged):
+def _mark(main_user, titles, savings=False):
+    """The journal marks a new expense type per title unnecessary; its types."""
     j = JournalFactory()
-    e1 = ExpenseTypeFactory(title="XXX")
-    e2 = ExpenseTypeFactory(title="YYY")
-    SavingTypeFactory()
-
-    j.unnecessary_savings = True
-    j.unnecessary_expenses = json.dumps([e1.pk, e2.pk])
-    j.save()
-
-    url = reverse("bookkeeping:no_incomes")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "Nebūtinos išlaidos, kurių galima atsisakyti:" in actual
-
-    assert "- XXX" in actual
-    assert "- YYY" in actual
-    assert "- Taupymas" in actual
+    with quiet_build(main_user):
+        types = [ExpenseTypeFactory(title=title) for title in titles]
+        j.unnecessary_savings = savings
+        j.unnecessary_expenses = json.dumps([t.pk for t in types])
+        j.save()
+    return types
 
 
-def test_template_month_value():
+def _cut(expense_type, main_user, price=120000):
+    with quiet_build(main_user):
+        ExpenseFactory(expense_type=expense_type, price=price, date=date(1999, 5, 1))
+
+
+@pytest.fixture(name="unnecessary")
+def fixture_unnecessary(main_user):
+    with quiet_build(main_user):
+        SavingTypeFactory()
+    cut, _ = _mark(main_user, ["XXX", "YYY"], savings=True)
+    _cut(cut, main_user)
+
+
+# its text: test_no_incomes_tip_lists_the_unnecessary_expenses
+HINT = (
+    r'<span class="hint tip bottom" tabindex="0" data-tip="[^"]*"'
+    r' aria-label="[^"]*" aria-description="[^"]*">'
+    r'<i class="bi bi-question-circle"></i></span>'
+)
+
+
+def _marks_nothing(main_user):
+    pass
+
+
+def _marks_a_type_never_spent_on(main_user):
+    _mark(main_user, ["XXX"])
+
+
+def _cuts_an_expense(main_user):
+    _cut(*_mark(main_user, ["XXX"]), main_user)
+
+
+def _cuts_a_cent(main_user):
+    _cut(*_mark(main_user, ["XXX"]), main_user, price=1)
+
+
+# the six whole months before the view's today hold the cut expense: 1.200,00 / 6;
+# a cent over six months is a cut that rounds to 0, drawn "0", not "-" (Q193)
+@time_machine.travel("1999-06-15")
+@pytest.mark.parametrize(
+    "journal, figure, hint_count",
+    [
+        pytest.param(_marks_nothing, "-", 0, id="nothing-marked"),
+        pytest.param(_marks_a_type_never_spent_on, "-", 1, id="nothing-cut"),
+        pytest.param(_cuts_an_expense, "200", 1, id="a-cut"),
+        pytest.param(_cuts_a_cent, "0", 1, id="a-cut-rounding-to-0"),
+    ],
+)
+def test_no_incomes_head_reads_its_label_its_muted_cut_and_a_hint(
+    client_logged, main_user, journal, figure, hint_count
+):
+    journal(main_user)
+
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+    heads = re.findall(
+        PANEL_TITLE
+        + r'<div class="table-responsive">\s*'
+        + r'<table class="main striped hover">\s*<thead>\s*<tr>\s*'
+        + r"<th>(.*?)</th>",
+        content,
+        re.S,
+    )
+
+    # the label, then the muted figure, then the "?": only the "?" opens a tip
+    assert [
+        (
+            label,
+            cut,
+            re.findall(r'class="([^"]*\btip\b[^"]*)"', after),
+            len(re.findall(HINT, after)),
+        )
+        for title, head in heads
+        if title == "Be pajamų"
+        for label, cut, after in re.findall(
+            r'^([^<]*?) <span class="main__figure main__figure--muted">([^<]*)</span>'
+            r"(.*)",
+            head,
+            re.S,
+        )
+    ] == [("Nebūtinos išlaidos", figure, ["hint tip bottom"] * hint_count, hint_count)]
+
+
+def test_no_incomes_head_names_the_money_each_column_reaches(client_logged):
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+
+    panel = content.split('<h2 class="panel__title">Be pajamų</h2>')[1]
+    head = panel.split("<thead>")[1].split("</thead>")[0]
+
+    assert re.findall(r"<th>([^<]*)</th>", head) == ["€ + F", "€ + F + P"]
+
+
+def test_no_incomes_panel_keeps_its_legend_under_the_table(client_logged):
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+
+    legend = re.findall(
+        r'<h2 class="panel__title">Be pajamų</h2>.*?</table>\s*</div>\s*'
+        r'<p class="mt-3">(.*?)</p>\s*</section>',
+        content,
+        re.S,
+    )
+
+    assert [
+        re.sub(r"<[^>]+>|\s+", " ", line).split() for line in legend[0].split("<br>")
+    ] == [
+        ["€", "-", "Sąskaitose", "esantys", "pinigai"],
+        ["F", "-", "Fondai/Akcijos"],
+        ["P", "-", "Pensijų", "fondai"],
+    ]
+
+
+def test_no_incomes_tip_lists_the_unnecessary_expenses(client_logged, unnecessary):
+    content = tab_fragment(client_logged, reverse("bookkeeping:tab_overview"))
+    tips = re.findall(
+        r'<span class="hint tip bottom" tabindex="0" data-tip="(Nebūtinos išlaidos[^"]*)"'
+        r' aria-label="([^"]*)" aria-description="([^"]*)">',
+        content,
+    )
+
+    # the bubble's lines, the hint's name and the one sentence a screen reader is given
+    cuts = "Nebūtinos išlaidos, kurių galima atsisakyti"
+    assert [(tip.splitlines(), name, said) for tip, name, said in tips] == [
+        (
+            [f"{cuts}:", "- XXX", "- YYY", "- Taupymas"],
+            cuts,
+            f"{cuts}: XXX, YYY, Taupymas",
+        )
+    ]
+
+
+def test_no_incomes_money_row_reads_euros_and_a_months_row_one_decimal():
     ctx = {
         "no_incomes": [
             {
@@ -58,21 +180,8 @@ def test_template_month_value():
     }
     actual = render_to_string("bookkeeping/includes/no_incomes.html", ctx)
 
-    assert "0,11" in actual
-    assert "0,22" in actual
-    assert "33,0" in actual
-    assert "44,0" in actual
-
-
-def _stale_fund(kind):
-    fund = SavingTypeFactory(title="Stale", type=kind)
-    SavingFactory(saving_type=fund, price=100000, fee=0, date=date(1999, 1, 1))
-    SavingWorthFactory(
-        saving_type=fund,
-        price=100000,
-        date=datetime(1999, 3, 1, 12, tzinfo=pytz.utc),
-    )
-    SavingCloseFactory(from_account=fund, price=40000, fee=0, date=date(1999, 6, 1))
+    assert row_cells(actual, "x") == ["0,11", "0,22"]
+    assert row_cells(actual, "y") == ["33,0", "44,0"]
 
 
 # the buy leaves its account at -100000; the worth is 70000
@@ -81,11 +190,10 @@ def _stale_fund(kind):
     [("funds", -30000), ("shares", -30000), ("pensions", -100000)],
 )
 def test_a_fresh_worth_counts_by_its_fund_type(main_user, kind, money_fund):
-    fund = SavingTypeFactory(title="Fresh", type=kind)
-    SavingFactory(saving_type=fund, price=100000, fee=0, date=date(1999, 1, 1))
-    SavingWorthFactory(
-        saving_type=fund, price=70000, date=datetime(1999, 3, 1, 12, tzinfo=pytz.utc)
-    )
+    with quiet_build(main_user):
+        fund = SavingTypeFactory(title="Fresh", type=kind)
+        buy(fund, 100000)
+        worth(fund, 70000, month=3, day=1)
 
     actual = no_incomes.load_service(main_user, 1999, date(1999, 6, 1))["no_incomes"][0]
 
@@ -95,7 +203,8 @@ def test_a_fresh_worth_counts_by_its_fund_type(main_user, kind, money_fund):
 
 @pytest.mark.parametrize("kind", ["funds", "pensions"])
 def test_a_stale_worth_counts_as_zero(main_user, kind):
-    _stale_fund(kind)
+    with quiet_build(main_user):
+        stale_fund(kind=kind)
 
     account_sum = AccountBalance.objects.filter(year=1999).aggregate(
         Sum("balance", default=0)

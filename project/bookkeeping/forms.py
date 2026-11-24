@@ -20,8 +20,8 @@ from .models import AccountWorth, PensionWorth, SavingWorth
 
 
 class WorthForm(UserTodayMixin, PriceToCentsFormMixin, forms.ModelForm):
-    # the fund field is declared, not in Meta.fields: model validation would
-    # query it once per form; the formset hands every form the same funds
+    # the owner field is declared, not in Meta.fields: model validation would
+    # query it once per form; the formset hands every form the same owners
     price_fields = ("price",)
     price = CommaFloatField(min_value=0, required=False, label="")
 
@@ -29,16 +29,16 @@ class WorthForm(UserTodayMixin, PriceToCentsFormMixin, forms.ModelForm):
         fields = ["date", "price"]
         labels = {"date": ""}
 
-    def __init__(self, *args, funds, now, **kwargs):
+    def __init__(self, *args, owners, now, **kwargs):
         super().__init__(*args, **kwargs)
         self.now = now
 
         date_field(self.fields["date"], self.user, self.today)
-        self.fields[self.fund_field].preload(funds)
+        self.fields[self.owner_field].preload(owners)
 
     @property
-    def fund_field(self):
-        return self._meta.model.fund_field
+    def owner_field(self):
+        return self._meta.model.owner_field
 
     def clean_date(self):
         return datetime.combine(
@@ -49,8 +49,8 @@ class WorthForm(UserTodayMixin, PriceToCentsFormMixin, forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        if fund := cleaned.get(self.fund_field):
-            setattr(self.instance, self.fund_field, fund)
+        if owner := cleaned.get(self.owner_field):
+            setattr(self.instance, self.owner_field, owner)
         return cleaned
 
 

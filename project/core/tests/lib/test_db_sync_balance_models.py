@@ -7,14 +7,14 @@ from ....savings.models import SavingBalance
 
 
 @pytest.mark.parametrize(
-    "model, fund_field, sync_fields",
+    "model, owner_field, sync_fields",
     [
         (AccountBalance, "account", ACCOUNT_FIELDS),
         (SavingBalance, "saving_type", SAVING_FIELDS),
         (PensionBalance, "pension_type", SAVING_FIELDS),
     ],
 )
-def test_balance_model_names_its_fund_and_sync_fields(model, fund_field, sync_fields):
-    assert model.fund_field == fund_field
+def test_balance_model_names_its_owner_and_sync_fields(model, owner_field, sync_fields):
+    assert model.owner_field == owner_field
     assert model.sync_fields == sync_fields
-    assert model._meta.get_field(fund_field).column == f"{fund_field}_id"
+    assert model._meta.get_field(owner_field).column == f"{owner_field}_id"

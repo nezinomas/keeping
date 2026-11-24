@@ -31,7 +31,7 @@ class Account(TitleAbstract):
 
 
 class AccountBalance(models.Model):
-    fund_field = "account"
+    owner_field = "account"
     sync_fields = ACCOUNT_FIELDS
 
     account = models.ForeignKey(

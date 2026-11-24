@@ -1,7 +1,10 @@
 import pytest
 from django.urls import reverse
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
+from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
 from .factories import SavingCloseFactory, TransactionFactory
 
@@ -17,6 +20,22 @@ const table = document.querySelector('.sticky-table');
 window.scrollTo(0, table.getBoundingClientRect().top + window.scrollY + 1);
 window.dispatchEvent(new Event('scroll'));
 setTimeout(() => done(getComputedStyle(table.querySelector('thead')).position), 100);
+"""
+CLOSED_FOLD_SWITCH = "#tab_content .switch"
+# the switch's state, whether the closed accounts' table (the second) is drawn, its
+# left edge against where the names start, the gap below it and a name's side padding
+CLOSED_FOLD = """
+const own = document.querySelector(arguments[0]);
+const closed = document.querySelectorAll('#tab_content table')[1];
+const drawn = closed.checkVisibility();
+if (!own || !drawn) return [own && own.getAttribute('aria-checked'), drawn, []];
+const name = closed.querySelector('td.main__name');
+const pad = getComputedStyle(name);
+const names = name.getBoundingClientRect().left + parseFloat(pad.paddingLeft);
+const [at, table] = [own.getBoundingClientRect(), closed.getBoundingClientRect()];
+return [own.getAttribute('aria-checked'), drawn,
+    [Math.round(at.left - names), Math.round(table.top - at.bottom),
+     pad.paddingLeft, pad.paddingRight]];
 """
 
 
@@ -57,3 +76,42 @@ class Transactions(Browser):
             By.CSS_SELECTOR, "head style[media=print]"
         )
         assert len(print_styles) == 1
+
+    def test_the_closed_accounts_switch_by_the_names_presses_and_folds_on_reload(self):
+        AccountFactory(title="Open")
+        AccountFactory(title="Old", closed=1998)
+        # in line with the names (Q200), a gap above the table it unfolds; a phone's
+        # name keeps half the side padding (Q202)
+        folded = ["false", False, []]
+        unfolded = {
+            1280: ["true", True, [0, 12, "12px", "12px"]],
+            360: ["true", True, [0, 12, "6px", "6px"]],
+        }
+        pressed = {}
+        for width in (1280, 360):
+            self.open_at(reverse("transactions:tab_accounts"), width)
+            opened = self.browser.execute_script(CLOSED_FOLD, CLOSED_FOLD_SWITCH)
+            assert opened == folded
+
+            reads = []
+            for press in (None, Keys.ENTER, Keys.SPACE):
+                switch = self.browser.find_element(By.CSS_SELECTOR, CLOSED_FOLD_SWITCH)
+                if press:
+                    self.browser.execute_script("arguments[0].focus();", switch)
+                    ActionChains(self.browser).send_keys(press).perform()
+                else:
+                    switch.click()
+                self.wait_two_frames()
+                reads.append(
+                    self.browser.execute_script(CLOSED_FOLD, CLOSED_FOLD_SWITCH)
+                )
+            # a tab reload draws it afresh, folded (Q173)
+            self.browser.execute_script("htmx.trigger(document.body, 'reload');")
+            self.wait_until_idle()
+            self.wait_two_frames()
+            reads.append(self.browser.execute_script(CLOSED_FOLD, CLOSED_FOLD_SWITCH))
+            pressed[width] = reads
+
+        assert pressed == {
+            width: [shown, folded, shown, folded] for width, shown in unfolded.items()
+        }

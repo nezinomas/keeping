@@ -1,14 +1,9 @@
 from django.db import models
-from django.utils.formats import number_format
 
 from ..accounts.models import Account
-from ..core.lib.convert_price import int_cents_to_float
+from ..core.lib.money_cells import euros
 from ..savings.models import SavingType
 from .close_rules import KEEP, CloseRule, Removed
-
-
-def money(cents: int) -> str:
-    return number_format(int_cents_to_float(cents), 2, force_grouping=True)
 
 
 class Move(models.Model):
@@ -30,7 +25,7 @@ class Move(models.Model):
 
     def __str__(self):
         _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {money(self.price)}"
+        _to = f"{self.to_account}: {euros(self.price, '2g')}"
         return f"{_from} -> {_to}"
 
     @property

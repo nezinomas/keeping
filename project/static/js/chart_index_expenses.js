@@ -1,85 +1,53 @@
-document.addEventListener('DOMContentLoaded', drawIndexExpenses);
-
-// an out-of-band swap settles on its target, the data's wrapper
-htmx.on('htmx:after:settle', (event) => {
-    if (event.target.id === 'chart-expenses-source') {
-        drawIndexExpenses();
-    }
-});
-
+// The year's expenses by type, biggest first: one hue, as the order already says the
+// rank; each bar ends in its sum and its part of the year.
 function drawIndexExpenses() {
     const chartData = JSON.parse(document.getElementById("chart-expenses-data").textContent);
-    // convert data
-    for (var key in chartData) {
-        chartData[key]["y"] /= 100;
-    }
+    const total = chartData.reduce((sum, type) => sum + type.y, 0) / 100;
+    // a type that spent nothing prints no figure
+    const sumAndShare = (y) => (
+        y ? `${paperEuros(y)} · ${Highcharts.numberFormat(y / total * 100, 1)}%` : ""
+    );
 
     Highcharts.chart("chart-expenses-container", {
         chart: {
-            type: "column",
-            marginBottom: 74,
+            type: "bar",
+            marginBottom: PAPER_PAIR_MARGIN_BOTTOM,
+            events: { load: indexRoomForFigures },
         },
-        title: {
-            text: ""
-        },
+        legend: { enabled: false },
         xAxis: {
             type: "category",
-            gridLineWidth: 0,
-            crosshair: true,
-            labels: {
-                rotation: -45,
-            }
+            labels: { step: 1, style: { textOverflow: "none", whiteSpace: "nowrap" } },
         },
-        yAxis: {
-            title: {
-                text: ""
-            },
-            labels: {
-                formatter: function () {
-                    if (this.value >= 100) { return Highcharts.numberFormat(this.value / 1000, 1) + "k"; }
-                    return Highcharts.numberFormat(this.value, 0);
-                },
-            }
-        },
+        yAxis: paperMoneyAxis(),
         tooltip: {
-            shared: true,
-            formatter: function () {
-                const pcnt = ((this.points[0].y / this.points[0].series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100);
-                return `
-                    <b>${this.points[0].key}</b><br>
-                    ${Highcharts.numberFormat(this.points[0].y, 0)}€<br>
-                    ${Highcharts.numberFormat(pcnt, 1)}%
-                `;
-            }
-        },
-        plotOptions: {
-            column: {
-                colorByPoint: true,
-            }
+            formatter() {
+                return `<b>${this.key}</b><br>${sumAndShare(this.y)}`;
+            },
         },
         series: [{
-            data: chartData,
-            borderRadius: 0,
-            borderWidth: 0,
+            data: chartData.map((type) => ({ name: type.name, y: type.y / 100 })),
+            color: "var(--skin-data-tint)",
+            borderColor: "var(--skin-year-0)",
+            borderWidth: 1,
             dataLabels: {
-                useHTML: true,
                 enabled: true,
-                rotation: -90,
-                color: "#000",
-                align: "center",
                 crop: false,
                 overflow: "allow",
-                y: 2,
-                style: {
-                    fontSize: "10px",
-                    fontWeight: "bold",
-                    textOutline: false
-                },
-                formatter: function() {
-                    const pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
-                    return Highcharts.numberFormat(pcnt, 1) + "%";
-                },
-            }
-        }]
+                formatter() { return sumAndShare(this.y); },
+            },
+        }],
     });
+}
+
+// Room past the plot for the widest bar figure, as drawn, so a long sum is not cut.
+function indexRoomForFigures() {
+    const widths = this.series[0].points.map((point) => (
+        point.dataLabel ? point.dataLabel.getBBox().width : 0
+    ));
+    const gap = 12; // the figure's 5px off its bar, and air past it
+    const margin = { chart: { marginRight: Math.ceil(Math.max(0, ...widths)) + gap } };
+    // unanimated: an animated update leaves a phone's figures where the first layout
+    // put them, past the chart's edge
+    this.update(margin, true, false, false);
 }

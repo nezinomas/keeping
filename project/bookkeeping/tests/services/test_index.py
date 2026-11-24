@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from ....accounts.tests.factories import AccountBalanceFactory, AccountFactory
-from ....core.lib.translation import month_names
 from ....debts.models import Debt
 from ....debts.tests.factories import (
     BorrowFactory,
@@ -12,10 +11,14 @@ from ....debts.tests.factories import (
     LendFactory,
     LendReturnFactory,
 )
-from ...services.index.presenters import IndexContextBuilder
+from ....expenses.tests.factories import ExpenseFactory
+from ....incomes.tests.factories import IncomeFactory
+from ...services.index.presenters import (
+    DebtsTable,
+    IndexContextBuilder,
+    MonthCharts,
+)
 from ...services.index.providers import IndexDataProvider
-
-MODULE_PATH = "project.bookkeeping.services.index"
 
 
 @pytest.mark.parametrize(
@@ -27,7 +30,7 @@ MODULE_PATH = "project.bookkeeping.services.index"
 )
 def test_balance_short_context_data(end, data):
     obj = IndexContextBuilder(
-        balance=MagicMock(amount_start=5, amount_end=end, year=2021), debts={}
+        balance=MagicMock(amount_start=5, amount_end=end, year=2021)
     )
     actual = obj.balance_short_context()
 
@@ -36,80 +39,120 @@ def test_balance_short_context_data(end, data):
     assert actual["highlight"] == [False, False, True]
 
 
-def test_chart_balance_context(mock_year_balance):
-    obj = IndexContextBuilder(balance=mock_year_balance, debts={})
-    actual = obj.chart_balance_context()
+GAP = [None] * 8
+MONTH_NAMES = [
+    "Sausis",
+    "Vasaris",
+    "Kovas",
+    "Balandis",
+    "Gegužė",
+    "Birželis",
+    "Liepa",
+    "Rugpjūtis",
+    "Rugsėjis",
+    "Spalis",
+    "Lapkritis",
+    "Gruodis",
+]
 
-    assert actual["categories"] == list(month_names().values())
-    assert actual["incomes"] == [50, 50, 50]
-    assert actual["incomes_title"] == "Pajamos"
-    assert actual["expenses"] == [10, 10, 10]
-    assert actual["expenses_title"] == "Išlaidos"
 
-
+@pytest.mark.django_db
 @pytest.mark.parametrize(
-    "kind, context",
+    "today, months",
     [
         pytest.param(
-            Debt.DebtType.BORROW, IndexContextBuilder.borrow_context, id="borrow"
-        ),
-        pytest.param(Debt.DebtType.LEND, IndexContextBuilder.lend_context, id="lend"),
-    ],
-)
-def test_debt_context_without_debt_is_empty(kind, context):
-    obj = IndexContextBuilder(
-        balance=MagicMock(), debts={kind: {"debt": 0, "debt_return": 0}}
-    )
-
-    assert context(obj) == {}
-
-
-@pytest.mark.parametrize(
-    "kind, context, titles, debt, debt_return",
-    [
-        pytest.param(
-            Debt.DebtType.BORROW,
-            IndexContextBuilder.borrow_context,
-            ("Pasiskolinta", "Grąžinau"),
-            99,
-            66,
-            id="borrow_part_returned",
+            date(2000, 1, 1),
+            {
+                "incomes": [120] + [0] * 11,
+                "incomes_average": 10,
+                "expenses": [0, 24] + [0] * 9 + [36],
+                "expenses_average": 5,
+                "current_month": [False] * 12,
+            },
+            id="past_year_every_month_and_none_current",
         ),
         pytest.param(
-            Debt.DebtType.BORROW,
-            IndexContextBuilder.borrow_context,
-            ("Pasiskolinta", "Grąžinau"),
-            300,
-            300,
-            id="borrow_fully_repaid",
+            date(1999, 3, 31),
+            {
+                "incomes": [120, 0, 0, *GAP, 0],
+                "incomes_average": 40,
+                "expenses": [0, 24, 0, *GAP, 36],
+                "expenses_average": 8,
+                "current_month": [False, False, True] + [False] * 9,
+            },
+            id="this_year_to_march_and_december_holding_rows",
         ),
         pytest.param(
-            Debt.DebtType.LEND,
-            IndexContextBuilder.lend_context,
-            ("Paskolinta", "Grąžino"),
-            9,
-            3,
-            id="lend_part_returned",
-        ),
-        pytest.param(
-            Debt.DebtType.LEND,
-            IndexContextBuilder.lend_context,
-            ("Paskolinta", "Grąžino"),
-            300,
-            300,
-            id="lend_fully_repaid",
+            date(1998, 6, 1),
+            {
+                "incomes": [120, 0, None, *GAP, 0],
+                "incomes_average": 0,
+                "expenses": [0, 24, None, *GAP, 36],
+                "expenses_average": 0,
+                "current_month": [False] * 12,
+            },
+            id="coming_year_only_months_holding_rows",
         ),
     ],
 )
-def test_debt_context(kind, context, titles, debt, debt_return):
-    obj = IndexContextBuilder(
-        balance=MagicMock(),
-        debts={kind: {"debt": debt, "debt_return": debt_return}},
-    )
-    actual = context(obj)
+def test_month_charts_read_the_months_reached(main_user, today, months):
+    IncomeFactory(date=date(1999, 1, 1), price=120)
+    ExpenseFactory(date=date(1999, 2, 1), price=24)
+    ExpenseFactory(date=date(1999, 12, 1), price=36)
+    IncomeFactory(date=date(2000, 1, 1), price=70)
 
-    assert actual["title"] == list(titles)
-    assert actual["data"] == [debt, debt_return]
+    actual = MonthCharts.load(main_user, today).context()
+
+    assert actual == {
+        "categories": MONTH_NAMES,
+        "incomes_title": "Pajamos",
+        "expenses_title": "Išlaidos",
+        "balance_title": "Balansas",
+        "average_title": "Vidurkis",
+        "so_far": "iki šiol",
+        **months,
+    }
+
+
+LEND, BORROW = Debt.DebtType.LEND, Debt.DebtType.BORROW
+NO_DEBT = {"debt": 0, "debt_return": 0}
+
+
+def _row(title, debt, debt_return, remaining):
+    return {
+        "title": title,
+        "debt": debt,
+        "debt_return": debt_return,
+        "remaining": remaining,
+    }
+
+
+@pytest.mark.parametrize(
+    "debts, rows",
+    [
+        pytest.param(
+            {
+                BORROW: {"debt": 99, "debt_return": 66},
+                LEND: {"debt": 9, "debt_return": 3},
+            },
+            [_row("Paskolinta", 9, 3, 6), _row("Pasiskolinta", 99, 66, 33)],
+            id="lend_before_borrow",
+        ),
+        pytest.param(
+            {LEND: {"debt": 300, "debt_return": 300}, BORROW: NO_DEBT},
+            [_row("Paskolinta", 300, 300, 0)],
+            id="fully_repaid_lend_only",
+        ),
+        pytest.param(
+            {LEND: NO_DEBT, BORROW: {"debt": 300, "debt_return": 300}},
+            [_row("Pasiskolinta", 300, 300, 0)],
+            id="fully_repaid_borrow_only",
+        ),
+        pytest.param({LEND: NO_DEBT, BORROW: NO_DEBT}, [], id="none"),
+    ],
+)
+def test_debts_context_is_a_row_per_kind_with_a_debt(debts, rows):
+    assert DebtsTable(debts=debts).debts_context() == rows
 
 
 @pytest.mark.django_db
@@ -143,20 +186,17 @@ def test_index_data_provider_amount_start(main_user, past_by_year, expect):
 
 
 @pytest.mark.django_db
-def test_index_data_provider_get_debts(mocker, main_user):
-    sums = {
-        Debt.DebtType.LEND: {"debt": 100, "debt_return": 50},
-        Debt.DebtType.BORROW: {"debt": 200, "debt_return": 0},
+def test_debts_table_sums_each_kind_of_open_debt(main_user):
+    LendReturnFactory(debt=LendFactory(price=100), price=50)
+    BorrowFactory(price=200)
+    BorrowFactory(price=999, closed=True)
+
+    actual = DebtsTable.load(main_user).debts
+
+    assert actual == {
+        LEND: {"debt": 100, "debt_return": 50},
+        BORROW: {"debt": 200, "debt_return": 0},
     }
-    mocker.patch(
-        f"{MODULE_PATH}.providers.DebtModelService",
-        side_effect=lambda user, kind: MagicMock(sum_all=lambda: sums[kind]),
-    )
-
-    actual = IndexDataProvider(main_user).get_data().debts
-
-    assert actual[Debt.DebtType.LEND] == {"debt": 100, "debt_return": 50}
-    assert actual[Debt.DebtType.BORROW] == {"debt": 200, "debt_return": 0}
 
 
 @pytest.mark.django_db
@@ -192,36 +232,26 @@ def mock_year_balance(mocker):
     mock.amount_end = 1600
     mock.average = 200
     mock.year = 2026
-    mock.income_data = [50, 50, 50]
-    mock.expense_data = [10, 10, 10]
-    mock.avg_incomes = 50
-    mock.avg_expenses = 10
-    mock.is_coming = False
     return mock
 
 
-def test_index_context_builder_balance_context(mock_year_balance):
-    builder = IndexContextBuilder(balance=mock_year_balance, debts={})
-    actual = builder.balance_context()
+@pytest.mark.parametrize(
+    "accounts_balance, state",
+    [
+        pytest.param(1600, "", id="equal"),
+        pytest.param(1599, "mismatch", id="differ"),
+    ],
+)
+def test_balance_context_checks_the_year_end_cash_flow_against_the_accounts(
+    mock_year_balance, accounts_balance, state
+):
+    builder = IndexContextBuilder(balance=mock_year_balance)
+    actual = builder.balance_context(accounts_balance=accounts_balance)
 
-    assert actual["data"] == [100, 200, 300]
-    assert actual["total_row"] == 600
-    assert actual["amount_end"] == 1600
-    assert actual["avg_row"] == 200
-
-
-def test_index_context_builder_averages_context(mock_year_balance):
-    builder = IndexContextBuilder(balance=mock_year_balance, debts={})
-    actual = builder.averages_context()
-
-    assert actual["data"] == [50, 10]
-    assert actual["title"] == ["Vidutinės pajamos", "Vidutinės išlaidos"]
-    assert actual["empty"] is False
-
-
-def test_index_context_builder_averages_of_a_coming_year_are_empty(mock_year_balance):
-    mock_year_balance.is_coming = True
-
-    actual = IndexContextBuilder(balance=mock_year_balance, debts={}).averages_context()
-
-    assert actual["empty"] is True
+    assert actual == {
+        "data": [100, 200, 300],
+        "total_row": 600,
+        "amount_end": 1600,
+        "avg_row": 200,
+        "cash_flow_check": state,
+    }

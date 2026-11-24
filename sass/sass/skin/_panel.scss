@@ -1,6 +1,7 @@
 @use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 @use "tokens";
+@use "tooltip";
 
 .paper-skin .panel {
     @include tokens.panel;
@@ -15,64 +16,46 @@
     border: 0;
 }
 
-.panel__title {
+.paper-skin .panel__title {
     @include tokens.title;
 
     margin: 0 0 10px;
 
-    // a phone has no room beside the hint, so the tip opens under the title
-    @include phone {
-        position: relative;
+    // on a phone a bubble centred under the hint at the line's end runs off the
+    // page, so it opens under the whole title; an anchored bubble finds its room
+    @include tooltip.unanchored {
+        @include phone {
+            position: relative;
 
-        .panel__hint {
-            position: static;
+            .panel__hint {
+                position: static;
 
-            &::before {
-                top: 100%;
-                left: 0;
-                right: 0;
-                min-width: 0;
-                margin: 8px 0 0;
-                transform: none;
-                // over the table's sticky first column (z-index 1)
-                z-index: 2;
-            }
-
-            &::after {
-                display: none;
+                &::before {
+                    left: 0;
+                    right: 0;
+                    width: auto;
+                    transform: none;
+                }
             }
         }
     }
 }
 
-.panel__subtitle {
+.paper-skin .panel__title:has(> .panel__control) {
+    display: flex;
+    justify-content: space-between;
+}
+
+.paper-skin .panel__subtitle {
     font-family: $body;
     font-size: 0.8125rem;
     color: $ink-muted;
     margin: -0.5rem 0 0.8rem;
 }
 
-.panel__hint {
-    color: $ink-muted;
-    cursor: help;
-
+.paper-skin .panel__hint {
     &::before {
-        font-family: $body;
         white-space: normal;
-        min-width: 18rem;
-        background: $ink;
-        color: $paper;
-        text-shadow: none;
-        box-shadow: none;
-    }
-
-    &.right::after {
-        border-right-color: $ink;
-    }
-
-    &:focus::before,
-    &:focus::after {
-        visibility: visible;
-        opacity: 1;
+        width: 18rem;
     }
 }

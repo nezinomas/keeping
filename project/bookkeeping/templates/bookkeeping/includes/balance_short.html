@@ -1,39 +1,18 @@
 {% load get_item %}
 {% load math %}
-{% load i18n %}
 {% load cell_format %}
 
-{% if data.title and data.data %}
-<table class="main" x-data="{ open:false }">
-    <thead>
+<c-paper-table class="main striped hover">
+    <c-slot name="head">
         <tr>
-            <th class="no-right-border panel-heading text-left" :class="open ? 'active' : ''">
-                <span class="tip right" data-tip="{% translate 'Forecast' %}">
-                <a
-                    role="button"
-                    class="button-expand"
-                    @click="open = ! open"
-                    hx-get="{% url 'bookkeeping:forecast' %}"
-                    hx-target="#last"
-                    hx-swap="afterend"
-                    hx-trigger="click once"
-                    hx-indicator="#indicator"
-                    >
-                </a></span>
-            </th>
-            {% for title in data.title %}
-            <th class="text-nowrap long-price-col">
-               {{ title }}
-            </th>{% endfor %}
-        </tr>
-    </thead>
-    <tbody id="last">
-        <tr>
-            <td class="no-right-border"></td>
-            {% for d in data.data %}
-            <td{% if data.highlight|get_list_val:forloop.counter0 %} data-sign="{{d|sign}}"{% endif %}>{{d|price|cellformat}}</td>
+            {% for th in title %}
+            <th>{{ th }}</th>
             {% endfor %}
         </tr>
-    </tbody>
-</table>
-{% endif %}
+    </c-slot>
+    <tr>
+        {% for d in data %}
+        <td class="main__figure"{% if d and highlight|get_list_val:forloop.counter0 %} data-sign="{{d|sign}}"{% endif %}>{{d|price|cellformat}}</td>
+        {% endfor %}
+    </tr>
+</c-paper-table>

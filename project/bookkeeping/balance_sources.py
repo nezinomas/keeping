@@ -71,7 +71,7 @@ SAVINGS = {
 PENSIONS = {
     "incomes": (lambda user: PensionModelService(user).incomes(),),
     "have": (lambda user: PensionWorthModelService(user).have(),),
-    "types": (lambda user: PensionTypeModelService(user).items(),),
+    "types": (lambda user: PensionTypeModelService(user).all(),),
 }
 
 

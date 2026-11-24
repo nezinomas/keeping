@@ -1,8 +1,9 @@
 @use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 @use "tokens";
+@use "table";
 
-.month-table {
+.paper-skin .month-table {
     overflow-x: auto;
 }
 
@@ -17,8 +18,8 @@
         min-width: 72rem;
     }
 
-    th.title-col,
-    :is(tbody, tfoot) td:first-child {
+    thead tr > th:first-child,
+    :is(tbody, tfoot) tr > td:first-child {
         width: 8rem;
         position: sticky;
         left: 0;
@@ -55,24 +56,24 @@
     }
 
     .month-table__quarter + .month-table__quarter {
-        border-left: 1px solid $hair;
+        @include table.group-rule($hair);
     }
 
     // months 4, 7 and 10, after the title column
     $quarter-starts: ":is(:nth-child(5), :nth-child(8), :nth-child(11))";
 
     thead tr:last-child > #{$quarter-starts} {
-        border-left: 1px solid $hair;
+        @include table.group-rule($hair);
     }
 
     :is(tbody, tfoot) td#{$quarter-starts} {
-        border-left: 1px solid $hair-soft;
+        @include table.group-rule($hair-soft);
     }
 
     // the first column after December, from the band down
     .month-table__quarter + :not(.month-table__quarter),
     thead tr:last-child > :nth-child(14),
     :is(tbody, tfoot) td:nth-child(14) {
-        border-left: 1px solid $hair;
+        @include table.group-rule($hair);
     }
 }

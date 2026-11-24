@@ -1,31 +1,63 @@
-from .. import views
-from ..tabs import TABS
+import pytest
+
+from ..tabs import DETAILED_TABS, INDEX_TABS
 
 
-def test_each_tab_declares_its_title_url_and_template_in_nav_order():
-    actual = [(tab.name, str(tab.title), tab.url, tab.template_name) for tab in TABS]
-
-    assert actual == [
-        (
-            "incomes",
-            "Pajamos",
-            "/detailed/incomes/",
-            "bookkeeping/detailed/tab_table.html",
+@pytest.mark.parametrize(
+    "tabs, expect",
+    [
+        pytest.param(
+            DETAILED_TABS,
+            [
+                (
+                    "incomes",
+                    "Pajamos",
+                    "/detailed/incomes/",
+                    "bookkeeping/detailed/tab_table.html",
+                ),
+                (
+                    "savings",
+                    "Taupymas",
+                    "/detailed/savings/",
+                    "bookkeeping/detailed/tab_table.html",
+                ),
+                (
+                    "expenses",
+                    "Išlaidos",
+                    "/detailed/expenses/",
+                    "bookkeeping/detailed/tab_expenses.html",
+                ),
+            ],
+            id="detailed",
         ),
-        (
-            "savings",
-            "Taupymas",
-            "/detailed/savings/",
-            "bookkeeping/detailed/tab_table.html",
+        pytest.param(
+            INDEX_TABS,
+            [
+                ("overview", "Apžvalga", "/", "bookkeeping/tab_overview.html"),
+                (
+                    "funds",
+                    "Fondai",
+                    "/bookkeeping/funds/",
+                    "bookkeeping/tab_funds.html",
+                ),
+                (
+                    "balance",
+                    "Balansas",
+                    "/bookkeeping/balance/",
+                    "bookkeeping/tab_balance.html",
+                ),
+                (
+                    "charts",
+                    "Grafikai",
+                    "/bookkeeping/charts/",
+                    "bookkeeping/tab_charts.html",
+                ),
+            ],
+            id="index",
         ),
-        (
-            "expenses",
-            "Išlaidos",
-            "/detailed/expenses/",
-            "bookkeeping/detailed/tab_expenses.html",
-        ),
-    ]
+    ],
+)
+def test_each_tab_declares_its_title_url_and_template_in_nav_order(tabs, expect):
+    actual = [(tab.name, str(tab.title), tab.url, tab.template_name) for tab in tabs]
 
-
-def test_the_default_tab_is_the_incomes_tab():
-    assert views.DetailedTabMixin.default_tab is TABS["incomes"]
+    assert actual == expect

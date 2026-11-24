@@ -1,6 +1,7 @@
 from datetime import date
 
 from ....users.models import User
+from ..index.presenters import year_strip_titles
 from .calculators import ForecastCalculator
 from .providers import ForecastDataProvider
 
@@ -25,6 +26,7 @@ def load_service(user: User, today: date) -> dict:
     end = beginning + forecast_value
 
     return {
+        "title": year_strip_titles(year),
         "data": [beginning, end, forecast_value],
         "highlight": [False, False, True],
     }

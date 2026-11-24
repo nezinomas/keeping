@@ -19,27 +19,38 @@ core's Overview is a ledger app's first tab, a different block)
 
 **Index Tab**:
 One of the Index's four views, in this order: *Apžvalga* (opened by `/`; not core's
-Overview): four Cards, the Account balances table, the Year strip, the No-incomes
+Overview): four Cards, the Account balances table, the Year strip, the Forecast, the No-incomes
 table, the Debts table; *Fondai*: three Cards, the Funds table, the Pensions table;
 *Balansas*: the Month balance table, then the Expenses-by-type table; *Grafikai*: the
-expenses-by-type chart, the incomes-against-expenses chart. Each is fetched and reloaded
+expenses-by-type chart beside the balance-per-month chart (above it below 1200px), then
+the incomes-and-expenses chart under both. Each is fetched and reloaded
 whole, on every event that changes it; a closed tab reads fresh data when opened.
+The Quick-add bar offers each Worth form as a pill on its own tab: *Sąskaitų faktas* on
+Apžvalga, *Fondų faktas* and *Pensijų faktas* on Fondai. The refresh icon in the first
+header cell of the Account balances, Funds and Pensions tables syncs every balance row
+of every year and reloads the tab.
 *Grafikai* also names a navbar item, a different page.
 _Avoid_: section, panel, page
 
 **Card**:
 One figure at the head of an Index Tab, the skin's `StatCard`, in ink: whole euros.
-Two figures differ: the Saved share is a percent, and a profit under 0,50 EUR either
-way keeps its cents ("0,30", "-0,30"), so it never reads "0". No Card is a new
-figure: each is one the page draws today. Apžvalga: *Pinigai* and *Turtas* (the wealth service's), *Vidutinės
-pajamos* and *Vidutinės išlaidos* (the year's averages). Fondai: the Saved share
+Two figures differ: the Saved share is a percent (its note euros with cents), and a
+profit under 0,50 EUR either way keeps its cents ("0,30", "-0,30"), so it never reads
+"0". No Card is a new figure: each is one the page draws today. Apžvalga: *Pinigai*
+and *Turtas* (the wealth service's, its accounts part the Account balances table's total), *Vidutinės
+pajamos* and *Vidutinės išlaidos* (the year's averages, as the Month balance table's
+average row). Fondai: the Saved share
 (the savings service's, one decimal, the banner's figure before it), then
 *Fondų pelnas* and *Pensijų pelnas*, the profit sum of the Funds table and of the
-Pensions table, each with its percent as the note, one decimal. A Card with nothing to
-show draws the StatCard's empty form, never a zero: the Saved share in a year with no
-incomes, the two averages in a year not yet started, *Fondų pelnas* and *Pensijų
-pelnas* when their table's total profit is zero (no rows, or neither gain nor
-loss); a loss draws its figure with its minus. Fondai
+Pensions table, each with its percent as the note, one decimal. A figure of 0
+(*Pinigai*, *Turtas*, an average in a running year with nothing in it) draws "–" as its
+figure; one of these under 0,50 EUR either way rounds to a whole 0 and draws "0", never
+"-0". A
+Saved share of 0 draws "0,0". A Card with nothing to show draws the StatCard's empty
+form: the Saved share in a year with no incomes, the two averages in a year not yet
+started, *Fondų pelnas* and *Pensijų pelnas* when their table's total profit is zero
+(no rows, no row with a fresh worth, or gains and losses that cancel); a loss draws its
+figure with its minus. Fondai
 always draws its three Cards.
 _Avoid_: banner, tile, widget, KPI
 
@@ -62,6 +73,9 @@ account to its Worth, not two totals), balance check, reconciliation
 What the year's Savings took of its incomes, in percent: the Savings into every Fund,
 of every Fund kind (*Pensijos*, III pillar, included), over the incomes' total. A
 Pension (II pillar) is not counted. The first Fondai Card, in plain ink at any value.
+Its note is the share's numerator, the year's Savings in euros with cents
+(`1.234,56 €`), drawn in a year with no incomes too, under the empty Card, when it
+has Savings; a year with neither draws the empty Card alone.
 Computed in the savings service, not the template.
 _Avoid_: savings rate, saved %, banner
 
@@ -90,15 +104,18 @@ accounts' money carried into the year (their balance rows' past sum); *pabaigoje
 the year-end cash flow, that start plus the year's flow, the same figure as the
 Cash-flow check's Balansas cell, not an accounts total; *Balansas* is end less start.
 It sits in a Panel titled with the selected year (*2026 metai*). The Forecast, under
-the same three titles: its own Panel, folded; loaded on the first open.
+the same three titles: its own Panel, drawn with the tab.
 _Avoid_: summary, header row
 
 **No-incomes table**:
 Apžvalga's Table Panel *Be pajamų*: how long the money lasts without incomes. Rows:
 the money, the months it lasts with spending unchanged, and after cutting the
 unnecessary expenses; columns € + F and € + F + P, with the € / F / P legend. Its first
-header cell, the monthly sum those cuts save, is labelled *Nebūtinos išlaidos*.
-_Avoid_: no_incomes (that is the endpoint), survival table
+header cell reads *Nebūtinos išlaidos*, then the monthly sum those cuts save, muted,
+then a "?" whose tip lists the cuts. A journal that marks nothing unnecessary draws a
+muted "-" for the sum, the table's empty figure, and no "?"; one whose marked expenses
+cost nothing in the six months draws the "-" and the "?".
+_Avoid_: no_incomes (that is the module), survival table
 
 **Debts table**:
 Apžvalga's Table Panel *Skolos*: one row per Debt type with an open Debt, *Paskolinta*
@@ -110,18 +127,33 @@ _Avoid_: debt mini-tables, borrow / lend tables
 **Month balance table**:
 Balansas' Table Panel *Balansas*: the year by month, a row per month (incomes,
 expenses, balance, savings, the cash flow *Pinigų srautas*), then the average and
-total rows, whose *Pinigų srautas* cell is the year-end cash flow; *Rodyti skolas*
-shows the debts' columns. A month-by-row table, not a Month table, so it has no
+total rows, whose *Pinigų srautas* cell is the year-end cash flow. The average row
+divides each column's sum over the months reached by their count: January to this
+month while the year runs, all twelve once it is over, none before it starts; a later
+month's rows count in the total, not in the average. The *Skolos* Switch on its title
+line shows the debts' columns; a vertical rule starts *Taupymas*, *Skolos* and *Pinigų
+srautas*. A month-by-row table, not a Month table, so it has no
 quarter band.
 _Avoid_: year balance, Month table
 
 **Expenses-by-type table**:
 Balansas' Table Panel *Išlaidų statistika*: the year's expenses by expense type, a row
-per month, a column per type, then the average and total rows. A month-by-row table,
+per month, a column per type, then the average and total rows, the average divided as
+the Month balance table's, so the types' averages add up to its last cell. A month-by-row table,
 not a Month table. How a type name too long for its column reads is the builder's
 (design §5).
 _Avoid_: year expenses (the include), Type table (Detailed's Išlaidos table, and core's
 ledger Rūšys tab), expenses-by-type chart (Grafikai's chart of the year's totals)
+
+**Current month**:
+The month of today's date when the selected year is today's year; a past or a coming
+year has none. Grafikai's two month charts draw its marks paler (the balance column,
+each line's point), and its tooltip says *iki šiol*. A month after it, and every month
+of a coming year, is a gap on both charts unless it already holds incomes or expenses,
+which draw. Each line's average rule (*Vidurkis*) averages the months reached, the
+current month included: all twelve for a past year, none for a coming one. An average
+of nought, a coming year's or a year with no incomes, draws no rule.
+_Avoid_: this month, open month, running month
 
 ### Detailed
 
@@ -170,7 +202,9 @@ _Avoid_: category (that is the frame's `category_id`, not the word), type
 
 **Balance row**:
 One owner's money for one year: `AccountBalance`, `SavingBalance` or
-`PensionBalance`. Derived, never entered: a save or delete of anything that moves
+`PensionBalance`, each naming its owner's key in `owner_field`. The last two share
+core's abstract `ProfitBalance`, a row that can show a profit, which returns its owner
+from `owner`. Derived, never entered: a save or delete of anything that moves
 an owner's money re-syncs the whole journal's rows of that kind. An owner's years run
 from its first row to the journal's last year plus one. A pension type's rows are built
 like a fund's, by `SavingBalanceRows` in `lib/balance_rows.py`.

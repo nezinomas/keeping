@@ -1,0 +1,12 @@
+<c-vars row="" :blank_balance="False" end_label="" flow="" />
+<c-figure-cell :value="row.incomes" />
+<c-figure-cell :value="row.expenses" />
+{% if blank_balance %}<c-figure-cell empty />{% else %}<c-figure-cell :value="row.balance" signed />{% endif %}
+<c-figure-cell :value="row.savings" group />
+<c-figure-cell :value="row.savings_close" />
+<c-figure-cell :value="row.borrow" show="open" group />
+<c-figure-cell :value="row.borrow_return" show="open" />
+<c-figure-cell :value="row.lend" show="open" />
+<c-figure-cell :value="row.lend_return" show="open" />
+{# the average row's label; with a check, the year-end cash flow, not its row's sum #}
+{% if end_label %}<td class="main__group-start">{{ end_label }}</td>{% elif "check" in attrs %}<c-figure-cell :value="flow" signed check="{{ check }}" group />{% else %}<c-figure-cell :value="row.money_flow" group />{% endif %}

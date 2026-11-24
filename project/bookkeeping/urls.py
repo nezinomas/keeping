@@ -9,32 +9,29 @@ app_name = App_name
 register_converter(converters.DateConverter, "date")
 
 urlpatterns = [
-    path("", views.Index.as_view(), name="index"),
+    path("", views.TabOverview.as_view(), name="index"),
+    path("", views.TabOverview.as_view(), name="tab_overview"),
+    path("bookkeeping/funds/", views.TabFunds.as_view(), name="tab_funds"),
+    path("bookkeeping/balance/", views.TabBalance.as_view(), name="tab_balance"),
+    path("bookkeeping/charts/", views.TabCharts.as_view(), name="tab_charts"),
     path(
         "set/balances/", views.RegenerateBalances.as_view(), name="regenerate_balances"
     ),
-    path("bookkeeping/accounts/", views.Accounts.as_view(), name="accounts"),
     path(
         "bookkeeping/accounts_worth/new/",
         views.AccountsWorthNew.as_view(),
         name="accounts_worth_new",
     ),
-    path("bookkeeping/savings/", views.Savings.as_view(), name="savings"),
     path(
         "bookkeeping/savings_worth/new/",
         views.SavingsWorthNew.as_view(),
         name="savings_worth_new",
     ),
-    path("bookkeeping/pensions/", views.Pensions.as_view(), name="pensions"),
     path(
         "bookkeeping/pensions_worth/new/",
         views.PensionsWorthNew.as_view(),
         name="pensions_worth_new",
     ),
-    path("bookkeeping/wealth/", views.Wealth.as_view(), name="wealth"),
-    path("bookkeeping/forecast/", views.Forecast.as_view(), name="forecast"),
-    path("bookkeeping/no_incomes/", views.NoIncomes.as_view(), name="no_incomes"),
-    path("bookkeeping/reload_index/", views.ReloadIndex.as_view(), name="reload_index"),
     path("detailed/", views.TabIncomes.as_view(), name="detailed"),
     path("detailed/incomes/", views.TabIncomes.as_view(), name="detailed_incomes"),
     path("detailed/savings/", views.TabSavings.as_view(), name="detailed_savings"),

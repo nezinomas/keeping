@@ -7,6 +7,9 @@ $font-size: 0.7rem;
 
 // --- 2. Layout & Transitions ---
 $gap: 0.75rem;
+// a paper table cell's side padding, where a row's name starts; halved for a phone's name
+$cell-inset: $gap;
+$name-inset-phone: 0.5 * $gap;
 $modal-border-radius: 0.25rem;
 $modal-header-bg: rgba(0, 0, 0, 0.02);
 $modal-border-color: rgba(0, 0, 0, 0.175);
@@ -120,6 +123,9 @@ $harm-soft: #c47f86;
 // an alert's ground and a chart's over-limit band: $harm's hue kept clean, since an
 // alpha of the deep maroon on white greys out; $harm text on it is 8.66:1
 $harm-tint: #fdf2f3;
+
+// a positive signed money figure, as text only: 6.44:1 on $paper, 6.02:1 on the stripe
+$gain: #1f6b4a;
 
 // a receipt line still waiting for input: a highlighter stroke, not harm, good or data
 $attention: #e8c21a;
