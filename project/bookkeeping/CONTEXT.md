@@ -19,7 +19,7 @@ core's Overview is a ledger app's first tab, a different block)
 
 **Index Tab**:
 One of the Index's four views, in this order: *Apžvalga* (opened by `/`; not core's
-Overview): four Cards, the Account balances table, the Year strip, the No-incomes
+Overview): four Cards, the Account balances table, the Year strip, the Forecast, the No-incomes
 table, the Debts table; *Fondai*: three Cards, the Funds table, the Pensions table;
 *Balansas*: the Month balance table, then the Expenses-by-type table; *Grafikai*: the
 expenses-by-type chart beside the balance-per-month chart (above it below 1200px), then
